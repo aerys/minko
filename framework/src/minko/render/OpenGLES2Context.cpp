@@ -206,8 +206,10 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentStencilMask(0x1),
 	_currentStencilFailOp(StencilOperation::UNSET),
 	_currentStencilZFailOp(StencilOperation::UNSET),
-	_currentStencilZPassOp(StencilOperation::UNSET),
-        _glslOptimizer(0)
+	_currentStencilZPassOp(StencilOperation::UNSET)
+#ifdef MINKO_GLSL_OPTIMIZER
+    , _glslOptimizer(0)
+#endif
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE) && !defined(MINKO_PLUGIN_OFFSCREEN)
 	glewInit();
