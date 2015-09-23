@@ -18,6 +18,16 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("html-overlay")
 
+	prelinkcommands {
+		minko.action.copy("asset")
+	}
+
+	configuration { "html5" }
+		minko.package.assets {
+			['**.effect'] = { 'embed' }, -- fixme: restrict to the actual effect/glsl needed
+			['**.glsl'] = { 'embed' }
+		}
+
 	configuration { "cc=clang" }
 		buildoptions {
 			"-Wno-extern-c-compat",
