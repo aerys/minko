@@ -87,16 +87,25 @@ minko.project.library "minko-framework"
 		"lib/glsl-optimizer/src",
 		"lib/glsl-optimizer/src/getopt",
 		"lib/glsl-optimizer/src/glsl",
+		"lib/glsl-optimizer/src/glsl/glcpp",
 		"lib/glsl-optimizer/src/mesa",
 		"lib/glsl-optimizer/src/mesa/main",
 		"lib/glsl-optimizer/src/mesa/program",
 		"lib/glsl-optimizer/src/util",
+	}
+	excludes {
+		"lib/glsl-optimizer/src/glsl/main.cpp"
 	}
 
 	-- handle no-glsl-optimizer option
 	if not _OPTIONS["no-glsl-optimizer"] then
 		defines { "MINKO_GLSL_OPTIMIZER_ENABLED" }
 	end
+
+	configuration { "android" }
+		defines {
+			"ANDROID"
+		}
 
 	-- windows
 	configuration { "windows32" }
