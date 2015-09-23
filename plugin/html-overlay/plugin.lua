@@ -36,6 +36,7 @@ minko.plugin["html-overlay"].enable = function()
 	}
 
 	minko.plugin.enable("sdl")
+	minko.plugin.enable("http-loader")
 	--minko.plugin.enable("lua")
 
 	configuration { "html5", "ConsoleApp or WindowedApp" }
