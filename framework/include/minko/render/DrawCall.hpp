@@ -359,6 +359,13 @@ namespace minko
 				return *_target;
 			}
 
+			inline
+			uint
+			numTriangles()
+			{
+				return _numIndices ? *_numIndices / 3 : 0;
+			}
+
             void
             bind(std::shared_ptr<Program> program);
 

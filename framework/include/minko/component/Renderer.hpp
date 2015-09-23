@@ -84,7 +84,7 @@ namespace minko
 			bool                                                                    _mustZSort;
 
 			std::unordered_map<const render::DrawCall*, ZSortNeeded::Slot>          _drawCallToZSortNeededSlot;
-			
+
 			Signal<AbsCmpPtr, NodePtr>::Slot					                    _targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot					                    _targetRemovedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot				                    _addedSlot;
@@ -112,6 +112,9 @@ namespace minko
 			std::shared_ptr<RendererFilterChangedSignal>				            _filterChanged;
 			std::unordered_map<NodePtr, Signal<NodePtr, NodePtr>::Slot>		        _nodeLayoutChangedSlot;
             std::unordered_map<SurfacePtr, Signal<AbsCmpPtr>::Slot>			        _surfaceLayoutMaskChangedSlot;
+
+			uint																	_numDrawCalls;
+			uint																	_numTriangles;
 
 		public:
 			inline static
@@ -159,7 +162,14 @@ namespace minko
 			unsigned int
 			numDrawCalls()
 			{
-				return _drawCallPool.numDrawCalls();
+				return _numDrawCalls;
+			}
+
+			inline
+			unsigned int
+			numTriangles()
+			{
+				return _numTriangles;
 			}
 
 			inline
