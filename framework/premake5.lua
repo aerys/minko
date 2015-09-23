@@ -68,6 +68,36 @@ minko.project.library "minko-framework"
 		}
 	configuration {}
 
+	-- glsl-optimizer
+	files {
+		"lib/glsl-optimizer/src/getopt/**.c",
+		"lib/glsl-optimizer/src/getopt/**.h",
+		"lib/glsl-optimizer/src/glsl/**.cpp",
+		"lib/glsl-optimizer/src/glsl/**.h",
+		"lib/glsl-optimizer/src/glsl/**.c",
+		"lib/glsl-optimizer/src/mesa/main/**.c",
+		"lib/glsl-optimizer/src/mesa/main/**.h",
+		"lib/glsl-optimizer/src/mesa/program/**.c",
+		"lib/glsl-optimizer/src/mesa/program/**.h",
+		"lib/glsl-optimizer/src/util/**.h",
+		"lib/glsl-optimizer/src/util/**.c"
+	}
+	includedirs {
+		"lib/glsl-optimizer/include",
+		"lib/glsl-optimizer/src",
+		"lib/glsl-optimizer/src/getopt",
+		"lib/glsl-optimizer/src/glsl",
+		"lib/glsl-optimizer/src/mesa",
+		"lib/glsl-optimizer/src/mesa/main",
+		"lib/glsl-optimizer/src/mesa/program",
+		"lib/glsl-optimizer/src/util",
+	}
+
+	-- handle no-glsl-optimizer option
+	if not _OPTIONS["no-glsl-optimizer"] then
+		defines { "MINKO_GLSL_OPTIMIZER_ENABLED" }
+	end
+
 	-- windows
 	configuration { "windows32" }
         includedirs { minko.sdk.path("/framework/lib/glew/include") }
@@ -86,3 +116,8 @@ minko.project.library "minko-framework"
 		excludes {
 			"include/minko/log/AndroidLogSink.hpp"
 		}
+
+	newoption {
+		trigger     = "no-glsl-optimizer",
+		description = "Use this option to disable the GLSL optimizer"
+	}
