@@ -104,13 +104,13 @@ VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float z
 	#endif
 #endif
 
-    if (!detected())
-        return;
-
     // Initialize both eyes' renderers
     _leftRenderer = Renderer::create(rendererClearColor);
     _rightRenderer = Renderer::create(rendererClearColor);
     _rightRenderer->clearBeforeRender(false);
+
+    if (!detected())
+        return;
 
     updateViewport(viewportWidth, viewportHeight);
     _VRImpl->initializeVRDevice(_leftRenderer, _rightRenderer, window);
