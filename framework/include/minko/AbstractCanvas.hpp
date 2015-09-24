@@ -49,6 +49,10 @@ namespace minko
         height() = 0;
 
         virtual
+        float
+        aspectRatio() = 0;
+
+        virtual
         std::shared_ptr<data::Provider>
         data() const = 0;
 
