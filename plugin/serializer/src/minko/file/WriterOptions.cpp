@@ -40,6 +40,9 @@ const unsigned int WriterOptions::EmbedMode::All        = Geometry | Material | 
 WriterOptions::WriterOptions() :
     _addBoundingBoxes(false),
     _embedMode(EmbedMode::All),
+    _geometryNameFunction([](const std::string& str) -> std::string { return str; }),
+    _materialNameFunction([](const std::string& str) -> std::string { return str; }),
+    _textureNameFunction([](const std::string& str) -> std::string { return str; }),
     _geometryUriFunction([](const std::string& str) -> std::string { return str; }),
     _materialUriFunction([](const std::string& str) -> std::string { return str; }),
     _textureUriFunction([](const std::string& str) -> std::string { return str; }),
