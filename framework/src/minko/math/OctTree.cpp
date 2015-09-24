@@ -42,7 +42,8 @@ math::OctTree::OctTree(float				worldSize,
 	_depth(depth),
 	_splitted(false),
 	_worldSize(worldSize),
-	_center(center)
+	_center(center),
+    _frustumLastPlaneId(0u)
 {
 	float edgel = edgeLength();
 
@@ -249,18 +250,26 @@ void
 math::OctTree::doTestFrustum(math::AbstractShape::Ptr                   frustum,
                              std::unordered_map<NodePtr, unsigned int>& refCountMap)
 {
-    const auto result = frustum->testBoundingBox(_octantBox);
+    auto frustumPtr = std::dynamic_pointer_cast<Frustum>(frustum);
 
-    if (result == ShapePosition::AROUND || result == ShapePosition::INSIDE)
+    if (frustumPtr)
     {
-        if (_splitted)
-        {
-            for (auto octantChild : _children)
-                octantChild->doTestFrustum(frustum, refCountMap);
-        }
+        const auto result = frustumPtr->testBoundingBox(_octantBox, _frustumLastPlaneId);
 
-        for (auto node : _content)
-            ++refCountMap[node];
+        const auto shapePosition = result.first;
+        _frustumLastPlaneId = result.second;
+
+        if (shapePosition == ShapePosition::AROUND || shapePosition == ShapePosition::INSIDE)
+        {
+            if (_splitted)
+            {
+                for (auto octantChild : _children)
+                    octantChild->doTestFrustum(frustum, refCountMap);
+            }
+
+            for (auto node : _content)
+                ++refCountMap[node];
+        }
     }
 }
 

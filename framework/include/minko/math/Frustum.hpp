@@ -60,6 +60,9 @@ namespace minko
 			void
 			updateFromMatrix(const math::mat4& matrix);
 
+			std::pair<ShapePosition, unsigned int>
+			testBoundingBox(std::shared_ptr<math::Box> box, unsigned int basePlaneId);
+
 			ShapePosition
 			testBoundingBox(std::shared_ptr<math::Box> box);
 

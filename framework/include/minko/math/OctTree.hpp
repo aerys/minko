@@ -59,6 +59,8 @@ namespace minko
 			NodePtr 							        _debugNode;
 
             std::unordered_map<NodePtr, unsigned int>   _nodeToInsideFrustumRefCountMap;
+
+            unsigned int 								_frustumLastPlaneId;
 			
 			//std::unordered_map<math::Matrix4x4, NodePtr>								_matrixToNode;
 

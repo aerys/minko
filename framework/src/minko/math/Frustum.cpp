@@ -41,6 +41,12 @@ math::Frustum::updateFromMatrix(const math::mat4& matrix)
 math::ShapePosition
 math::Frustum::testBoundingBox(math::Box::Ptr box)
 {
+	return testBoundingBox(box, 0u).first;
+}
+
+std::pair<math::ShapePosition, unsigned int>
+math::Frustum::testBoundingBox(math::Box::Ptr box, unsigned int basePlaneId)
+{
 	int result = 0;
 	
 	// bottom left front
@@ -83,8 +89,10 @@ math::Frustum::testBoundingBox(math::Box::Ptr box)
 	float ytrf = ytrb;
 	float ztrf = zblf;
 
-	for (auto planeId = 0u; planeId < _planes.size(); ++planeId)
+	for (auto i = 0u; i < _planes.size(); ++i)
 	{
+		const auto planeId = (basePlaneId + i) % _planes.size();
+
 		float pa = _planes[planeId].x;
 		float pb = _planes[planeId].y;
 		float pc = _planes[planeId].z;
@@ -99,18 +107,7 @@ math::Frustum::testBoundingBox(math::Box::Ptr box)
 		_trfResult[planeId] = pa * xtrf + pb * ytrf + pc * ztrf + pd < 0.f;
 		_tlbResult[planeId] = pa * xtlb + pb * ytlb + pc * ztlb + pd < 0.f;
 		_trbResult[planeId] = pa * xtrb + pb * ytrb + pc * ztrb + pd < 0.f;
-	}
 
-	if (((_blfResult[(int)PlanePosition::LEFT]	&& _trbResult[(int)PlanePosition::RIGHT]) ||
-		(_blfResult[(int)PlanePosition::RIGHT]	&& _trbResult[(int)PlanePosition::LEFT])) &&
-		((_blfResult[(int)PlanePosition::TOP]	&& _trbResult[(int)PlanePosition::BOTTOM]) ||
-		(_blfResult[(int)PlanePosition::BOTTOM] && _trbResult[(int)PlanePosition::TOP])) &&
-        ((_blfResult[(int)PlanePosition::NEAR]	&& _trbResult[(int)PlanePosition::FAR]) ||
-		(_blfResult[(int)PlanePosition::FAR]	&& _trbResult[(int)PlanePosition::NEAR])))
-		return ShapePosition::AROUND;
-
-	for (uint planeId = 0; planeId < _planes.size(); ++planeId)
-	{
 		if (_blfResult[planeId] &&
 			_brfResult[planeId] &&
 			_blbResult[planeId] &&
@@ -119,10 +116,20 @@ math::Frustum::testBoundingBox(math::Box::Ptr box)
 			_trfResult[planeId] &&
 			_tlbResult[planeId] &&
 			_trbResult[planeId])
-			return static_cast<ShapePosition>(planeId);
+		{
+			return std::make_pair(static_cast<ShapePosition>(planeId), planeId);
+		}
 	}
 
-	return ShapePosition::INSIDE;
+	if (((_blfResult[(int)PlanePosition::LEFT]	&& _trbResult[(int)PlanePosition::RIGHT]) ||
+		(_blfResult[(int)PlanePosition::RIGHT]	&& _trbResult[(int)PlanePosition::LEFT])) &&
+		((_blfResult[(int)PlanePosition::TOP]	&& _trbResult[(int)PlanePosition::BOTTOM]) ||
+		(_blfResult[(int)PlanePosition::BOTTOM] && _trbResult[(int)PlanePosition::TOP])) &&
+        ((_blfResult[(int)PlanePosition::NEAR]	&& _trbResult[(int)PlanePosition::FAR]) ||
+		(_blfResult[(int)PlanePosition::FAR]	&& _trbResult[(int)PlanePosition::NEAR])))
+		return std::make_pair(ShapePosition::AROUND, 0u);
+
+	return std::make_pair(ShapePosition::INSIDE, 0u);
 }
 
 bool
