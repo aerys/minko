@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Shader.hpp"
 
 #include "minko/render/AbstractContext.hpp"
+#include "minko/log/Logger.hpp"
 
 #ifdef MINKO_GLSL_OPTIMIZER_ENABLED
 # include "glsl_optimizer.h"
@@ -65,7 +66,7 @@ Shader::upload()
     }
     else
     {
-        std::cerr << glslopt_get_log(optimizedShader) << std::endl;
+        LOG_ERROR(glslopt_get_log(optimizedShader));
         throw std::invalid_argument("source");
     }
     glslopt_shader_delete(optimizedShader);
