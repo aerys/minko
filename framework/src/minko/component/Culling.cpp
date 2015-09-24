@@ -115,14 +115,14 @@ Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancesto
 
                 	_octTree->testFrustum(
                 		_frustum,
-                		[&](NodePtr node)
-                		{
-                			node->layout(node->layout() & ~scene::BuiltinLayout::HIDDEN);
-                		},
-                		[&](NodePtr node)
-                		{
-                			node->layout(node->layout() | scene::BuiltinLayout::HIDDEN);
-                		}
+                        [&](NodePtr node)
+                        {
+	                        node->layout(node->layout() | scene::BuiltinLayout::DEFAULT & ~scene::BuiltinLayout::HIDDEN);
+                        },
+                        [&](NodePtr node)
+                        {
+	                        node->layout(node->layout() & ~scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::HIDDEN);
+                        }
                 	);
 
                     _updateNextFrame = false;
