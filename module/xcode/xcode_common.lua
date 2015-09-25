@@ -505,8 +505,8 @@
 							-- paths as before
 							nodePath = string.sub(nodePath, matchEnd + 1)
 						end
-						if string.find(nodePath,'/')  then
-							if string.find(nodePath,'^%.')then
+						if string.find(nodePath,'/') then
+							if string.find(nodePath,'^%.') then
 								--error('relative paths are not currently supported for frameworks')
 								pth = path.getrelative(tr.project.location, node.path)
 								--print(tr.project.location, node.path , pth)
@@ -525,8 +525,19 @@
 								pth = string.sub(pth, 2)
 							end
 						else
-							pth = "System/Library/Frameworks/" .. node.path
-							src = "SDKROOT"
+							for i = 1, #cfg.libdirs do
+								local l = cfg.libdirs[i] .. '/' .. node.path
+								if os.isdir(l) then
+									pth = l
+									break
+								end
+							end
+							if pth then
+								src = "<group>"
+							else
+								src = "SDKROOT"
+								pth = "System/Library/Frameworks/" .. node.path
+							end
 						end
 					else
 						-- something else; probably a source code file
@@ -951,6 +962,8 @@
 			xcode.PrintBuildSetting(4, 'DEBUG_INFORMATION_FORMAT = "dwarf";', cfg)
 		end
 
+		xcode.printlist(cfg.libdirs, 'FRAMEWORK_SEARCH_PATHS', cfg)
+
 		if cfg.kind ~= "StaticLib" and cfg.buildtarget.prefix ~= "" then
 			-- printSetting(bs, 4,"EXECUTABLE_PREFIX", cfg.buildtarget.prefix)
 			xcode.PrintBuildSetting(4, 'EXECUTABLE_PREFIX = '.. cfg.buildtarget.prefix .. ';', cfg)
@@ -1173,7 +1186,9 @@
 		for i,v in ipairs(cfg.includedirs) do
 			cfg.includedirs[i] = premake.project.getrelative(cfg.project, cfg.includedirs[i])
 		end
+
 		for i,v in ipairs(cfg.libdirs) do
+			-- print(cfg.libdirs[i])
 			cfg.libdirs[i] = premake.project.getrelative(cfg.project, cfg.libdirs[i])
 		end
 
