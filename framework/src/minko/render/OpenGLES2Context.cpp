@@ -202,7 +202,8 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentStencilMask(0x1),
 	_currentStencilFailOp(StencilOperation::UNSET),
 	_currentStencilZFailOp(StencilOperation::UNSET),
-	_currentStencilZPassOp(StencilOperation::UNSET)
+	_currentStencilZPassOp(StencilOperation::UNSET),
+	_vertexAttributeEnabled(32u, false)
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE) && !defined(MINKO_PLUGIN_OFFSCREEN)
 	glewInit();
@@ -473,41 +474,55 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 									const uint	stride,
 									const uint	offset)
 {
-	auto currentVertexBuffer = _currentVertexBuffer[position];
+	auto vertexAttributeEnabled = vertexBuffer > 0;
 
-	if (currentVertexBuffer == vertexBuffer
-		&& _currentVertexSize[position] == size
-		&& _currentVertexStride[position] == stride
-		&& _currentVertexOffset[position] == offset)
-		return ;
-
-	_currentVertexBuffer[position] = vertexBuffer;
-	_currentVertexSize[position] = size;
-	_currentVertexStride[position] = stride;
-	_currentVertexOffset[position] = offset;
-
-	if (vertexBuffer > 0)
-		glEnableVertexAttribArray(position);
-	else
+	if (_vertexAttributeEnabled[position] != vertexAttributeEnabled)
 	{
-		glDisableVertexAttribArray(position);
+		if (vertexAttributeEnabled)
+		{
+			glEnableVertexAttribArray(position);
+			checkForErrors();
 
-		return;
+			_vertexAttributeEnabled[position] = true;
+		}
+		else
+		{
+			glDisableVertexAttribArray(position);
+			checkForErrors();
+
+			_vertexAttributeEnabled[position] = false;
+
+			return;
+		}		
 	}
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+	if (_currentVertexBuffer[position] != vertexBuffer)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		checkForErrors();
 
-	// http://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
-	glVertexAttribPointer(
-		position,
-		size,
-		GL_FLOAT,
-		GL_FALSE,
-		sizeof(GLfloat) * stride,
-		(void*)(sizeof(GLfloat) * offset)
-	);
+		_currentVertexBuffer[position] = vertexBuffer;		
+	}
 
-	checkForErrors();
+	if (_currentVertexSize[position] != size
+		|| _currentVertexStride[position] != stride
+		|| _currentVertexOffset[position] != offset)
+	{
+		// http://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
+		glVertexAttribPointer(
+			position,
+			size,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(GLfloat) * stride,
+			(void*)(sizeof(GLfloat) * offset)
+		);
+		checkForErrors();
+
+		_currentVertexSize[position] = size;
+		_currentVertexStride[position] = stride;
+		_currentVertexOffset[position] = offset;
+	}
 }
 
 const uint

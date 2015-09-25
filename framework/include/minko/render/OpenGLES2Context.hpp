@@ -104,6 +104,8 @@ namespace minko
 			StencilOperation						_currentStencilZFailOp;
 			StencilOperation						_currentStencilZPassOp;
 
+            std::vector<bool>                       _vertexAttributeEnabled;
+
 		public:
 			~OpenGLES2Context();
 
