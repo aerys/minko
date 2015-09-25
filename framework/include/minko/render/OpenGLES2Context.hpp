@@ -402,6 +402,9 @@ namespace minko
 		protected:
 			OpenGLES2Context();
 
+            void
+            initializeExtFunctions();
+
 			virtual
 			std::vector<ProgramInputs::UniformInput>
 			getUniformInputs(const uint program);

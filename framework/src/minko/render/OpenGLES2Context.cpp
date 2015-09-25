@@ -62,6 +62,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
+# include <dlfcn.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
@@ -102,17 +103,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # undef glGenerateMipmap
 # define glGenerateMipmap glGenerateMipmapEXT
 
-#else
+#endif
 
-# undef glGenVertexArrays
-# define glGenVertexArrays glGenVertexArraysOES
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+PFNGLBINDVERTEXARRAYOESPROC glBindVertexArray;
+PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArrays;
+PFNGLGENVERTEXARRAYSOESPROC glGenVertexArrays;
+PFNGLISVERTEXARRAYOESPROC glIsVertexArray;
 
-# undef glBindVertexArray
-# define glBindVertexArray glBindVertexArrayOES
-
-# undef glDeleteVertexArrays
-# define glDeleteVertexArrays glDeleteVertexArraysOES
-
+//# undef glGenVertexArrays
+//# define glGenVertexArrays glGenVertexArraysOES
+//
+//# undef glBindVertexArray
+//# define glBindVertexArray glBindVertexArrayOES
+//
+//# undef glDeleteVertexArrays
+//# define glDeleteVertexArrays glDeleteVertexArraysOES
 #endif
 
 using namespace minko;
@@ -250,6 +256,21 @@ OpenGLES2Context::OpenGLES2Context() :
 	setColorMask(true);
 	setDepthTest(true, CompareMode::LESS);
 	setStencilTest(CompareMode::ALWAYS, 0, 0x1, StencilOperation::KEEP, StencilOperation::KEEP, StencilOperation::KEEP);
+
+    initializeExtFunctions();
+}
+
+void
+OpenGLES2Context::initializeExtFunctions()
+{
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    void *libhandle = dlopen("libGLESv2.so", RTLD_LAZY);
+
+    glBindVertexArray = (PFNGLBINDVERTEXARRAYOESPROC)dlsym(libhandle, "glBindVertexArrayOES");
+    glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSOESPROC)dlsym(libhandle, "glDeleteVertexArraysOES");
+    glGenVertexArrays = (PFNGLGENVERTEXARRAYSOESPROC)dlsym(libhandle, "glGenVertexArraysOES");
+    glIsVertexArray = (PFNGLISVERTEXARRAYOESPROC)dlsym(libhandle, "glIsVertexArrayOES");
+#endif
 }
 
 OpenGLES2Context::~OpenGLES2Context()
