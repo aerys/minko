@@ -79,6 +79,9 @@ namespace minko
             }
 
             void
+            forceRatio(float aspectRatio);
+
+            void
             updateViewport(int viewportWidth, int viewportHeight);
 
             static

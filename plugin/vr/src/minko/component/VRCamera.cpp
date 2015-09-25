@@ -77,6 +77,16 @@ VRCamera::updateViewport(int viewportWidth, int viewportHeight)
     _VRImpl->updateViewport(viewportWidth, viewportHeight);
 }
 
+void
+VRCamera::forceRatio(float aspectRatio)
+{
+    if (_leftCameraNode)
+        _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
+
+    if (_rightCameraNode)
+        _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
+}
+
 bool
 VRCamera::detected()
 {
