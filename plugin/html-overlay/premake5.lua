@@ -7,6 +7,7 @@ end
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	minko.plugin.enable("sdl")
+	minko.plugin.enable("http-loader")
 	--minko.plugin.enable("lua")
 
 	files {

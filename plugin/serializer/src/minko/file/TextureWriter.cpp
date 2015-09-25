@@ -38,30 +38,31 @@ using namespace minko::render;
 
 std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction, Hash<TextureFormat>> TextureWriter::_formatWriterFunctions = 
 {
-    { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
 
-    { TextureFormat::RGB_DXT1, std::bind(writeCRNCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_DXT1, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_DXT3, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_DXT5, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGB_DXT1, std::bind(writeCRNCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_DXT1, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_DXT3, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_DXT5, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     
-    { TextureFormat::RGB_ETC1, std::bind(writePvrCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGB_ETC1, std::bind(writePvrCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
 
-    { TextureFormat::RGB_PVRTC1_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGB_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGB_PVRTC1_4BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGB_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_PVRTC1_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_PVRTC1_4BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGB_PVRTC1_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGB_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGB_PVRTC1_4BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGB_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_PVRTC1_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_PVRTC1_4BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
 
-    { TextureFormat::RGBA_PVRTC2_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC2_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_PVRTC2_4BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC2_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_PVRTC2_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC2_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_PVRTC2_4BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC2_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
 
-    { TextureFormat::RGB_ATITC, std::bind(writeQCompressedTexture, TextureFormat::RGB_ATITC, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_ATITC, std::bind(writeQCompressedTexture, TextureFormat::RGBA_ATITC, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) }
+    { TextureFormat::RGB_ATITC, std::bind(writeQCompressedTexture, TextureFormat::RGB_ATITC, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_ATITC, std::bind(writeQCompressedTexture, TextureFormat::RGBA_ATITC, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
 };
 
 TextureWriter::TextureWriter() :
     AbstractWriter<AbstractTexture::Ptr>(),
+    _textureType(),
     _headerSize(0)
 {
     _magicNumber = 0x00000054 | MINKO_SCENE_MAGIC_NUMBER;
@@ -78,7 +79,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 
     ensureTextureSizeIsValid(texture, writerOptions);
 
-    const auto generateMipmaps = writerOptions->generateMipmaps();
+    const auto generateMipmaps = writerOptions->generateMipmaps(_textureType);
 
     const auto& textureFormats = writerOptions->textureFormats();
 
@@ -94,12 +95,12 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
     for (auto textureFormat : textureFormats)
     {
         if (TextureFormatInfo::isCompressed(textureFormat) &&
-            !writerOptions->compressTexture())
+            !writerOptions->compressTexture(_textureType))
             continue;
 
         const auto offset = blobStream.str().size();
 
-        if (!_formatWriterFunctions.at(textureFormat)(_data, writerOptions, blobStream))
+        if (!_formatWriterFunctions.at(textureFormat)(_data, _textureType, writerOptions, blobStream))
         {
             // TODO
             // handle error
@@ -152,71 +153,38 @@ void
 TextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
                                         WriterOptions::Ptr      writerOptions)
 {
-    if (writerOptions->generateMipmaps())
+    const auto width = texture->width();
+    const auto height = texture->height();
+
+    auto newWidth = width;
+    auto newHeight = height;
+
+    if (writerOptions->generateMipmaps(_textureType) &&
+        newWidth != newHeight)
     {
-        const auto width = texture->width();
-        const auto height = texture->height();
-
-        auto newWidth = width;
-        auto newHeight = height;
-
-        if (width != height)
-        {
-            newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipmapping()
-                ? std::max<uint>(width, height)
-                : std::min<uint>(width, height);
-        }
-
-        newWidth = std::min<uint>(
-            newWidth,
-            static_cast<uint>(writerOptions->textureMaxResolution().x)
-        );
-
-        newHeight = std::min<uint>(
-            newHeight,
-            static_cast<uint>(writerOptions->textureMaxResolution().y)
-        );
-
-        if (width == newWidth &&
-            height == newHeight)
-            return;
-
-        switch (texture->type())
-        {
-        case TextureType::Texture2D:
-        {
-            auto texture2d = std::static_pointer_cast<Texture>(texture);
-
-            texture->resize(newWidth, newHeight, true);
-
-            break;
-        }
-        case TextureType::CubeTexture:
-        {
-            // TODO
-
-            break;
-        }
-        }
+        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipmapping(_textureType)
+            ? std::max<uint>(newWidth, newHeight)
+            : std::min<uint>(newWidth, newHeight);
     }
-    else
+
+    newWidth = static_cast<uint>(newWidth * writerOptions->textureScale(_textureType).x);
+    newHeight = static_cast<uint>(newHeight * writerOptions->textureScale(_textureType).y);
+
+    newWidth = std::min<uint>(newWidth, writerOptions->textureMaxSize(_textureType).x);
+    newHeight = std::min<uint>(newHeight, writerOptions->textureMaxSize(_textureType).y);
+
+    if (width != newWidth ||
+        height != newHeight)
     {
-        if (texture->width() > writerOptions->textureMaxResolution().x ||
-            texture->height() > writerOptions->textureMaxResolution().y)
-        {
-            texture->resize(
-                std::min<uint>(texture->width(), writerOptions->textureMaxResolution().x),
-                std::min<uint>(texture->height(), writerOptions->textureMaxResolution().y),
-                true
-            );
-        }
+        texture->resize(newWidth, newHeight, true);
     }
 }
 
 bool
-TextureWriter::writeRGBATexture(AbstractTexture::Ptr abstractTexture,
-                                WriterOptions::Ptr writerOptions,
-                                std::stringstream& blob)
+TextureWriter::writeRGBATexture(AbstractTexture::Ptr    abstractTexture,
+                                const std::string&      textureType,
+                                WriterOptions::Ptr      writerOptions,
+                                std::stringstream&      blob)
 {
     auto imageFormat = writerOptions->imageFormat();
 
@@ -251,12 +219,13 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr abstractTexture,
 bool
 TextureWriter::writePvrCompressedTexture(TextureFormat        textureFormat,
                                          AbstractTexture::Ptr abstractTexture,
+                                         const std::string&   textureType,
                                          WriterOptions::Ptr   writerOptions,
                                          std::stringstream&   blob)
 {
     auto out = std::vector<unsigned char>();
 
-    if (!PVRTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out, { PVRTranscoder::Options::fastCompression }))
+    if (!PVRTranscoder::transcode(abstractTexture, textureType, writerOptions, textureFormat, out, { PVRTranscoder::Options::fastCompression }))
         return false;
 
     blob.write(reinterpret_cast<const char*>(out.data()), out.size());
@@ -267,12 +236,13 @@ TextureWriter::writePvrCompressedTexture(TextureFormat        textureFormat,
 bool
 TextureWriter::writeQCompressedTexture(TextureFormat        textureFormat,
                                        AbstractTexture::Ptr abstractTexture,
+                                       const std::string&   textureType,
                                        WriterOptions::Ptr   writerOptions,
                                        std::stringstream&   blob)
 {
     auto out = std::vector<unsigned char>();
 
-    if (!QTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out))
+    if (!QTranscoder::transcode(abstractTexture, textureType, writerOptions, textureFormat, out))
         return false;
 
     blob.write(reinterpret_cast<const char*>(out.data()), out.size());
@@ -283,12 +253,13 @@ TextureWriter::writeQCompressedTexture(TextureFormat        textureFormat,
 bool
 TextureWriter::writeCRNCompressedTexture(TextureFormat        textureFormat,
                                          AbstractTexture::Ptr abstractTexture,
+                                         const std::string&   textureType,
                                          WriterOptions::Ptr   writerOptions,
                                          std::stringstream&   blob)
 {
     auto out = std::vector<unsigned char>();
 
-    if (!CRNTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out))
+    if (!CRNTranscoder::transcode(abstractTexture, textureType, writerOptions, textureFormat, out))
         return false;
 
     blob.write(reinterpret_cast<const char*>(out.data()), out.size());

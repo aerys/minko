@@ -45,6 +45,7 @@ namespace minko
             static
             bool
             transcode(std::shared_ptr<render::AbstractTexture>  texture,
+                      const std::string&                        textureType,
                       std::shared_ptr<WriterOptions>            writerOptions,
                       render::TextureFormat                     outFormat,
                       std::vector<unsigned char>&               out,

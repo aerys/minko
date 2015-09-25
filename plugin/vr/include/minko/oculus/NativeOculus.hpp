@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "VRImpl.hpp"
 #include "minko/Signal.hpp"
 
-extern "C" 
+extern "C"
 {
     struct ovrHmdDesc_;
     typedef const ovrHmdDesc_* ovrHmd;
@@ -55,8 +55,8 @@ namespace minko
 
             void
             renderEndHandler(
-                std::shared_ptr<component::SceneManager> sceneManager, 
-                uint frameId, 
+                std::shared_ptr<component::SceneManager> sceneManager,
+                uint frameId,
                 std::shared_ptr<render::AbstractTexture> renderTarget
             );
 
@@ -100,20 +100,6 @@ namespace minko
             {
                 return _zFar;
             }
-
-            inline
-            Signal<>::Ptr
-            actionButtonPressed()
-            {
-                return Signal<>::create();
-            }
-
-			inline
-			Signal<>::Ptr
-			actionButtonReleased()
-			{
-				return Signal<>::create();
-			}
 
             static
             bool

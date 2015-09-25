@@ -76,7 +76,7 @@ function minko.plugin.serializer:enable()
 		configuration { "linux" }
 			linkoptions {
 				"-Wl,-rpath=."
-			}			
+			}
 
 		configuration { "osx32" }
 			links {
@@ -96,18 +96,15 @@ function minko.plugin.serializer:enable()
 
 		configuration { "osx64" }
 			links {
-				"PVRTexLib",
-				"QCompressLib"
+				"PVRTexLib"
 			}
 
 			libdirs {
-				minko.plugin.path("serializer") .. "/lib/PVRTexTool/OSX_x86/Dynamic",
-				minko.plugin.path("serializer") .. "/lib/QCompress/Lib/osx/x64"
+				minko.plugin.path("serializer") .. "/lib/PVRTexTool/OSX_x86/Dynamic"
 			}
 
 			prelinkcommands {
-				minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib"),
-				minko.action.copy(minko.plugin.path("serializer") .. "/lib/QCompress/Lib/osx/x64/*.dylib")
+				minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib")
 			}
 	end
 

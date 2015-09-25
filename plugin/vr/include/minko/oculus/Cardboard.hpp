@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 #include "minko/sensors/Attitude.hpp"
-#include "minko/sensors/Magnetometer.hpp"
 #endif
 
 namespace minko
@@ -43,17 +42,10 @@ namespace minko
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
             std::shared_ptr<sensors::Attitude>                  _attitude;
-            std::shared_ptr<sensors::Magnetometer>              _magnetometer;
 #endif
 
             float                                               _zNear;
             float                                               _zFar;
-            bool                                                _isMagnetDown;
-            std::vector<std::vector<float>>                     _magnetSensorData;
-            std::vector<float>                                  _magnetOffset;
-            Signal<float, float, float>::Slot                   _magnetChangedSlot;
-            Signal<>::Ptr                                       _magnetPressed;
-            Signal<>::Ptr                                       _magnetReleased;
 
         public:
             typedef std::shared_ptr<Cardboard> Ptr;
@@ -97,20 +89,6 @@ namespace minko
                 return _zFar;
             }
 
-            inline
-            Signal<>::Ptr
-            actionButtonPressed()
-            {
-                return _magnetPressed;
-            }
-
-            inline
-            Signal<>::Ptr
-            actionButtonReleased()
-            {
-                return _magnetReleased;
-            }
-
             inline static
             Ptr
             create(int viewportWidth, int viewportHeight, float zNear, float zFar)
@@ -122,21 +100,6 @@ namespace minko
 
         private:
             Cardboard(int viewportWidth, int viewportHeight, float zNear, float zFar);
-
-            void
-            evaluateMagnetModel();
-
-            std::vector<float>
-            computeMagnetOffsets(int start, std::vector<float>);
-
-            float
-            computeMean(std::vector<float> offsets);
-
-            float
-            computeMaximum(std::vector<float> offsets);
-
-            float
-            computeMinimum(std::vector<float> offsets);
         };
     }
 }

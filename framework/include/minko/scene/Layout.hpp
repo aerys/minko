@@ -34,7 +34,7 @@ namespace minko
             static const Layout STATIC;
             static const Layout IGNORE_RAYCASTING;
             static const Layout IGNORE_CULLING;
-            static const Layout _RESERVED_1;
+            static const Layout HIDDEN;
             static const Layout PICKING;
             static const Layout _RESERVED_3;
             static const Layout _RESERVED_4;

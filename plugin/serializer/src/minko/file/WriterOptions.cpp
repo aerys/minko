@@ -40,6 +40,9 @@ const unsigned int WriterOptions::EmbedMode::All        = Geometry | Material | 
 WriterOptions::WriterOptions() :
     _addBoundingBoxes(false),
     _embedMode(EmbedMode::All),
+    _geometryNameFunction([](const std::string& str) -> std::string { return str; }),
+    _materialNameFunction([](const std::string& str) -> std::string { return str; }),
+    _textureNameFunction([](const std::string& str) -> std::string { return str; }),
     _geometryUriFunction([](const std::string& str) -> std::string { return str; }),
     _materialUriFunction([](const std::string& str) -> std::string { return str; }),
     _textureUriFunction([](const std::string& str) -> std::string { return str; }),
@@ -48,14 +51,10 @@ WriterOptions::WriterOptions() :
     _textureFunction([](const std::string& filename, AbstractTexture::Ptr texture) -> AbstractTexture::Ptr { return texture; }),
     _imageFormat(ImageFormat::PNG),
     _textureFormats(),
-    _compressedTextureQualityFactor(1.f),
-    _compressTexture(true),
-    _generateMipmaps(true),
-    _useTextureSRGBSpace(true),
-    _upscaleTextureWhenProcessedForMipmapping(true),
-    _textureMaxResolution(math::ivec2(2048, 2048)),
-    _mipFilter(MipFilter::LINEAR),
-    _optimizeForNormalMapping(false),
+    _textureOptions{ 
+        { "",           { true, 1.f, true, true, true, math::vec2(1.f), math::ivec2(2048), MipFilter::LINEAR } },
+        { "lightMap",   { true, 1.f, true, true, true, math::vec2(1.f), math::ivec2(2048), MipFilter::LINEAR } }
+    },
     _writeAnimations(false),
     _nullAssetUuids()
 {

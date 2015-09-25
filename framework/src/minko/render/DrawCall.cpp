@@ -35,6 +35,7 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
+    _enabled(true),
     _pass(pass),
     _rootData(rootData),
     _rendererData(rendererData),
@@ -170,6 +171,11 @@ DrawCall::bindAttribute(ConstAttrInputRef                                       
 
             if (it == _program->setAttributeNames().end())
             {
+                LOG_ERROR(
+                    "Program \"" + _program->name() + "\": the attribute \"" + input.name
+                    + "\" is not bound, has not been set and no default value was provided."
+                    );
+
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the attribute \"" + input.name
                     + "\" is not bound, has not been set and no default value was provided."
@@ -198,6 +204,12 @@ DrawCall::bindAttribute(ConstAttrInputRef                                       
         {
             if (!defaultValues.hasProperty(input.name))
             {
+                LOG_ERROR(
+                    "Program \"" + _program->name() + "\": the attribute \""
+                    + input.name + "\" is bound to the \"" + binding->propertyName
+                    + "\" property but it's not defined and no default value was provided."
+                    );
+
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the attribute \""
                     + input.name + "\" is bound to the \"" + binding->propertyName
@@ -245,6 +257,11 @@ DrawCall::bindUniform(ConstUniformInputRef                                      
 
             if (it == _program->setUniformNames().end())
             {
+                LOG_ERROR(
+                    "Program \"" + _program->name() + "\": the uniform \"" + input.name
+                    + "\" is not bound, has not been set and no default value was provided."
+                    );
+
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the uniform \"" + input.name
                     + "\" is not bound, has not been set and no default value was provided."
@@ -260,6 +277,12 @@ DrawCall::bindUniform(ConstUniformInputRef                                      
         {
             if (!defaultValues.hasProperty(input.name))
             {
+                LOG_ERROR(
+                    "Program \"" + _program->name() + "\": the uniform \""
+                    + input.name + "\" is bound to the \"" + binding->propertyName
+                    + "\" property but it's not defined and no default value was provided."
+                    );
+
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the uniform \""
                     + input.name + "\" is bound to the \"" + binding->propertyName
@@ -402,6 +425,7 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
         break;
         case ProgramInputs::Type::float9:
         case ProgramInputs::Type::unknown:
+            LOG_ERROR("unsupported program input type: " + ProgramInputs::typeToString(input.type));
             throw std::runtime_error("unsupported program input type: " + ProgramInputs::typeToString(input.type));
         break;
     }
@@ -680,6 +704,9 @@ DrawCall::render(AbstractContext::Ptr   context,
                  const math::ivec4&     viewport,
                  uint                   clearColor) const
 {
+    if (!this->enabled())
+        return;
+
     context->setProgram(_program->id());
 
     auto hasOwnTarget = _target && _target->id;

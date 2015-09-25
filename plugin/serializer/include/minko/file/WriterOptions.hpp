@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Flyweight.hpp"
 #include "minko/SerializerCommon.hpp"
 #include "minko/Types.hpp"
 
@@ -43,6 +44,7 @@ namespace minko
             };
 
         private:
+            typedef std::function<const std::string(const std::string&)>        NameFunction;
             typedef std::function<const std::string(const std::string&)>        UriFunction;
 
             typedef std::function<
@@ -66,10 +68,26 @@ namespace minko
                 )
             > TextureFunction;
 
+            struct TextureOptions
+            {
+                bool                compressTexture;
+                float               compressedTextureQualityFactor;
+                bool                generateMipmaps;
+                bool                useTextureSRGBSpace;
+                bool                upscaleTextureWhenProcessedForMipmapping;
+                math::vec2          textureScale;
+                math::ivec2         textureMaxSize;
+                render::MipFilter   mipFilter;
+            };
+
         private:
             bool                                _addBoundingBoxes;
 
             unsigned int                        _embedMode;
+
+            NameFunction                        _geometryNameFunction;
+            NameFunction                        _materialNameFunction;
+            NameFunction                        _textureNameFunction;
 
             UriFunction                         _geometryUriFunction;
             UriFunction                         _materialUriFunction;
@@ -82,14 +100,10 @@ namespace minko
             serialize::ImageFormat              _imageFormat;
             std::list<render::TextureFormat>    _textureFormats;
 
-            bool                                _compressTexture;
-            float                               _compressedTextureQualityFactor;
-            bool                                _generateMipmaps;
-            bool                                _useTextureSRGBSpace;
-            bool                                _upscaleTextureWhenProcessedForMipmapping;
-            math::ivec2                         _textureMaxResolution;
-            render::MipFilter                   _mipFilter;
-            bool                                _optimizeForNormalMapping;
+            std::unordered_map<
+                Flyweight<std::string>,
+                TextureOptions
+            >                                   _textureOptions;
 
             bool                                _writeAnimations;
 
@@ -115,6 +129,9 @@ namespace minko
 
                 instance->_addBoundingBoxes = other->_addBoundingBoxes;
                 instance->_embedMode = other->_embedMode;
+                instance->_geometryNameFunction = other->_geometryNameFunction;
+                instance->_materialNameFunction = other->_materialNameFunction;
+                instance->_textureNameFunction = other->_textureNameFunction;
                 instance->_geometryUriFunction = other->_geometryUriFunction;
                 instance->_materialUriFunction = other->_materialUriFunction;
                 instance->_textureUriFunction = other->_textureUriFunction;
@@ -123,13 +140,7 @@ namespace minko
                 instance->_textureFunction = other->_textureFunction;
                 instance->_imageFormat = other->_imageFormat;
                 instance->_textureFormats = other->_textureFormats;
-                instance->_compressedTextureQualityFactor = other->_compressedTextureQualityFactor;
-                instance->_compressTexture = other->_compressTexture;
-                instance->_generateMipmaps = other->_generateMipmaps;
-                instance->_upscaleTextureWhenProcessedForMipmapping = other->_upscaleTextureWhenProcessedForMipmapping;
-                instance->_textureMaxResolution = other->_textureMaxResolution;
-                instance->_mipFilter = other->_mipFilter;
-                instance->_optimizeForNormalMapping = other->_optimizeForNormalMapping;
+                instance->_textureOptions = other->_textureOptions;
                 instance->_writeAnimations = other->_writeAnimations;
                 instance->_nullAssetUuids = other->_nullAssetUuids;
 
@@ -167,6 +178,54 @@ namespace minko
 
 				return shared_from_this();
 			}
+
+            inline
+            const NameFunction&
+            geometryNameFunction() const
+            {
+                return _geometryNameFunction;
+            }
+
+            inline
+            Ptr
+            geometryNameFunction(const NameFunction& func)
+            {
+                _geometryNameFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const NameFunction&
+            materialNameFunction() const
+            {
+                return _materialNameFunction;
+            }
+
+            inline
+            Ptr
+            materialNameFunction(const NameFunction& func)
+            {
+                _materialNameFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const NameFunction&
+            textureNameFunction() const
+            {
+                return _textureNameFunction;
+            }
+
+            inline
+            Ptr
+            textureNameFunction(const NameFunction& func)
+            {
+                _textureNameFunction = func;
+
+                return shared_from_this();
+            }
 
             inline
             const UriFunction&
@@ -298,128 +357,192 @@ namespace minko
 
             inline
             float
-            compressedTextureQualityFactor() const
+            compressedTextureQualityFactor(const std::string& textureType) const
             {
-                return _compressedTextureQualityFactor;
+                return textureOptions(textureType).compressedTextureQualityFactor;
             }
 
             inline
             Ptr
-            compressedTextureQualityFactor(float value)
+            compressedTextureQualityFactor(const std::string& textureType, float value)
             {
-                _compressedTextureQualityFactor = math::clamp(value, 0.f, 1.f);
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.compressedTextureQualityFactor = math::clamp(value, 0.f, 1.f);
+                }
+                else
+                {
+                    _textureOptions.at(textureType).compressedTextureQualityFactor = math::clamp(value, 0.f, 1.f);
+                }
 
                 return shared_from_this();
             }
 
             inline
             bool
-            compressTexture() const
+            compressTexture(const std::string& textureType) const
             {
-                return _compressTexture;
+                return textureOptions(textureType).compressTexture;
             }
 
             inline
             Ptr
-            compressTexture(bool value)
+            compressTexture(const std::string& textureType, bool value)
             {
-                _compressTexture = value;
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.compressTexture = value;
+                }
+                else
+                {
+                    _textureOptions.at(textureType).compressTexture = value;
+                }
 
                 return shared_from_this();
             }
 
             inline
             bool
-            generateMipmaps() const
+            generateMipmaps(const std::string& textureType) const
             {
-                return _generateMipmaps;
+                return textureOptions(textureType).generateMipmaps;
             }
 
             inline
             Ptr
-            generateMipmaps(bool value)
+            generateMipmaps(const std::string& textureType, bool value)
             {
-                _generateMipmaps = value;
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.generateMipmaps = value;
+                }
+                else
+                {
+                    _textureOptions.at(textureType).generateMipmaps = value;
+                }
 
                 return shared_from_this();
             }
 
             inline
             bool
-            useTextureSRGBSpace() const
+            useTextureSRGBSpace(const std::string& textureType) const
             {
-                return _useTextureSRGBSpace;
+                return textureOptions(textureType).useTextureSRGBSpace;
             }
 
             inline
             Ptr
-            useTextureSRGBSpace(bool value)
+            useTextureSRGBSpace(const std::string& textureType, bool value)
             {
-                _useTextureSRGBSpace = value;
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.useTextureSRGBSpace = value;
+                }
+                else
+                {
+                    _textureOptions.at(textureType).useTextureSRGBSpace = value;
+                }
 
                 return shared_from_this();
             }
 
             inline
             bool
-            upscaleTextureWhenProcessedForMipmapping() const
+            upscaleTextureWhenProcessedForMipmapping(const std::string& textureType) const
             {
-                return _upscaleTextureWhenProcessedForMipmapping;
+                return textureOptions(textureType).upscaleTextureWhenProcessedForMipmapping;
             }
 
             inline
             Ptr
-            upscaleTextureWhenProcessedForMipmapping(bool value)
+            upscaleTextureWhenProcessedForMipmapping(const std::string& textureType, bool value)
             {
-                _upscaleTextureWhenProcessedForMipmapping = value;
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.upscaleTextureWhenProcessedForMipmapping = value;
+                }
+                else
+                {
+                    _textureOptions.at(textureType).upscaleTextureWhenProcessedForMipmapping = value;
+                }
 
                 return shared_from_this();
             }
 
             inline
             const math::ivec2&
-            textureMaxResolution() const
+            textureMaxSize(const std::string& textureType) const
             {
-                return _textureMaxResolution;
+                return textureOptions(textureType).textureMaxSize;
             }
 
             inline
             Ptr
-            textureMaxResolution(const math::ivec2& value)
+            textureMaxSize(const std::string& textureType, const math::ivec2& value)
             {
-                _textureMaxResolution = value;
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.textureMaxSize = value;
+                }
+                else
+                {
+                    _textureOptions.at(textureType).textureMaxSize = value;
+                }
+
+                return shared_from_this();
+            }
+
+            inline
+            const math::vec2&
+            textureScale(const std::string& textureType) const
+            {
+                return textureOptions(textureType).textureScale;
+            }
+
+            inline
+            Ptr
+            textureScale(const std::string& textureType, const math::vec2& value)
+            {
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.textureScale = value;
+                }
+                else
+                {
+                    _textureOptions.at(textureType).textureScale = value;
+                }
 
                 return shared_from_this();
             }
 
             inline
             render::MipFilter
-            mipFilter() const
+            mipFilter(const std::string& textureType) const
             {
-                return _mipFilter;
+                return textureOptions(textureType).mipFilter;
             }
 
             inline
             Ptr
-            mipFilter(render::MipFilter value)
+            mipFilter(const std::string& textureType, render::MipFilter value)
             {
-                _mipFilter = value;
-
-                return shared_from_this();
-            }
-
-            inline
-            bool
-            optimizeForNormalMapping() const
-            {
-                return _optimizeForNormalMapping;
-            }
-
-            inline
-            Ptr
-            optimizeForNormalMapping(bool value)
-            {
-                _optimizeForNormalMapping = value;
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.mipFilter = value;
+                }
+                else
+                {
+                    _textureOptions.at(textureType).mipFilter = value;
+                }
 
                 return shared_from_this();
             }
@@ -456,6 +579,30 @@ namespace minko
 
         private:
             WriterOptions();
+
+            inline
+            TextureOptions&
+            textureOptions(const std::string& textureType)
+            {
+                auto textureOptionsIt = _textureOptions.find(textureType);
+
+                if (textureOptionsIt != _textureOptions.end())
+                    return textureOptionsIt->second;
+
+                return _textureOptions.at("");
+            }
+
+            inline
+            const TextureOptions&
+            textureOptions(const std::string& textureType) const
+            {
+                auto textureOptionsIt = _textureOptions.find(textureType);
+
+                if (textureOptionsIt != _textureOptions.end())
+                    return textureOptionsIt->second;
+
+                return _textureOptions.at("");
+            }
         };
     }
 }

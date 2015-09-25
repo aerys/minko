@@ -83,7 +83,7 @@ namespace minko
         virtual
         Signal<Ptr, uint, uint>::Ptr
         resized() = 0;
-        
+
         virtual
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
         joystickAdded() = 0;
@@ -132,6 +132,18 @@ namespace minko
 
             _workers[key] = std::bind(T::create, key);
         }
+
+        virtual
+        float
+        framerate() = 0;
+
+        virtual
+        float
+        desiredFramerate() = 0;
+
+        virtual
+        void
+        desiredFramerate(float desiredFramerate) = 0;
 
         static
         std::shared_ptr<AbstractCanvas>
