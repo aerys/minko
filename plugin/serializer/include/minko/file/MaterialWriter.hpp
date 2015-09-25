@@ -84,7 +84,7 @@ namespace minko
                             assets->getTextureByUuid(
                                 material->data()->get<render::TextureSampler>(propertyName).uuid,
                                 false
-                            )
+                            ), propertyName
                         )
                     ));
 					TupleIntString serializedMsgTexture(std::get<0>(serializedTexture), std::get<1>(serializedTexture));

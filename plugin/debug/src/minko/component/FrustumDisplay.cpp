@@ -118,7 +118,7 @@ FrustumDisplay::initializePlanes(const std::vector<math::vec3>& vertices)
 
     auto geom = initializeFrustumGeometry(vertices, assets->context());
 
-    _surface = Surface::create(geom, _material, effect, "basic-transparent-technique");
+    _surface = Surface::create(geom, _material, effect, "transparent");
     _surface->layoutMask(scene::BuiltinLayout::DEBUG_ONLY);
     target()->addComponent(_surface);
 }

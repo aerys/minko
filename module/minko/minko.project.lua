@@ -72,8 +72,7 @@ minko.project.application = function(name)
 	}
 
 	prelinkcommands {
-		minko.action.copy(minko.sdk.path("/framework/asset")),
-		minko.action.copy("asset")
+		minko.action.copy(minko.sdk.path("/framework/asset"))
 	}
 
 	configuration { "windows32" }
@@ -342,8 +341,7 @@ minko.project.application = function(name)
 		}
 
 		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy("asset")
+			minko.action.copy(minko.sdk.path("/framework/asset"))
 		}
 
 		postbuildcommands {

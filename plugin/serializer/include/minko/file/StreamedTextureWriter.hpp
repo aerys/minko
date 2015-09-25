@@ -34,12 +34,15 @@ namespace minko
             typedef std::shared_ptr<StreamedTextureWriter>                              Ptr;
 
             typedef std::function<bool(std::shared_ptr<render::AbstractTexture>,
+                                       const std::string&,
                                        std::shared_ptr<WriterOptions>,
                                        msgpack::sbuffer&,
                                        std::vector<msgpack::type::tuple<int, int>>&)>   FormatWriterFunction;
 
         private:
             static std::unordered_map<render::TextureFormat, FormatWriterFunction, Hash<render::TextureFormat>>  _formatWriterFunctions;
+
+            std::string                         _textureType;
 
             std::shared_ptr<LinkedAsset>        _linkedAsset;
             int                                 _linkedAssetId;
@@ -53,6 +56,13 @@ namespace minko
                 auto instance = Ptr(new StreamedTextureWriter());
 
                 return instance;
+            }
+
+            inline
+            void
+            textureType(const std::string& value)
+            {
+                _textureType = value;
             }
 
             inline
@@ -90,6 +100,7 @@ namespace minko
             static
             bool
             writeRGBATexture(std::shared_ptr<render::AbstractTexture>       texture,
+                             const std::string&                             textureType,
                              std::shared_ptr<WriterOptions>                 writerOptions,
                              msgpack::sbuffer&                              blob,
                              std::vector<msgpack::type::tuple<int, int>>&   mipLevels);
@@ -98,6 +109,7 @@ namespace minko
             bool
             writePvrCompressedTexture(render::TextureFormat                         textureFormat,
                                       std::shared_ptr<render::AbstractTexture>      texture,
+                                      const std::string&                            textureType,
                                       std::shared_ptr<WriterOptions>                writerOptions,
                                       msgpack::sbuffer&                             blob,
                                       std::vector<msgpack::type::tuple<int, int>>&  mipLevels);
@@ -106,6 +118,7 @@ namespace minko
             bool
             writeQCompressedTexture(render::TextureFormat                           textureFormat,
                                     std::shared_ptr<render::AbstractTexture>        texture,
+                                    const std::string&                              textureType,
                                     std::shared_ptr<WriterOptions>                  writerOptions,
                                     msgpack::sbuffer&                               blob,
                                     std::vector<msgpack::type::tuple<int, int>>&    mipLevels);
@@ -114,6 +127,7 @@ namespace minko
             bool
             writeCRNCompressedTexture(render::TextureFormat                         textureFormat,
                                       std::shared_ptr<render::AbstractTexture>      abstractTexture,
+                                      const std::string&                            textureType,
                                       std::shared_ptr<WriterOptions>                writerOptions,
                                       msgpack::sbuffer&                             blob,
                                       std::vector<msgpack::type::tuple<int, int>>&  mipLevels);

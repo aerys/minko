@@ -34,7 +34,7 @@ SDLBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
     SDL_GLContext glContext = SDL_GL_CreateContext(canvas->window());
 
-    // fisable vsync
+    // disable vsync
     SDL_GL_SetSwapInterval(0);
 
     if (!glContext)

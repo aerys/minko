@@ -14,7 +14,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include/android/**",
 		"include/apple/**",
 		"src/android/**",
-		"src/apple/**"		
+		"src/apple/**"
 	}
 
 	includedirs { "include" }
@@ -25,7 +25,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/android/**"
 		}
 
-	-- Mac plateforms
+	-- Mac platforms
 	configuration { "ios or osx64" }
 		buildoptions { "-x objective-c++" }
 

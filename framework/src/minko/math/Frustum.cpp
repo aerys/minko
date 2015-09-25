@@ -74,32 +74,31 @@ math::Frustum::testBoundingBox(math::Box::Ptr box)
 	float ztlb = ztrb;
 
 	// top left front
-	float xtlf = xtrb;
+	float xtlf = xtlb;
 	float ytlf = ytrb;
 	float ztlf = zblf;
 
 	// top right front
-	float xtrf = xblf;
+	float xtrf = xbrf;
 	float ytrf = ytrb;
 	float ztrf = zblf;
 
-	for (uint planeId = 0; planeId < _planes.size(); ++planeId)
+	for (auto planeId = 0u; planeId < _planes.size(); ++planeId)
 	{
 		float pa = _planes[planeId].x;
 		float pb = _planes[planeId].y;
 		float pc = _planes[planeId].z;
 		float pd = _planes[planeId].w;
 
+		_blfResult[planeId] = pa * xblf + pb * yblf + pc * zblf + pd < 0.f;
+		_brfResult[planeId] = pa * xbrf + pb * ybrf + pc * zbrf + pd < 0.f;
+		_blbResult[planeId] = pa * xblb + pb * yblb + pc * zblb + pd < 0.f;
+		_brbResult[planeId] = pa * xbrb + pb * ybrb + pc * zbrb + pd < 0.f;
 		
-		_blfResult[planeId] = pa * xblf + pb * yblf + pc * zblf + pd < 0.;
-		_brfResult[planeId] = pa * xbrf + pb * ybrf + pc * zbrf + pd < 0.;
-		_blbResult[planeId] = pa * xblb + pb * yblb + pc * zblb + pd < 0.;
-		_brbResult[planeId] = pa * xbrb + pb * ybrb + pc * zbrb + pd < 0.;
-		
-		_tlfResult[planeId] = pa * xtlf + pb * ytlf + pc * ztlf + pd < 0.;
-		_trfResult[planeId] = pa * xtrf + pb * ytrf + pc * ztrf + pd < 0.;
-		_tlbResult[planeId] = pa * xtlb + pb * ytlb + pc * ztlb + pd < 0.;
-		_trbResult[planeId] = pa * xtrb + pb * ytrb + pc * ztrb + pd < 0.;
+		_tlfResult[planeId] = pa * xtlf + pb * ytlf + pc * ztlf + pd < 0.f;
+		_trfResult[planeId] = pa * xtrf + pb * ytrf + pc * ztrf + pd < 0.f;
+		_tlbResult[planeId] = pa * xtlb + pb * ytlb + pc * ztlb + pd < 0.f;
+		_trbResult[planeId] = pa * xtrb + pb * ytrb + pc * ztrb + pd < 0.f;
 	}
 
 	if (((_blfResult[(int)PlanePosition::LEFT]	&& _trbResult[(int)PlanePosition::RIGHT]) ||

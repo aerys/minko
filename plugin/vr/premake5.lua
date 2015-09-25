@@ -59,7 +59,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/minko/oculus/WebVROculus.cpp",
 		}
 
-	configuration { "not android or ios" }
+	configuration { "not android", "not ios" }
 		excludes {
 			"include/minko/oculus/Cardboard.hpp",
 			"src/minko/oculus/Cardboard.cpp",

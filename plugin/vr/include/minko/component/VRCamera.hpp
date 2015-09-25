@@ -85,12 +85,6 @@ namespace minko
             bool
             detected();
 
-            Signal<>::Ptr
-            actionButtonPressed();
-
-             Signal<>::Ptr
-            actionButtonReleased();
-
         public:
             ~VRCamera();
 
@@ -117,4 +111,3 @@ namespace minko
         };
     }
 }
-

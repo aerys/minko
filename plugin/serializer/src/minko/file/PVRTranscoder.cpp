@@ -84,6 +84,7 @@ qualityFromQualityFactor(TextureFormat format, float qualityFactor)
 
 bool
 PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
+                         const std::string&                        textureType,
                          std::shared_ptr<WriterOptions>            writerOptions,
                          render::TextureFormat                     outFormat,
                          std::vector<unsigned char>&               out,
@@ -139,7 +140,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             }
         }
 
-        const auto generateMipmaps = writerOptions->generateMipmaps();
+        const auto generateMipmaps = writerOptions->generateMipmaps(textureType);
 
         if (generateMipmaps)
         {
@@ -152,15 +153,15 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
             if (!pvrtexture::GenerateMIPMaps(
                 *pvrTexture,
-                mipFilterToPvrMipFilter.at(writerOptions->mipFilter())))
+                mipFilterToPvrMipFilter.at(writerOptions->mipFilter(textureType))))
             {
                 return false;
             }
         }
 
-        const auto compressorQuality = qualityFromQualityFactor(outFormat, writerOptions->compressedTextureQualityFactor());
+        const auto compressorQuality = qualityFromQualityFactor(outFormat, writerOptions->compressedTextureQualityFactor(textureType));
 
-        const auto colourSpace = writerOptions->useTextureSRGBSpace()
+        const auto colourSpace = writerOptions->useTextureSRGBSpace(textureType)
             ? EPVRTColourSpace::ePVRTCSpacesRGB
             : EPVRTColourSpace::ePVRTCSpacelRGB;
 

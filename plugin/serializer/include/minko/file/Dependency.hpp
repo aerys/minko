@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Flyweight.hpp"
 #include "minko/SerializerCommon.hpp"
 #include "msgpack.hpp"
 
@@ -35,16 +36,24 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
 			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 
+            // FIXME: Provide AbstractDependency interface.
+            struct TextureDependency
+            {
+                uint                                        dependencyId;
+                std::shared_ptr<render::AbstractTexture>    texture;
+                Flyweight<std::string>                      textureType;
+            };
+
 		private:
 			typedef msgpack::type::tuple<unsigned int, short, std::string> SerializedAsset;
 
 			typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<geometry::Geometry>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>, std::vector<Dependency::SerializedAsset>&)>		GeometryWriterFunction;
-            typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<render::AbstractTexture>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>	TextureWriterFunction;
+            typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, const TextureDependency&, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>	TextureWriterFunction;
             typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<material::Material>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>			MaterialWriterFunction;
 			typedef std::function<bool(std::shared_ptr<geometry::Geometry>)>			GeometryTestFunc;
 
 		private:
-			std::unordered_map<AbsTexturePtr, uint>							_textureDependencies;
+			std::unordered_map<AbsTexturePtr, TextureDependency>			_textureDependencies;
 			std::unordered_map<std::shared_ptr<material::Material>, uint>	_materialDependencies;
 			std::unordered_map<std::shared_ptr<scene::Node>, uint>			_subSceneDependencies;
 			std::unordered_map<std::shared_ptr<geometry::Geometry>, uint>	_geometryDependencies;
@@ -120,7 +129,7 @@ namespace minko
 			hasDependency(AbsTexturePtr texture);
 
 			uint
-			registerDependency(AbsTexturePtr texture);
+			registerDependency(AbsTexturePtr texture, const std::string& textureType);
 
 			bool
 			hasDependency(std::shared_ptr<scene::Node> subScene);
@@ -212,8 +221,7 @@ namespace minko
 			SerializedAsset
 			serializeTexture(std::shared_ptr<file::Dependency>			dependecies,
 							 std::shared_ptr<file::AssetLibrary>		assetLibrary,
-							 std::shared_ptr<render::AbstractTexture>	texture,
-							 uint										resourceId,
+							 const TextureDependency&                   textureDependency,
 							 std::shared_ptr<file::Options>				options,
                              std::shared_ptr<file::WriterOptions>       writerOptions);
 

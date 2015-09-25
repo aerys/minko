@@ -62,8 +62,7 @@ Dependency::Dependency()
 			std::placeholders::_2,
 			std::placeholders::_3,
 			std::placeholders::_4,
-            std::placeholders::_5,
-            std::placeholders::_6);
+            std::placeholders::_5);
     }
 
     if (_materialWriteFunction == nullptr)
@@ -130,12 +129,24 @@ Dependency::hasDependency(AbsTexturePtr texture)
 }
 
 uint
-Dependency::registerDependency(AbsTexturePtr texture)
+Dependency::registerDependency(AbsTexturePtr texture, const std::string& textureType)
 {
-	if (!hasDependency(texture))
-		_textureDependencies[texture] = _currentId++;
+    auto dependencyIt = _textureDependencies.find(texture);
 
-	return _textureDependencies[texture];
+    if (dependencyIt == _textureDependencies.end())
+    {
+        const auto dependencyId = _currentId++;
+
+        const auto textureDependency = TextureDependency {
+            dependencyId,
+            texture,
+            textureType
+        };
+
+        return _textureDependencies.emplace(texture, textureDependency).first->second.dependencyId;
+    }
+    
+    return dependencyIt->second.dependencyId;
 }
 
 bool
@@ -320,12 +331,13 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
 Dependency::SerializedAsset
 Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 						     std::shared_ptr<file::AssetLibrary>		assetLibrary,
-							 std::shared_ptr<render::AbstractTexture>	texture,
-							 uint										resourceId,
+                             const TextureDependency&                   textureDependency,
 							 std::shared_ptr<file::Options>				options,
                              std::shared_ptr<file::WriterOptions>       writerOptions)
 {
 	auto writer = TextureWriter::create();
+    const auto dependencyId = textureDependency.dependencyId;
+    auto texture = textureDependency.texture;
     auto filename = assetLibrary->textureName(texture);
     auto assetType = serialize::AssetType();
     auto content = std::string();
@@ -339,6 +351,7 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
     auto hasHeaderSize = !assetIsNull;
 
     writer->data(writerOptions->textureFunction()(filename, targetTexture));
+    writer->textureType(*textureDependency.textureType);
 
     if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Texture)
     {
@@ -366,7 +379,7 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
                           static_cast<unsigned int>((headerSize & 0x0fff) << 16) +
                           static_cast<unsigned int>(assetType);
 
-    SerializedAsset res(metadata, resourceId, content);
+    SerializedAsset res(metadata, dependencyId, content);
 
 	return res;
 }
@@ -499,7 +512,6 @@ Dependency::serialize(const std::string&                        parentFilename,
 		auto res = _textureWriteFunction(
             shared_from_this(),
             assetLibrary,
-            itTexture.first,
             itTexture.second,
             options,
             writerOptions

@@ -18,6 +18,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Common.hpp"
+
+#ifdef MINKO_PLUGIN_HTTP_LOADER
+# include "minko/MinkoHTTP.hpp"
+#endif
+
 #include "minko/file/Options.hpp"
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -87,6 +92,10 @@ EmscriptenDOMEngine::loadScript(std::string filename)
     auto loader = file::Loader::create();
 
     options
+#ifdef MINKO_PLUGIN_HTTP_LOADER
+        ->registerProtocol<net::HTTPProtocol>("http")
+        ->registerProtocol<net::HTTPProtocol>("https")
+#endif //MINKO_PLUGIN_HTTP_LOADER
     	->loadAsynchronously(false)
     	->storeDataIfNotParsed(false);
 

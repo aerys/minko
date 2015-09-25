@@ -1,4 +1,5 @@
-#if defined(VERTEX_SHADER) && defined(SKINNING_NUM_BONES) && SKINNING_NUM_BONES != 0
+#if defined(VERTEX_SHADER) && defined(SKINNING_NUM_BONES)
+# if SKINNING_NUM_BONES != 0
 
 	uniform mat4 uBoneMatrices[SKINNING_NUM_BONES];
 	attribute vec4 aBoneIdsA;
@@ -20,4 +21,5 @@
 		) * inputVec;
 	}
 
-#endif // defined(VERTEX_SHADER) && defined(SKINNING_NUM_BONES)
+# endif
+#endif
