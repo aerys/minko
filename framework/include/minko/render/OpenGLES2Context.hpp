@@ -389,14 +389,6 @@ namespace minko
             setVertexAttributeArray(const uint vertexArray) override;
 
             void
-            setVertexBufferOnArray(const uint   vertexArray,
-                                   const uint	position,
-                                   const uint	vertexBuffer,
-                                   const uint	size,
-                                   const uint	stride,
-                                   const uint	offset) override;
-
-            void
             deleteVertexAttributeArray(const uint vertexArray);
 
 		protected:

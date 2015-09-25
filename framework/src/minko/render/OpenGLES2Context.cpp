@@ -507,9 +507,10 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 									const uint	stride,
 									const uint	offset)
 {
-	auto vertexAttributeEnabled = vertexBuffer > 0;
+	bool vertexAttributeEnabled = vertexBuffer > 0;
+	bool vertexBufferChanged = _currentVertexBuffer[position] != vertexBuffer;
 
-	if (_currentVertexBuffer[position] != vertexBuffer)
+	if (vertexBufferChanged)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 		checkForErrors();
@@ -517,7 +518,8 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 		_currentVertexBuffer[position] = vertexBuffer;
 	}
 
-	if (_currentVertexSize[position] != size
+	if (vertexBufferChanged
+		|| _currentVertexSize[position] != size
 		|| _currentVertexStride[position] != stride
 		|| _currentVertexOffset[position] != offset)
 	{
@@ -537,7 +539,7 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 		_currentVertexOffset[position] = offset;
 	}
 
-    if (_vertexAttributeEnabled[position] != vertexAttributeEnabled)
+    if (vertexBufferChanged || _vertexAttributeEnabled[position] != vertexAttributeEnabled)
     {
         if (vertexAttributeEnabled)
         {
@@ -563,7 +565,7 @@ int
 OpenGLES2Context::createVertexAttributeArray()
 {
 #ifdef GL_ES_VERSION_2_0
-    if (!supportsExtension("OES_vertex_array_object"))
+    if (!supportsExtension("vertex_array_object"))
         return -1;
 #endif
 
@@ -579,28 +581,6 @@ void
 OpenGLES2Context::setVertexAttributeArray(const uint vertexArray)
 {
     glBindVertexArray(vertexArray);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setVertexBufferOnArray(const uint vertexArray,
-                                         const uint	position,
-                                         const uint	vertexBuffer,
-                                         const uint	size,
-                                         const uint	stride,
-                                         const uint	offset)
-{
-    glBindVertexArray(vertexArray);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glVertexAttribPointer(
-        position,
-        size,
-        GL_FLOAT,
-        GL_FALSE,
-        sizeof(GLfloat) * stride,
-        (void*)(sizeof(GLfloat) * offset)
-    );
-    glEnableVertexAttribArray(position);
     checkForErrors();
 }
 

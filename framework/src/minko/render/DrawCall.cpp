@@ -100,6 +100,7 @@ DrawCall::reset()
     _uniformBool.clear();
     _samplers.clear();
     _attributes.clear();
+    _vertexAttribArray = 0;
 }
 
 void
@@ -786,6 +787,7 @@ DrawCall::render(AbstractContext::Ptr   context,
     if (_vertexAttribArray == 0)
     {
         _vertexAttribArray = context->createVertexAttributeArray();
+
         if (_vertexAttribArray != -1)
         {
             context->setVertexAttributeArray(_vertexAttribArray);

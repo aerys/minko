@@ -358,15 +358,6 @@ namespace minko
             virtual
             void
             setVertexAttributeArray(const uint vertexArray) = 0;
-
-            virtual
-            void
-            setVertexBufferOnArray(const uint   vertexArray,
-                                   const uint	position,
-                                   const uint	vertexBuffer,
-                                   const uint	size,
-                                   const uint	stride,
-                                   const uint	offset) = 0;
         };
     }
 }
