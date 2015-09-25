@@ -101,6 +101,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 # undef glGenerateMipmap
 # define glGenerateMipmap glGenerateMipmapEXT
+
+#else
+
+# undef glGenVertexArrays
+# define glGenVertexArrays glGenVertexArraysOES
+
+# undef glBindVertexArray
+# define glBindVertexArray glBindVertexArrayOES
+
+# undef glDeleteVertexArrays
+# define glDeleteVertexArrays glDeleteVertexArraysOES
+
 #endif
 
 using namespace minko;
@@ -347,12 +359,12 @@ OpenGLES2Context::present()
 void
 OpenGLES2Context::drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles)
 {
-	if (_currentIndexBuffer != indexBuffer)
+	/*if (_currentIndexBuffer != indexBuffer)
 	{
-		_currentIndexBuffer = indexBuffer;
+		_currentIndexBuffer = indexBuffer;*/
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	}
+	//}
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glDrawElements.xml
 	//
@@ -476,26 +488,6 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 {
 	auto vertexAttributeEnabled = vertexBuffer > 0;
 
-	if (_vertexAttributeEnabled[position] != vertexAttributeEnabled)
-	{
-		if (vertexAttributeEnabled)
-		{
-			glEnableVertexAttribArray(position);
-			checkForErrors();
-
-			_vertexAttributeEnabled[position] = true;
-		}
-		else
-		{
-			glDisableVertexAttribArray(position);
-			checkForErrors();
-
-			_vertexAttributeEnabled[position] = false;
-
-			return;
-		}
-	}
-
 	if (_currentVertexBuffer[position] != vertexBuffer)
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
@@ -523,6 +515,79 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 		_currentVertexStride[position] = stride;
 		_currentVertexOffset[position] = offset;
 	}
+
+    if (_vertexAttributeEnabled[position] != vertexAttributeEnabled)
+    {
+        if (vertexAttributeEnabled)
+        {
+            glEnableVertexAttribArray(position);
+            checkForErrors();
+
+            _vertexAttributeEnabled[position] = true;
+        }
+        else
+        {
+            glDisableVertexAttribArray(position);
+            checkForErrors();
+
+            _vertexAttributeEnabled[position] = false;
+
+            return;
+        }
+    }
+}
+
+
+int
+OpenGLES2Context::createVertexAttributeArray()
+{
+#ifdef GL_ES_VERSION_2_0
+    if (!supportsExtension("OES_vertex_array_object"))
+        return -1;
+#endif
+
+    uint vao;
+
+    glGenVertexArrays(1, &vao);
+    checkForErrors();
+
+    return vao;
+}
+
+void
+OpenGLES2Context::setVertexAttributeArray(const uint vertexArray)
+{
+    glBindVertexArray(vertexArray);
+    checkForErrors();
+}
+
+void
+OpenGLES2Context::setVertexBufferOnArray(const uint vertexArray,
+                                         const uint	position,
+                                         const uint	vertexBuffer,
+                                         const uint	size,
+                                         const uint	stride,
+                                         const uint	offset)
+{
+    glBindVertexArray(vertexArray);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glVertexAttribPointer(
+        position,
+        size,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(GLfloat) * stride,
+        (void*)(sizeof(GLfloat) * offset)
+    );
+    glEnableVertexAttribArray(position);
+    checkForErrors();
+}
+
+void
+OpenGLES2Context::deleteVertexAttributeArray(const uint vertexArray)
+{
+    glDeleteVertexArrays(1, &vertexArray);
+    checkForErrors();
 }
 
 const uint
@@ -1597,8 +1662,8 @@ OpenGLES2Context::setScissorTest(bool scissorTest, const math::ivec4& scissorBox
 	else
 		glDisable(GL_SCISSOR_TEST);
 
-	_scissorTest == scissorTest;
-	_scissorBox == scissorBox;
+	_scissorTest = scissorTest;
+	_scissorBox = scissorBox;
 
 	checkForErrors();
 }

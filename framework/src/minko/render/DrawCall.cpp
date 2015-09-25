@@ -65,7 +65,8 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
     _modelToWorldMatrix(nullptr),
     _worldToScreenMatrix(nullptr),
     _modelToWorldMatrixPropertyRemovedSlot(nullptr),
-    _worldToScreenMatrixPropertyRemovedSlot(nullptr)
+    _worldToScreenMatrixPropertyRemovedSlot(nullptr),
+    _vertexAttribArray(0)
 {
     // For Z-sorting
     bindPositionalMembers();
@@ -208,7 +209,7 @@ DrawCall::bindAttribute(ConstAttrInputRef                                       
                     "Program \"" + _program->name() + "\": the attribute \""
                     + input.name + "\" is bound to the \"" + binding->propertyName
                     + "\" property but it's not defined and no default value was provided."
-                    );
+                );
 
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the attribute \""
@@ -702,7 +703,7 @@ void
 DrawCall::render(AbstractContext::Ptr   context,
                  AbstractTexture::Ptr   renderTarget,
                  const math::ivec4&     viewport,
-                 uint                   clearColor) const
+                 uint                   clearColor)
 {
     if (!this->enabled())
         return;
@@ -782,16 +783,22 @@ DrawCall::render(AbstractContext::Ptr   context,
         context->setSamplerStateAt(s.position, *s.wrapMode, *s.textureFilter, *s.mipFilter);
     }
 
-    // for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
-    //     context->setTextureAt(numSamplers, -1, -1);
-
-    for (const auto& a : _attributes)
-        context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
-    /*
-    for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
-        context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
-    */
-
+    if (_vertexAttribArray == 0)
+    {
+        _vertexAttribArray = context->createVertexAttributeArray();
+        if (_vertexAttribArray != -1)
+        {
+            context->setVertexAttributeArray(_vertexAttribArray);
+            for (const auto& a : _attributes)
+                context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
+        }
+    }
+    if (_vertexAttribArray != -1)
+        context->setVertexAttributeArray(_vertexAttribArray);
+    else
+        for (const auto& a : _attributes)
+            context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
+    
     context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);
     context->setDepthTest(*_depthMask, *_depthFunc);

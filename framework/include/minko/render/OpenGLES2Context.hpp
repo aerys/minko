@@ -382,6 +382,23 @@ namespace minko
             bool
             supportsExtension(const std::string& extensionNameString);
 
+            int
+            createVertexAttributeArray() override;
+
+            void
+            setVertexAttributeArray(const uint vertexArray) override;
+
+            void
+            setVertexBufferOnArray(const uint   vertexArray,
+                                   const uint	position,
+                                   const uint	vertexBuffer,
+                                   const uint	size,
+                                   const uint	stride,
+                                   const uint	offset) override;
+
+            void
+            deleteVertexAttributeArray(const uint vertexArray);
+
 		protected:
 			OpenGLES2Context();
 
@@ -420,11 +437,11 @@ namespace minko
             void
             createRTTBuffers(TextureType	type,
 							 uint			texture,
-							 uint	width,
-							 uint   height);
+							 uint	        width,
+							 uint           height);
 
 			void
-            getShaderSource(uint    shader,
+            getShaderSource(uint            shader,
                             std::string&    output);
 
             inline
