@@ -70,17 +70,19 @@ namespace minko
 
             TextureToBufferMap                      _frameBuffers;
             TextureToBufferMap                      _renderBuffers;
+			bool									_scissorTest;
+			math::ivec4								_scissorBox;
 
-			uint			                _viewportX;
-			uint			                _viewportY;
-			uint			                _viewportWidth;
-			uint			                _viewportHeight;
-            uint                              _oldViewportX;
-            uint                              _oldViewportY;
-            uint                              _oldViewportWidth;
-            uint                              _oldViewportHeight;
+			uint			                		_viewportX;
+			uint			                		_viewportY;
+			uint			                		_viewportWidth;
+			uint			                		_viewportHeight;
+            uint                              		_oldViewportX;
+            uint                              		_oldViewportY;
+            uint                              		_oldViewportWidth;
+            uint                              		_oldViewportHeight;
 
-            uint                            _currentTarget;
+            uint                            		_currentTarget;
 			int						                _currentIndexBuffer;
 			std::vector<int>		                _currentVertexBuffer;
 			std::vector<int>		                _currentVertexSize;

@@ -493,7 +493,7 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 			_vertexAttributeEnabled[position] = false;
 
 			return;
-		}		
+		}
 	}
 
 	if (_currentVertexBuffer[position] != vertexBuffer)
@@ -501,7 +501,7 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
 		checkForErrors();
 
-		_currentVertexBuffer[position] = vertexBuffer;		
+		_currentVertexBuffer[position] = vertexBuffer;
 	}
 
 	if (_currentVertexSize[position] != size
@@ -1465,9 +1465,9 @@ OpenGLES2Context::setBlendingMode(Blending::Source source, Blending::Destination
 			_blendingFactors[static_cast<uint>(source) & 0x00ff],
 			_blendingFactors[static_cast<uint>(destination) & 0xff00]
 		);
-	}
 
-	checkForErrors();
+		checkForErrors();
+	}
 }
 
 void
@@ -1481,9 +1481,9 @@ OpenGLES2Context::setBlendingMode(Blending::Mode blendingMode)
             _blendingFactors[static_cast<uint>(blendingMode) & 0x00ff],
             _blendingFactors[static_cast<uint>(blendingMode) & 0xff00]
 		);
-	}
 
-	checkForErrors();
+		checkForErrors();
+	}
 }
 
 void
@@ -1496,9 +1496,9 @@ OpenGLES2Context::setDepthTest(bool depthMask, CompareMode depthFunc)
 
 		glDepthMask(depthMask);
 		glDepthFunc(_compareFuncs[depthFunc]);
-	}
 
-	checkForErrors();
+		checkForErrors();
+	}
 }
 
 void
@@ -1509,9 +1509,10 @@ OpenGLES2Context::setColorMask(bool colorMask)
 		_currentColorMask = colorMask;
 
 		glColorMask(colorMask, colorMask, colorMask, colorMask);
+
+		checkForErrors();
 	}
 
-	checkForErrors();
 }
 
 void
@@ -1532,9 +1533,10 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 		_currentStencilMask	= stencilMask;
 
 		glStencilFunc(_compareFuncs[stencilFunc], stencilRef, stencilMask);
+
+		checkForErrors();
 	}
 
-	checkForErrors();
 
 	if (stencilFailOp != _currentStencilFailOp
 		|| stencilZFailOp != _currentStencilZFailOp
@@ -1545,9 +1547,9 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 		_currentStencilZPassOp	= stencilZPassOp;
 
 		glStencilOp(_stencilOps[stencilFailOp], _stencilOps[stencilZFailOp], _stencilOps[stencilZPassOp]);
-	}
 
-	checkForErrors();
+		checkForErrors();
+	}
 #endif
 }
 
@@ -1563,6 +1565,9 @@ OpenGLES2Context::readPixels(unsigned int x, unsigned int y, unsigned int width,
 void
 OpenGLES2Context::setScissorTest(bool scissorTest, const math::ivec4& scissorBox)
 {
+	if (scissorTest == _scissorTest && scissorBox == _scissorBox)
+		return;
+
 	if (scissorTest)
 	{
 		glEnable(GL_SCISSOR_TEST);
@@ -1591,6 +1596,9 @@ OpenGLES2Context::setScissorTest(bool scissorTest, const math::ivec4& scissorBox
 	}
 	else
 		glDisable(GL_SCISSOR_TEST);
+
+	_scissorTest == scissorTest;
+	_scissorBox == scissorBox;
 
 	checkForErrors();
 }
