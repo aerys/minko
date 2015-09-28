@@ -468,6 +468,7 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
     {
         auto textureHeaderLoader = Loader::create();
         auto textureHeaderOptions = textureOptions->clone()
+            ->parserFunction([](const std::string& extension) -> AbstractParser::Ptr { return nullptr; })
             ->loadAsynchronously(false)
             ->seekingOffset(0)
             ->seekedLength(assetHeaderSize)

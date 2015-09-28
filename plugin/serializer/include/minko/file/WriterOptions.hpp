@@ -44,6 +44,7 @@ namespace minko
             };
 
         private:
+            typedef std::function<const std::string(const std::string&)>        NameFunction;
             typedef std::function<const std::string(const std::string&)>        UriFunction;
 
             typedef std::function<
@@ -83,6 +84,10 @@ namespace minko
             bool                                _addBoundingBoxes;
 
             unsigned int                        _embedMode;
+
+            NameFunction                        _geometryNameFunction;
+            NameFunction                        _materialNameFunction;
+            NameFunction                        _textureNameFunction;
 
             UriFunction                         _geometryUriFunction;
             UriFunction                         _materialUriFunction;
@@ -124,6 +129,9 @@ namespace minko
 
                 instance->_addBoundingBoxes = other->_addBoundingBoxes;
                 instance->_embedMode = other->_embedMode;
+                instance->_geometryNameFunction = other->_geometryNameFunction;
+                instance->_materialNameFunction = other->_materialNameFunction;
+                instance->_textureNameFunction = other->_textureNameFunction;
                 instance->_geometryUriFunction = other->_geometryUriFunction;
                 instance->_materialUriFunction = other->_materialUriFunction;
                 instance->_textureUriFunction = other->_textureUriFunction;
@@ -170,6 +178,54 @@ namespace minko
 
 				return shared_from_this();
 			}
+
+            inline
+            const NameFunction&
+            geometryNameFunction() const
+            {
+                return _geometryNameFunction;
+            }
+
+            inline
+            Ptr
+            geometryNameFunction(const NameFunction& func)
+            {
+                _geometryNameFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const NameFunction&
+            materialNameFunction() const
+            {
+                return _materialNameFunction;
+            }
+
+            inline
+            Ptr
+            materialNameFunction(const NameFunction& func)
+            {
+                _materialNameFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const NameFunction&
+            textureNameFunction() const
+            {
+                return _textureNameFunction;
+            }
+
+            inline
+            Ptr
+            textureNameFunction(const NameFunction& func)
+            {
+                _textureNameFunction = func;
+
+                return shared_from_this();
+            }
 
             inline
             const UriFunction&

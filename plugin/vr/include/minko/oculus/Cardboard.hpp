@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "VRImpl.hpp"
 #include "minko/Signal.hpp"
 
-#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 #include "minko/sensors/Attitude.hpp"
 #endif
 
@@ -40,7 +40,7 @@ namespace minko
             std::shared_ptr<render::Texture>                    _renderTarget;
             std::array<std::pair<math::vec2, math::vec2>, 2>    _uvScaleOffset;
 
-#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
             std::shared_ptr<sensors::Attitude>                  _attitude;
 #endif
 
