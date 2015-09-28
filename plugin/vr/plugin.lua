@@ -45,7 +45,7 @@ function minko.plugin.vr:enable()
 		minko.action.copy(minko.plugin.path("vr") .. "/asset"),
 	}
 
-	configuration { "android or ios" }
+	configuration { "android or ios or html5" }
 		minko.plugin.enable { "sensors" }
 
 	configuration { "windows32 or windows64" }
