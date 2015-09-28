@@ -19,6 +19,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	includedirs { "include" }
 
+	configuration { "html5" }
+		files {
+			"include/emscripten/**",
+			"src/emscripten/**"
+		}
+
 	configuration { "android" }
 		files {
 			"include/android/**",
