@@ -18,7 +18,7 @@
         "uModelToWorldMatrix"   : "modelToWorldMatrix",
         "uWorldToViewMatrix"    : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
         "uPickingProjection"    : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
-        "boneMatrices"          : "geometry[${geometryUuid}].boneMatrices",
+        "uboneMatrices[0]"      : "geometry[${geometryUuid}].boneMatrices",
         "numBones"              : "geometry[${geometryUuid}].numBones",
         "uPopLod"               : "surface[${surfaceUuid}].popLod",
         "uPopBlendingLod"       : "surface[${surfaceUuid}].popBlendingLod",

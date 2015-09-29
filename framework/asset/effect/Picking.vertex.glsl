@@ -14,11 +14,8 @@
 attribute vec3 aPosition;
 
 #ifdef SKINNING_NUM_BONES
-attribute vec4 aBoneIdsA;
-attribute vec4 aBoneIdsB;
 attribute vec4 aBoneWeightsA;
 attribute vec4 aBoneWeightsB;
-uniform mat4 uBoneMatrices[SKINNING_NUM_BONES];
 #endif
 
 attribute float aPopProtected;
@@ -38,12 +35,8 @@ void main(void)
 	#if defined(HAS_POSITION)
 		vec4 pos = vec4(aPosition, 1.0);
 
-		#ifdef NUM_BONES
-			pos = skinning_moveVertex(pos);
-		#endif // NUM_BONES
-
 		#ifdef SKINNING_NUM_BONES
-			pos = skinning_moveVertex(pos, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
+		pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);
 		#endif
 
 		#ifdef POP_LOD_ENABLED
