@@ -123,6 +123,17 @@ PFNGLISVERTEXARRAYOESPROC glIsVertexArray;
 # define glDeleteVertexArrays glDeleteVertexArraysOES
 #endif
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_OSX
+# undef glGenVertexArrays
+# define glGenVertexArrays glGenVertexArraysAPPLE
+
+# undef glBindVertexArray
+# define glBindVertexArray glBindVertexArrayAPPLE
+
+# undef glDeleteVertexArrays
+# define glDeleteVertexArrays glDeleteVertexArraysAPPLE
+#endif
+
 using namespace minko;
 using namespace minko::render;
 
