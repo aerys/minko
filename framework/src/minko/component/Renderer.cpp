@@ -45,6 +45,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 				   EffectPtr								effect,
 				   const std::string&						effectTechnique,
 				   float									priority) :
+    AbstractComponent(scene::BuiltinLayout::DEFAULT),
     _backgroundColor(0),
     _viewportBox(0, 0, -1, -1),
 	_scissorBox(0, 0, -1, -1),
@@ -644,20 +645,29 @@ Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
 void
 Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
 {
+    // FIXME
+    // Use a _toEnable std::unordered_map<Surface::Ptr, bool>
+    // to enable or disable a surface once in a frame and perform it after
+    // _toCollect is processed.
+
 	if (checkSurfaceLayout(surface))
 	{
-        if ((surface->target()->layout() & scene::BuiltinLayout::HIDDEN) != 0)
-            enableDrawCalls(surface, false);
-        else
-            enableDrawCalls(surface, true);
+        enableDrawCalls(surface, true);
 
 		if (_surfaceToDrawCallIterator.count(surface) == 0)
             _toCollect.insert(surface);
 	}
 	else
 	{
-		if (_surfaceToDrawCallIterator.count(surface) != 0)
-			removeSurface(surface);
+        if ((surface->target()->layout() & scene::BuiltinLayout::HIDDEN) != 0)
+        {
+            enableDrawCalls(surface, false);
+        }
+        else
+        {
+		    if (_surfaceToDrawCallIterator.count(surface) != 0)
+	            removeSurface(surface);
+        }
 	}
 }
 

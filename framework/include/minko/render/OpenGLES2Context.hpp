@@ -70,17 +70,19 @@ namespace minko
 
             TextureToBufferMap                      _frameBuffers;
             TextureToBufferMap                      _renderBuffers;
+			bool									_scissorTest;
+			math::ivec4								_scissorBox;
 
-			uint			                _viewportX;
-			uint			                _viewportY;
-			uint			                _viewportWidth;
-			uint			                _viewportHeight;
-            uint                              _oldViewportX;
-            uint                              _oldViewportY;
-            uint                              _oldViewportWidth;
-            uint                              _oldViewportHeight;
+			uint			                		_viewportX;
+			uint			                		_viewportY;
+			uint			                		_viewportWidth;
+			uint			                		_viewportHeight;
+            uint                              		_oldViewportX;
+            uint                              		_oldViewportY;
+            uint                              		_oldViewportWidth;
+            uint                              		_oldViewportHeight;
 
-            uint                            _currentTarget;
+            uint                            		_currentTarget;
 			int						                _currentIndexBuffer;
 			std::vector<int>		                _currentVertexBuffer;
 			std::vector<int>		                _currentVertexSize;
@@ -103,6 +105,8 @@ namespace minko
 			StencilOperation						_currentStencilFailOp;
 			StencilOperation						_currentStencilZFailOp;
 			StencilOperation						_currentStencilZPassOp;
+
+            std::vector<bool>                       _vertexAttributeEnabled;
 
 		public:
 			~OpenGLES2Context();
@@ -378,8 +382,20 @@ namespace minko
             bool
             supportsExtension(const std::string& extensionNameString);
 
+            int
+            createVertexAttributeArray() override;
+
+            void
+            setVertexAttributeArray(const uint vertexArray) override;
+
+            void
+            deleteVertexAttributeArray(const uint vertexArray);
+
 		protected:
 			OpenGLES2Context();
+
+            void
+            initializeExtFunctions();
 
 			virtual
 			std::vector<ProgramInputs::UniformInput>
@@ -416,11 +432,11 @@ namespace minko
             void
             createRTTBuffers(TextureType	type,
 							 uint			texture,
-							 uint	width,
-							 uint   height);
+							 uint	        width,
+							 uint           height);
 
 			void
-            getShaderSource(uint    shader,
+            getShaderSource(uint            shader,
                             std::string&    output);
 
             inline

@@ -165,7 +165,7 @@ namespace minko
         height();
 
         float
-        aspectRatio()
+        aspectRatio() override
         {
             return float(width()) / float(height());
         }

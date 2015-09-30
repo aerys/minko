@@ -40,7 +40,7 @@ JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAt
 {
     jfloat* rotationMatrixFloat = env->GetFloatArrayElements(rotationMatrix, 0);
     jfloat* quaternionFloat = env->GetFloatArrayElements(quaternion, 0);
-    
+
     // Set the quaternion
     AndroidAttitude::quaternionValue = math::quat();
     AndroidAttitude::quaternionValue.x = quaternionFloat[0];
@@ -49,18 +49,21 @@ JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAt
     AndroidAttitude::quaternionValue.w = quaternionFloat[3];
 
     // Set the rotation matrix
-    AndroidAttitude::rotationMatrixMutex.lock();
-    auto c = 0;
+    // AndroidAttitude::rotationMatrixMutex.lock();
 
-    for (auto i = 0; i < 4; i++)
-    {
-        for (auto j = 0; j < 4; j++)
-        {
-            AndroidAttitude::rotationMatrixValue[i][j] = rotationMatrixFloat[c];
-            c++;
-        }
-    }
-    AndroidAttitude::rotationMatrixMutex.unlock();
+    AndroidAttitude::rotationMatrixValue = math::make_mat4(rotationMatrixFloat);
+
+    // auto c = 0;
+    //
+    // for (auto i = 0; i < 4; i++)
+    // {
+    //     for (auto j = 0; j < 4; j++)
+    //     {
+    //         AndroidAttitude::rotationMatrixValue[i][j] = rotationMatrixFloat[c];
+    //         c++;
+    //     }
+    // }
+    // AndroidAttitude::rotationMatrixMutex.unlock();
 
     env->ReleaseFloatArrayElements(rotationMatrix, rotationMatrixFloat, 0);
     env->ReleaseFloatArrayElements(quaternion, quaternionFloat, 0);
@@ -75,7 +78,7 @@ AndroidAttitude::AndroidAttitude()
 {
     // JNI
 
-    // Retrieve the JNI environment from SDL 
+    // Retrieve the JNI environment from SDL
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
     // Retrieve the Java instance of the SDLActivity
     jobject sdlActivity = (jobject)SDL_AndroidGetActivity();
@@ -89,7 +92,7 @@ AndroidAttitude::AndroidAttitude()
     // Instanciate an AndroidAttitude java object
     _attitude = env->NewGlobalRef(env->NewObject(androidAttitudeClass, androidAttitudeCtor, sdlActivity));
 
-    // Get JNI methods 
+    // Get JNI methods
     _startTrackingMethod = env->GetMethodID(androidAttitudeClass, "startTracking", "()V");
     _stopTrackingMethod = env->GetMethodID(androidAttitudeClass, "stopTracking", "()V");
     _isSupportedMethod = env->GetMethodID(androidAttitudeClass, "isSupported", "()Z");
@@ -99,7 +102,7 @@ void AndroidAttitude::initialize()
 {
     // The inertial reference frame has z up and x forward, while the world has z out and x right
     _worldToInertialReferenceFrame = getRotateEulerMatrix(-90.f, 0.f, 0.f);
-    
+
     // This assumes the device is landscape with the home button on the right
     _deviceToDisplay = getRotateEulerMatrix(0.f, 0.f, 0.f);
 
@@ -112,7 +115,7 @@ AndroidAttitude::startTracking()
 {
     LOG_INFO("Start tracking");
 
-    // Retrieve the JNI environment from SDL 
+    // Retrieve the JNI environment from SDL
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
     env->CallVoidMethod(_attitude, _startTrackingMethod);
@@ -123,7 +126,7 @@ AndroidAttitude::stopTracking()
 {
     LOG_INFO("Stop tracking");
 
-    // Retrieve the JNI environment from SDL 
+    // Retrieve the JNI environment from SDL
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
     env->CallVoidMethod(_attitude, _stopTrackingMethod);
@@ -132,7 +135,12 @@ AndroidAttitude::stopTracking()
 math::mat4
 AndroidAttitude::rotationMatrix()
 {
+    AndroidAttitude::rotationMatrixMutex.lock();
+
     auto worldToDevice = rotationMatrixValue * _worldToInertialReferenceFrame;
+
+    AndroidAttitude::rotationMatrixMutex.unlock();
+
     auto worldRotationMatrix = _deviceToDisplay * worldToDevice;
 
     return worldRotationMatrix;
@@ -150,7 +158,7 @@ AndroidAttitude::getRotateEulerMatrix(float x, float y, float z)
     x *= (float)(M_PI / 180.0f);
     y *= (float)(M_PI / 180.0f);
     z *= (float)(M_PI / 180.0f);
-    
+
     float cx = (float) cos(x);
     float sx = (float) sin(x);
     float cy = (float) cos(y);
@@ -159,9 +167,9 @@ AndroidAttitude::getRotateEulerMatrix(float x, float y, float z)
     float sz = (float) sin(z);
     float cxsy = cx * sy;
     float sxsy = sx * sy;
-    
+
     math::mat4 matrix;
-    
+
     matrix[0][0] = cy * cz;
     matrix[0][1] = -cy * sz;
     matrix[0][2] = sy;
@@ -178,14 +186,14 @@ AndroidAttitude::getRotateEulerMatrix(float x, float y, float z)
     matrix[3][1] = 0.0f;
     matrix[3][2] = 0.0f;
     matrix[3][3] = 1.0f;
-    
+
     return matrix;
 }
 
 bool
 AndroidAttitude::isSupported()
 {
-    // Retrieve the JNI environment from SDL 
+    // Retrieve the JNI environment from SDL
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
     auto isSupported = (bool)env->CallBooleanMethod(_attitude, _isSupportedMethod);

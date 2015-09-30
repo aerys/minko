@@ -66,12 +66,12 @@ Culling::targetAdded(NodePtr target)
 			std::placeholders::_3
 		));
 
-	_viewMatrixChangedSlot = target->data().propertyChanged(_bindProperty).connect(std::bind(
-		&Culling::worldToScreenChangedHandler,
-		std::static_pointer_cast<Culling>(shared_from_this()),
-		std::placeholders::_1,
-        std::placeholders::_3
-	));
+	_viewMatrixChangedSlot = target->data().propertyChanged(_bindProperty).connect(
+        [this](data::Store& d, data::Provider::Ptr p, const String& n)
+        {
+            _updateNextFrame = true;
+        }
+    );
 }
 
 void
@@ -79,12 +79,15 @@ Culling::targetRemoved(NodePtr target)
 {
 	_addedSlot			= nullptr;
 	_layoutChangedSlot	= nullptr;
+    _renderingBeginSlot = nullptr;
 }
 
 void
 Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	if (target->root()->hasComponent<SceneManager>())
+    auto sceneManager = target->root()->component<SceneManager>();
+
+	if (sceneManager)
 	{
 		_addedToSceneSlot = nullptr;
 
@@ -102,6 +105,31 @@ Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancesto
 			std::placeholders::_2,
 			std::placeholders::_3
 		), -1.f);
+
+        _renderingBeginSlot = sceneManager->renderingBegin()->connect(
+            [this](SceneManager::Ptr sm, uint fid, render::AbstractTexture::Ptr	rt)
+            {
+                if (_updateNextFrame)
+                {
+                    _frustum->updateFromMatrix(this->target()->data().get<math::mat4>(_bindProperty));
+
+                	_octTree->testFrustum(
+                		_frustum,
+                        [&](NodePtr node)
+                        {
+	                        node->layout(node->layout() | scene::BuiltinLayout::DEFAULT & ~scene::BuiltinLayout::HIDDEN);
+                        },
+                        [&](NodePtr node)
+                        {
+	                        node->layout(node->layout() & ~scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::HIDDEN);
+                        }
+                	);
+
+                    _updateNextFrame = false;
+                }
+            },
+            -1.f
+        );
 
 		addedHandler(target->root(), target->root(), target->root());
 	}
@@ -133,22 +161,4 @@ Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 	else
 		_octTree->remove(target);
 */
-}
-
-void
-Culling::worldToScreenChangedHandler(data::Store& data, const String& propertyName)
-{
-	_frustum->updateFromMatrix(data.get<math::mat4>(propertyName));
-
-	_octTree->testFrustum(
-		_frustum,
-		[&](NodePtr node)
-		{
-			node->layout(node->layout() & ~scene::BuiltinLayout::HIDDEN);
-		},
-		[&](NodePtr node)
-		{
-			node->layout(node->layout() | scene::BuiltinLayout::HIDDEN);
-		}
-	);
 }

@@ -132,6 +132,8 @@ namespace minko
             ChangedSlot                         _modelToWorldMatrixPropertyRemovedSlot;
             ChangedSlot                         _worldToScreenMatrixPropertyRemovedSlot;
 
+            uint                                _vertexAttribArray;
+
 		public:
             DrawCall(std::shared_ptr<Pass>  pass,
                      const EffectVariables& variables,
@@ -373,7 +375,7 @@ namespace minko
 			render(std::shared_ptr<AbstractContext>  context,
                    AbsTexturePtr                     renderTarget,
 				   const math::ivec4&				 viewport,
-				   uint 							 clearColor) const;
+				   uint 							 clearColor);
 
             void
             bindAttribute(ConstAttrInputRef     						        input,
@@ -414,8 +416,10 @@ namespace minko
             math::vec3
             getEyeSpacePosition();
 
-		private:
+            void
+            initializeOnContext(AbstractContext::Ptr context);
 
+		private:
             void
             reset();
 
