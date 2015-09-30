@@ -110,15 +110,17 @@ PFNGLBINDVERTEXARRAYOESPROC glBindVertexArray;
 PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArrays;
 PFNGLGENVERTEXARRAYSOESPROC glGenVertexArrays;
 PFNGLISVERTEXARRAYOESPROC glIsVertexArray;
+#endif
 
-//# undef glGenVertexArrays
-//# define glGenVertexArrays glGenVertexArraysOES
-//
-//# undef glBindVertexArray
-//# define glBindVertexArray glBindVertexArrayOES
-//
-//# undef glDeleteVertexArrays
-//# define glDeleteVertexArrays glDeleteVertexArraysOES
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS
+# undef glGenVertexArrays
+# define glGenVertexArrays glGenVertexArraysOES
+
+# undef glBindVertexArray
+# define glBindVertexArray glBindVertexArrayOES
+
+# undef glDeleteVertexArrays
+# define glDeleteVertexArrays glDeleteVertexArraysOES
 #endif
 
 using namespace minko;
