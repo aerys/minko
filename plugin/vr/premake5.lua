@@ -45,8 +45,10 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 
 	configuration { "osx64" }
+		buildoptions { "-x objective-c++" }
 		files {
-			"lib/libovr/osx/**.cpp"
+			"lib/libovr/osx/**.cpp",
+			"lib/libovr/osx/src/Util/Util_SystemInfo_OSX.mm"
 		}
 		includedirs {
 			"lib/libovr/osx/src",
