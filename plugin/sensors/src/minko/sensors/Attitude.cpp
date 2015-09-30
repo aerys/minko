@@ -27,6 +27,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "apple/IOSAttitude.hpp"
 #endif
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+# include "emscripten/EmscriptenAttitude.hpp"
+#endif
+
 using namespace minko;
 using namespace sensors;
 
@@ -40,6 +44,8 @@ Attitude::Attitude() :
     _attitudeManager = android::sensors::AndroidAttitude::create();
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
     _attitudeManager = apple::sensors::IOSAttitude::create();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    _attitudeManager = emscripten::sensors::EmscriptenAttitude::create();
 #endif
 }
 
