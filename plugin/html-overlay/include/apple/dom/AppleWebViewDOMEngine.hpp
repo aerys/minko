@@ -142,9 +142,6 @@ namespace apple
             void
             registerDomEvents();
             
-            void
-            updateWebViewWidth();
-            
         public:
             inline
             int
@@ -172,7 +169,6 @@ namespace apple
 			minko::AbstractCanvas::Ptr _canvas;
 			minko::component::SceneManager::Ptr _sceneManager;
 
-			minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
 			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
 
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
@@ -192,7 +188,6 @@ namespace apple
             // WebView
             UIWindow* _window;
             IOSWebView* _webView;
-            uint _webViewWidth;
             
 #elif TARGET_OS_MAC // OSX
             // WebView

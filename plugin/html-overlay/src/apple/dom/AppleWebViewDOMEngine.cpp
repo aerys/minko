@@ -58,9 +58,6 @@ AppleWebViewDOMEngine::AppleWebViewDOMEngine() :
     _updateNextFrame(false),
     _pollRate(-1),
     _lastUpdateTime(0.0)
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-    , _webViewWidth(0)
-#endif
 {
 }
 
@@ -117,9 +114,6 @@ AppleWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr 
         // Add the web view to the current window
         [_window.rootViewController.view addSubview:_webView];
 
-        // Save the web view width
-        _webViewWidth = _webView.frame.size.width;
-
         // Load iframe containing bridge JS callback handler
         // [_webView loadRequest:request];
         
@@ -127,20 +121,6 @@ AppleWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr 
         _webView.mediaPlaybackRequiresUserAction = NO;
         _webView.allowsInlineMediaPlayback = YES;
         _webView.mediaPlaybackAllowsAirPlay = YES;
-
-        _canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-        {
-            // Change the width of the webview directly
-            CGRect webViewFrame = _webView.frame;
-            webViewFrame.size.width = w / 2;
-            webViewFrame.size.height = h / 2;
-            
-            _webView.frame = webViewFrame;
-
-            _webViewWidth = w;
-            // Useful on iOS to have the same coordinates on the web view as on the canvas
-            updateWebViewWidth();
-        });
 
 #elif TARGET_OS_MAC // OSX
         // Get the Cocoa window from SDL
@@ -250,9 +230,6 @@ AppleWebViewDOMEngine::enterFrame(float time)
         if (res == "true")
         {
             _waitingForLoad = false;
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-            updateWebViewWidth();
-#endif
         }
 
         return;
@@ -525,16 +502,6 @@ AppleWebViewDOMEngine::registerDomEvents()
         SDL_PushEvent(&sdlEvent);
     });
 }
-
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-void
-AppleWebViewDOMEngine::updateWebViewWidth()
-{
-    std::string jsEval = "Minko.changeViewportWidth(" + std::to_string(_webViewWidth) + ");";
-
-    eval(jsEval);
-}
-#endif
 
 std::string
 AppleWebViewDOMEngine::eval(std::string data)

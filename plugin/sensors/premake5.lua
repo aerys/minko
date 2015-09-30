@@ -14,7 +14,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include/android/**",
 		"include/apple/**",
 		"src/android/**",
-		"src/apple/**"
+		"src/apple/**",
+		"include/emscripten/**",
+		"src/emscripten/**"
 	}
 
 	includedirs { "include" }
