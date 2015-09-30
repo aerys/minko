@@ -31,6 +31,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/SceneManager.hpp"
 
+#include "minko/log/Logger.hpp"
+
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
@@ -38,7 +40,7 @@ using namespace minko::oculus;
 using namespace minko::render;
 using namespace minko::file;
 
-#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 using namespace minko::sensors;
 #endif
 
@@ -60,7 +62,7 @@ Cardboard::initialize(std::shared_ptr<component::SceneManager> sceneManager)
 void
 Cardboard::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window)
 {
-#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     _attitude = Attitude::getInstance();
 
     _attitude->initialize();
@@ -77,7 +79,7 @@ Cardboard::updateViewport(int viewportWidth, int viewportHeight)
 void
 Cardboard::targetRemoved()
 {
-#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     _attitude->stopTracking();
 #endif
 }
@@ -97,7 +99,7 @@ Cardboard::getRightEyeFov()
 void
 Cardboard::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
-#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     auto rotationMatrix = math::transpose(_attitude->rotationMatrix());
 
     target->component<Transform>()->matrix(rotationMatrix);
