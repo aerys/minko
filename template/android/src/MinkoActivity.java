@@ -21,9 +21,6 @@ public class MinkoActivity extends SDLActivity
 {
 	protected static MinkoActivity _minkoActivitySingleton;
 
-    // Native methods
-    public static native void minkoNativeIntentExtra(String key, Object value);
-
 	public static void initialize() {
 		Log.v("minko-java", "[MinkoActivity] initialize()");
 
@@ -42,26 +39,6 @@ public class MinkoActivity extends SDLActivity
 
         // So we can call stuff from static callbacks
         _minkoActivitySingleton = this;
-
-        Bundle extras = getIntent().getExtras();
-
-        if (extras != null)
-        {
-            Log.i("minko-java", "Intent extras: ");
-
-            Set<String> ks = extras.keySet();
-            Iterator<String> iterator = ks.iterator();
-            
-            while (iterator.hasNext()) 
-            {
-                String key = iterator.next();
-                Object value = extras.get(key);
-
-                Log.i("minko-java", "Key: " + key + ", Value: " + value);
-
-                minkoNativeIntentExtra(key, value);
-            }
-        }
     }
 
 	public static Context getContext() {
