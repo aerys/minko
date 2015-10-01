@@ -104,6 +104,8 @@ namespace minko
 
             private:
 
+                float degToRad(float);
+
                 float _alpha;
                 float _beta;
                 float _gamma;
