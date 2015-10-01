@@ -22,65 +22,71 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 int main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Application", 800, 600);
-
+    auto canvas = Canvas::create("My Minko App", 960, 540);
     auto sceneManager = SceneManager::create(canvas);
-
-    sceneManager->assets()->loader()
-        ->queue("effect/Basic.effect");
-
+    auto assets = sceneManager->assets();
+    auto defaultLoader = sceneManager->assets()->loader();
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager);
 
-    auto camera = scene::Node::create("camera")
-        ->addComponent(Renderer::create(0x7f7f7fff))
-        ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-        ))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+    auto fxLoader = file::Loader::create(defaultLoader)
+        ->queue("effect/Phong.effect")
+        ->queue("effect/Basic.effect");
 
-    root->addChild(camera);
+    scene::Node::Ptr cube = nullptr;
 
-    auto mesh = scene::Node::create("mesh")
-        ->addComponent(Transform::create());
-
-    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
     {
-        mesh->addComponent(Surface::create(
-            geometry::CubeGeometry::create(sceneManager->assets()->context()),
-            material::Material::create()
-                ->set("diffuseColor", Vector4::create(1.f, 1.f, 1.f, 1.f)),
-            sceneManager->assets()->effect("effect/Basic.effect")
-        ));
+        defaultLoader->options()
+            ->effect(assets->effect("effect/Phong.effect"));
 
-        root->addChild(mesh);
-
-        auto light = scene::Node::create("light")
-            ->addComponent(AmbientLight::create())
-            ->addComponent(DirectionalLight::create())
-            ->addComponent(Transform::create(
-                Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(-2.f, -1.f, -1.f))
+        cube = scene::Node::create("cube")
+            ->addComponent(Transform::create())
+            ->addComponent(Surface::create(
+                geometry::CubeGeometry::create(assets->context()),
+                material::Material::create()->set({
+                    { "diffuseColor", math::vec4(.5f, .5f, .5f, 1.f) }
+                }),
+                assets->effect("effect/Phong.effect")
             ));
+        root->addChild(cube);
 
-        root->addChild(light);
-    });
+        auto camera = scene::Node::create("camera")
+            ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
+            ->addComponent(Renderer::create(0x7f7f7fff))
+            ->addComponent(Transform::create(math::inverse(math::lookAt(
+                math::vec3(2.f, 1.f, 2.f),
+                math::vec3(0.f, 0.f, 0.f),
+                math::vec3(0.f, 1.f, 0.f)
+            ))));
+        root->addChild(camera);
 
-    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-    {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        auto lights = scene::Node::create("lights")
+            ->addComponent(DirectionalLight::create())
+            ->addComponent(AmbientLight::create())
+            ->addComponent(Transform::create(math::inverse(math::lookAt(
+                math::vec3(0.f, 2.f, 5.f),
+                math::vec3(0.f, 0.f, 0.f),
+                math::vec3(0.f, 1.f, 0.f)
+            ))));
+        root->addChild(lights);
     });
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
-        mesh->component<Transform>()->matrix()->appendRotationY(0.001f * deltaTime);
+        if (cube)
+            cube->component<Transform>()->matrix(
+                cube->component<Transform>()->matrix()
+                * math::rotate(.01f, math::vec3(0.f, 1.f, 0.f))
+            );
+
         sceneManager->nextFrame(time, deltaTime);
     });
 
-    sceneManager->assets()->loader()->load();
+    fxLoader->load();
     canvas->run();
 
     return 0;

@@ -179,6 +179,8 @@ namespace minko
 		class MasterAnimation;
 		class Animation;
 		class Skinning;
+
+        class Metadata;
 	}
 
 	namespace data

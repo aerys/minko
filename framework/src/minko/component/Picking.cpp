@@ -177,19 +177,48 @@ Picking::bindSignals()
         std::placeholders::_2,
         std::placeholders::_3));
 
-        _executeMoveHandler = false;
-        _executeRightClickHandler = false;
-        _executeLeftClickHandler = false;
-        _executeRightDownHandler = false;
-        _executeLeftDownHandler = false;
-        _executeRightUpHandler = false;
-        _executeLeftUpHandler = false;
-        _executeTouchDownHandler = false;
-        _executeTouchUpHandler = false;
-        _executeTouchMoveHandler = false;
-        _executeTapHandler = false;
-        _executeDoubleTapHandler = false;
-        _executeLongHoldHandler = false;
+    _executeMoveHandler = false;
+    _executeRightClickHandler = false;
+    _executeLeftClickHandler = false;
+    _executeRightDownHandler = false;
+    _executeLeftDownHandler = false;
+    _executeRightUpHandler = false;
+    _executeLeftUpHandler = false;
+    _executeTouchDownHandler = false;
+    _executeTouchUpHandler = false;
+    _executeTouchMoveHandler = false;
+    _executeTapHandler = false;
+    _executeDoubleTapHandler = false;
+    _executeLongHoldHandler = false;
+}
+
+void
+Picking::unbindSignals()
+{
+    _mouseMoveSlot = nullptr;
+    _mouseLeftDownSlot = nullptr;
+    _mouseRightDownSlot = nullptr;
+    _mouseLeftClickSlot = nullptr;
+    _mouseRightClickSlot = nullptr;
+    _mouseLeftUpSlot = nullptr;
+    _mouseRightUpSlot = nullptr;
+    _touchDownSlot = nullptr;
+    _touchUpSlot = nullptr;
+    _touchMoveSlot = nullptr;
+    _touchTapSlot = nullptr;
+    _touchDoubleTapSlot = nullptr;
+    _touchLongHoldSlot = nullptr;
+
+    _frameBeginSlot = nullptr;
+    _renderingBeginSlot = nullptr;
+    _renderingEndSlot = nullptr;
+    _depthRenderingBeginSlot = nullptr;
+    _depthRenderingEndSlot = nullptr;
+    _componentAddedSlot = nullptr;
+    _componentRemovedSlot = nullptr;
+    
+    _addedSlot = nullptr;
+    _removedSlot = nullptr;
 }
 
 void
@@ -272,9 +301,7 @@ Picking::targetRemoved(NodePtr target)
     _renderer = nullptr;
     _depthRenderer = nullptr;
     _sceneManager = nullptr;
-
-	_addedSlot = nullptr;
-	_removedSlot = nullptr;
+    _enabled = false;
 
 	removedHandler(target->root(), target, target->parent());
 }
@@ -415,6 +442,8 @@ Picking::removeSurface(SurfacePtr surface, NodePtr node)
 void
 Picking::removedHandler(NodePtr target, NodePtr child, NodePtr parent)
 {
+    unbindSignals();
+
 	if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
 		return;
 

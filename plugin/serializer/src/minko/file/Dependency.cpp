@@ -39,7 +39,7 @@ Dependency::MaterialWriterFunction	Dependency::_materialWriteFunction;
 
 Dependency::Dependency()
 {
-	_currentId = 0;
+	_currentId = 1;
 
 	setGeometryFunction(std::bind(&Dependency::serializeGeometry,
 		std::placeholders::_1,
@@ -62,8 +62,7 @@ Dependency::Dependency()
 			std::placeholders::_2,
 			std::placeholders::_3,
 			std::placeholders::_4,
-            std::placeholders::_5,
-            std::placeholders::_6);
+            std::placeholders::_5);
     }
 
     if (_materialWriteFunction == nullptr)
@@ -130,12 +129,24 @@ Dependency::hasDependency(AbsTexturePtr texture)
 }
 
 uint
-Dependency::registerDependency(AbsTexturePtr texture)
+Dependency::registerDependency(AbsTexturePtr texture, const std::string& textureType)
 {
-	if (!hasDependency(texture))
-		_textureDependencies[texture] = _currentId++;
+    auto dependencyIt = _textureDependencies.find(texture);
 
-	return _textureDependencies[texture];
+    if (dependencyIt == _textureDependencies.end())
+    {
+        const auto dependencyId = _currentId++;
+
+        const auto textureDependency = TextureDependency {
+            dependencyId,
+            texture,
+            textureType
+        };
+
+        return _textureDependencies.emplace(texture, textureDependency).first->second.dependencyId;
+    }
+    
+    return dependencyIt->second.dependencyId;
 }
 
 bool
@@ -285,7 +296,8 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
 
     auto filename = assetLibrary->geometryName(geometry);
 
-    filename = writerOptions->geometryUriFunction()(filename);
+    const auto outputFilename = writerOptions->geometryNameFunction()(filename);
+    const auto writeFilename = writerOptions->geometryUriFunction()(outputFilename);
 
     auto targetGeometry = writerOptions->geometryFunction()(filename, geometry);
 
@@ -306,10 +318,10 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
         if (!assetIsNull)
         {
             auto embeddedHeaderData = std::vector<unsigned char>();
-            geometryWriter->write(filename, assetLibrary, options, writerOptions, dependency, userDefinedDependency, embeddedHeaderData);
+            geometryWriter->write(writeFilename, assetLibrary, options, writerOptions, dependency, userDefinedDependency, embeddedHeaderData);
         }
 
-        content = File::removePrefixPathFromFilename(filename);
+        content = outputFilename;
     }
 
     SerializedAsset res(assetType, resourceId, content);
@@ -320,23 +332,28 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
 Dependency::SerializedAsset
 Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 						     std::shared_ptr<file::AssetLibrary>		assetLibrary,
-							 std::shared_ptr<render::AbstractTexture>	texture,
-							 uint										resourceId,
+                             const TextureDependency&                   textureDependency,
 							 std::shared_ptr<file::Options>				options,
                              std::shared_ptr<file::WriterOptions>       writerOptions)
 {
 	auto writer = TextureWriter::create();
+    const auto dependencyId = textureDependency.dependencyId;
+    auto texture = textureDependency.texture;
     auto filename = assetLibrary->textureName(texture);
     auto assetType = serialize::AssetType();
     auto content = std::string();
 
-    filename = writerOptions->textureUriFunction()(filename);
+    const auto outputFilename = writerOptions->textureNameFunction()(filename);
+    const auto writeFilename = writerOptions->textureUriFunction()(outputFilename);
 
     auto targetTexture = writerOptions->textureFunction()(filename, texture);
 
     const auto assetIsNull = writerOptions->assetIsNull(targetTexture->uuid());
 
+    auto hasHeaderSize = !assetIsNull;
+
     writer->data(writerOptions->textureFunction()(filename, targetTexture));
+    writer->textureType(*textureDependency.textureType);
 
     if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Texture)
     {
@@ -346,24 +363,25 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
     }
     else
     {
+        hasHeaderSize = false;
+
         assetType = serialize::AssetType::TEXTURE_PACK_ASSET;
 
         if (!assetIsNull)
         {
-            writer->write(filename, assetLibrary, options, writerOptions, dependency);
+            writer->write(writeFilename, assetLibrary, options, writerOptions, dependency);
         }
 
-        content = File::removePrefixPathFromFilename(filename);
+        content = outputFilename;
     }
 
-    const auto hasHeaderSize = !assetIsNull;
     const auto headerSize = writer->headerSize();
 
     const auto metadata = static_cast<unsigned int>(hasHeaderSize ? 1u << 31 : 0u) +
                           static_cast<unsigned int>((headerSize & 0x0fff) << 16) +
                           static_cast<unsigned int>(assetType);
 
-    SerializedAsset res(metadata, resourceId, content);
+    SerializedAsset res(metadata, dependencyId, content);
 
 	return res;
 }
@@ -381,7 +399,8 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
     auto assetType = serialize::AssetType();
     auto content = std::string();
 
-    filename = writerOptions->materialUriFunction()(filename);
+    const auto outputFilename = writerOptions->materialNameFunction()(filename);
+    const auto writeFilename = writerOptions->materialUriFunction()(outputFilename);
 
     auto targetMaterial = writerOptions->materialFunction()(filename, material);
 
@@ -400,15 +419,35 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 
         if (!assetIsNull)
         {
-            writer->write(filename, assetLibrary, options, writerOptions, dependency);
+            writer->write(writeFilename, assetLibrary, options, writerOptions, dependency);
         }
 
-        content = File::removePrefixPathFromFilename(filename);
+        content = outputFilename;
     }
 
     SerializedAsset res(assetType, resourceId, content);
 
 	return res;
+}
+
+Dependency::SerializedAsset
+Dependency::serializeEffect(std::shared_ptr<Dependency>			    dependency,
+                            std::shared_ptr<file::AssetLibrary>	    assetLibrary,
+                            std::shared_ptr<render::Effect>         effect,
+                            uint								    resourceId,
+                            std::shared_ptr<file::Options>		    options,
+                            std::shared_ptr<file::WriterOptions>    writerOptions)
+{
+    auto filename = assetLibrary->effectName(effect);
+    auto assetType = serialize::AssetType();
+    auto content = std::string();
+
+    assetType = serialize::AssetType::EFFECT_ASSET;
+    content = File::removePrefixPathFromFilename(filename);
+
+    SerializedAsset res(assetType, resourceId, content);
+
+    return res;
 }
 
 std::vector<Dependency::SerializedAsset>
@@ -457,12 +496,25 @@ Dependency::serialize(const std::string&                        parentFilename,
 		serializedAsset.push_back(res);
 	}
 
+    for (const auto& effectDependency : _effectDependencies)
+    {
+        auto result = serializeEffect(
+            shared_from_this(),
+            assetLibrary,
+            effectDependency.first,
+            effectDependency.second,
+            options,
+            writerOptions
+        );
+
+        serializedAsset.push_back(result);
+    }
+
     for (const auto& itTexture : _textureDependencies)
 	{
 		auto res = _textureWriteFunction(
             shared_from_this(),
             assetLibrary,
-            itTexture.first,
             itTexture.second,
             options,
             writerOptions

@@ -77,6 +77,10 @@ namespace minko
             static
             std::tuple<uint, std::string>
             serializeTexture(Any value);
+
+            static
+            std::tuple<uint, std::string>
+            serializeString(Any value);
         };
     }
 }

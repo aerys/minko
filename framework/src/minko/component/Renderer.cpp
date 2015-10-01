@@ -45,6 +45,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 				   EffectPtr								effect,
 				   const std::string&						effectTechnique,
 				   float									priority) :
+    AbstractComponent(scene::BuiltinLayout::DEFAULT),
     _backgroundColor(0),
     _viewportBox(0, 0, -1, -1),
 	_scissorBox(0, 0, -1, -1),
@@ -67,7 +68,9 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_rendererDataFilterChangedSlots(),
 	_rootDataFilterChangedSlots(),
 	_lightMaskFilter(data::LightMaskFilter::create()),*/
-	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::Binding::Source, SurfacePtr>::create())
+	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::Binding::Source, SurfacePtr>::create()),
+	_numDrawCalls(0),
+	_numTriangles(0)
 {
 }
 
@@ -461,15 +464,24 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	}
 
     _drawCallPool.update(forceSort, _mustZSort);
-    
+
     _mustZSort = false;
 
     const auto& drawCalls = _drawCallPool.drawCalls();
 
+	_numDrawCalls = 0;
+	_numTriangles = 0;
     for (const auto& priorityToDrawCalls : drawCalls)
         for (const auto& drawCalls : priorityToDrawCalls.second)
             for (auto drawCall : drawCalls)
-                drawCall->render(context, rt, _viewportBox, _backgroundColor);
+			{
+				if (drawCall->enabled())
+				{
+	                drawCall->render(context, rt, _viewportBox, _backgroundColor);
+					++_numDrawCalls;
+					_numTriangles += drawCall->numTriangles();
+				}
+			}
 
 	context->setRenderToBackBuffer();
 
@@ -633,15 +645,29 @@ Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
 void
 Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
 {
+    // FIXME
+    // Use a _toEnable std::unordered_map<Surface::Ptr, bool>
+    // to enable or disable a surface once in a frame and perform it after
+    // _toCollect is processed.
+
 	if (checkSurfaceLayout(surface))
 	{
+        enableDrawCalls(surface, true);
+
 		if (_surfaceToDrawCallIterator.count(surface) == 0)
             _toCollect.insert(surface);
 	}
 	else
 	{
-		if (_surfaceToDrawCallIterator.count(surface) != 0)
-			removeSurface(surface);
+        if ((surface->target()->layout() & scene::BuiltinLayout::HIDDEN) != 0)
+        {
+            enableDrawCalls(surface, false);
+        }
+        else
+        {
+		    if (_surfaceToDrawCallIterator.count(surface) != 0)
+	            removeSurface(surface);
+        }
 	}
 }
 
@@ -696,7 +722,29 @@ Renderer::layoutMask(const scene::Layout value)
 	if (target() != nullptr)
 	{
         _drawCallPool.clear();
-		
+
         rootDescendantRemovedHandler(nullptr, target()->root(), nullptr);
 	}
+}
+
+void
+Renderer::enableDrawCalls(SurfacePtr surface, bool enabled)
+{
+    auto drawCallIt = _surfaceToDrawCallIterator.find(surface);
+
+    if (drawCallIt == _surfaceToDrawCallIterator.end())
+        return;
+
+    const auto drawCallId = drawCallIt->second;
+
+    for (const auto& priorityToDrawCalls : _drawCallPool.drawCalls())
+        for (const auto& drawCalls : priorityToDrawCalls.second)
+            for (auto drawCall : drawCalls)
+            {
+                if (drawCall->batchIDs().size() > 1u)
+                    throw std::runtime_error("");
+
+                if (drawCall->batchIDs().front() == drawCallId)
+                    drawCall->enabled(enabled);
+            }
 }

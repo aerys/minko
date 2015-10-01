@@ -307,6 +307,9 @@ namespace minko
             bindSignals();
 
             void
+            unbindSignals();
+
+            void
 			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 			void

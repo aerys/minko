@@ -39,7 +39,8 @@ namespace minko
 			typedef std::shared_ptr<AbstractComponent>	                    AbsCmpPtr;
 
 		private:
-			std::unordered_map<NodePtr, bool>				                _started;
+			bool															_enabled;
+			bool				                							_started;
             float                                                           _time;
             float                                                           _deltaTime;
 
@@ -52,7 +53,33 @@ namespace minko
 			Signal<std::shared_ptr<SceneManager>, float, float>::Slot		_frameBeginSlot;
 			Signal<std::shared_ptr<SceneManager>, float, float>::Slot		_frameEndSlot;
 
+		public:
+			bool
+			enabled()
+			{
+				return _enabled;
+			}
+
+			void
+			enabled(bool v);
+
 		protected:
+			AbstractScript() :
+				_enabled(true),
+				_started(false),
+				_time(0.f),
+				_deltaTime(0.f),
+				_targetAddedSlot(nullptr),
+				_targetRemovedSlot(nullptr),
+				_addedSlot(nullptr),
+				_removedSlot(nullptr),
+				_componentAddedSlot(nullptr),
+				_componentRemovedSlot(nullptr),
+				_frameBeginSlot(nullptr),
+				_frameEndSlot(nullptr)
+			{
+			}
+
             inline
             float
             time()
@@ -97,14 +124,7 @@ namespace minko
 
 			virtual
 			bool
-			ready(NodePtr target)
-			{
-				return true;
-			}
-
-			virtual
-			bool
-			running(NodePtr target)
+			ready()
 			{
 				return true;
 			}
@@ -139,9 +159,6 @@ namespace minko
 
 			void
 			frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float, float);
-
-			void
-			findSceneManager();
 
 			void
 			setSceneManager(std::shared_ptr<SceneManager> sceneManager);

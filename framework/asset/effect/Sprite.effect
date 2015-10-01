@@ -22,7 +22,7 @@
 	},
 
 	"techniques" : [{
-		"name" 		: "sprite-technique",
+		"name" 		: "default",
 		"passes" 	: [{
 			"name" 		: "sprite-pass",
 			"states" 	: {

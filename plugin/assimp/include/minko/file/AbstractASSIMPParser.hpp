@@ -91,7 +91,8 @@ namespace minko
 
 			NodePtr													_symbol;
 
-			std::unordered_map<const aiNode*, NodePtr>				_aiNodeToNode;
+            std::unordered_map<NodePtr, const aiNode*>				_nodeToAiNode;
+            std::unordered_map<const aiNode*, NodePtr>				_aiNodeToNode;
 			std::unordered_map<const aiMesh*, NodePtr>				_aiMeshToNode;
 			std::unordered_map<std::string, NodePtr>				_nameToNode;
 			std::unordered_map<
@@ -157,14 +158,17 @@ namespace minko
             void
             convertScene(const aiScene* scene);
 
+            NodePtr
+            createNode(const aiScene* scene, aiNode* ainode, const std::string& name);
+
 			void
 			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode, std::shared_ptr<AssetLibrary> assets);
 
-            void
-            parseMetadata(const aiScene*            scene,
-                          aiNode*                   ainode,
-                          NodePtr                   minkoNode,
-                          std::shared_ptr<Options>  options);
+            bool
+            parseMetadata(const aiScene*                                scene,
+                          aiNode*                                       ainode,
+                          std::shared_ptr<Options>                      options,
+                          std::unordered_map<std::string, std::string>& metadata);
 
             GeometryPtr
             createMeshGeometry(NodePtr, aiMesh*, const std::string&);
@@ -248,6 +252,10 @@ namespace minko
 			static
 			void
 			sample(const aiNodeAnim*, const std::vector<float>&, std::vector<math::mat4>&);
+
+            static
+            math::vec3
+            convert(const aiVector3t<float>& vec3);
 
 			static
 			math::mat4

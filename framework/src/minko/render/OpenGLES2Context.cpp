@@ -62,6 +62,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
+# include <dlfcn.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
@@ -101,6 +102,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 # undef glGenerateMipmap
 # define glGenerateMipmap glGenerateMipmapEXT
+
+#endif
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+PFNGLBINDVERTEXARRAYOESPROC glBindVertexArray;
+PFNGLDELETEVERTEXARRAYSOESPROC glDeleteVertexArrays;
+PFNGLGENVERTEXARRAYSOESPROC glGenVertexArrays;
+PFNGLISVERTEXARRAYOESPROC glIsVertexArray;
+#endif
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+# undef glGenVertexArrays
+# define glGenVertexArrays glGenVertexArraysOES
+
+# undef glBindVertexArray
+# define glBindVertexArray glBindVertexArrayOES
+
+# undef glDeleteVertexArrays
+# define glDeleteVertexArrays glDeleteVertexArraysOES
+#endif
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_OSX
+# undef glGenVertexArrays
+# define glGenVertexArrays glGenVertexArraysAPPLE
+
+# undef glBindVertexArray
+# define glBindVertexArray glBindVertexArrayAPPLE
+
+# undef glDeleteVertexArrays
+# define glDeleteVertexArrays glDeleteVertexArraysAPPLE
 #endif
 
 using namespace minko;
@@ -202,7 +233,8 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentStencilMask(0x1),
 	_currentStencilFailOp(StencilOperation::UNSET),
 	_currentStencilZFailOp(StencilOperation::UNSET),
-	_currentStencilZPassOp(StencilOperation::UNSET)
+	_currentStencilZPassOp(StencilOperation::UNSET),
+	_vertexAttributeEnabled(32u, false)
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE) && !defined(MINKO_PLUGIN_OFFSCREEN)
 	glewInit();
@@ -237,6 +269,21 @@ OpenGLES2Context::OpenGLES2Context() :
 	setColorMask(true);
 	setDepthTest(true, CompareMode::LESS);
 	setStencilTest(CompareMode::ALWAYS, 0, 0x1, StencilOperation::KEEP, StencilOperation::KEEP, StencilOperation::KEEP);
+
+    initializeExtFunctions();
+}
+
+void
+OpenGLES2Context::initializeExtFunctions()
+{
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    void *libhandle = dlopen("libGLESv2.so", RTLD_LAZY);
+
+    glBindVertexArray = (PFNGLBINDVERTEXARRAYOESPROC)dlsym(libhandle, "glBindVertexArrayOES");
+    glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSOESPROC)dlsym(libhandle, "glDeleteVertexArraysOES");
+    glGenVertexArrays = (PFNGLGENVERTEXARRAYSOESPROC)dlsym(libhandle, "glGenVertexArraysOES");
+    glIsVertexArray = (PFNGLISVERTEXARRAYOESPROC)dlsym(libhandle, "glIsVertexArrayOES");
+#endif
 }
 
 OpenGLES2Context::~OpenGLES2Context()
@@ -346,12 +393,12 @@ OpenGLES2Context::present()
 void
 OpenGLES2Context::drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles)
 {
-	if (_currentIndexBuffer != indexBuffer)
+	/*if (_currentIndexBuffer != indexBuffer)
 	{
-		_currentIndexBuffer = indexBuffer;
+		_currentIndexBuffer = indexBuffer;*/
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	}
+	//}
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glDrawElements.xml
 	//
@@ -473,41 +520,88 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 									const uint	stride,
 									const uint	offset)
 {
-	auto currentVertexBuffer = _currentVertexBuffer[position];
+	bool vertexAttributeEnabled = vertexBuffer > 0;
+	bool vertexBufferChanged = _currentVertexBuffer[position] != vertexBuffer;
 
-	if (currentVertexBuffer == vertexBuffer
-		&& _currentVertexSize[position] == size
-		&& _currentVertexStride[position] == stride
-		&& _currentVertexOffset[position] == offset)
-		return ;
-
-	_currentVertexBuffer[position] = vertexBuffer;
-	_currentVertexSize[position] = size;
-	_currentVertexStride[position] = stride;
-	_currentVertexOffset[position] = offset;
-
-	if (vertexBuffer > 0)
-		glEnableVertexAttribArray(position);
-	else
+	if (vertexBufferChanged)
 	{
-		glDisableVertexAttribArray(position);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		checkForErrors();
 
-		return;
+		_currentVertexBuffer[position] = vertexBuffer;
 	}
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+	if (vertexBufferChanged
+		|| _currentVertexSize[position] != size
+		|| _currentVertexStride[position] != stride
+		|| _currentVertexOffset[position] != offset)
+	{
+		// http://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
+		glVertexAttribPointer(
+			position,
+			size,
+			GL_FLOAT,
+			GL_FALSE,
+			sizeof(GLfloat) * stride,
+			(void*)(sizeof(GLfloat) * offset)
+		);
+		checkForErrors();
 
-	// http://www.khronos.org/opengles/sdk/docs/man/xhtml/glVertexAttribPointer.xml
-	glVertexAttribPointer(
-		position,
-		size,
-		GL_FLOAT,
-		GL_FALSE,
-		sizeof(GLfloat) * stride,
-		(void*)(sizeof(GLfloat) * offset)
-	);
+		_currentVertexSize[position] = size;
+		_currentVertexStride[position] = stride;
+		_currentVertexOffset[position] = offset;
+	}
 
-	checkForErrors();
+    if (vertexBufferChanged || _vertexAttributeEnabled[position] != vertexAttributeEnabled)
+    {
+        if (vertexAttributeEnabled)
+        {
+            glEnableVertexAttribArray(position);
+            checkForErrors();
+
+            _vertexAttributeEnabled[position] = true;
+        }
+        else
+        {
+            glDisableVertexAttribArray(position);
+            checkForErrors();
+
+            _vertexAttributeEnabled[position] = false;
+
+            return;
+        }
+    }
+}
+
+
+int
+OpenGLES2Context::createVertexAttributeArray()
+{
+#ifdef GL_ES_VERSION_2_0
+    if (!supportsExtension("vertex_array_object"))
+        return -1;
+#endif
+
+    uint vao;
+
+    glGenVertexArrays(1, &vao);
+    checkForErrors();
+
+    return vao;
+}
+
+void
+OpenGLES2Context::setVertexAttributeArray(const uint vertexArray)
+{
+    glBindVertexArray(vertexArray);
+    checkForErrors();
+}
+
+void
+OpenGLES2Context::deleteVertexAttributeArray(const uint vertexArray)
+{
+    glDeleteVertexArrays(1, &vertexArray);
+    checkForErrors();
 }
 
 const uint
@@ -1450,9 +1544,9 @@ OpenGLES2Context::setBlendingMode(Blending::Source source, Blending::Destination
 			_blendingFactors[static_cast<uint>(source) & 0x00ff],
 			_blendingFactors[static_cast<uint>(destination) & 0xff00]
 		);
-	}
 
-	checkForErrors();
+		checkForErrors();
+	}
 }
 
 void
@@ -1466,9 +1560,9 @@ OpenGLES2Context::setBlendingMode(Blending::Mode blendingMode)
             _blendingFactors[static_cast<uint>(blendingMode) & 0x00ff],
             _blendingFactors[static_cast<uint>(blendingMode) & 0xff00]
 		);
-	}
 
-	checkForErrors();
+		checkForErrors();
+	}
 }
 
 void
@@ -1481,9 +1575,9 @@ OpenGLES2Context::setDepthTest(bool depthMask, CompareMode depthFunc)
 
 		glDepthMask(depthMask);
 		glDepthFunc(_compareFuncs[depthFunc]);
-	}
 
-	checkForErrors();
+		checkForErrors();
+	}
 }
 
 void
@@ -1494,9 +1588,10 @@ OpenGLES2Context::setColorMask(bool colorMask)
 		_currentColorMask = colorMask;
 
 		glColorMask(colorMask, colorMask, colorMask, colorMask);
+
+		checkForErrors();
 	}
 
-	checkForErrors();
 }
 
 void
@@ -1517,9 +1612,10 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 		_currentStencilMask	= stencilMask;
 
 		glStencilFunc(_compareFuncs[stencilFunc], stencilRef, stencilMask);
+
+		checkForErrors();
 	}
 
-	checkForErrors();
 
 	if (stencilFailOp != _currentStencilFailOp
 		|| stencilZFailOp != _currentStencilZFailOp
@@ -1530,9 +1626,9 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 		_currentStencilZPassOp	= stencilZPassOp;
 
 		glStencilOp(_stencilOps[stencilFailOp], _stencilOps[stencilZFailOp], _stencilOps[stencilZPassOp]);
-	}
 
-	checkForErrors();
+		checkForErrors();
+	}
 #endif
 }
 
@@ -1548,6 +1644,9 @@ OpenGLES2Context::readPixels(unsigned int x, unsigned int y, unsigned int width,
 void
 OpenGLES2Context::setScissorTest(bool scissorTest, const math::ivec4& scissorBox)
 {
+	if (scissorTest == _scissorTest && scissorBox == _scissorBox)
+		return;
+
 	if (scissorTest)
 	{
 		glEnable(GL_SCISSOR_TEST);
@@ -1576,6 +1675,9 @@ OpenGLES2Context::setScissorTest(bool scissorTest, const math::ivec4& scissorBox
 	}
 	else
 		glDisable(GL_SCISSOR_TEST);
+
+	_scissorTest = scissorTest;
+	_scissorBox = scissorBox;
 
 	checkForErrors();
 }

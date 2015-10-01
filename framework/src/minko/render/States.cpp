@@ -125,6 +125,11 @@ States::States(const States& states) :
 {
 }
 
+States::States(std::shared_ptr<data::Provider> data) :
+    _data(data)
+{
+}
+
 void
 States::resetDefaultValues()
 {

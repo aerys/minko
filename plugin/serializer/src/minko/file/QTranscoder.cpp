@@ -34,6 +34,7 @@ using namespace minko::render;
 
 bool
 QTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
+                       const std::string&                        textureType,
                        std::shared_ptr<WriterOptions>            writerOptions,
                        render::TextureFormat                     outFormat,
                        std::vector<unsigned char>&               out)
@@ -104,7 +105,7 @@ QTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             qSrcTexture.pData = texture2dData.data();
         }
 
-        const auto generateMipmaps = writerOptions->generateMipmaps();
+        const auto generateMipmaps = writerOptions->generateMipmaps(textureType);
 
         if (generateMipmaps)
         {

@@ -43,6 +43,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/AbstractAnimation.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/Metadata.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
@@ -82,7 +83,7 @@ using namespace minko::geometry;
 #endif // DEBUG_ASSIMP
 
 /*static*/ const AbstractASSIMPParser::TextureTypeToName AbstractASSIMPParser::_textureTypeToName = AbstractASSIMPParser::initializeTextureTypeToName();
-/*static*/ const std::string AbstractASSIMPParser::PNAME_TRANSFORM = "transform.matrix";
+/*static*/ const std::string AbstractASSIMPParser::PNAME_TRANSFORM = "matrix";
 
 const unsigned int AbstractASSIMPParser::MAX_NUM_UV_CHANNELS = 2u;
 
@@ -141,7 +142,9 @@ AbstractASSIMPParser::parse(const std::string&					filename,
         Assimp::Logger::Err |
         Assimp::Logger::Warn;
 
+#ifdef DEBUG
     Assimp::DefaultLogger::get()->attachStream(new minko::file::Logger(), severity);
+#endif
 
 	int pos = resolvedFilename.find_last_of("\\/");
 
@@ -196,7 +199,7 @@ AbstractASSIMPParser::importScene(const std::string&			    filename,
 		data.data(),
 		data.size(),
 		0u,
-		resolvedFilename.c_str()
+        File::getExtension(filename).c_str()
 	);
 
 	if (!scene)
@@ -250,7 +253,7 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
         flags |= aiProcess_SplitLargeMeshes;
     }
 
-    unsigned int removeComponentFlags = aiComponent_COLORS;
+    unsigned int removeComponentFlags = 0u;
 
     if (numMaterials == 0u || numTextures == 0u)
     {
@@ -266,7 +269,7 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
 
     _importer->SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, removeComponentFlags);
 
-    if (!options->processUnusedAsset())
+    if (!options->preserveMaterials())
     {
         // this flags discards unused materials in addition to
         // removing duplicated ones
@@ -331,10 +334,10 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
 
     const auto symbolRootName = File::removePrefixPathFromFilename(_filename);
 
-	_symbol = scene::Node::create(symbolRootName);
+	_symbol = createNode(scene, nullptr, symbolRootName);
 	createSceneTree(_symbol, scene, scene->mRootNode, _options->assetLibrary());
 
-    if (_options->processUnusedAsset())
+    if (_options->preserveMaterials())
         createUnusedMaterials(scene, _options->assetLibrary(), _options);
 
 #ifdef DEBUG_ASSIMP
@@ -345,9 +348,9 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
 	createCameras(scene);
 
     if (_options->includeAnimation())
-    {	
-        createSkins(scene); // must come before createAnimations
-	    //createAnimations(scene);
+    {
+        createSkins(scene);
+	    createAnimations(scene, true);
     }
 
 #ifdef DEBUG_ASSIMP
@@ -382,14 +385,45 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
 		finalize();
 }
 
+Node::Ptr
+AbstractASSIMPParser::createNode(const aiScene*     scene,
+                                 aiNode*            node,
+                                 const std::string& name)
+{
+    auto metadata = component::Metadata::Data();
+
+    if (node == nullptr || !parseMetadata(scene, node, _options, metadata))
+        return Node::create(name);
+
+    auto minkoNode = Node::Ptr();
+
+    auto uuidIt = metadata.find("minko_uuid");
+
+    if (uuidIt != metadata.end())
+    {
+        minkoNode = Node::create(uuidIt->second, name);
+    }
+    else
+    {
+        minkoNode = Node::create(name);
+    }
+
+    for (const auto& entry : metadata)
+    {
+        _options->attributeFunction()(minkoNode, entry.first, entry.second);
+    }
+
+    minkoNode->addComponent(Metadata::create(metadata));
+
+    return minkoNode;
+}
+
 void
 AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 									  const aiScene* 				scene,
 									  aiNode* 						ainode,
 									  std::shared_ptr<AssetLibrary> assets)
 {
-    parseMetadata(scene, ainode, minkoNode, _options);
-
 	minkoNode->addComponent(getTransformFromAssimp(ainode));
 
 	// create surfaces for each node mesh
@@ -410,9 +444,10 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 		if (aichild == nullptr)
 			continue;
 
-        auto childName	= std::string(aichild->mName.data);
-        auto childNode	= scene::Node::create(childName);
+        const auto childName = std::string(aichild->mName.data);
+        auto childNode = createNode(scene, aichild, childName);
 
+        _nodeToAiNode[childNode] = aichild;
 		_aiNodeToNode[aichild] = childNode;
 		if (!childName.empty())
 			_nameToNode[childName] = childNode;
@@ -424,20 +459,19 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
     }
 }
 
-void
-AbstractASSIMPParser::parseMetadata(const aiScene*            scene,
-                                    aiNode*                   ainode,
-                                    NodePtr                   minkoNode,
-                                    std::shared_ptr<Options>  options)
+bool
+AbstractASSIMPParser::parseMetadata(const aiScene*                                scene,
+                                    aiNode*                                       ainode,
+                                    std::shared_ptr<Options>                      options,
+                                    std::unordered_map<std::string, std::string>& metadata)
 {
     if (!ainode->mMetaData)
-        return;
+        return false;
 
     for (auto i = 0u; i < ainode->mMetaData->mNumProperties; ++i)
     {
         const auto& key = std::string(ainode->mMetaData->mKeys[i].data);
         const auto& data = ainode->mMetaData->mValues[i];
-
         auto dataString = std::string();
 
         switch (data.mType)
@@ -448,7 +482,6 @@ AbstractASSIMPParser::parseMetadata(const aiScene*            scene,
         case aiMetadataType::AI_AIVECTOR3D:
         {
             aiVector3D* vec3 = reinterpret_cast<aiVector3D*>(data.mData);
-
             dataString = std::to_string(math::vec3(vec3->x, vec3->y, vec3->z));
 
             break;
@@ -469,8 +502,10 @@ AbstractASSIMPParser::parseMetadata(const aiScene*            scene,
             break;
         }
 
-        options->attributeFunction()(minkoNode, key, dataString);
+        metadata[key] = dataString;
     }
+
+    return true;
 }
 
 void
@@ -510,6 +545,13 @@ createIndexBuffer(aiMesh*                       mesh,
     return render::IndexBuffer::create(context, indexData);
 }
 
+static
+float
+packColor(const math::vec4& color)
+{
+    return math::dot(color, math::vec4(1.f, 1.f / 255.f, 1.f / 65025.f, 1.f / 16581375.f));
+}
+
 Geometry::Ptr
 AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh, const std::string& meshName)
 {
@@ -518,14 +560,16 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     if (existingGeometry != _aiMeshToGeometry.end())
         return existingGeometry->second;
 
-	unsigned int vertexSize = 0;
+	unsigned int vertexSize = 0u;
 
     if (mesh->HasPositions())
-        vertexSize += 3;
+        vertexSize += 3u;
     if (mesh->HasNormals())
-        vertexSize += 3;
-    if (mesh->GetNumUVChannels() > 0)
+        vertexSize += 3u;
+    if (mesh->GetNumUVChannels() > 0u)
         vertexSize += std::min(mesh->GetNumUVChannels() * 2u, MAX_NUM_UV_CHANNELS * 2u);
+    if (mesh->HasVertexColors(0u))
+        vertexSize += 4u;
 
 	std::vector<float>	vertexData	(vertexSize * mesh->mNumVertices, 0.0f);
 	unsigned int		vId			= 0;
@@ -556,6 +600,18 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 			vertexData[vId++]	= vec.x;
 			vertexData[vId++]	= vec.y;
 		}
+
+        if (mesh->HasVertexColors(0u))
+        {
+            const auto& color = mesh->mColors[0u][vertexId];
+
+            const auto packedColor = math::vec4(color.r, color.g, color.b, color.a);
+
+            vertexData[vId++] = packedColor.r;
+            vertexData[vId++] = packedColor.g;
+            vertexData[vId++] = packedColor.b;
+            vertexData[vId++] = packedColor.a;
+        }
 	}
 
     auto indices = render::IndexBuffer::Ptr();
@@ -576,23 +632,28 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	auto geometry		= Geometry::create();
 	auto vertexBuffer	= render::VertexBuffer::create(_assetLibrary->context(), vertexData);
 
-	unsigned int attrOffset = 0;
+	unsigned int attrOffset = 0u;
 	if (mesh->HasPositions())
 	{
 		vertexBuffer->addAttribute("position", 3, attrOffset);
-		attrOffset	+= 3;
+		attrOffset	+= 3u;
 	}
 	if (mesh->HasNormals())
 	{
 		vertexBuffer->addAttribute("normal", 3, attrOffset);
-		attrOffset	+= 3;
+		attrOffset	+= 3u;
 	}
     for (auto i = 0u; i < std::min(mesh->GetNumUVChannels(), MAX_NUM_UV_CHANNELS); ++i)
     {
         const auto attributeName = std::string("uv") + (i > 0u ? std::to_string(i) : std::string());
 
         vertexBuffer->addAttribute(attributeName, 2, attrOffset);
-        attrOffset += 2;
+        attrOffset += 2u;
+    }
+    if (mesh->HasVertexColors(0u))
+    {
+        vertexBuffer->addAttribute("color", 4u, attrOffset);
+        attrOffset += 4u;
     }
 
 	geometry->addVertexBuffer(vertexBuffer);
@@ -620,7 +681,7 @@ AbstractASSIMPParser::getValidAssetName(const std::string& name)
 
     validAssetName = File::removePrefixPathFromFilename(validAssetName);
 
-    const auto invalidSymbolRegex = std::regex("\\W+");
+    const auto invalidSymbolRegex = std::regex("[^a-zA-Z0-9_\\.-]+");
 
     validAssetName = std::regex_replace(
         validAssetName,
@@ -680,22 +741,15 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 	auto		material	= createMaterial(aiMat);
 	auto		effect		= chooseEffectByShadingMode(aiMat);
 
-	if (effect)
-	{
-		minkoNode->addComponent(
-			Surface::create(
-                realMeshName,
-				geometry,
-				material,
-				effect,
-				"default"
-			)
-		);
-	}
-#ifdef DEBUG
-	else
-		LOG_ERROR("Failed to find suitable effect for mesh '" << meshName << "' and no default effect provided.");
-#endif // DEBUG
+	minkoNode->addComponent(
+		Surface::create(
+            realMeshName,
+			geometry,
+			material,
+			effect,
+			"default"
+		)
+	);
 }
 
 void
@@ -715,13 +769,26 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 			: nullptr;
 
         if (cameraNode)
+		{
+			float half_fovy = atanf(tanf(aiCamera->mHorizontalFOV * .5f)
+				* aiCamera->mAspect);
+
             cameraNode
 			    ->addComponent(PerspectiveCamera::create(
 				    aiCamera->mAspect,
-				    aiCamera->mHorizontalFOV * aiCamera->mAspect, // need the vertical FOV
+				    half_fovy,
 				    aiCamera->mClipPlaneNear,
 				    aiCamera->mClipPlaneFar
 			    ));
+			if (!cameraNode->hasComponent<Transform>())
+				cameraNode->addComponent(Transform::create());
+
+			// cameraNode->component<Transform>()->matrix(math::inverse(math::lookAt(
+			// 	math::vec3(aiPosition.x, aiPosition.y, aiPosition.z),
+			// 	math::vec3(aiLookAt.x, aiLookAt.y, aiLookAt.z),
+			// 	math::vec3(aiUp.x, aiUp.y, aiUp.z)
+			// )));
+		}
 	}
 }
 
@@ -792,16 +859,15 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
             auto matrix     = math::lookAt(position, lookAt, math::vec3(0.f, 1.f, 0.f));
 		}
 
-		const float			diffuse			= 1.0f;
-		const float			specular		= 1.0f;
+		const float	diffuse	= 1.0f;
+		const float	specular = 1.0f;
+		const math::vec3 color = math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b);
+
         switch (aiLight->mType)
         {
             case aiLightSource_DIRECTIONAL:
 				lightNode->addComponent(
-					DirectionalLight::create(
-						diffuse,
-						specular
-					)->color(math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
+					DirectionalLight::create(diffuse, specular)->color(color)
 				);
                 break;
 
@@ -813,7 +879,7 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
 						aiLight->mAttenuationConstant,
 						aiLight->mAttenuationLinear,
 						aiLight->mAttenuationQuadratic
-					)->color(math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
+					)->color(color)
 				);
                 break;
 
@@ -827,7 +893,7 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
 						aiLight->mAttenuationConstant,
 						aiLight->mAttenuationLinear,
 						aiLight->mAttenuationQuadratic
-					)->color(math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
+					)->color(color)
 				);
                 break;
 
@@ -1095,12 +1161,12 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 		_alreadyAnimatedNodes.insert(n);
 	}
 
-	for (auto& n : slaves) // FIXME
-	{
-		if (n->parent())
-			n->parent()->removeChild(n);
-		skeletonRoot->addChild(n);
-	}
+	// for (auto& n : slaves) // FIXME
+	// {
+	// 	if (n->parent())
+	// 		n->parent()->removeChild(n);
+	// 	skeletonRoot->addChild(n);
+	// }
 
 	// add skinning component to mesh
     auto skinning = Skinning::create(
@@ -1111,7 +1177,8 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
     );
 
 	meshNode->addComponent(skinning);
-
+	std::cout << "skinned node: " << meshNode->name() << std::endl;
+	std::cout << "skinned node parent: " << meshNode->parent()->name() << std::endl;
 	meshNode->addComponent(MasterAnimation::create());
 
     auto irrelevantTransformNodes = std::set<Node::Ptr>();
@@ -1148,21 +1215,24 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
     {
         auto animatedNodeDescendants = NodeSet::create(animatedNode)
             ->descendants(true)
-            ->where([](Node::Ptr animatedNodeDescendant) -> bool { return animatedNodeDescendant->hasComponent<Transform>(); });
+            ->where([](Node::Ptr animatedNodeDescendant) -> bool
+			{
+				return animatedNodeDescendant->hasComponent<Transform>();
+			});
 
         irrelevantTransformNodes.insert(
             animatedNodeDescendants->nodes().begin(),
             animatedNodeDescendants->nodes().end()
         );
 
-        auto animatedNodeParent = animatedNode->parent();
-
-        while (animatedNodeParent != skeletonRoot)
-        {
-            irrelevantTransformNodes.insert(animatedNodeParent);
-
-            animatedNodeParent = animatedNodeParent->parent();
-        }
+        // auto animatedNodeParent = animatedNode->parent();
+		//
+        // while (animatedNodeParent != skeletonRoot)
+        // {
+        //     irrelevantTransformNodes.insert(animatedNodeParent);
+		//
+        //     animatedNodeParent = animatedNodeParent->parent();
+        // }
     }
 
     for (auto irrelevantTransformNode : irrelevantTransformNodes)
@@ -1533,6 +1603,12 @@ AbstractASSIMPParser::getIndexForTime(unsigned int	numKeys,
 	return lowerId;
 }
 
+math::vec3
+AbstractASSIMPParser::convert(const aiVector3t<float>& vec3)
+{
+    return math::vec3(vec3.x, vec3.y, vec3.z);
+}
+
 /*static*/
 math::quat
 AbstractASSIMPParser::convert(const aiQuaternion& quaternion)
@@ -1566,15 +1642,15 @@ AbstractASSIMPParser::convert(const aiVector3D&		scaling,
 	static auto rotation		= math::quat();
 	static auto rotationMatrix	= math::mat4();
 
-    rotationMatrix              = math::mat4_cast(convert(quaternion));
+    rotationMatrix              = math::mat4_cast(math::normalize(convert(quaternion)));
 	const auto& rotationData	= rotationMatrix;
 
     return math::mat4(
-		scaling.x * rotationData[0][0], scaling.y * rotationData[0][1], scaling.z * rotationData[0][2],  translation.x,
-		scaling.x * rotationData[1][0], scaling.y * rotationData[1][1], scaling.z * rotationData[1][2],  translation.y,
-		scaling.x * rotationData[2][0], scaling.y * rotationData[2][1], scaling.z * rotationData[2][2], translation.z,
-		0.f, 0.f, 0.f, 1.f
-	);
+		scaling.x * rotationData[0][0], scaling.y * rotationData[0][1], scaling.z * rotationData[0][2], 0.f,
+        scaling.x * rotationData[1][0], scaling.y * rotationData[1][1], scaling.z * rotationData[1][2], 0.f,
+        scaling.x * rotationData[2][0], scaling.y * rotationData[2][1], scaling.z * rotationData[2][2], 0.f,
+        translation.x, translation.y, translation.z, 1.f
+    );
 }
 
 material::Material::Ptr
@@ -1643,7 +1719,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		material->data()->set("shininess", 64.0f);
 
     auto transparent = opacity > 0.f && opacity < 1.f;
-	
+
     if (transparent)
     {
         diffuseColor.w = opacity;
@@ -1715,6 +1791,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
         uniqueMaterialName = materialName + "_" + std::to_string(materialNameId++);
     }
 
+    material->data()->set("name", uniqueMaterialName);
     auto processedMaterial = _options->materialFunction()(uniqueMaterialName, material);
 
     _aiMaterialToMaterial.insert(std::make_pair(aiMat, processedMaterial));
@@ -1918,63 +1995,70 @@ AbstractASSIMPParser::setScalarProperty(material::Material::Ptr	material,
 void
 AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 {
-	std::unordered_map<Node::Ptr, std::vector<animation::AbstractTimeline::Ptr>> nodeToTimelines;
+    if (scene->mNumAnimations == 0u)
+        return;
 
-	for (uint i = 0; i < scene->mNumAnimations; ++i)
-	{
-		const auto animation = scene->mAnimations[i];
-		if (animation->mTicksPerSecond < 1e-6)
-			continue;
+    sampleAnimations(scene);
 
-		const uint duration = (uint)floor(1e+3 * animation->mDuration / animation->mTicksPerSecond); // in milliseconds
+    if (_nameToAnimMatrices.empty())
+        return;
 
-		for (uint j = 0; j < animation->mNumChannels; ++j)
-		{
-			const auto	channel	= animation->mChannels[j];
-			auto		node	= findNode(channel->mNodeName.data);
-			if (node == nullptr || _alreadyAnimatedNodes.count(node) > 0)
-				continue;
+    auto nodeToTimelines = std::unordered_map<Node::Ptr, std::vector<animation::AbstractTimeline::Ptr>>();
 
-			const uint	numKeys	= channel->mNumPositionKeys;
-			// currently assume all keys are synchronized
-			assert(channel->mNumRotationKeys == numKeys &&
-				   channel->mNumScalingKeys == numKeys);
+    for (const auto& nameToMatricesPair : _nameToAnimMatrices)
+    {
+        auto node = _nameToNode.at(nameToMatricesPair.first);
+        auto ainode = _nodeToAiNode.at(node);
+        auto aiParentNode = ainode;
 
-			std::vector<uint>			timetable	(numKeys, 0);
-			std::vector<math::mat4>	    matrices	(numKeys, math::mat4());
+        auto isSkinned = false;
 
-			for (uint k = 0; k < numKeys; ++k)
-			{
-				const double keyTime = channel->mPositionKeys[k].mTime;
-				 // currently assume all keys are synchronized
-				assert((keyTime - channel->mRotationKeys[k].mTime) < 1e-6
-					&& std::abs(keyTime - channel->mScalingKeys[k].mTime) < 1e-6
-				);
+        while (aiParentNode != nullptr && !isSkinned)
+        {
+            for (auto i = 0u; i < aiParentNode->mNumMeshes; ++i)
+            {
+                auto meshId = aiParentNode->mMeshes[i];
 
-				const int time	= std::max(0, std::min(int(duration), (int)floor(1e+3 * keyTime)));
+                isSkinned |= scene->mMeshes[meshId]->mNumBones > 0u;
+            }
 
-				timetable[k]	= time;
-				matrices[k]		= convert(
-					channel->mScalingKeys[k].mValue,
-					channel->mRotationKeys[k].mValue,
-					channel->mPositionKeys[k].mValue
-				);
+            aiParentNode = aiParentNode->mParent;
+        }
 
-			}
+        if (isSkinned)
+            continue;
 
-			nodeToTimelines[node].push_back(animation::Matrix4x4Timeline::create(
-				PNAME_TRANSFORM,
-				duration,
-				timetable,
-				matrices,
-				interpolate
-			));
-		}
+        const auto& matrices = nameToMatricesPair.second;
 
-		// unroll the node to matrix timeline
-		for (auto& nodeAndTimelines : nodeToTimelines)
-			nodeAndTimelines.first->addComponent(Animation::create(nodeAndTimelines.second));
-	}
+        const auto numFrames = matrices.size();
+        const auto duration = numFrames * _options->skinningFramerate();
+
+        auto timetable = std::vector<unsigned int>(numFrames, 0u);
+
+        const auto timeStep = static_cast<float>(duration) / static_cast<float>(numFrames - 1);
+
+        for (auto frameId = 1u; frameId < numFrames; ++frameId)
+        {
+            timetable[frameId] = static_cast<unsigned int>(timetable[frameId - 1] + timeStep);
+        }
+
+        nodeToTimelines[node].push_back(animation::Matrix4x4Timeline::create(
+            PNAME_TRANSFORM,
+            duration,
+            timetable,
+            matrices,
+            interpolate
+        ));
+    }
+
+    // fixme: find actual animation root
+    auto animationRootNode = _nameToNode.at(_nameToAnimMatrices.begin()->first)->root();
+
+	for (auto& nodeAndTimelines : nodeToTimelines)
+		nodeAndTimelines.first->addComponent(Animation::create(nodeAndTimelines.second));
+
+    if (!animationRootNode->hasComponent<MasterAnimation>())
+        animationRootNode->addComponent(MasterAnimation::create());
 }
 
 void

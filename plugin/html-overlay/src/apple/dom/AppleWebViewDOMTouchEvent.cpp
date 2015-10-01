@@ -29,37 +29,37 @@ using namespace apple::dom;
 int
 AppleWebViewDOMTouchEvent::clientX()
 {
-    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].clientX");
+    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].clientX * window.devicePixelRatio");
 }
 
 int
 AppleWebViewDOMTouchEvent::clientY()
 {
-    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].clientY");
+    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].clientY * window.devicePixelRatio");
 }
 
 int
 AppleWebViewDOMTouchEvent::pageX()
 {
-    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].pageX");
+    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].pageX * window.devicePixelRatio");
 }
 
 int
 AppleWebViewDOMTouchEvent::pageY()
 {
-    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].pageY");
+    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].pageY * window.devicePixelRatio");
 }
 
 int
 AppleWebViewDOMTouchEvent::screenX()
 {
-    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].screenX");
+    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].screenX * window.devicePixelRatio");
 }
 
 int
 AppleWebViewDOMTouchEvent::screenY()
 {
-    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].screenY");
+    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].screenY * window.devicePixelRatio");
 }
 
 int

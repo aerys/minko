@@ -57,7 +57,7 @@ namespace minko
                 void
                 stopTracking();
                 
-                const math::mat4&
+                math::mat4
                 rotationMatrix();
 
                 const math::quat&
@@ -65,6 +65,30 @@ namespace minko
 
                 bool
                 isSupported();
+
+                inline
+                float
+                yaw() override
+                {
+                    // fixme
+                    return 0.f;
+                }
+
+                inline
+                float
+                pitch() override
+                {
+                    // fixme
+                    return 0.f;
+                }
+
+                inline
+                float
+                roll() override
+                {
+                    // fixme
+                    return 0.f;
+                }
 
                 static math::mat4 rotationMatrixValue;
                 static math::quat quaternionValue;

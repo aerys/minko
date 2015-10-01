@@ -350,6 +350,14 @@ namespace minko
             virtual
             void
             setUniformInt4(uint location, uint count, const int* v) = 0;
+
+            virtual
+            int
+            createVertexAttributeArray() = 0;
+
+            virtual
+            void
+            setVertexAttributeArray(const uint vertexArray) = 0;
         };
     }
 }

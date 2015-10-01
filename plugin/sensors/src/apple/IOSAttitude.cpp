@@ -60,7 +60,7 @@ IOSAttitude::stopTracking()
     [_manager stopDeviceMotionUpdates];
 }
 
-const math::mat4&
+math::mat4
 IOSAttitude::rotationMatrix()
 {
     CMDeviceMotion *motion = _manager.deviceMotion;
@@ -142,6 +142,24 @@ IOSAttitude::getRotateEulerMatrix(float x, float y, float z)
     matrix[3][3] = 1.0f;
     
     return matrix;
+}
+
+float
+IOSAttitude::yaw()
+{
+    return _manager.deviceMotion.attitude.yaw;
+}
+
+float
+IOSAttitude::pitch()
+{
+    return _manager.deviceMotion.attitude.pitch;
+}
+
+float
+IOSAttitude::roll()
+{
+    return _manager.deviceMotion.attitude.roll;
 }
 
 float

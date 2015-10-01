@@ -27,7 +27,7 @@ namespace minko
 {
     namespace oculus
     {
-        class VRImpl : 
+        class VRImpl :
             public std::enable_shared_from_this<VRImpl>
         {
         public:
@@ -68,12 +68,7 @@ namespace minko
             zFar() = 0;
 
             virtual
-            Signal<>::Ptr
-            actionButtonPressed() = 0;
-
-            virtual
-            Signal<>::Ptr
-            actionButtonReleased() = 0;
+            ~VRImpl() = default;
         };
     }
 }

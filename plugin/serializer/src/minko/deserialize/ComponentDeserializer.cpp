@@ -28,11 +28,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SpotLight.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Skinning.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/geometry/Bone.hpp"
 #include "minko/geometry/Skin.hpp"
 #include "minko/component/Renderer.hpp"
+#include "minko/component/Metadata.hpp"
 #include "msgpack.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/Dependency.hpp"
@@ -52,7 +54,7 @@ ComponentDeserializer::deserializeTransform(file::SceneVersion sceneVersion,
                                             std::string&                         packed,
 											std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											std::shared_ptr<file::Dependency>	dependencies)
-{	
+{
 	msgpack::type::tuple<uint, std::string>		dst;
 
     minko::deserialize::unpack(dst, packed.data(), packed.size() - 1);
@@ -61,7 +63,7 @@ ComponentDeserializer::deserializeTransform(file::SceneVersion sceneVersion,
 	std::tuple<uint, std::string&> serializedMatrixTuple(_0, _1);
 
 	auto transformMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
-    
+
     // For .scene file of version 0.2.x or less we need to transpose transform matrices
     if (sceneVersion.major <= 0 && sceneVersion.minor < 3)
     {
@@ -182,7 +184,13 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
 
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.get<0>());
 	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.get<1>());
-	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.get<2>());
+
+    const auto effectId = dst.get<2>();
+
+    auto effect = effectId != 0u
+        ? dependencies->getEffectReference(effectId)
+        : nullptr;
+
     auto uuid = std::string();
 	auto technique = std::string("default");
 	auto visible = true;
@@ -262,6 +270,23 @@ ComponentDeserializer::deserializeRenderer(file::SceneVersion sceneVersion,
     return renderer;
 }
 
+ComponentDeserializer::AbsComponentPtr
+ComponentDeserializer::deserializeMasterAnimation(file::SceneVersion    sceneVersion,
+                                                  std::string&          packed,
+											      AssetLibraryPtr	    assetLibrary,
+											      DependencyPtr	        dependencies)
+{
+    auto masterAnimation = component::MasterAnimation::create();
+
+    auto labels = std::vector<std::pair<std::string, unsigned int>>();
+
+    unpack(labels, packed.data(), packed.size() - 1);
+
+    for (const auto& label : labels)
+        masterAnimation->addLabel(label.first, label.second);
+
+    return masterAnimation;
+}
 
 ComponentDeserializer::AbsComponentPtr
 ComponentDeserializer::deserializeAnimation(file::SceneVersion sceneVersion,
@@ -293,7 +318,7 @@ ComponentDeserializer::deserializeAnimation(file::SceneVersion sceneVersion,
 		matrices.push_back(matrix);
 	}
 
-    timelines.push_back(animation::Matrix4x4Timeline::create("transform.matrix", duration, timetable, matrices, interpolate));
+    timelines.push_back(animation::Matrix4x4Timeline::create("matrix", duration, timetable, matrices, interpolate));
 
     return component::Animation::create(timelines);
 }
@@ -374,7 +399,7 @@ ComponentDeserializer::deserializeSkinning(file::SceneVersion sceneVersion,
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeBoundingBox(file::SceneVersion sceneVersion,
+ComponentDeserializer::deserializeBoundingBox(file::SceneVersion                    sceneVersion,
                                               std::string&                          packed,
                                               std::shared_ptr<file::AssetLibrary>   assetLibrary,
                                               std::shared_ptr<file::Dependency>     dependencies)
@@ -387,8 +412,21 @@ ComponentDeserializer::deserializeBoundingBox(file::SceneVersion sceneVersion,
 
 	return component::BoundingBox::create(
         componentData[3],
-                                                    componentData[4],
-                                                    componentData[5],
+        componentData[4],
+        componentData[5],
         math::vec3(componentData[0], componentData[1], componentData[2])
     );
+}
+
+std::shared_ptr<component::AbstractComponent>
+ComponentDeserializer::deserializeMetadata(file::SceneVersion                    sceneVersion,
+                                           std::string&                          packed,
+                                           std::shared_ptr<file::AssetLibrary>   assetLibrary,
+                                           std::shared_ptr<file::Dependency>     dependencies)
+{
+    component::Metadata::Data data;
+
+    unpack(data, packed.data(), packed.size() - 1);
+
+	return component::Metadata::create(data);
 }

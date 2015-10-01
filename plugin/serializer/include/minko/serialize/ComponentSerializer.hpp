@@ -46,13 +46,13 @@ namespace minko
 
 			static
 			std::string
-			serializePerspectiveCamera(NodePtr			    node, 
+			serializePerspectiveCamera(NodePtr			    node,
                                        AbstractComponentPtr component,
 									   DependencyPtr	    dependencies);
 
 			static
 			std::string
-			serializeAmbientLight(NodePtr		        node, 
+			serializeAmbientLight(NodePtr		        node,
                                   AbstractComponentPtr  component,
 								  DependencyPtr         dependencies);
 
@@ -64,7 +64,7 @@ namespace minko
 
 			static
 			std::string
-			serializePointLight(NodePtr			        node, 
+			serializePointLight(NodePtr			        node,
                                 AbstractComponentPtr    component,
 								DependencyPtr	        dependencies);
 
@@ -76,15 +76,21 @@ namespace minko
 
 			static
 			std::string
-			serializeSurface(NodePtr		        node, 
+			serializeSurface(NodePtr		        node,
                              AbstractComponentPtr   component,
 							 DependencyPtr	        dependencies);
 
 			static
 			std::string
-			serializeRenderer(NodePtr		        node, 
+			serializeRenderer(NodePtr		        node,
                               AbstractComponentPtr  component,
 							  DependencyPtr         dependencies);
+
+			static
+			std::string
+			serializeMasterAnimation(NodePtr 		        node,
+                                     AbstractComponentPtr   component,
+							         DependencyPtr 	        dependencies);
 
 			static
 			std::string
@@ -103,6 +109,12 @@ namespace minko
 			serializeBoundingBox(NodePtr 		        node,
                                  AbstractComponentPtr   component,
 								 DependencyPtr 	        dependencies);
+
+			static
+			std::string
+ 			serializeMetadata(NodePtr              	node,
+                              AbstractComponentPtr	component,
+                              DependencyPtr 	    dependencies);
 
 			static
 			std::string

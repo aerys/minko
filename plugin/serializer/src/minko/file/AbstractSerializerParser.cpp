@@ -213,6 +213,34 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 		_dependency->registerReference(asset.get<1>(), assetLibrary->material(_materialParser->_lastParsedAssetName));
 		_jobList.splice(_jobList.end(), _materialParser->_jobList);
 	}
+    else if (asset.get<0>() == serialize::AssetType::EFFECT_ASSET)
+    {
+        const auto& effectFilename = asset.get<2>();
+        const auto effectCompleteFilename = "effect/" + effectFilename;
+
+        auto effectLoaded = false;
+
+        auto effectLoader = Loader::create(options->clone());
+
+        effectLoader->options()->storeDataIfNotParsed(false);
+
+        auto errorSlot = effectLoader->error()->connect([](Loader::Ptr loaderThis, const Error& error)
+        {
+            LOG_ERROR(error.type() << ": " << error.what());
+        });
+
+        auto completeSlot = effectLoader->complete()->connect([&effectLoaded](Loader::Ptr loaderThis)
+        {
+            effectLoaded = true;
+        });
+
+        effectLoader
+            ->queue(effectCompleteFilename)
+            ->load();
+
+        if (effectLoaded)
+            _dependency->registerReference(asset.get<1>(), assetLibrary->effect(effectCompleteFilename));
+    }
     else if ((asset.get<0>() == serialize::AssetType::EMBED_TEXTURE_ASSET ||
         asset.get<0>() == serialize::AssetType::TEXTURE_ASSET) &&
 			(_dependency->textureReferenceExist(asset.get<1>()) == false || _dependency->getTextureReference(asset.get<1>()) == nullptr)) // texture
@@ -262,24 +290,31 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
              (_dependency->textureReferenceExist(asset.get<1>()) == false ||
              _dependency->getTextureReference(asset.get<1>()) == nullptr))
     {
-        resolvedPath = "texture_" + std::to_string(asset.get<1>());
+        const auto textureName = "texture_" + std::to_string(asset.get<1>());
 
-        if (assetLibrary->texture(resolvedPath) == nullptr)
+        auto uniqueTextureName = textureName;
+
+        while(assetLibrary->texture(uniqueTextureName) != nullptr)
         {
-            const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
-            auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);
+            static auto textureId = 0;
 
-            _textureParser->textureHeaderSize(textureHeaderSize);
-            _textureParser->dataEmbed(true);
+            uniqueTextureName = textureName + std::to_string(textureId++);
+        }
 
-            _textureParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
+        const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
+        auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);
 
-        	auto texture = assetLibrary->texture(resolvedPath);
+        _textureParser->textureHeaderSize(textureHeaderSize);
+        _textureParser->dataEmbed(true);
 
-        	if (options->disposeTextureAfterLoading())
-        	    texture->disposeData();
-		}
-		_dependency->registerReference(asset.get<1>(), assetLibrary->texture(resolvedPath));
+        _textureParser->parse(uniqueTextureName, assetCompletePath, options, data, assetLibrary);
+
+    	auto texture = assetLibrary->texture(uniqueTextureName);
+
+    	if (options->disposeTextureAfterLoading())
+    	    texture->disposeData();
+
+		_dependency->registerReference(asset.get<1>(), texture);
 	}
     else if (asset.get<0>() == serialize::AssetType::TEXTURE_PACK_ASSET)
     {
@@ -433,6 +468,7 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
     {
         auto textureHeaderLoader = Loader::create();
         auto textureHeaderOptions = textureOptions->clone()
+            ->parserFunction([](const std::string& extension) -> AbstractParser::Ptr { return nullptr; })
             ->loadAsynchronously(false)
             ->seekingOffset(0)
             ->seekedLength(assetHeaderSize)
@@ -461,7 +497,7 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
                     headerData.begin() + textureHeaderSizeOffset + 2
                 ));
 
-                headerDataStream >> textureHeaderSize;
+                headerDataStream.read(reinterpret_cast<char*>(&textureHeaderSize), 2u);
             }
         );
 

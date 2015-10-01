@@ -1,6 +1,6 @@
 @echo off
 
 pushd ..
-bash "%MINKO_HOME%\script\premake5.sh" --no-test --no-example --no-tutorial %* gmake
+call script\premake5.bat --no-test --no-example --no-tutorial %* gmake
 popd
 pause

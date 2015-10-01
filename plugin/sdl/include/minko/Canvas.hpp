@@ -98,7 +98,7 @@ namespace minko
 #if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)
         std::shared_ptr<audio::SDLAudio>                                        _audio;
 #endif
-        
+
         std::shared_ptr<input::SDLMouse>                                        _mouse;
         std::unordered_map<int, std::shared_ptr<input::SDLJoystick>>            _joysticks;
         std::shared_ptr<input::SDLKeyboard>                                     _keyboard;
@@ -165,7 +165,7 @@ namespace minko
         height();
 
         float
-        aspectRatio()
+        aspectRatio() override
         {
             return float(width()) / float(height());
         }
@@ -286,7 +286,7 @@ namespace minko
         resumed()
         {
             return _resumed;
-        }        
+        }
 
         inline
         minko::render::AbstractContext::Ptr
@@ -314,20 +314,20 @@ namespace minko
 
         inline
         float
-        framerate()
+        framerate() override
         {
             return _framerate;
         }
 
         inline
         float
-        desiredFramerate()
+        desiredFramerate() override
         {
             return _desiredFramerate;
         }
 
         void
-        desiredFramerate(float desiredFramerate);
+        desiredFramerate(float desiredFramerate) override;
 
         // Current frame execution time in milliseconds.
         inline

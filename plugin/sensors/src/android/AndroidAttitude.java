@@ -17,7 +17,7 @@ import org.libsdl.app.*;
 import java.util.ArrayList;
 
 /**
- * Provides head tracking information from the device IMU. 
+ * Provides head tracking information from the device IMU.
  */
 public class AndroidAttitude
 {
@@ -52,7 +52,7 @@ public class AndroidAttitude
 		_sensorEventListener = new SensorEventListener()
 		{
 			@Override
-			public void onSensorChanged(SensorEvent event) 
+			public void onSensorChanged(SensorEvent event)
 			{
 				AndroidAttitude.this.processSensorEvent(event);
 			}
@@ -63,17 +63,17 @@ public class AndroidAttitude
 			{
 			}
 		};
-		
+
 		Thread sensorThread = new Thread(new Runnable()
 		{
-			public void run() 
+			public void run()
 			{
 				Looper.prepare();
 
 				_sensorLooper = Looper.myLooper();
 				Handler handler = new Handler();
 				Sensor sensor = _sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
-				
+
 				if(sensor == null)
 					sensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 
@@ -83,8 +83,8 @@ public class AndroidAttitude
 					_isSupported = false;
 				}
 
-				_sensorManager.registerListener(_sensorEventListener, sensor, 0, handler);
-				
+				_sensorManager.registerListener(_sensorEventListener, sensor, SensorManager.SENSOR_DELAY_FASTEST, handler);
+
 				Log.i("minko-java", "[AndroidAttitude] START LOOP!");
 				_tracking = true;
 
@@ -119,7 +119,7 @@ public class AndroidAttitude
 		_sensorManager.getQuaternionFromVector(quaternion, rotationVector);
 		_sensorManager.getRotationMatrixFromVector(rotationMatrix, rotationVector);
 
-		switch (_display.getRotation()) 
+		switch (_display.getRotation())
 		{
 			case Surface.ROTATION_0:
 			    _sensorManager.remapCoordinateSystem(rotationMatrix, _sensorManager.AXIS_X, _sensorManager.AXIS_Y, rotationMatrixTransformed);
@@ -145,7 +145,7 @@ public class AndroidAttitude
 			SensorManager sensorManager = (SensorManager)_context.getSystemService("sensor");
 
 			Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
-			
+
 			if(sensor == null)
 				sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 

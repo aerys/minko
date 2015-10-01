@@ -14,10 +14,18 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include/android/**",
 		"include/apple/**",
 		"src/android/**",
-		"src/apple/**"		
+		"src/apple/**",
+		"include/emscripten/**",
+		"src/emscripten/**"
 	}
 
 	includedirs { "include" }
+
+	configuration { "html5" }
+		files {
+			"include/emscripten/**",
+			"src/emscripten/**"
+		}
 
 	configuration { "android" }
 		files {
@@ -25,7 +33,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/android/**"
 		}
 
-	-- Mac plateforms
+	-- Mac platforms
 	configuration { "ios or osx64" }
 		buildoptions { "-x objective-c++" }
 

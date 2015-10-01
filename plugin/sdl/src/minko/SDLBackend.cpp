@@ -26,7 +26,7 @@ using namespace minko;
 
 SDLBackend::SDLBackend()
 {
-    
+
 }
 
 void

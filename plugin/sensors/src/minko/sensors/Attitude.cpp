@@ -27,6 +27,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "apple/IOSAttitude.hpp"
 #endif
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+# include "emscripten/EmscriptenAttitude.hpp"
+#endif
+
 using namespace minko;
 using namespace sensors;
 
@@ -40,6 +44,8 @@ Attitude::Attitude() :
     _attitudeManager = android::sensors::AndroidAttitude::create();
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
     _attitudeManager = apple::sensors::IOSAttitude::create();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    _attitudeManager = emscripten::sensors::EmscriptenAttitude::create();
 #endif
 }
 
@@ -61,7 +67,7 @@ Attitude::stopTracking()
     _attitudeManager->stopTracking();
 }
 
-const math::mat4& 
+math::mat4
 Attitude::rotationMatrix()
 {
     return _attitudeManager->rotationMatrix();
@@ -71,6 +77,24 @@ const math::quat&
 Attitude::quaternion()
 {
     return _attitudeManager->quaternion();
+}
+
+float
+Attitude::yaw()
+{
+    return _attitudeManager->yaw();
+}
+
+float
+Attitude::pitch()
+{
+    return _attitudeManager->pitch();
+}
+
+float
+Attitude::roll()
+{
+    return _attitudeManager->roll();
 }
 
 bool

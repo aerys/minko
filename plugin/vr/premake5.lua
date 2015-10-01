@@ -14,7 +14,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/opengl/include",
 	}
 
-	configuration { "android or ios" }
+	configuration { "android or ios or html5" }
 		minko.plugin.enable("sensors")
 
 	configuration { "windows32 or windows64" }
@@ -45,8 +45,10 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 
 	configuration { "osx64" }
+		buildoptions { "-x objective-c++" }
 		files {
-			"lib/libovr/osx/**.cpp"
+			"lib/libovr/osx/**.cpp",
+			"lib/libovr/osx/src/Util/Util_SystemInfo_OSX.mm"
 		}
 		includedirs {
 			"lib/libovr/osx/src",
@@ -59,7 +61,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/minko/oculus/WebVROculus.cpp",
 		}
 
-	configuration { "not android or ios" }
+	configuration { "not android", "not ios", "not html5" }
 		excludes {
 			"include/minko/oculus/Cardboard.hpp",
 			"src/minko/oculus/Cardboard.cpp",

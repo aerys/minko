@@ -42,7 +42,8 @@ math::OctTree::OctTree(float				worldSize,
 	_depth(depth),
 	_splitted(false),
 	_worldSize(worldSize),
-	_center(center)
+	_center(center),
+    _frustumLastPlaneId(0u)
 {
 	float edgel = edgeLength();
 
@@ -125,67 +126,70 @@ math::OctTree::Ptr
 math::OctTree::insert(std::shared_ptr<scene::Node> node)
 {
 	// already reference by the octTree
-	if (_nodeToOctant.find(node) != _nodeToOctant.end())
+	if (_nodeToOctants.find(node) != _nodeToOctants.end())
 		return shared_from_this();
 
 	if (!node->hasComponent<component::BoundingBox>())
 		node->addComponent(component::BoundingBox::create());
 
-	auto nodeBoundingBox = node->component<component::BoundingBox>();
-	const auto& modelToWorld = node->component<component::Transform>()->modelToWorldMatrix(true);
+	uint optimalDepth = std::min(computeDepth(node), _maxDepth);
+	uint currentDepth = 0u;
+	auto octant = shared_from_this();
 
-	// insert
-	uint optimalDepth	= std::min(computeDepth(node), _maxDepth);
-	uint currentDepth	= 0;
-	auto octant			= shared_from_this();
-
-	math::vec3		newNodeCenter(
-		(nodeBoundingBox->box()->bottomLeft().x + nodeBoundingBox->box()->topRight().x) / 2.f,
-		(nodeBoundingBox->box()->bottomLeft().y + nodeBoundingBox->box()->topRight().y) / 2.f,
-		(nodeBoundingBox->box()->bottomLeft().z + nodeBoundingBox->box()->topRight().z) / 2.f
-	);
-
-	for (currentDepth = 0; currentDepth != optimalDepth; ++currentDepth)
-	{
-		if (!octant->_splitted)
-			octant->split();
-
-		uint xIndex = 0;
-		uint yIndex = 0;
-		uint zIndex = 0;
-
-		if (newNodeCenter.x > octant->_center.x)
-			xIndex = 1;
-
-		if (newNodeCenter.y > octant->_center.y)
-			yIndex = 1;
-
-		if (newNodeCenter.z > octant->_center.z)
-			zIndex = 1;
-
-		octant = octant->_children[xIndex + (yIndex << 1) + (zIndex << 2)];
-	}
-
-	octant->_content.push_back(node);
-	octant->addChildContent(node);
-	_nodeToOctant[node] = octant;
-	//_matrixToNode[node->data()->get<math::mat4>("transform.modelToWorldMatrix")] = node;
-
-	if (_nodeToTransformChangedSlot.find(node) == _nodeToTransformChangedSlot.end())
-	{
-		_nodeToTransformChangedSlot[node] = node->data().propertyChanged("modelToWorldMatrix").connect(std::bind(
-			&math::OctTree::nodeModelToWorldChanged,
-			shared_from_this()
-        ));
-	}
+    doInsert(octant, node, 0, optimalDepth);
 
 	return shared_from_this();
+}
+
+void
+math::OctTree::doInsert(Ptr octant, NodePtr node, unsigned int currentDepth, unsigned int optimalDepth)
+{
+    if (currentDepth == optimalDepth)
+    {
+        octant->_content.push_back(node);
+
+        octant->addChildContent(node);
+
+        return;
+    }
+
+    if (!octant->_splitted)
+        octant->split();
+
+    node->component<component::Transform>()->updateModelToWorldMatrix();
+    auto nodeBox = node->component<component::BoundingBox>()->box();
+
+    const auto nodeMinBound = nodeBox->bottomLeft();
+    const auto nodeMaxBound = nodeBox->topRight();
+
+    for (auto childOctant : octant->_children)
+    {
+        const auto childMinBound = childOctant->_octantBox->bottomLeft();
+        const auto childMaxBound = childOctant->_octantBox->topRight();
+
+        if (nodeMinBound.x >= childMaxBound.x ||
+            nodeMaxBound.x < childMinBound.x)
+            continue;
+
+        if (nodeMinBound.y >= childMaxBound.y ||
+            nodeMaxBound.y < childMinBound.y)
+            continue;
+
+        if (nodeMinBound.z >= childMaxBound.z ||
+            nodeMaxBound.z < childMinBound.z)
+            continue;
+
+        doInsert(childOctant, node, currentDepth + 1u, optimalDepth);
+    }
 }
 
 bool
 math::OctTree::nodeChangedOctant(std::shared_ptr<scene::Node> node)
 {
-	auto octant = _nodeToOctant[node];
+    // FIXME
+
+/*
+	auto octant = _nodeToOctants[node].front();
 	auto nodeBoundingBox = node->component<component::BoundingBox>();
 
 	math::vec3 nodeCenter(
@@ -196,7 +200,9 @@ math::OctTree::nodeChangedOctant(std::shared_ptr<scene::Node> node)
 
 	if (::sqrt(pow(nodeCenter.x - octant->_center.x, 2.f) + pow(nodeCenter.y - octant->_center.y, 2.f) + pow(nodeCenter.z - octant->_center.z, 2.f)) < octant->edgeLength())
 		return false;
-	return true;
+*/
+
+	return false;
 }
 
 void
@@ -220,40 +226,70 @@ math::OctTree::testFrustum(std::shared_ptr<math::AbstractShape>				frustum,
 					 std::function<void(std::shared_ptr<scene::Node>)>	insideFrustumCallback,
 					 std::function<void(std::shared_ptr<scene::Node>)>	outsideFustumCallback)
 {
-	auto result = frustum->testBoundingBox(_octantBox);
+    for (auto node : _childrenContent)
+        _nodeToInsideFrustumRefCountMap[node] = 0u;
 
-	if (result == ShapePosition::AROUND || result == ShapePosition::INSIDE)
-	{
-		if (_splitted)
-		{
-			for (auto octantChild : _children)
-				octantChild->testFrustum(frustum, insideFrustumCallback, outsideFustumCallback);
-		}
+    doTestFrustum(frustum, _nodeToInsideFrustumRefCountMap);
 
-		for (auto node : _content)
-			insideFrustumCallback(node);
-	}
-	else
-	{
-		for (auto node : _childrenContent)
-			outsideFustumCallback(node);
-	}
+    for (auto nodeToInsideFrustumRefCountPair : _nodeToInsideFrustumRefCountMap)
+    {
+        auto node = nodeToInsideFrustumRefCountPair.first;
+
+        if (nodeToInsideFrustumRefCountPair.second == 0u)
+        {
+            outsideFustumCallback(node);
+        }
+        else
+        {
+            insideFrustumCallback(node);
+        }
+    }
+}
+
+void
+math::OctTree::doTestFrustum(math::AbstractShape::Ptr                   frustum,
+                             std::unordered_map<NodePtr, unsigned int>& refCountMap)
+{
+    auto frustumPtr = std::dynamic_pointer_cast<Frustum>(frustum);
+
+    if (frustumPtr)
+    {
+        const auto result = frustumPtr->testBoundingBox(_octantBox, _frustumLastPlaneId);
+
+        const auto shapePosition = result.first;
+        _frustumLastPlaneId = result.second;
+
+        if (shapePosition == ShapePosition::AROUND || shapePosition == ShapePosition::INSIDE)
+        {
+            if (_splitted)
+            {
+                for (auto octantChild : _children)
+                    octantChild->doTestFrustum(frustum, refCountMap);
+            }
+
+            for (auto node : _content)
+                ++refCountMap[node];
+        }
+    }
 }
 
 math::OctTree::Ptr
 math::OctTree::remove(std::shared_ptr<scene::Node> node)
 {
 	// not reference by the octTree
-	if (_nodeToOctant.find(node) == _nodeToOctant.end())
+	if (_nodeToOctants.find(node) == _nodeToOctants.end())
 		return shared_from_this();
 
+    // FIXME
+
+/*
 	auto octant = _nodeToOctant[node];
 
 	octant->_content.remove(node);
 
 	_nodeToOctant.erase(node);
-	//_matrixToNode.erase(node->data()->get<math::mat4::Ptr>("transform.modelToWorldMatrix"));
-
+	_matrixToNode.erase(node->data()->get<math::mat4::Ptr>("transform.modelToWorldMatrix"));
+*/
 
 	return shared_from_this();
 }

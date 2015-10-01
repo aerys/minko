@@ -42,7 +42,8 @@ MaterialWriter::MaterialWriter()
 	_typeToWriteFunction[&typeid(math::vec3)]		        = std::bind(&serialize::TypeSerializer::serializeVector3, std::placeholders::_1);
 	_typeToWriteFunction[&typeid(math::vec4)]		        = std::bind(&serialize::TypeSerializer::serializeVector4, std::placeholders::_1);
 	_typeToWriteFunction[&typeid(render::Blending::Mode)]	= std::bind(&serialize::TypeSerializer::serializeBlending, std::placeholders::_1);
-	_typeToWriteFunction[&typeid(render::TriangleCulling)]	= std::bind(&serialize::TypeSerializer::serializeCulling, std::placeholders::_1);
+    _typeToWriteFunction[&typeid(render::TriangleCulling)] = std::bind(&serialize::TypeSerializer::serializeCulling, std::placeholders::_1);
+    _typeToWriteFunction[&typeid(std::string)] = std::bind(&serialize::TypeSerializer::serializeString, std::placeholders::_1);
 }
 
 std::string
@@ -90,6 +91,8 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 			continue;
 		else if (serializeMaterialValue<TextureSampler>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
+        else if (serializeMaterialValue<std::string>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+            continue;
         else
         {
             LOG_DEBUG(propertyName << " can't be serialized : missing technique");

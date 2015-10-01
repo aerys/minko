@@ -1,10 +1,9 @@
 {
     "name" : "phong",
     "techniques" : [{
-        "name" : "phong-technique",
+        "name" : "default",
         "passes" : [
             {
-                "name" : "phong-pass",
                 "extends" : {
                     "effect"    : "BaseStreamingTemplate.effect",
                     "technique" : "base-streaming-technique",
@@ -116,7 +115,7 @@
                     "uDirLight3_shadowMap"              : {
                         "binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" },
                         "wrapMode" : "clamp",
-                        "textureFilter" : "linear", 
+                        "textureFilter" : "linear",
                         "mipFilter": "linear"
                     },
                     "uPointLight0_color"                : { "binding" : { "property" : "pointLight[0].color", "source" : "root" } },

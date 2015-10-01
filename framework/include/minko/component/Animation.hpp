@@ -55,10 +55,12 @@ namespace minko
 			}
 
             AbstractComponent::Ptr
-            clone(const CloneOption& option);
+            clone(const CloneOption& option) override;
 
             void
-            rebindDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
+            rebindDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& 	componentsMap,
+							   std::map<NodePtr, NodePtr>& 		nodeMap,
+							   CloneOption 						option) override;
 
 			inline
 			uint
@@ -83,7 +85,10 @@ namespace minko
 
         protected:
             void
-            initialize();
+            initialize() override;
+
+            void
+            targetAdded(NodePtr target) override;
 
 		private:
 			Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
@@ -91,8 +96,7 @@ namespace minko
             Animation(const Animation& anim,const CloneOption& option);
 
 			void
-			update();
-
+			update() override;
 
 			void
             frameBeginHandler(std::shared_ptr<SceneManager> manager, float time, float deltaTime) override
@@ -108,7 +112,7 @@ namespace minko
 			}
 
             inline
-			void 
+			void
             checkLabelHit(uint previousTime, uint newTime) override
 			{
 					AbstractAnimation::checkLabelHit(previousTime, newTime);

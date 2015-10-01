@@ -139,3 +139,9 @@ TypeDeserializer::deserializeTextureId(const std::tuple<uint, std::string&>& ser
 {
     return Any(std::get<0>(seriliazedTextureId) & 0x00FFFFFF);
 }
+
+Any
+TypeDeserializer::deserializeString(const std::tuple<uint, std::string&>& serialized)
+{
+    return Any(std::get<1>(serialized));
+}

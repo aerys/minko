@@ -35,6 +35,7 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
+    _enabled(true),
     _pass(pass),
     _rootData(rootData),
     _rendererData(rendererData),
@@ -64,7 +65,8 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
     _modelToWorldMatrix(nullptr),
     _worldToScreenMatrix(nullptr),
     _modelToWorldMatrixPropertyRemovedSlot(nullptr),
-    _worldToScreenMatrixPropertyRemovedSlot(nullptr)
+    _worldToScreenMatrixPropertyRemovedSlot(nullptr),
+    _vertexAttribArray(0)
 {
     // For Z-sorting
     bindPositionalMembers();
@@ -98,6 +100,7 @@ DrawCall::reset()
     _uniformBool.clear();
     _samplers.clear();
     _attributes.clear();
+    _vertexAttribArray = 0;
 }
 
 void
@@ -170,6 +173,11 @@ DrawCall::bindAttribute(ConstAttrInputRef                                       
 
             if (it == _program->setAttributeNames().end())
             {
+                LOG_ERROR(
+                    "Program \"" + _program->name() + "\": the attribute \"" + input.name
+                    + "\" is not bound, has not been set and no default value was provided."
+                    );
+
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the attribute \"" + input.name
                     + "\" is not bound, has not been set and no default value was provided."
@@ -198,6 +206,12 @@ DrawCall::bindAttribute(ConstAttrInputRef                                       
         {
             if (!defaultValues.hasProperty(input.name))
             {
+                LOG_ERROR(
+                    "Program \"" + _program->name() + "\": the attribute \""
+                    + input.name + "\" is bound to the \"" + binding->propertyName
+                    + "\" property but it's not defined and no default value was provided."
+                );
+
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the attribute \""
                     + input.name + "\" is bound to the \"" + binding->propertyName
@@ -245,6 +259,11 @@ DrawCall::bindUniform(ConstUniformInputRef                                      
 
             if (it == _program->setUniformNames().end())
             {
+                LOG_ERROR(
+                    "Program \"" + _program->name() + "\": the uniform \"" + input.name
+                    + "\" is not bound, has not been set and no default value was provided."
+                    );
+
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the uniform \"" + input.name
                     + "\" is not bound, has not been set and no default value was provided."
@@ -260,6 +279,12 @@ DrawCall::bindUniform(ConstUniformInputRef                                      
         {
             if (!defaultValues.hasProperty(input.name))
             {
+                LOG_ERROR(
+                    "Program \"" + _program->name() + "\": the uniform \""
+                    + input.name + "\" is bound to the \"" + binding->propertyName
+                    + "\" property but it's not defined and no default value was provided."
+                    );
+
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the uniform \""
                     + input.name + "\" is bound to the \"" + binding->propertyName
@@ -379,14 +404,30 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
             break;
         case ProgramInputs::Type::sampler2d:
         case ProgramInputs::Type::samplerCube:
-            _samplers.push_back({
-                static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
-                store.getPointer<TextureSampler>(propertyName),
-                input.location
-            });
+        {
+            auto samplerIt = std::find_if(
+                _samplers.begin(),
+                _samplers.end(),
+                [&input](const SamplerValue& samplerValue) -> bool { return samplerValue.location == input.location; }
+            );
+
+            if (samplerIt == _samplers.end())
+            {
+                _samplers.push_back({
+                    static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
+                    store.getPointer<TextureSampler>(propertyName),
+                    input.location
+                });
+            }
+            else
+            {
+                samplerIt->sampler = store.getPointer<TextureSampler>(propertyName);
+            }
+        }
         break;
         case ProgramInputs::Type::float9:
         case ProgramInputs::Type::unknown:
+            LOG_ERROR("unsupported program input type: " + ProgramInputs::typeToString(input.type));
             throw std::runtime_error("unsupported program input type: " + ProgramInputs::typeToString(input.type));
         break;
     }
@@ -663,8 +704,11 @@ void
 DrawCall::render(AbstractContext::Ptr   context,
                  AbstractTexture::Ptr   renderTarget,
                  const math::ivec4&     viewport,
-                 uint                   clearColor) const
+                 uint                   clearColor)
 {
+    if (!this->enabled())
+        return;
+
     context->setProgram(_program->id());
 
     auto hasOwnTarget = _target && _target->id;
@@ -740,16 +784,23 @@ DrawCall::render(AbstractContext::Ptr   context,
         context->setSamplerStateAt(s.position, *s.wrapMode, *s.textureFilter, *s.mipFilter);
     }
 
-    // for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
-    //     context->setTextureAt(numSamplers, -1, -1);
+    if (_vertexAttribArray == 0)
+    {
+        _vertexAttribArray = context->createVertexAttributeArray();
 
-    for (const auto& a : _attributes)
-        context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
-    /*
-    for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
-        context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
-    */
-
+        if (_vertexAttribArray != -1)
+        {
+            context->setVertexAttributeArray(_vertexAttribArray);
+            for (const auto& a : _attributes)
+                context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
+        }
+    }
+    if (_vertexAttribArray != -1)
+        context->setVertexAttributeArray(_vertexAttribArray);
+    else
+        for (const auto& a : _attributes)
+            context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
+    
     context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);
     context->setDepthTest(*_depthMask, *_depthFunc);

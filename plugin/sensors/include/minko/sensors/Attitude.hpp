@@ -50,11 +50,20 @@ namespace minko
             void
             stopTracking() override;
             
-            const math::mat4&
+            math::mat4
             rotationMatrix() override;
 
             const math::quat&
             quaternion() override;
+            
+            float
+            yaw() override;
+            
+            float
+            pitch() override;
+            
+            float
+            roll() override;
             
             bool
             isSupported() override;

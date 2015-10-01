@@ -95,11 +95,6 @@ Matrix4x4Timeline::update(uint time,
 	if (_isLocked || _duration == 0 || _matrices.empty())
 		return;
 
-	if (!data.hasProperty(_propertyName))
-		return;
-
-	auto matrix	= data.get<math::mat4>(_propertyName);
-
     if (_interpolate)
     	data.set(_propertyName, interpolate(time));
     else
@@ -131,5 +126,5 @@ Matrix4x4Timeline::interpolate(uint time) const
 		? (t - current.first) / (float)(next.first - current.first)
 		: 0.0f;
 
-	return math::interpolate(current.second, next.second, ratio);
+	return math::mix(current.second, next.second, ratio);
 }

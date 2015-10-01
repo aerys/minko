@@ -38,6 +38,7 @@ using namespace minko::render;
 
 bool
 CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
+                         const std::string&                        textureType,
                          std::shared_ptr<WriterOptions>            writerOptions,
                          render::TextureFormat                     outFormat,
                          std::vector<unsigned char>&               out)
@@ -55,7 +56,7 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
     const auto startTimeStamp = std::clock();
 
-    const auto generateMipmaps = writerOptions->generateMipmaps();
+    const auto generateMipmaps = writerOptions->generateMipmaps(textureType);
 
     switch (texture->type())
     {
@@ -68,7 +69,7 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             texture2d->data().end()
         );
 
-        const auto useSRGBSpace = writerOptions->useTextureSRGBSpace();
+        const auto useSRGBSpace = writerOptions->useTextureSRGBSpace(textureType);
 
         crn_comp_params compressorParameters;
 

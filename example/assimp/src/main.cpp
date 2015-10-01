@@ -118,8 +118,8 @@ main(int argc, char** argv)
         ->addComponent(Transform::create(
             math::inverse(
                 math::lookAt(
-                    math::vec3(0.25f, 0.75f, 2.5f), 
-                    math::vec3(0.f, 0.75f, 0.f), 
+                    math::vec3(0.25f, 0.75f, 2.5f),
+                    math::vec3(0.f, 0.75f, 0.f),
                     math::vec3(0, 1, 0))
                 )
             )
@@ -127,6 +127,11 @@ main(int argc, char** argv)
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio())
         );
     root->addChild(camera);
+
+    auto error = sceneManager->assets()->loader()->error()->connect([=](file::Loader::Ptr loader, file::Error e)
+    {
+        std::cout << "error" << e.what() << std::endl;
+    });
 
     auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
     {
@@ -147,14 +152,14 @@ main(int argc, char** argv)
             ->descendants(true)
             ->where([](scene::Node::Ptr n)
         {
-            return n->hasComponent<MasterAnimation>();
+			return n->hasComponent<MasterAnimation>();
         });
 
         auto skinnedNode = !skinnedNodes->nodes().empty()
                            ? skinnedNodes->nodes().front()
                            : nullptr;
 
-        anim = skinnedNode->component<MasterAnimation>()
+		anim = skinnedNode->component<MasterAnimation>()
             ->addLabel(LABEL_RUN_START,        0)
             ->addLabel(LABEL_RUN_STOP,        800)
             ->addLabel(LABEL_IDLE,            900)

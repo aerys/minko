@@ -19,8 +19,10 @@ attribute vec2 aUV1;
 #endif
 
 #ifdef SKINNING_NUM_BONES
+# if SKINNING_NUM_BONES != 0
 attribute vec4 aBoneWeightsA;
 attribute vec4 aBoneWeightsB;
+# endif
 #endif
 
 #ifdef VERTEX_POP_PROTECTED
@@ -90,7 +92,9 @@ void main(void)
 	vec4 pos = vec4(aPosition, 1.0);
 
 	#ifdef SKINNING_NUM_BONES
-		pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);
+        #if SKINNING_NUM_BONES != 0
+		  pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);
+        #endif
 	#endif
 
     #ifdef POP_LOD_ENABLED

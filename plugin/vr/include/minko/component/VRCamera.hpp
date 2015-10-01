@@ -79,17 +79,14 @@ namespace minko
             }
 
             void
+            forceRatio(float aspectRatio);
+
+            void
             updateViewport(int viewportWidth, int viewportHeight);
 
             static
             bool
             detected();
-
-            Signal<>::Ptr
-            actionButtonPressed();
-
-             Signal<>::Ptr
-            actionButtonReleased();
 
         public:
             ~VRCamera();
@@ -117,4 +114,3 @@ namespace minko
         };
     }
 }
-

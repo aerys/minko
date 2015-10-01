@@ -380,9 +380,10 @@ void main(void)
 	float shininessCoeff = 1.0;
 	vec3 eyeVector = normalize(uCameraPosition - vVertexPosition); // always in world-space
 	vec3 normalVector = normalize(vVertexNormal); // always in world-space
-    vec2 uv = vVertexUV;
 
     #if defined VERTEX_UV && (defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP)
+        vec2 uv = vVertexUV;
+
         #ifdef UV_SCALE
             uv *= uUVScale;
         #endif // UV_SCALE
@@ -417,6 +418,8 @@ void main(void)
 			discard;
 	#endif // ALPHA_THRESHOLD
 
+    vec4 lightMapDiffuse = vec4(0.0);
+
     #if (defined (VERTEX_UV) || defined(VERTEX_UV1)) && defined(LIGHT_MAP)
         vec2 lightMapUV = vec2(0.0);
 
@@ -427,9 +430,9 @@ void main(void)
         #endif
 
         #ifdef LIGHT_MAP_LOD
-            diffuse = lightMapping_multiply(diffuse, texturelod_texture2D(uLightMap, lightMapUV, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0)));
+            lightMapDiffuse = texturelod_texture2D(uLightMap, lightMapUV, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0));
         #else
-            diffuse = lightMapping_multiply(diffuse, texture2D(uLightMap, lightMapUV));
+            lightMapDiffuse = texture2D(uLightMap, lightMapUV);
         #endif
     #endif // (VERTEX_UV || VERTEX_UV1) && LIGHT_MAP
 
@@ -659,7 +662,7 @@ void main(void)
 
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 
-	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
+	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum + lightMapDiffuse.rgb) + specular.a * specularAccum;
 
 	#if defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
 

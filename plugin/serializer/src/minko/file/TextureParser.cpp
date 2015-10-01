@@ -73,6 +73,19 @@ TextureParser::parse(const std::string&                filename,
 {
     readHeader(filename, data, 0x00000054);
 
+    if (_textureHeaderSize == 0)
+    {
+        const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2 + 2;
+        const auto textureHeaderSizeOffset = assetHeaderSize - 2;
+
+        std::stringstream headerDataStream(std::string(
+            data.begin() + textureHeaderSizeOffset,
+            data.begin() + textureHeaderSizeOffset + 2
+        ));
+
+        headerDataStream.read(reinterpret_cast<char*>(&_textureHeaderSize), 2u);
+    }
+
     auto textureHeaderOffset = _headerSize + _dependencySize + 2;
     auto textureBlobOffset = textureHeaderOffset + _textureHeaderSize;
 
@@ -136,7 +149,8 @@ TextureParser::parse(const std::string&                filename,
             ->seekingOffset(offset)
             ->seekedLength(length)
             ->loadAsynchronously(false)
-            ->storeDataIfNotParsed(false);
+            ->storeDataIfNotParsed(false)
+            ->parserFunction([](const std::string& extension) -> AbstractParser::Ptr { return nullptr; });
 
         auto loader = Loader::create();
 

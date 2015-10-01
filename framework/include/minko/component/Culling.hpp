@@ -28,8 +28,7 @@ namespace minko
 {
 	namespace component
 	{
-		class Culling :
-			public AbstractComponent
+		class Culling : public AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<Culling>    Ptr;
@@ -40,11 +39,15 @@ namespace minko
             typedef std::shared_ptr<data::Provider>             		ProviderPtr;
             typedef Flyweight<std::string>		                		String;
             typedef Signal<data::Store&, ProviderPtr, const String&>   	PropertyChangedSignal;
+			typedef std::shared_ptr<render::AbstractTexture>			AbsTexPtr;
+			typedef std::shared_ptr<SceneManager>						SceneMngrPtr;
+			typedef Signal<SceneMngrPtr, uint, AbsTexPtr>::Slot			RenderingBeginSlot;
 
 		private:
 			std::shared_ptr<math::OctTree>			        _octTree;
             float                                           _worldSize;
             unsigned int                                    _maxDepth;
+			scene::Layout									_layout;
 
 			std::string										_bindProperty;
 			std::shared_ptr<math::AbstractShape>			_frustum;
@@ -55,13 +58,17 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedToSceneSlot;
 			Signal<NodePtr, NodePtr>::Slot					_layoutChangedSlot;
 			PropertyChangedSignal::Slot	                    _viewMatrixChangedSlot;
+			bool											_updateNextFrame;
+			RenderingBeginSlot								_renderingBeginSlot;
 
 		public:
 			inline static
 			Ptr
-			create(ShapePtr	shape, const std::string& bindPropertyName)
+			create(ShapePtr				shape,
+				   const std::string&	bindPropertyName,
+					scene::Layout		layout = scene::BuiltinLayout::DEFAULT)
 			{
-                return std::shared_ptr<Culling>(new Culling(shape, bindPropertyName));
+                return std::shared_ptr<Culling>(new Culling(shape, bindPropertyName, layout));
 			}
 
             inline
@@ -104,7 +111,7 @@ namespace minko
             targetRemoved(NodePtr target);
 
 		private:
-			Culling(ShapePtr shape, const std::string& bindProperty);
+			Culling(ShapePtr shape, const std::string& bindProperty, scene::Layout layout);
 
             void
             addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
@@ -113,14 +120,7 @@ namespace minko
 			layoutChangedHandler(NodePtr node, NodePtr target);
 
 			void
-			worldToScreenChangedHandler(data::Store&    data,
-                                        const String&	propertyName);
-
-			void
 			targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancestor);
-
-            void
-            nodeCulled(NodePtr node, bool insideFrustum);
 		};
 	}
 }

@@ -58,9 +58,7 @@ Surface::Surface(const std::string&	name,
     _provider(data::Provider::create()),
 	_technique(technique)
 {
-	if (_effect == nullptr)
-		throw std::invalid_argument("effect");
-	if (!_effect->hasTechnique(_technique))
+	if (_effect != nullptr && !_effect->hasTechnique(_technique))
 		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
 
     initializeIndexRange(geometry);
@@ -80,9 +78,7 @@ Surface::Surface(const std::string& uuid,
     _provider(data::Provider::create(uuid)),
 	_technique(technique)
 {
-	if (_effect == nullptr)
-		throw std::invalid_argument("effect");
-	if (!_effect->hasTechnique(_technique))
+	if (_effect != nullptr && !_effect->hasTechnique(_technique))
 		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
 
     initializeIndexRange(geometry);
@@ -131,7 +127,9 @@ Surface::targetAdded(scene::Node::Ptr target)
     targetData.addProvider(_provider, SURFACE_COLLECTION_NAME);
     targetData.addProvider(_material->data(), MATERIAL_COLLECTION_NAME);
     targetData.addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
-    targetData.addProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+
+    if (_effect != nullptr)
+        targetData.addProvider(_effect->data(), EFFECT_COLLECTION_NAME);
 }
 
 void
@@ -143,7 +141,7 @@ Surface::targetRemoved(scene::Node::Ptr target)
     // the pool anyway.
     // Solution: we wait for the componentRemoved() signal on the target's root. That's the same signal the
     // Renderer is listening too, but with a higher priority. Thus, when we will remove the providers the corresponding
-    // signals will be disconnected already. 
+    // signals will be disconnected already.
     _bubbleUpSlot = target->root()->componentRemoved().connect([this, target](Node::Ptr n, Node::Ptr t, AbsCmpPtr c)
     {
         _bubbleUpSlot = nullptr;
@@ -153,7 +151,9 @@ Surface::targetRemoved(scene::Node::Ptr target)
         targetData.removeProvider(_provider, SURFACE_COLLECTION_NAME);
         targetData.removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
         targetData.removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
-        targetData.removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+
+        if (_effect != nullptr)
+            targetData.removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
     });
 }
 
@@ -223,7 +223,7 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 	if (effect == nullptr)
 		throw std::invalid_argument("effect");
 	if (!effect->hasTechnique(technique))
-		throw std::logic_error("Effect does not provide a '" + technique + "' technique.");
+		throw std::logic_error("The effect \"" + effect->name() + "\" does not provide the \"" + _technique + "\" technique.");
 
     auto changed = false;
 
@@ -232,9 +232,13 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
         changed = true;
 		if (target() != nullptr)
 		{
-	    target()->data().removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
-        target()->data().addProvider(effect->data(), EFFECT_COLLECTION_NAME);
-    }
+            if (_effect != nullptr)
+	           target()->data().removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+
+           if (effect != nullptr)
+                target()->data().addProvider(effect->data(), EFFECT_COLLECTION_NAME);
+        }
+
 		_effect = effect;
     }
 

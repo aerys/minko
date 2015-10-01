@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/animation/AbstractTimeline.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/AmbientLight.hpp"
@@ -38,6 +39,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/BoundingBox.hpp"
+#include "minko/component/Metadata.hpp"
 #include "minko/math/Box.hpp"
 #include "minko/serialize/TypeSerializer.hpp"
 #include "minko/file/Dependency.hpp"
@@ -202,7 +204,9 @@ ComponentSerializer::serializeSurface(NodePtr		        node,
 
 	uint materialId = dependencies->registerDependency(surface->material());
 	uint geometryId = dependencies->registerDependency(surface->geometry());
-	uint effectId	= dependencies->registerDependency(surface->effect());
+	uint effectId	= surface->effect() != nullptr
+        ? dependencies->registerDependency(surface->effect())
+        : 0u;
 
 	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string> src(
 		geometryId,
@@ -254,6 +258,27 @@ ComponentSerializer::serializeRenderer(NodePtr			    node,
 	msgpack::pack(buffer, type);
 
 	return buffer.str();
+}
+
+std::string
+ComponentSerializer::serializeMasterAnimation(NodePtr			        node,
+                                              AbstractComponentPtr      component,
+                                              DependencyPtr	            dependencies)
+{
+    const auto type = static_cast<int8_t>(serialize::MASTER_ANIMATION);
+    auto masterAnimation = std::dynamic_pointer_cast<component::MasterAnimation>(component);
+
+    auto labels = std::vector<std::pair<std::string, unsigned int>>(masterAnimation->numLabels());
+
+    for (auto i = 0u; i < masterAnimation->numLabels(); ++i)
+        labels[i] = std::make_pair(masterAnimation->labelName(i), masterAnimation->labelTime(i));
+
+    std::stringstream buffer;
+
+    msgpack::pack(buffer, labels);
+    msgpack::pack(buffer, type);
+
+    return buffer.str();
 }
 
 std::string
@@ -397,4 +422,18 @@ ComponentSerializer::serializeBoundingBox(NodePtr 			    node,
 	msgpack::pack(buffer, type);
 
 	return buffer.str();
+}
+
+std::string
+ComponentSerializer::serializeMetadata(NodePtr              node,
+                                       AbstractComponentPtr component,
+                                       DependencyPtr 	    dependencies)
+{
+    auto metadata = std::dynamic_pointer_cast<component::Metadata>(component);
+
+    std::stringstream buffer;
+    msgpack::pack(buffer, metadata->data());
+    msgpack::pack(buffer, (int8_t)serialize::METADATA);
+
+    return buffer.str();
 }

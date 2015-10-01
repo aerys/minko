@@ -91,9 +91,6 @@ main(int argc, char** argv)
     Node::Ptr quads;
     Node::Ptr camera;
 
-    Signal<>::Slot actionButtonPressed = nullptr;
-    Signal<>::Slot actionButtonReleased = nullptr;
-
     auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")
@@ -112,12 +109,13 @@ main(int argc, char** argv)
 				->addComponent(PerspectiveCamera::create(canvas->aspectRatio(), 1.0f))
 				->addComponent(Renderer::create(0x050514ff));
 		}
-		
+
         spheres = createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, sceneManager->assets(), spheresAnimData);
         quads = createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);
 
 		auto cubeMaterial = material::BasicMaterial::create();
-		cubeMaterial->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE));
+        cubeMaterial->diffuseColor(0xffffffff);
+		cubeMaterial->data()->set("diffuseCubeMap", sceneManager->assets()->cubeTexture(CUBE_TEXTURE)->sampler());
 		cubeMaterial->triangleCulling(render::TriangleCulling::FRONT);
 
         auto cube = scene::Node::create("cube")
@@ -134,19 +132,6 @@ main(int argc, char** argv)
         root->addChild(camera);
         root->addChild(spheres);
         root->addChild(quads);
-
-        if (camera->hasComponent<VRCamera>())
-        {
-            actionButtonPressed = camera->component<VRCamera>()->actionButtonPressed()->connect([&]()
-            {
-                LOG_INFO("HMD Action Button Pressed!");
-            });
-
-            actionButtonReleased = camera->component<VRCamera>()->actionButtonReleased()->connect([&]()
-            {
-                LOG_INFO("HMD Action Button Released!");
-            });
-        }
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)

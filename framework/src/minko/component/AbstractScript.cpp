@@ -28,162 +28,159 @@ using namespace minko::scene;
 using namespace minko::component;
 
 void
-AbstractScript::targetAdded(scene::Node::Ptr target)
+AbstractScript::targetAdded(Node::Ptr target)
 {
-	_componentAddedSlot = target->componentAdded().connect(std::bind(
-		&AbstractScript::componentAddedHandler,
-		std::static_pointer_cast<AbstractScript>(shared_from_this()), 
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+	_componentAddedSlot = target->componentAdded().connect(
+		[=](Node::Ptr n, Node::Ptr t, AbstractComponent::Ptr c)
+		{
+			componentAddedHandler(n, t, c);
+		}
+	);
 
-	_componentRemovedSlot = target->componentRemoved().connect(std::bind(
-		&AbstractScript::componentRemovedHandler,
-		std::static_pointer_cast<AbstractScript>(shared_from_this()), 
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+	_componentRemovedSlot = target->componentRemoved().connect(
+		[=](Node::Ptr n, Node::Ptr t, AbstractComponent::Ptr c)
+		{
+			componentRemovedHandler(n, t, c);
+		}
+	);
 
-    auto addedOrRemovedCallback = std::bind(
-        &AbstractScript::addedOrRemovedHandler,
-        std::static_pointer_cast<AbstractScript>(shared_from_this()), 
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    );
+    auto addedOrRemovedCallback = [=](Node::Ptr n, Node::Ptr t, Node::Ptr p)
+	{
+		addedOrRemovedHandler(n, t, p);
+	};
     _addedSlot = target->added().connect(addedOrRemovedCallback);
     _removedSlot = target->removed().connect(addedOrRemovedCallback);
 
-	_started[target] = false;
+	_started = false;
 
     if (target->root()->hasComponent<SceneManager>())
         setSceneManager(target->root()->component<SceneManager>());
 }
 
 void
-AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr target, scene::Node::Ptr parent)
+AbstractScript::addedOrRemovedHandler(Node::Ptr node,
+									  Node::Ptr target,
+									  Node::Ptr parent)
 {
 	if (node->root() != target->root())
 		return;
 
-	if (target->root()->hasComponent<SceneManager>())
-		setSceneManager(target->root()->component<SceneManager>());
-	else
-		setSceneManager(nullptr);
+	setSceneManager(target->root()->component<SceneManager>());
 }
 
 void
-AbstractScript::targetRemoved(scene::Node::Ptr target)
-{    
+AbstractScript::targetRemoved(Node::Ptr target)
+{
 	_componentAddedSlot     = nullptr;
 	_componentRemovedSlot   = nullptr;
     _frameBeginSlot         = nullptr;
 	_frameEndSlot           = nullptr;
-    
-    if (running(target) && _started[target])
+
+    if (_started)
     {
-        _started[target] = false;
+        _started = false;
         stop(target);
     }
 }
 
 void
-AbstractScript::componentAddedHandler(scene::Node::Ptr			node,
-									  scene::Node::Ptr			target,
+AbstractScript::componentAddedHandler(Node::Ptr					node,
+									  Node::Ptr					target,
 									  AbstractComponent::Ptr	component)
 {
-	findSceneManager();
+	SceneManager::Ptr sceneManager = std::dynamic_pointer_cast<SceneManager>(component);
+
+	if (sceneManager)
+		setSceneManager(sceneManager);
 }
 
 void
-AbstractScript::componentRemovedHandler(scene::Node::Ptr		node,
-										scene::Node::Ptr		target,
+AbstractScript::componentRemovedHandler(Node::Ptr				node,
+										Node::Ptr				target,
 										AbstractComponent::Ptr	component)
 {
-	findSceneManager();
+	SceneManager::Ptr sceneManager = std::dynamic_pointer_cast<SceneManager>(component);
+
+	if (sceneManager)
+		setSceneManager(nullptr);
 }
 
 void
-AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager, float time, float deltaTime)
+AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager,
+								  float 			time,
+								  float 			deltaTime)
 {
     auto target = this->target();
-    
+
     _time = time;
     _deltaTime = deltaTime;
 
-    if (!_started[target] && ready(target) && target != nullptr)
+    if (!_started && ready() && target != nullptr)
 	{
-        _started[target] = true;
+        _started = true;
         start(target);
 	}
 
-    if (running(target))
+    if (_started)
         update(target);
-    else if (_started[target])
-    {
-		_started[target] = false;
+
+	if (!_started)
         stop(target);
-    }
 }
 
 void
-AbstractScript::frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
+AbstractScript::frameEndHandler(SceneManager::Ptr 	sceneManager,
+								float 				time,
+								float 				deltaTime)
 {
-	if (running(target()))
+	if (_started)
 		end(target());
-}
-
-void
-AbstractScript::findSceneManager()
-{
-	NodeSet::Ptr roots = NodeSet::create(target())
-		->roots()
-		->where([](NodePtr node)
-		{
-			return node->hasComponent<SceneManager>();
-		});
-
-	if (roots->nodes().size() > 1)
-		throw std::logic_error("The same script cannot be in two separate scenes.");
-	else if (roots->nodes().size() == 1)
-		setSceneManager(roots->nodes()[0]->component<SceneManager>());		
-	else
-		setSceneManager(nullptr);
 }
 
 void
 AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 {
-	if (sceneManager)
+	if (sceneManager && _enabled)
 	{
         if (!_frameBeginSlot)
-            _frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-                &AbstractScript::frameBeginHandler,
-                std::static_pointer_cast<AbstractScript>(shared_from_this()),
-                std::placeholders::_1,
-                std::placeholders::_2,
-                std::placeholders::_3
-            ), priority());
+            _frameBeginSlot = sceneManager->frameBegin()->connect(
+				[=](SceneManager::Ptr s, float t, float dt)
+				{
+					frameBeginHandler(s, t, dt);
+				},
+				priority()
+			);
 		if (!_frameEndSlot)
-			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
-				&AbstractScript::frameEndHandler, 
-				std::static_pointer_cast<AbstractScript>(shared_from_this()),  
-				std::placeholders::_1, 
-				std::placeholders::_2, 
-				std::placeholders::_3
-            ));
+			_frameEndSlot = sceneManager->frameEnd()->connect(
+				[=](SceneManager::Ptr s, float t, float dt)
+				{
+					frameEndHandler(s, t, dt);
+				},
+				priority()
+			);
 	}
 	else if (_frameBeginSlot)
 	{
-        if (_started[target()])
+        if (_started)
         {
-		    _started[target()] = false;
+		    _started = false;
 		    stop(target());
         }
 
 		_frameBeginSlot = nullptr;
 		_frameEndSlot   = nullptr;
+	}
+}
+
+void
+AbstractScript::enabled(bool v)
+{
+	if (v != _enabled)
+	{
+		_enabled = v;
+		_started = !v;
+
+		if (target())
+			setSceneManager(target()->root()->component<SceneManager>());
 	}
 }

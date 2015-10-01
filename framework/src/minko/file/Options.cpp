@@ -53,7 +53,7 @@ Options::Options() :
     _disposeVertexBufferAfterLoading(false),
     _disposeTextureAfterLoading(false),
     _storeDataIfNotParsed(true),
-    _processUnusedAsset(false),
+    _preserveMaterials(true),
     _skinningFramerate(30),
     _skinningMethod(component::SkinningMethod::HARDWARE),
     _material(nullptr),
@@ -95,7 +95,7 @@ Options::Options(const Options& copy) :
     _disposeVertexBufferAfterLoading(copy._disposeVertexBufferAfterLoading),
     _disposeTextureAfterLoading(copy._disposeTextureAfterLoading),
     _storeDataIfNotParsed(copy._storeDataIfNotParsed),
-    _processUnusedAsset(copy._processUnusedAsset),
+    _preserveMaterials(copy._preserveMaterials),
     _skinningFramerate(copy._skinningFramerate),
     _skinningMethod(copy._skinningMethod),
     _effect(copy._effect),
@@ -291,6 +291,9 @@ Options::initializeDefaultFunctions()
 
         throw std::runtime_error(errorMessage);
     };
+
+    if (_material == nullptr)
+        _material = material::Material::create();
 
     if (!_attributeFunction)
         _attributeFunction = [](NodePtr node, const std::string& key, const std::string& value) -> void

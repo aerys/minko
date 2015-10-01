@@ -106,16 +106,16 @@ Canvas::initialize()
     NSString* appLibraryFolder = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* appDocumentFolder = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSArray* backupFolders = [NSArray arrayWithObjects: appLibraryFolder, appDocumentFolder, nil];
-    
+
     NSURL * url;
     for (NSString* folder in backupFolders)
     {
         url = [NSURL fileURLWithPath:folder];
-        
+
         assert([[NSFileManager defaultManager] fileExistsAtPath: [url path]]);
-        
+
         NSLog(@"Final URL: %@", url);
-        
+
         NSError *error = nil;
         BOOL success = [url setResourceValue: [NSNumber numberWithBool: YES]
                             forKey: NSURLIsExcludedFromBackupKey error: &error];
@@ -172,14 +172,20 @@ Canvas::initializeWindow()
     if (_flags & STENCIL)
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
+#endif
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    // SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 0);
+    SDL_GL_SetSwapInterval(0);
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     SDL_WM_SetCaption(_name.c_str(), nullptr);
@@ -272,7 +278,7 @@ Canvas::initializeContext()
         throw std::runtime_error("Could not create context");
 }
 
-Canvas::NodePtr  
+Canvas::NodePtr
 Canvas::createScene()
 {
     auto sceneManager = SceneManager::create(shared_from_this());
@@ -438,12 +444,12 @@ Canvas::step()
     auto enteredOrLeftThisFrame = false;
 
     auto gotTextInput = false;
-    
+
     _mouse->dX(0);
     _mouse->dY(0);
 
     _touch->resetDeltas();
-    
+
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -467,7 +473,7 @@ Canvas::step()
 
             gotTextInput = true;
             int i = 0;
-            
+
             while (event.text.text[i] != '\0' && event.text.text[i] != 0)
             {
                 _keyboard->textInput()->execute(_keyboard, event.text.text[i++]);
@@ -535,7 +541,7 @@ Canvas::step()
             int windowH;
 
             SDL_GetWindowSize(_window, &windowW, &windowH);
-            
+
             auto x = event.motion.x;
             auto y = event.motion.y;
 
@@ -556,11 +562,11 @@ Canvas::step()
 
             _mouse->dX(_mouse->dX() + dX);
             _mouse->dY(_mouse->dY() + dY);
-                        
+
             _mouse->move()->execute(_mouse, dX, dY);
             break;
         }
-        
+
         case SDL_MOUSEBUTTONDOWN:
         {
             if (enteredOrLeftThisFrame)
@@ -599,7 +605,7 @@ Canvas::step()
             case SDL_BUTTON_RIGHT:
                 _mouse->rightButtonUp()->execute(_mouse);
                 break;
-            case SDL_BUTTON_MIDDLE: 
+            case SDL_BUTTON_MIDDLE:
                 _mouse->middleButtonUp()->execute(_mouse);
                 break;
             }
@@ -933,18 +939,18 @@ Canvas::step()
     if (_enableRendering)
     {
         _enterFrame->execute(that, _relativeTime, _deltaTime);
-        
+
         if (_swapBuffersAtEnterFrame)
             swapBuffers();
     }
-    
+
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - absoluteTime).count(); // in milliseconds
 
     // framerate in seconds
     _framerate = 1000.f / _frameDuration;
 
     auto remainingTime = (1000.f / _desiredFramerate) - _frameDuration;
-    
+
     if (remainingTime > 0)
     {
         _backend->wait(that, uint(remainingTime));
@@ -965,7 +971,7 @@ void
 Canvas::quit()
 {
     _active = false;
-    
+
 #if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)
     _audio = nullptr;
 #endif

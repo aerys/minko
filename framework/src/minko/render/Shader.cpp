@@ -20,9 +20,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Shader.hpp"
 
 #include "minko/render/AbstractContext.hpp"
+#include "minko/log/Logger.hpp"
+
+#ifdef MINKO_GLSL_OPTIMIZER_ENABLED
+# include "glsl_optimizer.h"
+#endif
 
 using namespace minko;
 using namespace minko::render;
+
+#ifdef MINKO_GLSL_OPTIMIZER_ENABLED
+# if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_IOS
+const glslopt_ctx* Shader::_glslOptimizer = glslopt_initialize(glslopt_target::kGlslTargetOpenGLES20);
+# else
+const glslopt_ctx* Shader::_glslOptimizer = glslopt_initialize(glslopt_target::kGlslTargetOpenGL);
+# endif
+#endif
 
 void
 Shader::dispose()
@@ -39,6 +52,30 @@ void
 Shader::upload()
 {
     _id = _type == Type::VERTEX_SHADER ? _context->createVertexShader() : _context->createFragmentShader();
+
+#ifdef MINKO_GLSL_OPTIMIZER_ENABLED
+    glslopt_shader* optimizedShader = nullptr;
+
+    if (_type == Type::VERTEX_SHADER)
+        optimizedShader = glslopt_optimize(const_cast<glslopt_ctx*>(_glslOptimizer), kGlslOptShaderVertex, _source.c_str(), 0);
+    else
+        optimizedShader = glslopt_optimize(const_cast<glslopt_ctx*>(_glslOptimizer), kGlslOptShaderFragment, _source.c_str(), 0);
+
+    if (glslopt_get_status(optimizedShader))
+    {
+        auto optimizedSource = glslopt_get_output(optimizedShader);
+        _context->setShaderSource(_id, optimizedSource);
+    }
+    else
+    {
+        LOG_ERROR(glslopt_get_log(optimizedShader));
+        throw std::invalid_argument("source");
+    }
+    glslopt_shader_delete(optimizedShader);
+
+#else
     _context->setShaderSource(_id, _source);
+#endif
+
     _context->compileShader(_id);
 }

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/MasterAnimation.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/Transform.hpp"
@@ -32,6 +33,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PointLight.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Renderer.hpp"
+#include "minko/component/Metadata.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/serialize/ComponentSerializer.hpp"
@@ -113,6 +115,14 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
     if (writerOptions->writeAnimations())
     {
 	    registerComponent(
+	    	&typeid(component::MasterAnimation),
+	    	std::bind(
+	    		&serialize::ComponentSerializer::serializeMasterAnimation,
+	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	    	)
+	    );
+
+	    registerComponent(
 	    	&typeid(component::Animation),
 	    	std::bind(
 	    		&serialize::ComponentSerializer::serializeAnimation,
@@ -133,6 +143,14 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 		&typeid(component::BoundingBox),
 		std::bind(
 			&serialize::ComponentSerializer::serializeBoundingBox,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
+
+	registerComponent(
+		&typeid(component::Metadata),
+		std::bind(
+			&serialize::ComponentSerializer::serializeMetadata,
 			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
@@ -157,7 +175,7 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
 	std::vector<SerializedNode>						nodePack;
 	std::vector<std::string>						serializedControllerList;
 	std::map<AbstractComponentPtr, int>				controllerMap;
-	
+
 	queue.push(data());
 
 	while (queue.size() > 0)

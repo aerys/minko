@@ -44,12 +44,24 @@ namespace minko
             stopTracking() override = 0;
 
             virtual
-            const math::mat4&
+            math::mat4
             rotationMatrix() = 0;
             
             virtual
             const math::quat&
             quaternion() = 0;
+            
+            virtual
+            float
+            yaw() = 0;
+            
+            virtual
+            float
+            pitch() = 0;
+            
+            virtual
+            float
+            roll() = 0;
             
             virtual
             bool

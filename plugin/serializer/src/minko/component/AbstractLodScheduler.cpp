@@ -289,7 +289,13 @@ AbstractLodScheduler::rendererSet(Renderer::Ptr renderer)
 
         if (rendererData.hasProperty("worldToScreenMatrix"))
         {
-            rendererNodePropertyChangedHandler(rendererData, nullptr, "worldToScreenMatrix");
+            auto providers = rendererData.providers();
+            auto providerIt = std::find_if(providers.begin(), providers.end(), [&](ProviderPtr pro)
+            {
+                return pro->hasProperty("worldToScreenMatrix");
+            });
+
+            rendererNodePropertyChangedHandler(rendererData, *providerIt, "worldToScreenMatrix");
         }
 
         _rendererNodePropertyChangedSlot = renderer->target()->data().propertyChanged().connect(
@@ -465,13 +471,13 @@ AbstractLodScheduler::rendererNodePropertyChangedHandler(Store&									store,
     if (*propertyName == "worldToScreenMatrix")
     {
         viewPropertyChanged(
-            store.get<math::mat4>("worldToScreenMatrix"),
-            store.get<math::mat4>("viewMatrix"),
-            store.get<math::vec3>("eyePosition"),
-            store.get<float>("fov"),
-            store.get<float>("aspectRatio"),
-            store.get<float>("zNear"),
-            store.get<float>("zFar")
+            provider->get<math::mat4>("worldToScreenMatrix"),
+            provider->get<math::mat4>("viewMatrix"),
+            provider->get<math::vec3>("eyePosition"),
+            provider->get<float>("fov"),
+            provider->get<float>("aspectRatio"),
+            provider->get<float>("zNear"),
+            provider->get<float>("zFar")
         );
     }
 }
