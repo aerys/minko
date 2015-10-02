@@ -37,6 +37,8 @@
                     "uEnvironmentCubemap"           : "material[${materialUuid}].environmentCubemap",
                     "uEnvironmentAlpha"             : "material[${materialUuid}].environmentAlpha",
                     "uShininess"                    : "material[${materialUuid}].shininess",
+                    "uFresnelReflectance"           : { "binding" : "material[${materialUuid}].fresnelReflectance", "default" : 0.0 },
+                    "uFresnelExponent"              : { "binding" : "material[${materialUuid}].fresnelExponent", "default" : 1.0 },
                     "uCameraPosition"               : { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
                     "uAmbientLight0_color"          : { "binding" : { "property" : "ambientLight[0].color", "source" : "root" } },
                     "uAmbientLight0_ambient"        : { "binding" : { "property" : "ambientLight[0].ambient", "source" : "root" } },
