@@ -30,7 +30,7 @@ using namespace minko;
 using namespace minko::render;
 
 #ifdef MINKO_GLSL_OPTIMIZER_ENABLED
-# if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_IOS
+# if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 const glslopt_ctx* Shader::_glslOptimizer = glslopt_initialize(glslopt_target::kGlslTargetOpenGLES20);
 # else
 const glslopt_ctx* Shader::_glslOptimizer = glslopt_initialize(glslopt_target::kGlslTargetOpenGL);
@@ -54,6 +54,14 @@ Shader::upload()
     _id = _type == Type::VERTEX_SHADER ? _context->createVertexShader() : _context->createFragmentShader();
 
 #ifdef MINKO_GLSL_OPTIMIZER_ENABLED
+    // FIXME: Version definition should only rely on context.
+    // Add method AbstractContext::formatShaderSource(id, source) -> std::string.
+# if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    _source = "#version 100\n" + _source;
+# else
+    _source = "#version 120\n" + _source;
+# endif
+
     glslopt_shader* optimizedShader = nullptr;
 
     if (_type == Type::VERTEX_SHADER)
@@ -68,6 +76,19 @@ Shader::upload()
     }
     else
     {
+#ifdef DEBUG
+        auto line = std::string();
+        std::istringstream stream(_source);
+        auto lineNumber = 0u;
+
+        while (std::getline(stream, line))
+        {
+            LOG_DEBUG(lineNumber << ": " << line);
+
+            ++lineNumber;
+        }
+#endif
+
         LOG_ERROR(glslopt_get_log(optimizedShader));
         throw std::invalid_argument("source");
     }
