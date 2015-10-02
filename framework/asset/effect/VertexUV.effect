@@ -48,7 +48,7 @@
     },
 
 	"techniques" : [{
-		"name"		: "uv-technique",
+		"name"		: "default",
 		"passes" 	: [{
 			"name"			: "uv-pass",
 			"vertexShader" 	: "
@@ -120,7 +120,9 @@
 
 				void main(void)
 				{
-					gl_FragColor = vec4(vertexUV.x, vertexUV.y, 0.0, 1.0);
+                    vec2 uv = fract(vertexUV);
+
+					gl_FragColor = vec4(uv.x, uv.y, 0.0, 1.0);
 				}
 			"
 		}]
