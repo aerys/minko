@@ -50,7 +50,7 @@ void EmscriptenAttitude::initialize()
     // Defaut
     EmscriptenAttitude::rotationMatrixValue = math::mat4();
 
-    std::string eval = "window.MinkoEmscriptenAttitude = {alpha: 0.0, beta: 0.0, gamma: 0.0}; window.addEventListener('deviceorientation', function(e){console.log('deviceorientation');window.MinkoEmscriptenAttitude = {alpha: e.alpha || 0.0, gamma: e.gamma || 0.0, beta: e.beta || 0.0};})";
+    std::string eval = "window.MinkoEmscriptenAttitude = {alpha: 0.0, beta: 0.0, gamma: 0.0}; window.addEventListener('deviceorientation', function(e){window.MinkoEmscriptenAttitude = {alpha: e.alpha || 0.0, gamma: e.gamma || 0.0, beta: e.beta || 0.0};})";
 
     emscripten_run_script(eval.c_str());
 }
@@ -88,19 +88,30 @@ EmscriptenAttitude::rotationMatrix()
         newGamma = -newGamma;
     }
 
-    if (newAlpha != _alpha || newBeta != _beta || newGamma != _gamma)
-    {
-        _alpha = newAlpha;
-        _beta = newBeta;
-        _gamma = newGamma;
+    newAlpha = degToRad(newAlpha);
+    newBeta = degToRad(newBeta);
+    newGamma = degToRad(newGamma);
 
-        rotationMatrixValue = getRotationMatrix(_alpha, _beta, _gamma);
-    }
-    
+    auto targetRotationMatrixValue = getRotationMatrix(newAlpha, newBeta, newGamma);
+
+    _alpha = newAlpha;
+    _beta = newBeta;
+    _gamma = newGamma;
+
+    auto deltaTime = 33.f;
+
+    rotationMatrixValue = math::interpolate<float>(rotationMatrixValue, targetRotationMatrixValue, 0.65f);
+
     auto worldToDevice = rotationMatrixValue * _worldToInertialReferenceFrame;
     auto worldRotationMatrix = _deviceToDisplay * worldToDevice;
 
     return worldRotationMatrix;
+}
+
+float
+EmscriptenAttitude::degToRad(float angle)
+{
+    return angle * (M_PI / 180.0f);
 }
 
 const math::quat&
@@ -112,17 +123,12 @@ EmscriptenAttitude::quaternion()
 math::mat4
 EmscriptenAttitude::getRotationMatrix(float alpha, float beta, float gamma)
 {
-    alpha *= (float)(M_PI / 180.0f);
-    beta *= (float)(M_PI / 180.0f);
-    gamma *= (float)(M_PI / 180.0f);
-    
     float ca = (float) cos(alpha);
     float sa = (float) sin(alpha);
     float cb = (float) cos(beta);
     float sb = (float) sin(beta);
     float cg = (float) cos(gamma);
     float sg = (float) sin(gamma);
-
 
     math::mat4 matrix;
 

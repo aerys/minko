@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/SDLBackend.hpp"
 #include "minko/Canvas.hpp"
+#include "minko/log/Logger.hpp"
 
 #include "SDL.h"
 
@@ -35,7 +36,13 @@ SDLBackend::initialize(std::shared_ptr<Canvas> canvas)
     SDL_GLContext glContext = SDL_GL_CreateContext(canvas->window());
 
     if (!glContext)
+    {
+        const auto error = SDL_GetError();
+
+        LOG_ERROR(error);
+
         throw std::runtime_error("Could not create default context");
+    }
 }
 
 void
