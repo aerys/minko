@@ -72,9 +72,11 @@ uniform vec3 uCameraPosition;
 // env. mapping
 #ifdef ENVIRONMENT_MAP_2D
 uniform sampler2D uEnvironmentMap2d;
+uniform float uEnvironmentAlpha;
 #endif
 #ifdef ENVIRONMENT_CUBE_MAP
 uniform samplerCube uEnvironmentCubemap;
+uniform float uEnvironmentAlpha;
 #endif
 
 // fresnel
@@ -672,7 +674,11 @@ void main(void)
 			vec4 envmapColor = envmap_sampleEnvironmentCubeMap(uEnvironmentCubemap, eyeVector, normalVector);
 		#endif
 
-		float reflectivity = specular.a;
+        #if defined(ENVIRONMENT_ALPHA)
+		    float reflectivity = uEnvironmentAlpha;
+        #else
+            float reflectivity = specular.a;
+        #endif
         float fresnel = uFresnelReflectance + (1.0 - uFresnelReflectance) * pow(1.0 - dot(normalVector, eyeVector), uFresnelExponent);
 
         reflectivity *= fresnel;
