@@ -53,6 +53,12 @@ Shader::upload()
 {
     _id = _type == Type::VERTEX_SHADER ? _context->createVertexShader() : _context->createFragmentShader();
 
+#if MINKO_PLATFORM & (MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS | MINKO_PLATFORM_HTML5)
+    std::string source = "#version 100\n" + _source;
+#else
+    std::string source = "#version 120\n" + _source;
+#endif
+
 #ifdef MINKO_GLSL_OPTIMIZER_ENABLED
     // FIXME: Version definition should only rely on context.
     // Add method AbstractContext::formatShaderSource(id, source) -> std::string.
@@ -65,9 +71,9 @@ Shader::upload()
     glslopt_shader* optimizedShader = nullptr;
 
     if (_type == Type::VERTEX_SHADER)
-        optimizedShader = glslopt_optimize(const_cast<glslopt_ctx*>(_glslOptimizer), kGlslOptShaderVertex, _source.c_str(), 0);
+        optimizedShader = glslopt_optimize(const_cast<glslopt_ctx*>(_glslOptimizer), kGlslOptShaderVertex, source.c_str(), 0);
     else
-        optimizedShader = glslopt_optimize(const_cast<glslopt_ctx*>(_glslOptimizer), kGlslOptShaderFragment, _source.c_str(), 0);
+        optimizedShader = glslopt_optimize(const_cast<glslopt_ctx*>(_glslOptimizer), kGlslOptShaderFragment, source.c_str(), 0);
 
     if (glslopt_get_status(optimizedShader))
     {
@@ -95,7 +101,7 @@ Shader::upload()
     glslopt_shader_delete(optimizedShader);
 
 #else
-    _context->setShaderSource(_id, _source);
+    _context->setShaderSource(_id, source);
 #endif
 
     _context->compileShader(_id);
