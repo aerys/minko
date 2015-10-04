@@ -1292,13 +1292,7 @@ OpenGLES2Context::setShaderSource(const uint shader,
     // temporary allowing version > 120
     // implement new *Context to properly handle it
 
-#ifdef GL_ES_VERSION_2_0
-	std::string src = "#version 100\n" + source;
-#else
-	std::string src = "#version 120\n" + source;
-#endif // GL_ES_VERSION_2_0
-
-    const char* sourceString = src.c_str();
+    const char* sourceString = source.c_str();
 
 	glShaderSource(shader, 1, &sourceString, 0);
 
