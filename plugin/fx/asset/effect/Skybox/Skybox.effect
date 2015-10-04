@@ -28,7 +28,7 @@
 
             "states" : {
                 "triangleCulling" : "front",
-                "priority" : "last",
+                "priority" : ["transparent", 100.0],
                 "depthMask" : false
             },
 
