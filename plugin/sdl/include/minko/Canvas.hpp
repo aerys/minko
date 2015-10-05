@@ -93,11 +93,9 @@ namespace minko
         time_point                                                              _startTime;
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
-		bool																	_swapBuffersAtEnterFrame;
+        bool                                                                    _swapBuffersAtEnterFrame;
 
-#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)
         std::shared_ptr<audio::SDLAudio>                                        _audio;
-#endif
 
         std::shared_ptr<input::SDLMouse>                                        _mouse;
         std::unordered_map<int, std::shared_ptr<input::SDLJoystick>>            _joysticks;
@@ -295,22 +293,22 @@ namespace minko
             return _context;
         }
 
-		void
-		swapBuffers() override;
+        void
+        swapBuffers() override;
 
-		inline
-		void
-		swapBuffersAtEnterFrame(bool value)
-		{
-			_swapBuffersAtEnterFrame = value;
-		}
+        inline
+        void
+        swapBuffersAtEnterFrame(bool value)
+        {
+            _swapBuffersAtEnterFrame = value;
+        }
 
-		inline
-		bool
-		swapBuffersAtEnterFrame()
-		{
-			return _swapBuffersAtEnterFrame;
-		}
+        inline
+        bool
+        swapBuffersAtEnterFrame()
+        {
+            return _swapBuffersAtEnterFrame;
+        }
 
         inline
         float

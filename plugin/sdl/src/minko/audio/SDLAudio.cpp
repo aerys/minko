@@ -29,6 +29,7 @@ using namespace minko::audio;
 
 SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)
 {
+#ifdef SDL_AUDIO_ENABLED
     auto flags = MIX_INIT_OGG;
     int result = 0;
 
@@ -42,17 +43,24 @@ SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)
         Mix_ChannelFinished(&SDLSoundChannel::channelComplete);
         Mix_AllocateChannels(32);
     }
+#endif
 }
 
 std::shared_ptr<SDLAudio>
 SDLAudio::create(std::shared_ptr<Canvas> canvas)
 {
+#ifdef SDL_AUDIO_ENABLED
     return std::shared_ptr<SDLAudio>(new SDLAudio(canvas));
+#else
+    return nullptr;
+#endif
 }
 
 SDLAudio::~SDLAudio()
 {
+#ifdef SDL_AUDIO_ENABLED
     Mix_ChannelFinished(nullptr);
     Mix_AllocateChannels(0);
     Mix_CloseAudio();
+#endif
 }

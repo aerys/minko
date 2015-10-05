@@ -72,6 +72,7 @@ namespace minko
             bool
             playing() const = 0;
 
+            virtual
             ~SoundChannel()
             {
             }
