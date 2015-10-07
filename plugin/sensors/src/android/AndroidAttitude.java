@@ -83,7 +83,7 @@ public class AndroidAttitude
 					_isSupported = false;
 				}
 
-				_sensorManager.registerListener(_sensorEventListener, sensor, SensorManager.SENSOR_DELAY_FASTEST, handler);
+				_sensorManager.registerListener(_sensorEventListener, sensor, SensorManager.SENSOR_DELAY_GAME, handler);
 
 				Log.i("minko-java", "[AndroidAttitude] START LOOP!");
 				_tracking = true;

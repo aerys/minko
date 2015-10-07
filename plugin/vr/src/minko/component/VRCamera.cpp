@@ -202,7 +202,8 @@ VRCamera::targetRemoved(NodePtr target)
     if (_VRImpl)
         _VRImpl->targetRemoved();
 
-    _renderBeginSlot->disconnect();
+    _frameBeginSlot = nullptr;
+
     findSceneManager();
 }
 
@@ -233,12 +234,12 @@ VRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 
     _sceneManager = sceneManager;
 
-    _renderBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
+    _frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
         &VRCamera::updateCameraOrientation,
         std::static_pointer_cast<VRCamera>(shared_from_this()),
         _leftCameraNode,
         _rightCameraNode
-    ), 1000.f);
+    ));
 
     if (_VRImpl)
         _VRImpl->initialize(_sceneManager);
@@ -249,4 +250,6 @@ VRCamera::updateCameraOrientation(std::shared_ptr<scene::Node> leftCamera, std::
 {
     if (_VRImpl)
         _VRImpl->updateCameraOrientation(target(), leftCamera, rightCamera);
+
+    target()->component<Transform>()->updateModelToWorldMatrix();
 }
