@@ -156,8 +156,6 @@ public class AndroidAttitude
 			}
 		}
 
-		Log.i("minko-java", "[AndroidAttitude] Is supported: " + _isSupported + " (tracking: " + _tracking + ")");
-
 		return _isSupported;
 	}
 }
