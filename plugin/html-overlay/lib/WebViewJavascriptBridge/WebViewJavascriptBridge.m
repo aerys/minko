@@ -190,7 +190,8 @@ static bool logging = false;
                 handler = _messageHandlers[message[@"handlerName"]];
                 if (!handler) {
                     NSLog(@"WVJB Warning: No handler for %@", message[@"handlerName"]);
-                    return responseCallback(@{});
+                    NSDictionary* empty = [NSDictionary dictionary];
+                    return responseCallback(empty);
                 }
             } else {
                 handler = _messageHandler;
