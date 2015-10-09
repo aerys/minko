@@ -100,9 +100,17 @@ minko.project.library "minko-framework"
 		excludes {
 			"lib/glsl-optimizer/src/glsl/main.cpp"
 		}
+
 		configuration { "android or ios or linux*" }
 			buildoptions {
 				"-fno-strict-aliasing"
+			}
+
+		configuration { "html5" }
+			defines { "HAVE___BUILTIN_FFS" }
+			excludes {
+				"lib/glsl-optimizer/src/getopt/getopt.h",
+				"lib/glsl-optimizer/src/getopt/getopt_long.c",
 			}
 	end
 
