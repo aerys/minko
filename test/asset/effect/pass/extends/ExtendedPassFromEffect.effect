@@ -55,8 +55,8 @@
 
             "extends" : {
                 "effect" : "BaseEffect.effect",
-                "technique" : "base-technique-2",
-                "pass" : "base-pass-2"
+                "technique" : "base-technique",
+                "pass" : "base-pass"
             }
         }]
     }]

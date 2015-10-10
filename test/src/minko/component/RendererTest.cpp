@@ -198,10 +198,13 @@ TEST_F(RendererTest, DeferredPassDrawCallCount)
     renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 4);
     root->removeComponent(s1);
+    renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 3);
     root->removeComponent(s2);
+    renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 2);
     root->removeComponent(s3);
+    renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 0);
 }
 

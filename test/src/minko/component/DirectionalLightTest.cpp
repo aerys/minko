@@ -448,14 +448,17 @@ TEST_F(DirectionalLightTest, OneCascadeNumDeferredPasses)
     ASSERT_EQ(shadowRenderer->numDrawCalls(), 3);
 
     root->removeComponent(s1);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer->numDrawCalls(), 2);
 
     root->removeComponent(s2);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 1);
     ASSERT_EQ(shadowRenderer->numDrawCalls(), 1);
 
     root->removeComponent(s3);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 0);
     ASSERT_EQ(shadowRenderer->numDrawCalls(), 0);
 }
@@ -498,16 +501,19 @@ TEST_F(DirectionalLightTest, TwoCascadesNumDeferredPasses)
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
 
     root->removeComponent(s1);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
 
     root->removeComponent(s2);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 1);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 1);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 1);
 
     root->removeComponent(s3);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 0);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 0);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 0);
@@ -553,18 +559,21 @@ TEST_F(DirectionalLightTest, ThreeCascadesNumDeferredPasses)
     ASSERT_EQ(shadowRenderer2->numDrawCalls(), 3);
 
     root->removeComponent(s1);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer2->numDrawCalls(), 2);
 
     root->removeComponent(s2);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 1);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 1);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 1);
     ASSERT_EQ(shadowRenderer2->numDrawCalls(), 1);
 
     root->removeComponent(s3);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 0);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 0);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 0);
@@ -613,6 +622,7 @@ TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
     ASSERT_EQ(shadowRenderer3->numDrawCalls(), 3);
 
     root->removeComponent(s1);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
@@ -620,6 +630,7 @@ TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
     ASSERT_EQ(shadowRenderer3->numDrawCalls(), 2);
 
     root->removeComponent(s2);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 1);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 1);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 1);
@@ -627,6 +638,7 @@ TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
     ASSERT_EQ(shadowRenderer3->numDrawCalls(), 1);
 
     root->removeComponent(s3);
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 0);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 0);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 0);

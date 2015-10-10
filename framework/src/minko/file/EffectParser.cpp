@@ -328,7 +328,6 @@ EffectParser::parsePasses(const Json::Value& node, Scope& scope, std::vector<Pas
 }
 
 render::Pass::Ptr
-<<<<<<< HEAD
 EffectParser::findPassFromEffectFilename(const std::string& effectFilename,
                                          const std::string& techniqueName,
                                          const std::string& passName)
@@ -353,6 +352,7 @@ EffectParser::findPassFromEffectFilename(const std::string& effectFilename,
     return nullptr;
 }
 
+render::Pass::Ptr
 EffectParser::getPassToExtend(const Json::Value& extendNode)
 {
     render::Pass::Ptr pass;

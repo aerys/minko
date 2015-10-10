@@ -62,7 +62,7 @@ namespace minko
                 }
             };*/
 
-            typedef std::tuple<float, int*>                                     SortPropertyTuple;
+            typedef std::tuple<float, int*>	SortPropertyTuple;
 
             struct SortPropertyKeyComparator
             {
@@ -71,7 +71,7 @@ namespace minko
                            const SortPropertyTuple& right) const;
             };
 
-            typedef std::vector<DrawCall*>                                      DrawCallList;
+            typedef std::vector<DrawCall*>	DrawCallList;
 
             typedef std::map<
                 SortPropertyTuple,

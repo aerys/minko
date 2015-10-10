@@ -3,7 +3,6 @@
     "attributes" : {
         "aPosition" : "geometry[${geometryUuid}].position1"
     },
-    "defaultTechnique" : "base-technique",
     "techniques" : [{
         "name" : "base-technique",
 
@@ -48,7 +47,7 @@
             },
 
             "vertexShader" : "#pragma include \"../../dummy.glsl\"",
-            "fragmentShader" : "#pragma include \"../../dummy.glsl\"" 
+            "fragmentShader" : "#pragma include \"../../dummy.glsl\""
         }]
     }]
 }

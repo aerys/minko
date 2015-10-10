@@ -36,8 +36,7 @@
     },
     {
         "name" : "test-technique-2",
-        "passes" : 
-        [{
+        "passes" : [{
             "name" : "test-pass-2",
             "macros" : {
                 "TESTOUILLE" : { "binding" : "testouille", "type" : "int", "default" : 12 }
