@@ -283,8 +283,8 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
 
             for (auto i = 1; i < numMipmaps; ++i)
             {
-                const auto mipLevelWidth = std::max<unsigned int>(width >> i, TextureFormatInfo::minimumWidth(format));
-                const auto mipLevelHeight = std::max<unsigned int>(height >> i, TextureFormatInfo::minimumHeight(format));
+                const auto mipLevelWidth = width >> i;
+                const auto mipLevelHeight = height >> i;
 
                 const auto mipLevelData = textureData.data() + mipLevelOffset;
 

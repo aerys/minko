@@ -39,8 +39,6 @@ namespace minko
                 unsigned int    _numBitsPerPixel;
 
                 unsigned int    _minimumSize;
-                unsigned int    _minimumWidth;
-                unsigned int    _minimumHeight;
 
                 bool            _hasAlphaChannel;
                 bool            _hasSeparateAlphaChannel;
@@ -49,16 +47,12 @@ namespace minko
                       bool                  isCompressed,
                       unsigned int          numBitsPerPixel,
                       unsigned int          minimumSize,
-                      unsigned int          minimumWidth,
-                      unsigned int          minimumHeight,
                       bool                  hasAlphaChannel,
                       bool                  hasSeparateAlphaChannel) :
                     _name(name),
                     _isCompressed(isCompressed),
                     _numBitsPerPixel(numBitsPerPixel),
                     _minimumSize(minimumSize),
-                    _minimumWidth(minimumWidth),
-                    _minimumHeight(minimumHeight),
                     _hasAlphaChannel(hasAlphaChannel),
                     _hasSeparateAlphaChannel(hasSeparateAlphaChannel)
                 {
@@ -92,14 +86,6 @@ namespace minko
             static
             unsigned int
             minimumSize(TextureFormat format);
-
-            static
-            unsigned int
-            minimumWidth(TextureFormat format);
-
-            static
-            unsigned int
-            minimumHeight(TextureFormat format);
 
             static
             bool

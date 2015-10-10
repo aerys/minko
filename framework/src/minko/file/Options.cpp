@@ -39,7 +39,7 @@ Options::Options() :
     _platforms(),
     _userFlags(),
     _optimizeForRendering(true),
-    _generateMipMaps(false),
+    _generateMipMaps(true),
     _parseMipMaps(false),
     _resizeSmoothly(false),
     _isCubeTexture(false),

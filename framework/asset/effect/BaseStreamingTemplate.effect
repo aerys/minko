@@ -30,7 +30,12 @@
                         },
                         "uLightMapMaxAvailableLod"  : "material[${materialUuid}].lightMapMaxAvailableLod",
                         "uLightMapSize"             : "material[${materialUuid}].lightMapSize",
-                        "uAlphaMap"                 : "material[${materialUuid}].alphaMap",
+                        "uAlphaMap"                 : {
+                            "binding"       : "material[${materialUuid}].alphaMap",
+                            "wrapMode"      : "repeat",
+                            "textureFilter" : "linear",
+                            "mipFilter"     : "none"
+                        },
                         "uAlphaThreshold"           : "material[${materialUuid}].alphaThreshold",
                         "uDiffuseCubeMap"           : "material[${materialUuid}].diffuseCubeMap",
                         "uBoneMatrices[0]"          : "geometry[${geometryUuid}].boneMatrices",

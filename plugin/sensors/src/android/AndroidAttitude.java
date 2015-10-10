@@ -83,7 +83,7 @@ public class AndroidAttitude
 					_isSupported = false;
 				}
 
-				_sensorManager.registerListener(_sensorEventListener, sensor, SensorManager.SENSOR_DELAY_FASTEST, handler);
+				_sensorManager.registerListener(_sensorEventListener, sensor, SensorManager.SENSOR_DELAY_GAME, handler);
 
 				Log.i("minko-java", "[AndroidAttitude] START LOOP!");
 				_tracking = true;
@@ -155,8 +155,6 @@ public class AndroidAttitude
 				Log.i("minko-java", "[AndroidAttitude] Warning: No Attitude sensors found on this device.");
 			}
 		}
-
-		Log.i("minko-java", "[AndroidAttitude] Is supported: " + _isSupported + " (tracking: " + _tracking + ")");
 
 		return _isSupported;
 	}

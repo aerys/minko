@@ -100,5 +100,8 @@ Attitude::roll()
 bool
 Attitude::isSupported()
 {
+    if (!_attitudeManager)
+        return false;
+
     return _attitudeManager->isSupported();
 }

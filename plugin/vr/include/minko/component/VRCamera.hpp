@@ -45,7 +45,7 @@ namespace minko
 
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
-            Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderBeginSlot;
+            Signal<SceneMgrPtr, float, float>::Slot             _frameBeginSlot;
 
             std::shared_ptr<oculus::VRImpl>                     _VRImpl;
 
