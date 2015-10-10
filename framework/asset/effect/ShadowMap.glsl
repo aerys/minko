@@ -54,15 +54,8 @@ uniform float uZFar;
 
 varying vec4 vPosition;
 
-float linearDepthOrtho(float depth, float zNear, float zFar)
-{
-    return depth * 0.5 + 0.5;
-}
-
 void main(void)
 {
-    float depth = linearDepthOrtho(vPosition.z, uZNear, uZFar);
-
-    gl_FragColor = packFloat8bitRGBA(depth);
+    gl_FragColor = packFloat8bitRGBA(vPosition.z * 0.5 + 0.5);
 }
 #endif

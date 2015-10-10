@@ -2455,6 +2455,15 @@ TEST_F(EffectParserTest, ExtendedPassFromEffectWithExtendedPass)
     }
 }
 
+TEST_F(EffectParserTest, StatesProviderIsUnique)
+{
+    auto fx = MinkoTests::loadEffect("effect/state/default-value/priority/StatesPriorityFloatValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().data(), fx->techniques().at("default")[0]->stateBindings().defaultValues.providers().front());
+}
+
 TEST_F(EffectParserTest, AutoFixedPassPriorities)
 {
     auto fx = MinkoTests::loadEffect("effect/pass/MultiplePasses.effect");
@@ -2462,6 +2471,39 @@ TEST_F(EffectParserTest, AutoFixedPassPriorities)
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 3);
-    ASSERT_GT(fx->techniques().at("default")[0]->states().priority(), fx->techniques().at("default")[1]->states().priority());
-    ASSERT_GT(fx->techniques().at("default")[1]->states().priority(), fx->techniques().at("default")[2]->states().priority());
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 2002);
+    ASSERT_EQ(fx->techniques().at("default")[1]->states().priority(), 2001);
+    ASSERT_EQ(fx->techniques().at("default")[2]->states().priority(), 2000);
+}
+
+TEST_F(EffectParserTest, AutoFixedExtendedPassPriorities)
+{
+    auto fx = MinkoTests::loadEffect("effect/pass/extends/MultipleExtendedPasses.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 3);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), fx->techniques().at("default")[0]->stateBindings().defaultValues.get<float>("priority"));
+    ASSERT_EQ(fx->techniques().at("default")[1]->states().priority(), fx->techniques().at("default")[1]->stateBindings().defaultValues.get<float>("priority"));
+    ASSERT_EQ(fx->techniques().at("default")[2]->states().priority(), fx->techniques().at("default")[2]->stateBindings().defaultValues.get<float>("priority"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 2002);
+    ASSERT_EQ(fx->techniques().at("default")[1]->states().priority(), 2001);
+    ASSERT_EQ(fx->techniques().at("default")[2]->states().priority(), 2000);
+}
+
+TEST_F(EffectParserTest, ExtendedPassOverridesMacroDefault)
+{
+    auto fx = MinkoTests::loadEffect("effect/pass/extends/OverrideMacroDefault.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 2);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("FOO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("FOO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["FOO"], data::MacroBindingMap::MacroType::INT);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<int>("FOO"), 42);
+    ASSERT_TRUE(fx->techniques().at("default")[1]->macroBindings().defaultValues.hasProperty("FOO"));
+    ASSERT_TRUE(fx->techniques().at("default")[1]->macroBindings().types.count("FOO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[1]->macroBindings().types["FOO"], data::MacroBindingMap::MacroType::INT);
+    ASSERT_EQ(fx->techniques().at("default")[1]->macroBindings().defaultValues.get<int>("FOO"), 23);
 }

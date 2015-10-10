@@ -445,15 +445,15 @@ TEST_F(DirectionalLightTest, OneCascadeNumDeferredPasses)
     auto shadowRenderer = light->component<Renderer>();
 
     ASSERT_EQ(renderer->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer->numDrawCalls(), 3);
 
     root->removeComponent(s1);
     ASSERT_EQ(renderer->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer->numDrawCalls(), 2);
 
     root->removeComponent(s2);
     ASSERT_EQ(renderer->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer->numDrawCalls(), 1);
 
     root->removeComponent(s3);
     ASSERT_EQ(renderer->numDrawCalls(), 0);
@@ -494,18 +494,18 @@ TEST_F(DirectionalLightTest, TwoCascadesNumDeferredPasses)
     auto shadowRenderer1 = light->component<Renderer>(1);
 
     ASSERT_EQ(renderer->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 4);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 4);
-
-    root->removeComponent(s1);
-    ASSERT_EQ(renderer->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
 
-    root->removeComponent(s2);
-    ASSERT_EQ(renderer->numDrawCalls(), 1);
+    root->removeComponent(s1);
+    ASSERT_EQ(renderer->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
+
+    root->removeComponent(s2);
+    ASSERT_EQ(renderer->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 1);
 
     root->removeComponent(s3);
     ASSERT_EQ(renderer->numDrawCalls(), 0);
@@ -548,21 +548,21 @@ TEST_F(DirectionalLightTest, ThreeCascadesNumDeferredPasses)
     auto shadowRenderer2 = light->component<Renderer>(2);
 
     ASSERT_EQ(renderer->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 4);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 4);
-    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 4);
-
-    root->removeComponent(s1);
-    ASSERT_EQ(renderer->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
     ASSERT_EQ(shadowRenderer2->numDrawCalls(), 3);
 
-    root->removeComponent(s2);
-    ASSERT_EQ(renderer->numDrawCalls(), 1);
+    root->removeComponent(s1);
+    ASSERT_EQ(renderer->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer2->numDrawCalls(), 2);
+
+    root->removeComponent(s2);
+    ASSERT_EQ(renderer->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 1);
 
     root->removeComponent(s3);
     ASSERT_EQ(renderer->numDrawCalls(), 0);
@@ -607,24 +607,24 @@ TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
     auto shadowRenderer3 = light->component<Renderer>(3);
 
     ASSERT_EQ(renderer->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 4);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 4);
-    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 4);
-    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 4);
-
-    root->removeComponent(s1);
-    ASSERT_EQ(renderer->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
     ASSERT_EQ(shadowRenderer2->numDrawCalls(), 3);
     ASSERT_EQ(shadowRenderer3->numDrawCalls(), 3);
 
-    root->removeComponent(s2);
-    ASSERT_EQ(renderer->numDrawCalls(), 1);
+    root->removeComponent(s1);
+    ASSERT_EQ(renderer->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer2->numDrawCalls(), 2);
     ASSERT_EQ(shadowRenderer3->numDrawCalls(), 2);
+
+    root->removeComponent(s2);
+    ASSERT_EQ(renderer->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 1);
 
     root->removeComponent(s3);
     ASSERT_EQ(renderer->numDrawCalls(), 0);
@@ -632,4 +632,72 @@ TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
     ASSERT_EQ(shadowRenderer1->numDrawCalls(), 0);
     ASSERT_EQ(shadowRenderer2->numDrawCalls(), 0);
     ASSERT_EQ(shadowRenderer3->numDrawCalls(), 0);
+}
+
+TEST_F(DirectionalLightTest, ShadowMappingEffect)
+{
+    auto assets = file::AssetLibrary::create(MinkoTests::canvas()->context());
+    auto texture = render::Texture::create(assets->context(), 128, 128, false, true);
+    texture->upload();
+    assets->texture("shadow-map-tmp", texture);
+
+    auto fx = MinkoTests::loadEffect("effect/ShadowMap.effect", assets);
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 4);
+
+    for (int i = 0; i < 4; ++i)
+    {
+        const auto& technique = fx->techniques().at("shadow-map-cascade" + std::to_string(i));
+
+        ASSERT_EQ(technique.size(), 1);
+        ASSERT_TRUE(technique[0]->macroBindings().defaultValues.hasProperty("SHADOW_CASCADE_INDEX"));
+        ASSERT_TRUE(technique[0]->macroBindings().types.count("SHADOW_CASCADE_INDEX") != 0);
+        ASSERT_EQ(technique[0]->macroBindings().types["SHADOW_CASCADE_INDEX"], data::MacroBindingMap::MacroType::INT);
+        ASSERT_EQ(technique[0]->macroBindings().defaultValues.get<int>("SHADOW_CASCADE_INDEX"), i);
+        ASSERT_EQ(technique[0]->states().priority(), render::States::DEFAULT_PRIORITY);
+    }
+}
+
+TEST_F(DirectionalLightTest, RenderersAndDrawCalls)
+{
+    auto fx = MinkoTests::loadEffect("effect/Phong.effect");
+    auto renderer = Renderer::create();
+    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | 256)
+        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(SceneManager::create(MinkoTests::canvas()))
+        ->addComponent(renderer);
+
+    auto light = scene::Node::create()->addComponent(DirectionalLight::create());
+    light->component<DirectionalLight>()->enableShadowMapping(256, 4);
+    root->addChild(light);
+
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
+    auto geom = geometry::CubeGeometry::create(MinkoTests::canvas()->context());
+
+    root->addComponent(Surface::create(geom, material, fx));
+
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
+
+    int rendererIndex = 0;
+    for (auto renderer : light->components<Renderer>())
+    {
+        auto shadowMappingDepthPass = renderer->effect()->technique(renderer->effectTechnique())[0];
+
+        ASSERT_TRUE(shadowMappingDepthPass->macroBindings().defaultValues.hasProperty("SHADOW_CASCADE_INDEX"));
+        ASSERT_TRUE(shadowMappingDepthPass->macroBindings().types.count("SHADOW_CASCADE_INDEX") != 0);
+        ASSERT_EQ(shadowMappingDepthPass->macroBindings().types["SHADOW_CASCADE_INDEX"], data::MacroBindingMap::MacroType::INT);
+        ASSERT_EQ(shadowMappingDepthPass->macroBindings().defaultValues.get<int>("SHADOW_CASCADE_INDEX"), rendererIndex);
+        ASSERT_EQ(shadowMappingDepthPass->states().priority(), render::States::DEFAULT_PRIORITY);
+
+        const auto& drawCalls = renderer->drawCallPool().drawCalls();
+        int* depthTarget = shadowMappingDepthPass->states().target().id;
+
+        ASSERT_EQ(depthTarget, nullptr);
+        ASSERT_EQ(drawCalls.count(std::tuple<float, int*>(render::States::DEFAULT_PRIORITY, depthTarget)), 1);
+
+        ++rendererIndex;
+    }
 }
