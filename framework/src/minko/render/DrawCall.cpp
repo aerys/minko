@@ -262,7 +262,7 @@ DrawCall::bindUniform(ConstUniformInputRef                                      
                 LOG_ERROR(
                     "Program \"" + _program->name() + "\": the uniform \"" + input.name
                     + "\" is not bound, has not been set and no default value was provided."
-                    );
+                );
 
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the uniform \"" + input.name
@@ -283,7 +283,7 @@ DrawCall::bindUniform(ConstUniformInputRef                                      
                     "Program \"" + _program->name() + "\": the uniform \""
                     + input.name + "\" is bound to the \"" + binding->propertyName
                     + "\" property but it's not defined and no default value was provided."
-                    );
+                );
 
                 throw std::runtime_error(
                     "Program \"" + _program->name() + "\": the uniform \""
