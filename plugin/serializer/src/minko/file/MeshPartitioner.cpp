@@ -17,13 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/StreamingOptions.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/data/HalfEdgeCollection.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/MeshPartitioner.hpp"
+#include "minko/file/StreamingOptions.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/render/IndexBuffer.hpp"

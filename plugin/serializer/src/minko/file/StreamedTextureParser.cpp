@@ -17,13 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/StreamingOptions.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/deserialize/Unpacker.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/PNGParser.hpp"
 #include "minko/file/StreamedTextureParser.hpp"
+#include "minko/file/StreamingOptions.hpp"
 #include "minko/log/Logger.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
@@ -128,8 +128,8 @@ StreamedTextureParser::nextLod(int     previousLod,
                                int&    nextLodOffset,
                                int&    nextLodSize)
 {
-    auto lodRangeMinSize = 0;
-    auto lodRangeMaxSize = 1;
+    auto lodRangeMinSize = 1;
+    auto lodRangeMaxSize = 0;
     auto lodRangeRequestMinSize = 0;
     auto lodRangeRequestMaxSize = 0;
 
