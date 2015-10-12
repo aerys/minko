@@ -39,6 +39,8 @@ namespace minko
 
             typedef std::shared_ptr<geometry::Geometry>                         GeometryPtr;
 
+            typedef std::function<bool(NodePtr)>                                NodePredicateFunction;
+
             struct RetargetedSurface
             {
                 SurfacePtr surface;
@@ -51,6 +53,9 @@ namespace minko
                 }
             };
 
+        private:
+            NodePredicateFunction _protectedNodePredicateFunction;
+
         public:
             ~SceneTreeFlattener() = default;
 
@@ -62,6 +67,13 @@ namespace minko
                 auto instance = Ptr(new SceneTreeFlattener());
 
                 return instance;
+            }
+
+            inline
+            void
+            protectedNodePredicateFunction(const NodePredicateFunction& func)
+            {
+                _protectedNodePredicateFunction = func;
             }
 
             void
@@ -78,6 +90,10 @@ namespace minko
 
             void
             patchNode(NodePtr node, const std::list<RetargetedSurface>& retargetedSurfaces);
+
+            static
+            bool
+            defaultProtectedNodePredicateFunction(NodePtr node);
         };
     }
 }
