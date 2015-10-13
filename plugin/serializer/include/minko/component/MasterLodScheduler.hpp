@@ -39,7 +39,7 @@ namespace minko
 
             typedef std::shared_ptr<render::AbstractTexture>    AbstractTexturePtr;
 
-            typedef std::shared_ptr<StreamingOptions>           StreamingOptionsPtr;
+            typedef std::shared_ptr<file::StreamingOptions>     StreamingOptionsPtr;
 
         private:
             std::unordered_map<GeometryPtr, ProviderPtr>        _geometryToDataMap;
@@ -55,6 +55,8 @@ namespace minko
             {
                 auto instance = Ptr(new MasterLodScheduler());
 
+                instance->initialize();
+
                 return instance;
             }
 
@@ -63,15 +65,6 @@ namespace minko
             streamingOptions() const
             {
                 return _streamingOptions;
-            }
-
-            inline
-            Ptr
-            streamingOptions(StreamingOptionsPtr value)
-            {
-                _streamingOptions = value;
-
-                return std::static_pointer_cast<MasterLodScheduler>(shared_from_this());
             }
 
             Ptr
@@ -94,6 +87,9 @@ namespace minko
 
         private:
             MasterLodScheduler();
+
+            void
+            initialize();
         };
     }
 }

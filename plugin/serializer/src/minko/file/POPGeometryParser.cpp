@@ -17,12 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/StreamingOptions.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/POPGeometryParser.hpp"
+#include "minko/file/StreamingOptions.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/log/Logger.hpp"
 #include "minko/render/IndexBuffer.hpp"
@@ -205,8 +205,8 @@ POPGeometryParser::nextLod(int      previousLod,
                            int&     nextLodOffset,
                            int&     nextLodSize)
 {
+    auto lodRangeMinSize = 1;
     auto lodRangeMaxSize = 0;
-    auto lodRangeMinSize = 0;
     auto lodRangeRequestMinSize = 0;
     auto lodRangeRequestMaxSize = 0;
 

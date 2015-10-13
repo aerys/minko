@@ -187,14 +187,8 @@ void
 Texture::uploadMipLevel(uint            level,
                         unsigned char*  data)
 {
-    auto width = (_widthGPU >> level);
-    auto height = (_heightGPU >> level);
-
-    if (level == 0)
-    {
-        width = std::max(width, TextureFormatInfo::minimumWidth(_format));
-        height = std::max(height, TextureFormatInfo::minimumHeight(_format));
-    }
+    const auto width = (_widthGPU >> level);
+    const auto height = (_heightGPU >> level);
 
     if (TextureFormatInfo::isCompressed(_format))
     {

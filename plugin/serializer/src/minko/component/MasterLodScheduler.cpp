@@ -19,12 +19,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/MasterLodScheduler.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/file/StreamingOptions.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/render/AbstractTexture.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::data;
+using namespace minko::file;
 using namespace minko::geometry;
 using namespace minko::render;
 
@@ -77,4 +79,12 @@ MasterLodScheduler::textureData(AbstractTexture::Ptr texture)
     auto dataIt = _textureToDataMap.find(texture);
 
     return dataIt != _textureToDataMap.end() ? dataIt->second : nullptr;
+}
+
+void
+MasterLodScheduler::initialize()
+{
+    _streamingOptions = StreamingOptions::create();
+
+    _streamingOptions->masterLodScheduler(std::static_pointer_cast<MasterLodScheduler>(shared_from_this()));
 }

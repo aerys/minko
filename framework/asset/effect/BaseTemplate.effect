@@ -15,7 +15,7 @@
                         "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
                         "uUVOffset"             : "material[${materialUuid}].uvOffset",
                         "uUVScale"              : "material[${materialUuid}].uvScale",
-                        "uDiffuseColor"         : "material[${materialUuid}].diffuseColor",
+                        "uDiffuseColor"         : { "binding" : "material[${materialUuid}].diffuseColor", "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] },
                         "uDiffuseMap"           : {
                             "binding"       : "material[${materialUuid}].diffuseMap",
                             "wrapMode"      : "repeat",

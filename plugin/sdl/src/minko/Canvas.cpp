@@ -50,10 +50,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "minko/MinkoOffscreen.hpp"
 #endif
 
-// Audio only works for HTML5, Windows and Android
-#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)
-# include "minko/audio/SDLAudio.hpp"
-#endif
+#include "minko/audio/SDLAudio.hpp"
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
 # include "Windows.h"
@@ -235,9 +232,7 @@ Canvas::initializeWindow()
     }
 # endif
 
-# if (MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)) && !defined(MINKO_PLUGIN_OFFSCREEN)
     _audio = audio::SDLAudio::create(shared_from_this());
-# endif
 #endif
 }
 
@@ -978,9 +973,7 @@ Canvas::quit()
 {
     _active = false;
 
-#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)
     _audio = nullptr;
-#endif
 }
 
 Canvas::WorkerPtr

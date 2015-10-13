@@ -1,6 +1,5 @@
 #pragma once
 
-#include "minko/StreamingOptions.hpp"
 #include "minko/component/AbstractLodScheduler.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
 #include "minko/component/POPGeometryLodScheduler.hpp"
@@ -15,5 +14,6 @@
 #include "minko/file/StreamedTextureParser.hpp"
 #include "minko/file/StreamedTextureWriter.hpp"
 #include "minko/file/StreamedTextureWriterPreprocessor.hpp"
+#include "minko/file/StreamingOptions.hpp"
 #include "minko/file/SurfaceOperator.hpp"
 #include "minko/serialize/LodSchedulerSerializer.hpp"

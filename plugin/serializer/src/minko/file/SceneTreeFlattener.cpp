@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/component/BoundingBox.hpp"
+#include "minko/component/Metadata.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -33,7 +34,8 @@ using namespace minko::geometry;
 using namespace minko::scene;
 
 SceneTreeFlattener::SceneTreeFlattener() :
-    AbstractWriterPreprocessor<Node::Ptr>()
+    AbstractWriterPreprocessor<Node::Ptr>(),
+    _protectedNodePredicateFunction()
 {
 }
 
@@ -74,18 +76,13 @@ SceneTreeFlattener::collapseNode(Node::Ptr                      node,
     for (auto child : childrenToRemove)
         node->removeChild(child);
 
-    const auto transforms = node->components<Transform>();
-    const auto boundingBoxes = node->components<BoundingBox>();
     const auto surfaces = node->components<Surface>();
+    const auto transforms = node->components<Transform>();
 
     const auto nodeIsProtected =
         node == root ||
         protectedDescendant ||
-        node->components().size() >
-        transforms.size() +
-        boundingBoxes.size() +
-        surfaces.size() ||
-        (node->data().hasProperty("animated") && node->data().get<bool>("animated"));
+        (_protectedNodePredicateFunction ? _protectedNodePredicateFunction(node) : defaultProtectedNodePredicateFunction(node));
 
     if (!nodeIsProtected)
     {
@@ -127,4 +124,15 @@ SceneTreeFlattener::patchNode(Node::Ptr node, const std::list<RetargetedSurface>
 
         node->addChild(surfaceNode);
     }
+}
+
+bool
+SceneTreeFlattener::defaultProtectedNodePredicateFunction(Node::Ptr node)
+{
+    return node->components().size() >
+        node->components<Transform>().size() +
+        node->components<BoundingBox>().size() +
+        node->components<Surface>().size() +
+        node->components<Metadata>().size() ||
+        (node->data().hasProperty("animated") && node->data().get<bool>("animated"));
 }

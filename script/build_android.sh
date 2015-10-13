@@ -73,7 +73,7 @@ if [[ "$CONFIG" == release && -n "$ANDROID_KEYSTORE_PATH" && -n "$ANDROID_KEYSTO
 
 	# zipalign ensures that all uncompressed data starts with a particular byte alignment relative to the start of the file,
 	# which reduces the amount of RAM consumed by an app.
-	$ANDROID/tools/zipalign -v 4 "$UNSIGNED_APK_PATH" "$ARTIFACT_PATH"
+	$ANDROID/tools/zipalign -v -f 4 "$UNSIGNED_APK_PATH" "$ARTIFACT_PATH"
 
 	rm -f "$UNSIGNED_APK_PATH"
 

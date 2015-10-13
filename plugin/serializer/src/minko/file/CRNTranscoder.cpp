@@ -36,6 +36,35 @@ using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
 
+
+#ifndef MINKO_NO_CRNLIB
+static
+crn_dxt_compressor_type
+compressorTypeFromQualityFactor(TextureFormat format, float qualityFactor)
+{
+    static const auto qualityFactorToCRNCompressorType = std::vector<std::pair<float, crn_dxt_compressor_type>>
+    {
+        { 0.1f,     crn_dxt_compressor_type::cCRNDXTCompressorRYG },
+        { 0.5f,     crn_dxt_compressor_type::cCRNDXTCompressorCRNF },
+        { 1.f,      crn_dxt_compressor_type::cCRNDXTCompressorCRN }
+    };
+
+    auto compressorType = crn_dxt_compressor_type();
+
+    for (const auto& qualityFactorToCompressorTypePair : qualityFactorToCRNCompressorType)
+    {
+        if (qualityFactor <= qualityFactorToCompressorTypePair.first)
+        {
+            compressorType = qualityFactorToCompressorTypePair.second;
+
+            break;
+        }
+    }
+
+    return compressorType;
+}
+#endif
+
 bool
 CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
                          const std::string&                        textureType,
@@ -83,7 +112,10 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         compressorParameters.m_file_type = cCRNFileTypeDDS;
         compressorParameters.m_format = textureFormatToCRNTextureFomat.at(outFormat);
-        compressorParameters.m_dxt_compressor_type = crn_dxt_compressor_type::cCRNDXTCompressorRYG;
+        compressorParameters.m_dxt_compressor_type = compressorTypeFromQualityFactor(
+            outFormat,
+            writerOptions->compressedTextureQualityFactor(textureType)
+        );
         compressorParameters.m_dxt_quality = crn_dxt_quality::cCRNDXTQualityUber;
         compressorParameters.m_quality_level = cCRNMaxQualityLevel;
 
