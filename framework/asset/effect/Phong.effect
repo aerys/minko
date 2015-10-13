@@ -4,6 +4,7 @@
         "name" : "default",
         "passes" : [
             {
+                "name" : "phong-opaque-pass",
                 "extends" : {
                     "effect"    : "BaseStreamingTemplate.effect",
                     "technique" : "base-streaming-technique",
