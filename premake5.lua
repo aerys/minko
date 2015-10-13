@@ -92,6 +92,7 @@ solution "minko"
 			['audio']				= true,
 			['benchmark-cube']		= true,
 			['blending']			= true,
+			['cel-shading']         = true,
 			['clone']				= false,
 			['cube']				= true,
 			['devil']				= false,

@@ -1,0 +1,68 @@
+{
+  "name": "cel-shading",
+  "techniques": [
+    {
+      "name": "default",
+      "passes": [
+        "outline-pass",
+        "cel-shading-pass"
+      ]
+    }
+  ],
+  "passes": [
+    {
+      "name": "outline-pass",
+      "extends": {
+        "effect": "../BaseStreamingTemplate.effect",
+        "technique": "base-streaming-technique",
+        "pass": "base-streaming-pass"
+      },
+      "attributes": {
+        "aNormal": "geometry[${geometryUuid}].normal"
+      },
+      "uniforms": {
+        "uViewMatrix": {
+          "binding": {
+            "property": "viewMatrix",
+            "source": "renderer"
+          }
+        },
+        "uProjectionMatrix": {
+          "binding": {
+            "property": "projectionMatrix",
+            "source": "renderer"
+          }
+        }
+      },
+      "states": {
+        "triangleCulling": "front",
+        "target": {
+          "name": "outline-render-target",
+          "width": 1024,
+          "height": 1024
+        }
+      },
+      "vertexShader": "#pragma include \"Outline.vertex.glsl\"",
+      "fragmentShader": "#pragma include \"Outline.fragment.glsl\""
+    },
+    {
+      "name": "cel-shading-pass",
+      "extends": {
+        "effect": "../BaseStreamingTemplate.effect",
+        "technique": "base-streaming-technique",
+        "pass": "base-streaming-pass"
+      },
+      "attributes": {
+        "aNormal": "geometry[${geometryUuid}].normal"
+      },
+      "uniforms": {
+        "uRenderTargetTexture": {
+          "binding": "outline-render-target",
+          "textureFilter": "linear"
+        }
+      },
+      "vertexShader": "#pragma include \"CelShading.vertex.glsl\"",
+      "fragmentShader": "#pragma include \"CelShading.fragment.glsl\""
+    }
+  ]
+}
