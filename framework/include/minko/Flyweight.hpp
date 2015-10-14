@@ -169,4 +169,12 @@ namespace std
     {
         return std::to_string(*v.value());
     }
+
+    template<>
+    inline
+    std::string
+    to_string(const minko::Flyweight<std::string>& v)
+    {
+        return *v;
+    }
 }

@@ -93,7 +93,7 @@ Loader::load()
             {
                 for (const auto& includePath : includePaths)
                 {
-                    resolvedFilename = options->uriFunction()(File::sanitizeFilename(includePath + '/' + filename));
+                    resolvedFilename = options->uriFunction()(File::sanitizeFilename(*includePath + '/' + filename));
 
                     protocol = options->protocolFunction()(resolvedFilename);
 
