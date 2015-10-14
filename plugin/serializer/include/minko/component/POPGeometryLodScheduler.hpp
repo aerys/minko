@@ -86,8 +86,13 @@ namespace minko
                     ProgressiveOrderedMeshLodInfo
                 >*                                          availableLods;
 
-                std::vector<ProgressiveOrderedMeshLodInfo>  lodToClosestValidLod;
-                std::vector<ProgressiveOrderedMeshLodInfo>  precisionLevelToClosestLod;
+                static const ProgressiveOrderedMeshLodInfo  defaultLodInfo;
+                std::vector<
+                    const ProgressiveOrderedMeshLodInfo*
+                >                                           lodToClosestValidLod;
+                std::vector<
+                    const ProgressiveOrderedMeshLodInfo*
+                >                                           precisionLevelToClosestLod;
 
                 std::unordered_multimap<
                     NodePtr,
@@ -206,14 +211,14 @@ namespace minko
                                float                           time);
 
             bool
-            findClosestValidLod(const POPGeometryResourceInfo& resource,
-                                int                            lod,
-                                ProgressiveOrderedMeshLodInfo& result) const;
+            findClosestValidLod(const POPGeometryResourceInfo&          resource,
+                                int                                     lod,
+                                const ProgressiveOrderedMeshLodInfo*&   result) const;
 
             bool
-            findClosestLodByPrecisionLevel(const POPGeometryResourceInfo&  resource,
-                                           int                             precisionLevel,
-                                           ProgressiveOrderedMeshLodInfo&  result) const;
+            findClosestLodByPrecisionLevel(const POPGeometryResourceInfo&           resource,
+                                           int                                      precisionLevel,
+                                           const ProgressiveOrderedMeshLodInfo*&    result) const;
 
             void
             updateClosestLods(POPGeometryResourceInfo& resource);
