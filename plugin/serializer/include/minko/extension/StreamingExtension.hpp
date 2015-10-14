@@ -23,11 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/SerializerCommon.hpp"
 #include "minko/StreamingCommon.hpp"
-#include "minko/StreamingOptions.hpp"
 #include "minko/component/JobManager.hpp"
 #include "minko/deserialize/Unpacker.hpp"
 #include "minko/extension/AbstractExtension.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/file/StreamingOptions.hpp"
 
 namespace minko
 {
@@ -59,7 +59,7 @@ namespace minko
             };
 
 		private:
-            std::shared_ptr<StreamingOptions>                                   _streamingOptions;
+            std::shared_ptr<file::StreamingOptions>                             _streamingOptions;
 
             Signal<Ptr>::Ptr                                                    _sceneStreamingComplete;
             Signal<Ptr, float>::Ptr                                             _sceneStreamingProgress;
@@ -81,7 +81,7 @@ namespace minko
 
 		public:
             void
-            initialize(std::shared_ptr<StreamingOptions> streamingOptions);
+            initialize(std::shared_ptr<file::StreamingOptions> streamingOptions);
 
 			AbstractExtension::Ptr
 			bind();
@@ -172,7 +172,7 @@ namespace minko
 
             inline
             void
-            streamingOptions(std::shared_ptr<StreamingOptions> value)
+            streamingOptions(std::shared_ptr<file::StreamingOptions> value)
             {
                 _streamingOptions = value;
             }

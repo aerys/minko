@@ -69,8 +69,6 @@ namespace minko
             left.isValid() == right.isValid();
     }
 
-    class StreamingOptions;
-
     namespace serialize
     {
         enum StreamingComponentId
@@ -107,6 +105,7 @@ namespace minko
         class StreamedAssetParserScheduler;
         class StreamedTextureParser;
         class StreamedTextureWriter;
+        class StreamingOptions;
     }
 
 	namespace serialize
