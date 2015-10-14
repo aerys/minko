@@ -50,7 +50,7 @@ namespace minko
             AbstractContextPtr _context;
 			AbstractVideoCameraPtr _videoCamera;
 
-            AbstractTexturePtr _videoPreviewTarget;
+            std::shared_ptr<render::AbstractTexture> _videoPreviewTarget;
             SurfacePtr _previewSurface;
 
 			Any _targetAddedSlot;
