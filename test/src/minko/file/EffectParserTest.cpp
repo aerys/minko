@@ -2402,7 +2402,7 @@ TEST_F(EffectParserTest, ExtendedPassFromEffectWithExtendedPass)
 
     // Test macro bindings
     auto macroNames = std::vector<std::string>({ "FOO", "TEST" });
-    auto macroPropertyNames = std::vector<std::string>({ "bar", "testouille2" });
+    auto macroPropertyNames = std::vector<std::string>({ "bar", "test2" });
     auto macroValues = std::vector<int>({ 42, 12 });
 
     ASSERT_EQ(fx->techniques().at("test-technique-1")[0]->macroBindings().bindings.size(), 2);
