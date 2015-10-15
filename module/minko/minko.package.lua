@@ -49,7 +49,7 @@ minko.package.assets = function(rules)
                 if not inputfiles[files[j]] then
                     -- print("matched file " .. files[j])
                     inputfiles[files[j]] = {
-                        file = files[j],
+                        file = path.translate(files[j], '/'),
                         path = minko.package._path[i],
                         rule = rule
                     }

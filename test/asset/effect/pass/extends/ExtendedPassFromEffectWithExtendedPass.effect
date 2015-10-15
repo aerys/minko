@@ -4,7 +4,7 @@
     },
 
     "macros" : {
-        "TEST" : { "binding" : "testouille1", "type" : "int", "default" : 4242 }
+        "TEST" : { "binding" : "test1", "type" : "int", "default" : 4242 }
     },
 
     "techniques" : [{
@@ -12,7 +12,7 @@
         "passes" : [{
             "name" : "test-pass-1",
             "macros" : {
-                "TEST" : { "binding" : "testouille2", "type" : "int", "default" : 12 }
+                "TEST" : { "binding" : "test2", "type" : "int", "default" : 12 }
             },
 
             "attributes" : {
@@ -36,11 +36,10 @@
     },
     {
         "name" : "test-technique-2",
-        "passes" : 
-        [{
+        "passes" : [{
             "name" : "test-pass-2",
             "macros" : {
-                "TESTOUILLE" : { "binding" : "testouille", "type" : "int", "default" : 12 }
+                "TEST" : { "binding" : "test", "type" : "int", "default" : 12 }
             },
 
             "attributes" : {

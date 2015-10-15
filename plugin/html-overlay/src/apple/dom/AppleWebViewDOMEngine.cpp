@@ -507,7 +507,7 @@ std::string
 AppleWebViewDOMEngine::eval(std::string data)
 {
     const char *dataChar = data.c_str();
-    NSString *nsString = [NSString stringWithCString:dataChar encoding:[NSString defaultCStringEncoding]];
+    NSString *nsString = [NSString stringWithUTF8String:dataChar];
     NSString *result = [_webView stringByEvaluatingJavaScriptFromString: nsString];
     std::string resultString([result UTF8String]);
 

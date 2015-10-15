@@ -1,0 +1,29 @@
+{
+    "techniques" : [{
+        "passes" : [
+            {
+                "extends" : "base-pass",
+                "macros" : {
+                    "FOO" : { "type" : "int", "default" : 42 }
+                }
+            },
+            {
+                "extends" : "base-pass",
+                "macros" : {
+                    "FOO" : { "type" : "int", "default" : 23 }
+                }
+            }
+        ]
+    }],
+
+    "passes" : [{
+        "name" : "base-pass",
+
+        "macros" : {
+            "FOO" : { "type" : "int", "default" : 0 }
+        },
+
+        "vertexShader" : "#pragma include \"../../dummy.glsl\"",
+        "fragmentShader" : "#pragma include \"../../dummy.glsl\""
+    }]
+}

@@ -124,49 +124,49 @@ namespace minko
 
 			inline
 			bool
-			errorsEnabled()
+			errorsEnabled() override
 			{
 				return _errorsEnabled;
 			}
 
 			inline
 			void
-			errorsEnabled(bool errorsEnabled)
+			errorsEnabled(bool errorsEnabled) override
 			{
 				_errorsEnabled = errorsEnabled;
 			}
 
             inline
             const std::string&
-            driverInfo()
+            driverInfo() override
             {
                 return _driverInfo;
             }
 
             inline
             uint
-            renderTarget()
+            renderTarget() override
             {
             	return _currentTarget;
             }
 
             inline
             uint
-            viewportWidth()
+            viewportWidth() override
             {
             	return _viewportWidth;
             }
 
             inline
             uint
-            viewportHeight()
+            viewportHeight() override
             {
             	return _viewportHeight;
             }
 
 			inline
 			uint
-			currentProgram()
+			currentProgram() override
 			{
 				return _currentProgram;
 			}
@@ -175,82 +175,82 @@ namespace minko
 			configureViewport(const uint x,
 							  const uint y,
 							  const uint with,
-							  const uint height);
+							  const uint height) override;
 
 			void
-			clear(float red 			= 0.f,
-				  float green			= 0.f,
-				  float blue			= 0.f,
-				  float alpha			= 0.f,
-				  float depth			= 1.f,
+			clear(float red 	= 0.f,
+				  float green	= 0.f,
+				  float blue	= 0.f,
+				  float alpha	= 0.f,
+				  float depth	= 1.f,
 				  uint stencil	= 0,
-				  uint mask		= 0xffffffff);
+				  uint mask		= 0xffffffff) override;
 
 			void
-			present();
+			present() override;
 
 			void
-			drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles);
+			drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles) override;
 
 			void
-			drawTriangles(const uint firstIndex, const int numTriangles);
+			drawTriangles(const uint firstIndex, const int numTriangles) override;
 
 			const uint
-			createVertexBuffer(const uint size);
+			createVertexBuffer(const uint size) override;
 
 			void
 			setVertexBufferAt(const uint	position,
 							  const uint	vertexBuffer,
 							  const uint	size,
 							  const uint	stride,
-							  const uint	offset);
+							  const uint	offset) override;
 			void
 			uploadVertexBufferData(const uint 	vertexBuffer,
 								   const uint 	offset,
 								   const uint 	size,
-								   void* 				data);
+								   void* 		data) override;
 
 			void
-			deleteVertexBuffer(const uint vertexBuffer);
+			deleteVertexBuffer(const uint vertexBuffer) override;
 
 			const uint
-			createIndexBuffer(const uint size);
+			createIndexBuffer(const uint size) override;
 
 			void
 			uploaderIndexBufferData(const uint 	indexBuffer,
 									const uint 	offset,
 									const uint 	size,
-									void*				data);
+									void*		data) override;
 
 			void
-			deleteIndexBuffer(const uint indexBuffer);
+			deleteIndexBuffer(const uint indexBuffer) override;
 
 			uint
 			createTexture(TextureType	type,
 						  uint  width,
 						  uint  height,
 						  bool		    mipMapping,
-                          bool          optimizeForRenderToTexture = false);
+                          bool          optimizeForRenderToTexture = false) override;
 
             uint
             createCompressedTexture(TextureType     type,
                                     TextureFormat   format,
-                                    uint    width,
-                                    uint    height,
-                                    bool            mipMapping);
+                                    uint    		width,
+                                    uint    		height,
+                                    bool            mipMapping) override;
 
 
             uint
             createRectangleTexture(TextureType  type,
                                    unsigned int width,
-                                   unsigned int height);
+                                   unsigned int height) override;
 
 			void
 			uploadTexture2dData(uint	texture,
 							    uint 	width,
 							    uint 	height,
 							    uint 	mipLevel,
-							    void*	data);
+							    void*	data) override;
 
 			void
 			uploadCubeTextureData(uint				texture,
@@ -258,7 +258,7 @@ namespace minko
 							      uint 				width,
 							      uint 				height,
 							      uint 				mipLevel,
-							      void*				data);
+							      void*				data) override;
 
 			void
             uploadCompressedTexture2dData(uint          texture,
@@ -267,7 +267,7 @@ namespace minko
                                           uint  		height,
                                           uint  		size,
                                           uint  		mipLevel,
-                                          void*         data);
+                                          void*         data) override;
 
             void
             uploadCompressedCubeTextureData(uint                texture,
@@ -276,61 +276,61 @@ namespace minko
                                             uint        		width,
                                             uint        		height,
                                             uint        		mipLevel,
-                                            void*               data);
+                                            void*               data) override;
 
             void
-            activateMipMapping(uint texture);
+            activateMipMapping(uint texture) override;
 
             void
-			deleteTexture(uint texture);
+			deleteTexture(uint texture) override;
 
 			void
 			setTextureAt(uint	position,
 						 int	texture		= 0,
-						 int	location	= -1);
+						 int	location	= -1) override;
 
             void
             setSamplerStateAt(uint				position,
                               WrapMode          wrapping,
                               TextureFilter     filtering,
-                              MipFilter         mipFiltering);
+                              MipFilter         mipFiltering) override;
 
 			const uint
-			createProgram();
+			createProgram() override;
 
 			void
-			attachShader(const uint program, const uint shader);
+			attachShader(const uint program, const uint shader) override;
 
 			void
-			linkProgram(const uint program);
+			linkProgram(const uint program) override;
 
 			void
-			deleteProgram(const uint program);
+			deleteProgram(const uint program) override;
 
 			void
-			compileShader(const uint shader);
+			compileShader(const uint shader) override;
 
 			void
-			setProgram(const uint program);
+			setProgram(const uint program) override;
 
 			virtual
 			void
-			setShaderSource(const uint shader, const std::string& source);
+			setShaderSource(const uint shader, const std::string& source) override;
 
 			const uint
-			createVertexShader();
+			createVertexShader() override;
 
 			void
-			deleteVertexShader(const uint vertexShader);
+			deleteVertexShader(const uint vertexShader) override;
 
 			const uint
-			createFragmentShader();
+			createFragmentShader() override;
 
 			void
-			deleteFragmentShader(const uint fragmentShader);
+			deleteFragmentShader(const uint fragmentShader) override;
 
 			ProgramInputs
-			getProgramInputs(const uint program);
+			getProgramInputs(const uint program) override;
 
 			std::string
 			getShaderCompilationLogs(const uint shader);
@@ -339,16 +339,16 @@ namespace minko
 			getProgramInfoLogs(const uint program);
 
             void
-            setBlendingMode(Blending::Source source, Blending::Destination destination);
+            setBlendingMode(Blending::Source source, Blending::Destination destination) override;
 
             void
-            setBlendingMode(Blending::Mode blendingMode);
+            setBlendingMode(Blending::Mode blendingMode) override;
 
 			void
-			setDepthTest(bool depthMask, CompareMode depthFunc);
+			setDepthTest(bool depthMask, CompareMode depthFunc) override;
 
 			void
-			setColorMask(bool);
+			setColorMask(bool) override;
 
 			void
 			setStencilTest(CompareMode		stencilFunc,
@@ -356,28 +356,28 @@ namespace minko
 						   uint				stencilMask,
 						   StencilOperation	stencilFailOp,
 						   StencilOperation	stencilZFailOp,
-						   StencilOperation	stencilZPassOp);
+						   StencilOperation	stencilZPassOp) override;
 
 			void
-			setScissorTest(bool	scissorTest, const math::ivec4& scissorBox);
+			setScissorTest(bool	scissorTest, const math::ivec4& scissorBox) override;
 
 			void
-			readPixels(uint x, uint y, uint width, uint height, unsigned char* pixels);
+			readPixels(uint x, uint y, uint width, uint height, unsigned char* pixels) override;
 
 			void
-			readPixels(unsigned char* pixels);
+			readPixels(unsigned char* pixels) override;
 
             void
-            setTriangleCulling(TriangleCulling triangleCulling);
+            setTriangleCulling(TriangleCulling triangleCulling) override;
 
             void
-            setRenderToBackBuffer();
+            setRenderToBackBuffer() override;
 
             void
-            setRenderToTexture(uint texture, bool enableDepthAndStencil = false);
+            setRenderToTexture(uint texture, bool enableDepthAndStencil = false) override;
 
             void
-            generateMipmaps(uint texture);
+            generateMipmaps(uint texture) override;
 
             bool
             supportsExtension(const std::string& extensionNameString);
@@ -459,31 +459,31 @@ namespace minko
 			getTextureType(uint textureId) const;
 
             void
-            setUniformFloat(uint location, uint count, const float* v);
+            setUniformFloat(uint location, uint count, const float* v) override;
 
             void
-            setUniformFloat2(uint location, uint count, const float* v);
+            setUniformFloat2(uint location, uint count, const float* v) override;
 
             void
-            setUniformFloat3(uint location, uint count, const float* v);
+            setUniformFloat3(uint location, uint count, const float* v) override;
 
             void
-            setUniformFloat4(uint location, uint count, const float* v);
+            setUniformFloat4(uint location, uint count, const float* v) override;
 
             void
-            setUniformMatrix4x4(uint location, uint count, const float* v);
+            setUniformMatrix4x4(uint location, uint count, const float* v) override;
 
             void
-            setUniformInt(uint location, uint count, const int* v);
+            setUniformInt(uint location, uint count, const int* v) override;
 
             void
-            setUniformInt2(uint location, uint count, const int* v);
+            setUniformInt2(uint location, uint count, const int* v) override;
 
             void
-            setUniformInt3(uint location, uint count, const int* v);
+            setUniformInt3(uint location, uint count, const int* v) override;
 
             void
-            setUniformInt4(uint location, uint count, const int* v);
+            setUniformInt4(uint location, uint count, const int* v) override;
 		};
 	}
 }

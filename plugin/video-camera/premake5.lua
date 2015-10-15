@@ -2,6 +2,8 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
+	removeplatforms { "linux64", "linux32" }
+
 	minko.plugin.enable("sdl")
 
 	files {
@@ -39,4 +41,4 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 
 	configuration { "ios" }
-		buildoptions { "-x objective-c++" } 
+		buildoptions { "-x objective-c++" }

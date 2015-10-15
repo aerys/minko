@@ -33,6 +33,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/math/tools.hpp"
 
+#include "minko/log/Logger.hpp"
+
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
@@ -160,11 +162,22 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 
     _graphicsTransform = node->component<Transform>();
 
+    if (!_graphicsTransform)
+    {
+        LOG_ERROR("The node has no Transform.");
+
+        throw std::logic_error("The node has no Transform.");
+    }
+
     // The target has just been added to another node, we need to update the modelToWorldMatrix
     auto modelToWorldMatrix = _graphicsTransform->modelToWorldMatrix(true);
 
     if (fabsf(math::determinant(modelToWorldMatrix)) < 1e-4f)
+    {
+        LOG_ERROR("The node's model-to-world matrix cannot be inverted.");
+
         throw std::logic_error("The node's model-to-world matrix cannot be inverted.");
+    }
 
     // Identify physics world
     auto withPhysicsWorld = NodeSet::create(node)
@@ -172,7 +185,11 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
         ->where([](Node::Ptr n){ return n->hasComponent<bullet::PhysicsWorld>(); });
 
     if (withPhysicsWorld->nodes().size() > 1)
+    {
+        LOG_ERROR("Scene cannot contain more than one PhysicsWorld component.");
+
         throw std::logic_error("Scene cannot contain more than one PhysicsWorld component.");
+    }
 
     _physicsWorld = withPhysicsWorld->nodes().empty()
         ? nullptr

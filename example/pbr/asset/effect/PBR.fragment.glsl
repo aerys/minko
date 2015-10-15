@@ -37,6 +37,8 @@ uniform float uMetalness;
 uniform sampler2D uRadianceMap;
 uniform sampler2D uIrradianceMap;
 
+uniform float uGammaCorrection;
+
 // texture lod
 uniform float uAlbedoMapMaxAvailableLod;
 uniform vec2 uAlbedoMapSize;
@@ -205,29 +207,19 @@ float getShadow(sampler2D 	shadowMap,
 
 	if (shadowMapping_vertexIsInShadowMap(vertexLightPosition))
 	{
-		float shadowDepth = vertexLightPosition.z - bias;
+		float shadowDepth = vertexLightPosition.z;// + bias;
 		vec2 depthUV = vertexLightPosition.xy / 2.0 + 0.5;
 
 		depthUV = vec2(depthUV.xy * viewport.zw + viewport.xy);
 
 		#if SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_HARD
 			shadow = shadowMapping_texture2DCompare(shadowMap, depthUV, shadowDepth, near, far);
+		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF
+			shadow = shadowMapping_PCF(shadowMap, vec2(size), depthUV, shadowDepth, near, far);
 		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_ESM
 			shadow = shadowMapping_ESM(shadowMap, depthUV, shadowDepth, near, far, (far - near) * 1.5);
-		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF
-			shadow = shadowMapping_PCF(shadowMap, vec2(size, size), depthUV, shadowDepth, near, far);
-		// #elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF_POISSON
-		// 	shadow = shadowMapping_PCFPoisson(
-		// 		shadowMap,
-		// 		vec2(size, size),
-		// 		depthUV,
-		// 		shadowDepth,
-		// 		zNear,
-		// 		zFar,
-		// 		uShadowRandomMap,
-		// 		vVertexScreenPosition.xy / vVertexScreenPosition.w / 2.0 + 0.5,
-		// 		uShadowSpread
-		// 	);
+        #elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF_POISSON
+			shadow = shadowMapping_PCFPoisson(shadowMap, vec2(size), depthUV, shadowDepth, near, far, vec4(vVertexPosition.xy, vVertexNormal.xy));
 		#endif
 	}
 
@@ -407,7 +399,7 @@ void main(void)
 	#endif
 
     #ifdef GAMMA_CORRECTION
-        color = pow(color, vec3(1.0 / 2.2));
+        color = pow(color, vec3(1.0 / uGammaCorrection));
     #endif
 
 	gl_FragColor = vec4(color, albedo.a);
