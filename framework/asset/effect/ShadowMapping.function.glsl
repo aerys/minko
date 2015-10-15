@@ -104,7 +104,7 @@ float shadowMapping_PCFPoisson(sampler2D depths, vec2 size, vec2 uv, float compa
         result += shadowMapping_texture2DCompare(depths, uv + poissonOffset / size, compare, zNear, zFar);
     }
 
-    return result / SHADOW_MAPPING_PCF_POISSON_NUM_SAMPLES;
+    return result / float(SHADOW_MAPPING_PCF_POISSON_NUM_SAMPLES);
 }
 
 float shadowMapping_ESM(sampler2D depths, vec2 uv, float compare, float zNear, float zFar, float c)
