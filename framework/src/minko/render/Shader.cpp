@@ -60,14 +60,6 @@ Shader::upload()
 #endif
 
 #ifdef MINKO_GLSL_OPTIMIZER_ENABLED
-    // FIXME: Version definition should only rely on context.
-    // Add method AbstractContext::formatShaderSource(id, source) -> std::string.
-# if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    _source = "#version 100\n" + _source;
-# else
-    _source = "#version 120\n" + _source;
-# endif
-
     glslopt_shader* optimizedShader = nullptr;
 
     if (_type == Type::VERTEX_SHADER)
@@ -84,7 +76,7 @@ Shader::upload()
     {
 #ifdef DEBUG
         auto line = std::string();
-        std::istringstream stream(_source);
+        std::istringstream stream(source);
         auto lineNumber = 0u;
 
         while (std::getline(stream, line))
