@@ -156,10 +156,10 @@ namespace minko
 
 namespace std
 {
-    template <typename T>
+    template<typename T>
     struct hash<minko::Flyweight<T>> : public minko::Hash<minko::Flyweight<T>> {};
 
-    template <typename T>
+    template<typename T>
     struct equal_to<minko::Flyweight<T>> : public minko::EqualTo<minko::Flyweight<T>> {};
 
     template<typename T>
@@ -173,8 +173,42 @@ namespace std
     template<>
     inline
     std::string
-    to_string(const minko::Flyweight<std::string>& v)
+    to_string<std::string>(const minko::Flyweight<std::string>& v)
     {
         return *v;
+    }
+
+    template<>
+    inline
+    std::string
+    to_string<minko::Flyweight<std::string>>(const std::list<minko::Flyweight<std::string>>& list, const std::string& separator)
+    {
+        std::string s = "";
+
+        for (const auto& e : list)
+        {
+            if (s.size())
+                s += separator;
+            s += *e;
+        }
+
+        return s;
+    }
+
+    template<>
+    inline
+    std::string
+    to_string<minko::Flyweight<std::string>>(const std::vector<minko::Flyweight<std::string>>& list, const std::string& separator)
+    {
+        std::string s = "";
+
+        for (const auto& e : list)
+        {
+            if (s.size())
+                s += separator;
+            s += *e;
+        }
+
+        return s;
     }
 }
