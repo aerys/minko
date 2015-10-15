@@ -24,13 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/QuadGeometry.hpp"
 #include "minko/material/BasicMaterial.hpp"
 #include "minko/render/AbstractContext.hpp"
-#include "minko/render/Effect.hpp"
 #include "minko/render/RectangleTexture.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/video/AbstractVideoCamera.hpp"
 #include "minko/video/ImageFormat.hpp"
-
-#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -178,7 +175,7 @@ VideoCameraPreview::updateVideoPreviewTarget(const std::vector<unsigned char>&  
 
     if (_videoPreviewTarget != nullptr && width > 0 && height > 0)
     {
-        _videoPreviewTarget->data(const_cast<unsigned char*>(data.data()), width, height);
+        std::static_pointer_cast<RectangleTexture>(_videoPreviewTarget)->data(const_cast<unsigned char*>(data.data()), width, height);
         _videoPreviewTarget->upload();
     }
 }
