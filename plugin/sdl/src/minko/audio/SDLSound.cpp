@@ -37,6 +37,7 @@ SDLSound::~SDLSound()
 std::shared_ptr<SoundChannel>
 SDLSound::play(int count)
 {
+#if SDL_AUDIO_ENABLED
     if (count < 0)
         throw std::invalid_argument("count cannot be less than zero");
 
@@ -51,4 +52,8 @@ SDLSound::play(int count)
     }
 
     return channel;
+#else
+    LOG_ERROR("Playing audio is not supported on this platform.");
+    return nullptr;
+#endif
 }
