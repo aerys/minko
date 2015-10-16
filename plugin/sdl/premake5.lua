@@ -50,6 +50,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	-- if minko.plugin.requested("offscreen") then
 		defines {
-			"SDL_AUDIO_ENABLED=0"
+			"\"SDL_AUDIO_ENABLED=0\""
 		}
 	-- end
