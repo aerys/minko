@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/audio/SoundParser.hpp"
 #include "minko/audio/SDLSound.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::audio;
@@ -35,6 +36,7 @@ SoundParser::parse(const std::string&                   filename,
                    const std::vector<unsigned char>&    data,
                    std::shared_ptr<file::AssetLibrary>  assets)
 {
+#if SDL_AUDIO_ENABLED
     std::shared_ptr<SDLSound> sound(new SDLSound);
 
     SDL_RWops* ops = SDL_RWFromConstMem(&*data.begin(), data.size());
@@ -52,4 +54,7 @@ SoundParser::parse(const std::string&                   filename,
     assets->sound(filename, sound);
 
     complete()->execute(shared_from_this());
+#else
+    LOG_ERROR("Audio file parsing is not supported on this platform.");
+#endif
 }
