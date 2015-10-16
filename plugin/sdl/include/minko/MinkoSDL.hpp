@@ -21,8 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Canvas.hpp"
 
-// Audio only works for HTML5, Windows, Android and iOS 
-#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)
+#if SDL_AUDIO_ENABLED
 # include "minko/audio/SDLSound.hpp"
 # include "minko/audio/SDLSoundChannel.hpp"
 # include "minko/audio/SoundParser.hpp"

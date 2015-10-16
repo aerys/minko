@@ -40,13 +40,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	configuration { "ios" }
 		buildoptions { "-x objective-c++" }
 
-	-- Audio only works for HTML5, Windows and Android
-	-- configuration { "linux32 or linux64 or osx64" }
-	-- 	excludes {
-	-- 		"include/minko/audio/**.hpp",
-	-- 		"src/minko/audio/**.cpp"
-	-- 	}
-
 	configuration { "not android" }
 		excludes {
 			"include/minko/file/APKProtocol.hpp",
@@ -55,9 +48,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { }
 
-	if minko.plugin.requested("offscreen") then
-		excludes {
-			"include/minko/audio/**.hpp",
-			"src/minko/audio/**.cpp"
+	-- if minko.plugin.requested("offscreen") then
+		defines {
+			"SDL_AUDIO_ENABLED=0"
 		}
-	end
+	-- end

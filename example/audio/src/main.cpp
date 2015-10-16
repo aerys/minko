@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/audio/PositionalSound.hpp"
+#include "minko/audio/SoundParser.hpp"
 #include "minko/log/Logger.hpp"
 
 using namespace minko;
