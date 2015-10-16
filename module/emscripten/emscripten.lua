@@ -40,8 +40,7 @@ end
 
 table.inject(premake.tools.gcc, 'cppflags.system.emscripten', {
 	"-MMD", "-MP",
-	"-DEMSCRIPTEN",
-	"-Wno-warn-absolute-paths"
+	"-DEMSCRIPTEN"
 })
 
 table.inject(premake.tools.gcc, 'cxxflags.system.emscripten', {
