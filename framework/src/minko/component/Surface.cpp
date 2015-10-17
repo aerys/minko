@@ -230,6 +230,7 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
     if (effect != _effect)
     {
         changed = true;
+
 		if (target() != nullptr)
 		{
             if (_effect != nullptr)
@@ -245,10 +246,10 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
     if (technique != _technique)
     {
         changed = true;
-    	_technique = technique;
+		_technique = technique;
         _provider->set("technique", technique);
     }
-
+		
     if (changed)
         _effectChanged.execute(std::static_pointer_cast<Surface>(shared_from_this()));
 }

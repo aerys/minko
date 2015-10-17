@@ -32,6 +32,7 @@ SurfaceTest::SetUp()
     auto loader = _sceneManager->assets()->loader();
     loader->options()->loadAsynchronously(false);
     loader->queue("effect/Basic.effect");
+    loader->queue("effect/Phong.effect");
     loader->load();
 
     auto redMaterial = material::BasicMaterial::create();
@@ -332,4 +333,17 @@ TEST_F(SurfaceTest, SurfaceSetNewMaterialWithProgramForking)
     {
         ASSERT_TRUE(false);
     }
+}
+
+TEST_F(SurfaceTest, SetEffectNoTarget)
+{
+    auto surface = Surface::create(
+        _sceneManager->assets()->geometry("cube"),
+        material::BasicMaterial::create(),
+        _sceneManager->assets()->effect("effect/Basic.effect")
+    );
+
+    surface->effect(_sceneManager->assets()->effect("effect/Phong.effect"));
+
+    ASSERT_EQ(surface->effect(), _sceneManager->assets()->effect("effect/Phong.effect"));
 }
