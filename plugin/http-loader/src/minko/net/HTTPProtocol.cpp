@@ -26,10 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/AbstractCanvas.hpp"
 #include "minko/log/Logger.hpp"
 
-#if defined(EMSCRIPTEN)
-# include "emscripten/emscripten.h"
-#endif
-
 using namespace minko;
 using namespace minko::file;
 using namespace minko::async;
@@ -38,12 +34,16 @@ using namespace minko::net;
 std::list<std::shared_ptr<HTTPProtocol>>
 HTTPProtocol::_runningLoaders;
 
+#if defined(EMSCRIPTEN)
+# include "emscripten/emscripten.h"
+
+extern "C" {
+    extern int emscripten_async_wget3_data(const char* url, const char* requesttype, const char* param, const char* additionalHeader, void *arg, int free, em_async_wget2_data_onload_func onload, em_async_wget2_data_onerror_func onerror, em_async_wget2_data_onprogress_func onprogress);
+}
+#endif
+
 uint
 HTTPProtocol::_uid = 0;
-
-HTTPProtocol::HTTPProtocol()
-{
-}
 
 void
 HTTPProtocol::progressHandler(void* arg, int loadedBytes, int totalBytes)
@@ -167,10 +167,6 @@ HTTPProtocol::load()
 #if defined(EMSCRIPTEN)
     if (options()->loadAsynchronously())
     {
-        //EMSCRIPTEN < 1.13.1
-        //emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
-
-        //EMSCRIPTEN >= 1.13.1
         auto additionalHeadersJsonString = std::string();
 
         if (!additionalHeaders.empty())
@@ -192,13 +188,11 @@ HTTPProtocol::load()
             additionalHeadersJsonString += " }";
         }
 
-        emscripten_async_wget2_data(
+        emscripten_async_wget3_data(
             resolvedFilename().c_str(),
             "GET",
             "",
-#if defined(EMSCRIPTEN_WGET_HEADERS)
             additionalHeadersJsonString.c_str(),
-#endif
             loader.get(),
             true,
             &wget2CompleteHandler,

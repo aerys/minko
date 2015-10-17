@@ -101,7 +101,7 @@ solution "minko"
 			['frustum']				= false,
 			['hologram']			= false,
 			['html-overlay']		= true,
-			['http']				= false,
+			['http']				= true,
 			['jobs']				= false,
 			['joystick']			= false,
 			['keyboard']			= false,

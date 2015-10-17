@@ -35,9 +35,9 @@ minko.project.library = function(name)
 
 	configuration { "vs*" }
 		defines {
-			"NOMINMAX",									    -- do not define min/max as macro in windows.h
-			"_VARIADIC_MAX=10",							    -- fix for faux variadic templates limited to 5 arguments by default
-			"_USE_MATH_DEFINES",						    -- enable M_PI
+			"NOMINMAX",										-- do not define min/max as macro in windows.h
+			"_VARIADIC_MAX=10",								-- fix for faux variadic templates limited to 5 arguments by default
+			"_USE_MATH_DEFINES",							-- enable M_PI
 			"_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS"		-- disable "<hash_map> is deprecated and will be REMOVED" error
 		}
 		flags {
@@ -202,6 +202,10 @@ minko.project.application = function(name)
 			cmd = cmd .. ' -O3'
 			-- enable the closure compiler
 			cmd = cmd .. ' --closure 1'
+
+			-- add minko-specific emscripten library extension
+			cmd = cmd .. ' --js-library "' .. minko.sdk.path("/module/emscripten/library.js") .. '"'
+
 			-- treat undefined symbol warnings as errors
 			cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
 			-- disable exception catching
@@ -214,7 +218,7 @@ minko.project.application = function(name)
 
 				from emscripten's settings.js:
 				"OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
-	            large functions (JS engines often compile them very slowly, compile them with lower optimizations,
+				large functions (JS engines often compile them very slowly, compile them with lower optimizations,
 				or do not optimize them at all)"
 			]]--
 			cmd = cmd .. ' -s OUTLINING_LIMIT=20000'
@@ -244,6 +248,9 @@ minko.project.application = function(name)
 
 			-- disable optimization
 			cmd = cmd .. buildoptions()[1]
+
+			-- add minko-specific emscripten library extension
+			cmd = cmd .. ' --js-library "' .. minko.sdk.path("/module/emscripten/library.js") .. '"'
 
 			-- treat undefined symbol warnings as errors
 			-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
@@ -360,16 +367,16 @@ minko.project.application = function(name)
 		}
 
 	if _OPTIONS['with-offscreen'] then
-            minko.plugin.enable { "offscreen" }
-    end
+			minko.plugin.enable { "offscreen" }
+	end
 
-    configuration { "android", "debug" }
+	configuration { "android", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/android/debug")
 		}
 
 	configuration { "android", "release" }
-    	libdirs {
+		libdirs {
 			minko.sdk.path("/framework/bin/android/release")
 		}
 
