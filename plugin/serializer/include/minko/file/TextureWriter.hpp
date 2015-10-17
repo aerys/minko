@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/SerializerCommon.hpp"
 #include "minko/file/AbstractWriter.hpp"
 #include "minko/Hash.hpp"
+#include "minko/render/TextureFormat.hpp"
 
 namespace minko
 {
