@@ -123,7 +123,7 @@ main(int argc, char** argv)
 
     auto lights                = scene::Node::create("lights");
 
-    std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
+    std::cout << "Press [N]\tto toggle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
 
     // setup assets
     assets
@@ -191,6 +191,11 @@ main(int argc, char** argv)
             if (k->keyIsDown(input::Keyboard::R))
             {
                 removeLight(lights);
+            }
+
+            if (k->keyIsDown(input::Keyboard::N))
+            {
+               toggleNormalMap(assets, sphere);
             }
         });
 
