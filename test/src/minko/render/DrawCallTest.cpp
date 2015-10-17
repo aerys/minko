@@ -26,6 +26,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
+const std::string dummyVertexShader = "void main() { gl_Position = vec4(1.0); }";
+const std::string dummyFragmentShader = "void main() { gl_FragColor = vec4(1.0); }";
+
 std::string
 DrawCallTest::randomString(uint len)
 {
@@ -435,8 +438,8 @@ TEST_F(DrawCallTest, SamplerStatesImplicitDefaultValues)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
@@ -504,8 +507,8 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueRepeat)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
@@ -571,8 +574,8 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueClamp)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
@@ -638,8 +641,8 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueLinear)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
@@ -705,8 +708,8 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueNearest)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
@@ -772,8 +775,8 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinear)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
@@ -839,8 +842,8 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinearNearest)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
@@ -906,8 +909,8 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueNone)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
@@ -976,8 +979,8 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
@@ -1043,8 +1046,8 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
@@ -1110,8 +1113,8 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithVariableBindingFromRootData)
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
-    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, "void main() {}");
-    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, "void main() {}");
+    auto vertexShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::VERTEX_SHADER, dummyVertexShader);
+    auto fragmentShader = Shader::create(MinkoTests::canvas()->context(), Shader::Type::FRAGMENT_SHADER, dummyFragmentShader);
     vertexShader->upload();
     fragmentShader->upload();
 
