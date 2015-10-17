@@ -51,9 +51,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #  endif
 # endif
 #elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
-# include <OpenGL/gl.h>
+# include <OpenGL/gl3.h>
 # include <OpenGL/glext.h>
-# include <GLUT/glut.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX
 # include <GL/gl.h>
 # include <GL/glext.h>
