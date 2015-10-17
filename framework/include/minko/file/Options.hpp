@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-
+#include "minko/Flyweight.hpp"
 #include "minko/component/SkinningMethod.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/render/TextureFormat.hpp"
@@ -62,50 +62,51 @@ namespace minko
             typedef std::function<void(NodePtr, const std::string&, const std::string&)> 		AttributeFunction;
 
 		private:
-			std::shared_ptr<render::AbstractContext>	        _context;
-			std::shared_ptr<AssetLibrary>                       _assets;
-			std::list<std::string>						        _includePaths;
-			std::list<std::string>						        _platforms;
-			std::list<std::string>						        _userFlags;
+			std::shared_ptr<render::AbstractContext>	                _context;
+			std::shared_ptr<AssetLibrary>                               _assets;
+			std::list<Flyweight<std::string>>			                _includePaths;
+			std::list<Flyweight<std::string>>			                _platforms;
+			std::list<Flyweight<std::string>>			                _userFlags;
 
-			std::unordered_map<std::string, ParserHandler>	    _parsers;
-			std::unordered_map<std::string, ProtocolHandler>    _protocols;
+			std::unordered_map<Flyweight<std::string>, ParserHandler>	_parsers;
+			std::unordered_map<Flyweight<std::string>, ProtocolHandler> _protocols;
 
-            bool                                                _optimizeForRendering;
-			bool                                                _generateMipMaps;
-			bool												_parseMipMaps;
-			bool										        _resizeSmoothly;
-			bool										        _isCubeTexture;
-            bool                                                _isRectangleTexture;
-            bool                                                _generateSmoothNormals;
-            float                                               _normalMaxSmoothingAngle;
-            bool                                                _includeAnimation;
-			bool										        _startAnimation;
-			bool										        _loadAsynchronously;
-            bool                                                _disposeIndexBufferAfterLoading;
-            bool                                                _disposeVertexBufferAfterLoading;
-            bool                                                _disposeTextureAfterLoading;
-            bool                                                _storeDataIfNotParsed;
-            bool                                                _preserveMaterials;
-			unsigned int								        _skinningFramerate;
-			component::SkinningMethod					        _skinningMethod;
-			std::shared_ptr<render::Effect>                     _effect;
-			MaterialPtr									        _material;
-            std::list<render::TextureFormat>                    _textureFormats;
-			MaterialFunction							        _materialFunction;
-			TextureFunction							            _textureFunction;
-			GeometryFunction							        _geometryFunction;
-			ProtocolFunction								    _protocolFunction;
-            ParserFunction                                      _parserFunction;
-			UriFunction									        _uriFunction;
-			NodeFunction								        _nodeFunction;
-			EffectFunction								        _effectFunction;
-            TextureFormatFunction                               _textureFormatFunction;
-            AttributeFunction                                   _attributeFunction;
-            int                                                 _seekingOffset;
-            int                                                 _seekedLength;
+            bool                                                        _optimizeForRendering;
+			bool                                                        _generateMipMaps;
+			bool												        _parseMipMaps;
+			bool										                _resizeSmoothly;
+			bool										                _isCubeTexture;
+            bool                                                        _isRectangleTexture;
+            bool                                                        _generateSmoothNormals;
+            float                                                       _normalMaxSmoothingAngle;
+            bool                                                        _includeAnimation;
+			bool										                _startAnimation;
+			bool										                _loadAsynchronously;
+            bool                                                        _disposeIndexBufferAfterLoading;
+            bool                                                        _disposeVertexBufferAfterLoading;
+            bool                                                        _disposeTextureAfterLoading;
+            bool                                                        _storeDataIfNotParsed;
+            bool                                                        _preserveMaterials;
+			unsigned int								                _skinningFramerate;
+			component::SkinningMethod					                _skinningMethod;
+			std::shared_ptr<render::Effect>                             _effect;
+			MaterialPtr									                _material;
+            std::list<render::TextureFormat>                            _textureFormats;
+			MaterialFunction							                _materialFunction;
+			TextureFunction							                    _textureFunction;
+			GeometryFunction							                _geometryFunction;
+			ProtocolFunction								            _protocolFunction;
+            ParserFunction                                              _parserFunction;
+			UriFunction									                _uriFunction;
+			NodeFunction								                _nodeFunction;
+			EffectFunction								                _effectFunction;
+            TextureFormatFunction                                       _textureFormatFunction;
+            AttributeFunction                                           _attributeFunction;
+            int                                                         _seekingOffset;
+            int                                                         _seekedLength;
 
-			static ProtocolFunction								_defaultProtocolFunction;
+			static ProtocolFunction								        _defaultProtocolFunction;
+            static MaterialPtr                                          _defaultMaterial;
 
 		public:
 			inline static
@@ -163,21 +164,21 @@ namespace minko
 			}
 
 			inline
-			std::list<std::string>&
+			std::list<Flyweight<std::string>>&
 			includePaths()
 			{
 				return _includePaths;
 			}
 
 			inline
-			std::list<std::string>&
+			std::list<Flyweight<std::string>>&
 			platforms()
 			{
 				return _platforms;
 			}
 
 			inline
-			std::list<std::string>&
+			std::list<Flyweight<std::string>>&
 			userFlags()
 			{
 				return _userFlags;

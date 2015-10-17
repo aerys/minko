@@ -200,7 +200,7 @@ HTTPProtocol::load()
             additionalHeadersJsonString.c_str(),
 #endif
             loader.get(),
-            0,
+            true,
             &wget2CompleteHandler,
             &wget2ErrorHandler,
             &wget2ProgressHandler

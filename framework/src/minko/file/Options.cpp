@@ -32,6 +32,7 @@ using namespace minko;
 using namespace minko::file;
 
 Options::ProtocolFunction Options::_defaultProtocolFunction = nullptr;
+Options::MaterialPtr Options::_defaultMaterial = material::Material::create();
 
 Options::Options() :
     _context(nullptr),
@@ -293,7 +294,7 @@ Options::initializeDefaultFunctions()
     };
 
     if (_material == nullptr)
-        _material = material::Material::create();
+        _material = _defaultMaterial;
 
     if (!_attributeFunction)
         _attributeFunction = [](NodePtr node, const std::string& key, const std::string& value) -> void
