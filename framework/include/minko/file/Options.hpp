@@ -780,6 +780,11 @@ namespace minko
 
             void
             resetNotInheritedValues();
+
+#if MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+            bool
+            testUserAgentPlatform(const std::string& platform);
+#endif
 		};
 	}
 }
