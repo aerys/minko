@@ -60,6 +60,7 @@ namespace minko
 			typedef std::function<EffectPtr(EffectPtr)>											EffectFunction;
             typedef std::function<render::TextureFormat(const TextureFormatSet&)>				TextureFormatFunction;
             typedef std::function<void(NodePtr, const std::string&, const std::string&)> 		AttributeFunction;
+            typedef std::function<void()>                                               ProgressFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	                _context;
@@ -101,6 +102,7 @@ namespace minko
 			NodeFunction								                _nodeFunction;
 			EffectFunction								                _effectFunction;
             TextureFormatFunction                                       _textureFormatFunction;
+            ProgressFunction                                            _progressFunction;
             AttributeFunction                                           _attributeFunction;
             int                                                         _seekingOffset;
             int                                                         _seekedLength;
@@ -669,6 +671,22 @@ namespace minko
             attributeFunction(const AttributeFunction& func)
             {
                 _attributeFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const ProgressFunction&
+            progressFunction() const
+            {
+                return _progressFunction;
+            }
+
+            inline
+            Ptr
+            progressFunction(const ProgressFunction& func)
+            {
+                _progressFunction = func;
 
                 return shared_from_this();
             }

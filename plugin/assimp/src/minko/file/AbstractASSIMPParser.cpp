@@ -52,6 +52,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/Bone.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/ProgressHandler.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/material/BasicMaterial.hpp"
@@ -174,6 +175,15 @@ AbstractASSIMPParser::parse(const std::string&					filename,
     });
 
     _importer->SetIOHandler(ioHandler);
+
+    auto progressHandler = new ProgressHandler();
+
+    progressHandler->progressFunction([this](float progress) -> void
+    {
+        this->progress()->execute(shared_from_this(), progress);
+    });
+
+    _importer->SetProgressHandler(progressHandler);
 
     const aiScene* scene = importScene(filename, resolvedFilename, options, data, assetLibrary);
 
