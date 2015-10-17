@@ -55,7 +55,7 @@ namespace minko
             isAbsolutePath(const std::string& filename) const;
 
         protected:
-            HTTPProtocol();
+            HTTPProtocol() = default;
 
             static void
             completeHandler(void*, void*, unsigned int);
