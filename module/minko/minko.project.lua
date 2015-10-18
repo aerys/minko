@@ -22,7 +22,7 @@ minko.project.library = function(name)
 	configuration { "not windows*" }
 		includedirs { minko.sdk.path("/framework/lib/sparsehash/include") }
 
-	configuration { "debug"}
+	configuration { "debug" }
 		defines { "DEBUG" }
 		flags { "Symbols" }
 

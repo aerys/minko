@@ -13,8 +13,14 @@ project "googletest"
 		"."
 	}
 
-	configuration { "debug"}
-		defines { "_DEBUG" }
+	configuration { "debug" }
+		defines { "DEBUG", "_DEBUG" }
+		flags { "Symbols" }
+
+	configuration { "release" }
+		defines { "NDEBUG" }
+		optimize "On"
+		buildoptions { "--llvm-lto 1" }
 
 	configuration { "cc=gcc or cc=clang" }
 		buildoptions { "-std=c++11", "-isystem include", "-pthread" }

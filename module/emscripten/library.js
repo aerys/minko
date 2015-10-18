@@ -1,5 +1,4 @@
 mergeInto(LibraryManager.library, {
-    putchar: function(c) {},
     emscripten_async_wget3_data: function(url, request, param, additionalHeader, arg, free, onload, onerror, onprogress) {
         var _url = Pointer_stringify(url);
         var _request = Pointer_stringify(request);
