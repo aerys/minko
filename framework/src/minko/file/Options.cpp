@@ -192,9 +192,6 @@ Options::initializePlatforms()
 void
 Options::initializeUserFlags()
 {
-#ifdef MINKO_NO_GLSL_STRUCT
-    _userFlags.push_back("no-glsl-struct");
-#endif // MINKO_NO_GLSL_STRUCT
 }
 
 AbstractParser::Ptr
