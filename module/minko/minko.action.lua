@@ -150,7 +150,7 @@ minko.action.zip = function(directory, archive)
 	end
 end
 
-minko.action.remove = function(filepath)
+minko.action.exclude = function(filepath)
 	local targetdir = gettargetdir()
 
 	if os.is('windows') then
