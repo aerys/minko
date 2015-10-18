@@ -106,16 +106,6 @@ for plugin, enabled in pairs(plugins) do
 	minko.plugin.include(MINKO_HOME .. '/plugin/' .. plugin, enabled)
 end
 
--- options
-newoption {
-	trigger	= 'no-stencil',
-	description = 'Disable stencil buffer support.'
-}
-if _OPTIONS['no-stencil'] then
-	defines { 'MINKO_NO_STENCIL' }
-	print('Stencil buffer support is disabled (--no-stencil)')
-end
-
 newoption {
 	trigger	= 'no-glsl-struct',
 	description = 'Disable GLSL struct support.'

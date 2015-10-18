@@ -110,6 +110,8 @@ namespace minko
 
             std::vector<bool>                       _vertexAttributeEnabled;
 
+			int										_stencilBits;
+
 		public:
 			~OpenGLES2Context();
 
