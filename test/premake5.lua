@@ -40,10 +40,5 @@ minko.project.application "minko-test"
 			['**.png'] = { 'embed' }
 		}
 
-	if premake.tools.gcc.tools.emscripten then
-		configuration { "html5" }
-			includedirs { "${EMSCRIPTEN}/system/lib/libcxxabi/include" }
-	else
-		removeplatforms { "html5" }
-	end
+		includedirs { "${EMSCRIPTEN}/system/lib/libcxxabi/include" }
 
