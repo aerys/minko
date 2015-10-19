@@ -137,13 +137,32 @@ validateGeometry(Geometry::Ptr geometry)
     auto indices = geometry->indices()->dataPointer<T>();
 
     if (!indices)
+    {
+        LOG_WARNING("Invalid Geometry, MeshPartitioner only supports indexed meshes");
+
         return false;
+    }
+
+    const unsigned int numIndices = indices->size();
+
+    if (numIndices == 0u || (numIndices % 3u) != 0u)
+    {
+        LOG_WARNING("Invalid Geometry, MeshPartitioner only supports triangle primitives");
+
+        return false;
+    }
 
     const auto numVertices = geometry->numVertices();
 
     for (auto index : *indices)
+    {
         if (index >= numVertices)
+        {
+            LOG_WARNING("Invalid Geometry, index out of bound");
+
             return false;
+        }
+    }
 
     return true;
 }
