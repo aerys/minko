@@ -532,7 +532,7 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 									const uint	offset)
 {
 	bool vertexAttributeEnabled = vertexBuffer > 0;
-	bool vertexBufferChanged = _currentVertexBuffer[position] != vertexBuffer;
+    bool vertexBufferChanged = (_currentVertexBuffer[position] != vertexBuffer) || vertexAttributeEnabled;
 
 	if (vertexBufferChanged)
 	{
