@@ -20,6 +20,8 @@ project "googletest"
 	configuration { "release" }
 		defines { "NDEBUG" }
 		optimize "On"
+        
+    configuration { "html5", "release" }
 		buildoptions { "--llvm-lto 1" }
 
 	configuration { "cc=gcc or cc=clang" }
