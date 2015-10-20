@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "SDLAudio.hpp"
+#include "minko/audio/SDLAudio.hpp"
 
 #include "minko/log/Logger.hpp"
 #include "minko/audio/SDLSoundChannel.hpp"
@@ -29,7 +29,7 @@ using namespace minko::audio;
 
 SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)
 {
-#ifdef SDL_AUDIO_ENABLED
+#if SDL_AUDIO_ENABLED
     auto flags = MIX_INIT_OGG;
     int result = 0;
 
@@ -49,7 +49,7 @@ SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)
 std::shared_ptr<SDLAudio>
 SDLAudio::create(std::shared_ptr<Canvas> canvas)
 {
-#ifdef SDL_AUDIO_ENABLED
+#if SDL_AUDIO_ENABLED
     return std::shared_ptr<SDLAudio>(new SDLAudio(canvas));
 #else
     return nullptr;
@@ -58,7 +58,7 @@ SDLAudio::create(std::shared_ptr<Canvas> canvas)
 
 SDLAudio::~SDLAudio()
 {
-#ifdef SDL_AUDIO_ENABLED
+#if SDL_AUDIO_ENABLED
     Mix_ChannelFinished(nullptr);
     Mix_AllocateChannels(0);
     Mix_CloseAudio();

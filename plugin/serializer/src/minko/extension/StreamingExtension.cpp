@@ -17,7 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/StreamingOptions.hpp"
 #include "minko/StreamingTypes.hpp"
 #include "minko/component/AbstractAnimation.hpp"
 #include "minko/component/Animation.hpp"
@@ -43,12 +42,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/PNGWriter.hpp"
 #include "minko/file/POPGeometryWriterPreprocessor.hpp"
 #include "minko/file/SceneParser.hpp"
+#include "minko/file/SceneTreeFlattener.hpp"
 #include "minko/file/SceneWriter.hpp"
 #include "minko/file/StreamedAssetParserScheduler.hpp"
 #include "minko/file/StreamedTextureParser.hpp"
 #include "minko/file/StreamedTextureWriter.hpp"
 #include "minko/file/StreamedTextureWriterPreprocessor.hpp"
-#include "minko/file/SceneTreeFlattener.hpp"
+#include "minko/file/StreamingOptions.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/geometry/Bone.hpp"
 #include "minko/geometry/Skin.hpp"
@@ -240,7 +240,8 @@ StreamingExtension::serializePOPGeometry(Dependency::Ptr                dependen
 
     auto filename = assetLibrary->geometryName(geometry);
 
-    filename = writerOptions->geometryUriFunction()(filename);
+    const auto outputFilename = writerOptions->geometryNameFunction()(filename);
+    const auto writeFilename = writerOptions->geometryUriFunction()(outputFilename);
 
     writer->data(writerOptions->geometryFunction()(filename, geometry));
 
@@ -269,14 +270,14 @@ StreamingExtension::serializePOPGeometry(Dependency::Ptr                dependen
         hasHeader = false;
 
         linkedAsset
-            ->filename(filename)
+            ->filename(outputFilename)
             ->linkType(LinkedAsset::LinkType::External);
 
         auto headerData = std::vector<unsigned char>();
 
         if (!assetIsNull)
         {
-            writer->write(filename, assetLibrary, options, writerOptions, dependency, {}, headerData);
+            writer->write(writeFilename, assetLibrary, options, writerOptions, dependency, {}, headerData);
 
             headerSize = headerData.size();
         }
@@ -404,7 +405,8 @@ StreamingExtension::serializeStreamedTexture(std::shared_ptr<file::Dependency>		
 
     auto filename = assetLibrary->textureName(texture);
 
-    filename = writerOptions->textureUriFunction()(filename);
+    const auto outputFilename = writerOptions->textureNameFunction()(filename);
+    const auto writeFilename = writerOptions->textureUriFunction()(outputFilename);
 
     writer->data(writerOptions->textureFunction()(filename, texture));
 
@@ -433,14 +435,14 @@ StreamingExtension::serializeStreamedTexture(std::shared_ptr<file::Dependency>		
         hasHeader = false;
 
         linkedAsset
-            ->filename(filename)
+            ->filename(outputFilename)
             ->linkType(LinkedAsset::LinkType::External);
 
         auto headerData = std::vector<unsigned char>();
 
         if (!assetIsNull)
         {
-            writer->write(filename, assetLibrary, options, writerOptions, dependency, {}, headerData);
+            writer->write(writeFilename, assetLibrary, options, writerOptions, dependency, {}, headerData);
 
             headerSize = headerData.size();
         }
@@ -684,7 +686,8 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
                 ->loadAsynchronously(false)
                 ->seekingOffset(0)
                 ->seekedLength(assetHeaderSize)
-                ->storeDataIfNotParsed(false);
+                ->storeDataIfNotParsed(false)
+                ->parserFunction([](const std::string&) -> AbstractParser::Ptr { return nullptr; });
 
             auto linkedAssetCompleteSlot = linkedAsset->complete()->connect(
                 [&](LinkedAsset::Ptr                    linkedAssetThis,
@@ -711,7 +714,8 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
                 ->loadAsynchronously(false)
                 ->seekingOffset(0)
                 ->seekedLength(streamedAssetHeaderSize)
-                ->storeDataIfNotParsed(false);
+                ->storeDataIfNotParsed(false)
+                ->parserFunction([](const std::string&) -> AbstractParser::Ptr { return nullptr; });
 
             auto linkedAssetCompleteSlot = linkedAsset->complete()->connect(
                 [&](LinkedAsset::Ptr                    linkedAssetThis,

@@ -94,7 +94,8 @@ class StreamingListenerTest : public Test {
   StreamingListenerTest()
       : fake_sock_writer_(new FakeSocketWriter),
         streamer_(fake_sock_writer_),
-        test_info_obj_("FooTest", "Bar", NULL, NULL, 0, NULL) {}
+        test_info_obj_("FooTest", "Bar", NULL, NULL,
+                       CodeLocation(__FILE__, __LINE__), 0, NULL) {}
 
  protected:
   string* output() { return &(fake_sock_writer_->output_); }
@@ -233,7 +234,6 @@ using testing::TestProperty;
 using testing::TestResult;
 using testing::TimeInMillis;
 using testing::UnitTest;
-using testing::kMaxStackTraceDepth;
 using testing::internal::AddReference;
 using testing::internal::AlwaysFalse;
 using testing::internal::AlwaysTrue;
@@ -267,6 +267,8 @@ using testing::internal::IsContainerTest;
 using testing::internal::IsNotContainer;
 using testing::internal::NativeArray;
 using testing::internal::ParseInt32Flag;
+using testing::internal::RelationToSourceCopy;
+using testing::internal::RelationToSourceReference;
 using testing::internal::RemoveConst;
 using testing::internal::RemoveReference;
 using testing::internal::ShouldRunTestOnShard;
@@ -281,11 +283,12 @@ using testing::internal::TestEventListenersAccessor;
 using testing::internal::TestResultAccessor;
 using testing::internal::UInt32;
 using testing::internal::WideStringToUtf8;
-using testing::internal::kCopy;
+using testing::internal::edit_distance::CalculateOptimalEdits;
+using testing::internal::edit_distance::CreateUnifiedDiff;
+using testing::internal::edit_distance::EditType;
 using testing::internal::kMaxRandomSeed;
-using testing::internal::kReference;
 using testing::internal::kTestTypeIdInGoogleTest;
-using testing::internal::scoped_ptr;
+using testing::kMaxStackTraceDepth;
 
 #if GTEST_HAS_STREAM_REDIRECTION
 using testing::internal::CaptureStdout;
@@ -417,19 +420,11 @@ class FormatEpochTimeInMillisAsIso8601Test : public Test {
  private:
   virtual void SetUp() {
     saved_tz_ = NULL;
-#if _MSC_VER
-# pragma warning(push)          // Saves the current warning state.
-# pragma warning(disable:4996)  // Temporarily disables warning 4996
-                                // (function or variable may be unsafe
-                                // for getenv, function is deprecated for
-                                // strdup).
+
+    GTEST_DISABLE_MSC_WARNINGS_PUSH_(4996 /* getenv, strdup: deprecated */)
     if (getenv("TZ"))
       saved_tz_ = strdup(getenv("TZ"));
-# pragma warning(pop)           // Restores the warning state again.
-#else
-    if (getenv("TZ"))
-      saved_tz_ = strdup(getenv("TZ"));
-#endif
+    GTEST_DISABLE_MSC_WARNINGS_POP_()
 
     // Set up the time zone for FormatEpochTimeInMillisAsIso8601 to use.  We
     // cannot use the local time zone because the function's output depends
@@ -453,11 +448,9 @@ class FormatEpochTimeInMillisAsIso8601Test : public Test {
     const std::string env_var =
         std::string("TZ=") + (time_zone ? time_zone : "");
     _putenv(env_var.c_str());
-# pragma warning(push)          // Saves the current warning state.
-# pragma warning(disable:4996)  // Temporarily disables warning 4996
-                                // (function is deprecated).
+    GTEST_DISABLE_MSC_WARNINGS_PUSH_(4996 /* deprecated function */)
     tzset();
-# pragma warning(pop)           // Restores the warning state again.
+    GTEST_DISABLE_MSC_WARNINGS_POP_()
 #else
     if (time_zone) {
       setenv(("TZ"), time_zone, 1);
@@ -1525,6 +1518,16 @@ TEST(TestResultPropertyTest, GetTestProperty) {
   EXPECT_DEATH_IF_SUPPORTED(test_result.GetTestProperty(-1), "");
 }
 
+// Tests the Test class.
+//
+// It's difficult to test every public method of this class (we are
+// already stretching the limit of Google Test by using it to test itself!).
+// Fortunately, we don't have to do that, as we are already testing
+// the functionalities of the Test class extensively by using Google Test
+// alone.
+//
+// Therefore, this section only contains one test.
+
 // Tests that GTestFlagSaver works on Windows and Mac.
 
 class GTestFlagSaverTest : public Test {
@@ -1668,6 +1671,8 @@ TEST(Int32FromGTestEnvTest, ReturnsDefaultWhenVariableIsNotSet) {
   EXPECT_EQ(10, Int32FromGTestEnv("temp", 10));
 }
 
+# if !defined(GTEST_GET_INT32_FROM_ENV_)
+
 // Tests that Int32FromGTestEnv() returns the default value when the
 // environment variable overflows as an Int32.
 TEST(Int32FromGTestEnvTest, ReturnsDefaultWhenValueOverflows) {
@@ -1691,6 +1696,8 @@ TEST(Int32FromGTestEnvTest, ReturnsDefaultWhenValueIsInvalid) {
   SetEnv(GTEST_FLAG_PREFIX_UPPER_ "TEMP", "12X");
   EXPECT_EQ(50, Int32FromGTestEnv("temp", 50));
 }
+
+# endif  // !defined(GTEST_GET_INT32_FROM_ENV_)
 
 // Tests that Int32FromGTestEnv() parses and returns the value of the
 // environment variable when it represents a valid decimal integer in
@@ -3441,6 +3448,79 @@ TEST_F(NoFatalFailureTest, MessageIsStreamable) {
 
 // Tests non-string assertions.
 
+std::string EditsToString(const std::vector<EditType>& edits) {
+  std::string out;
+  for (size_t i = 0; i < edits.size(); ++i) {
+    static const char kEdits[] = " +-/";
+    out.append(1, kEdits[edits[i]]);
+  }
+  return out;
+}
+
+std::vector<size_t> CharsToIndices(const std::string& str) {
+  std::vector<size_t> out;
+  for (size_t i = 0; i < str.size(); ++i) {
+    out.push_back(str[i]);
+  }
+  return out;
+}
+
+std::vector<std::string> CharsToLines(const std::string& str) {
+  std::vector<std::string> out;
+  for (size_t i = 0; i < str.size(); ++i) {
+    out.push_back(str.substr(i, 1));
+  }
+  return out;
+}
+
+TEST(EditDistance, TestCases) {
+  struct Case {
+    int line;
+    const char* left;
+    const char* right;
+    const char* expected_edits;
+    const char* expected_diff;
+  };
+  static const Case kCases[] = {
+      // No change.
+      {__LINE__, "A", "A", " ", ""},
+      {__LINE__, "ABCDE", "ABCDE", "     ", ""},
+      // Simple adds.
+      {__LINE__, "X", "XA", " +", "@@ +1,2 @@\n X\n+A\n"},
+      {__LINE__, "X", "XABCD", " ++++", "@@ +1,5 @@\n X\n+A\n+B\n+C\n+D\n"},
+      // Simple removes.
+      {__LINE__, "XA", "X", " -", "@@ -1,2 @@\n X\n-A\n"},
+      {__LINE__, "XABCD", "X", " ----", "@@ -1,5 @@\n X\n-A\n-B\n-C\n-D\n"},
+      // Simple replaces.
+      {__LINE__, "A", "a", "/", "@@ -1,1 +1,1 @@\n-A\n+a\n"},
+      {__LINE__, "ABCD", "abcd", "////",
+       "@@ -1,4 +1,4 @@\n-A\n-B\n-C\n-D\n+a\n+b\n+c\n+d\n"},
+      // Path finding.
+      {__LINE__, "ABCDEFGH", "ABXEGH1", "  -/ -  +",
+       "@@ -1,8 +1,7 @@\n A\n B\n-C\n-D\n+X\n E\n-F\n G\n H\n+1\n"},
+      {__LINE__, "AAAABCCCC", "ABABCDCDC", "- /   + / ",
+       "@@ -1,9 +1,9 @@\n-A\n A\n-A\n+B\n A\n B\n C\n+D\n C\n-C\n+D\n C\n"},
+      {__LINE__, "ABCDE", "BCDCD", "-   +/",
+       "@@ -1,5 +1,5 @@\n-A\n B\n C\n D\n-E\n+C\n+D\n"},
+      {__LINE__, "ABCDEFGHIJKL", "BCDCDEFGJKLJK", "- ++     --   ++",
+       "@@ -1,4 +1,5 @@\n-A\n B\n+C\n+D\n C\n D\n"
+       "@@ -6,7 +7,7 @@\n F\n G\n-H\n-I\n J\n K\n L\n+J\n+K\n"},
+      {}};
+  for (const Case* c = kCases; c->left; ++c) {
+    EXPECT_TRUE(c->expected_edits ==
+                EditsToString(CalculateOptimalEdits(CharsToIndices(c->left),
+                                                    CharsToIndices(c->right))))
+        << "Left <" << c->left << "> Right <" << c->right << "> Edits <"
+        << EditsToString(CalculateOptimalEdits(
+               CharsToIndices(c->left), CharsToIndices(c->right))) << ">";
+    EXPECT_TRUE(c->expected_diff == CreateUnifiedDiff(CharsToLines(c->left),
+                                                      CharsToLines(c->right)))
+        << "Left <" << c->left << "> Right <" << c->right << "> Diff <"
+        << CreateUnifiedDiff(CharsToLines(c->left), CharsToLines(c->right))
+        << ">";
+  }
+}
+
 // Tests EqFailure(), used for implementing *EQ* assertions.
 TEST(AssertionTest, EqFailure) {
   const std::string foo_val("5"), bar_val("6");
@@ -3489,6 +3569,24 @@ TEST(AssertionTest, EqFailure) {
       "Expected: foo (ignoring case)\n"
       "Which is: \"x\"",
       msg5.c_str());
+}
+
+TEST(AssertionTest, EqFailureWithDiff) {
+  const std::string left(
+      "1\\n2XXX\\n3\\n5\\n6\\n7\\n8\\n9\\n10\\n11\\n12XXX\\n13\\n14\\n15");
+  const std::string right(
+      "1\\n2\\n3\\n4\\n5\\n6\\n7\\n8\\n9\\n11\\n12\\n13\\n14");
+  const std::string msg1(
+      EqFailure("left", "right", left, right, false).failure_message());
+  EXPECT_STREQ(
+      "Value of: right\n"
+      "  Actual: 1\\n2\\n3\\n4\\n5\\n6\\n7\\n8\\n9\\n11\\n12\\n13\\n14\n"
+      "Expected: left\n"
+      "Which is: "
+      "1\\n2XXX\\n3\\n5\\n6\\n7\\n8\\n9\\n10\\n11\\n12XXX\\n13\\n14\\n15\n"
+      "With diff:\n@@ -1,5 +1,6 @@\n 1\n-2XXX\n+2\n 3\n+4\n 5\n 6\n"
+      "@@ -7,8 +8,6 @@\n 8\n 9\n-10\n 11\n-12XXX\n+12\n 13\n 14\n-15\n",
+      msg1.c_str());
 }
 
 // Tests AppendUserMessage(), used for implementing the *EQ* macros.
@@ -5026,6 +5124,31 @@ TEST(AssertionResultTest, CanStreamOstreamManipulators) {
   EXPECT_STREQ("Data\n\\0Will be visible", r.message());
 }
 
+// The next test uses explicit conversion operators -- a C++11 feature.
+#if GTEST_LANG_CXX11
+
+TEST(AssertionResultTest, ConstructibleFromContextuallyConvertibleToBool) {
+  struct ExplicitlyConvertibleToBool {
+    explicit operator bool() const { return value; }
+    bool value;
+  };
+  ExplicitlyConvertibleToBool v1 = {false};
+  ExplicitlyConvertibleToBool v2 = {true};
+  EXPECT_FALSE(v1);
+  EXPECT_TRUE(v2);
+}
+
+#endif  // GTEST_LANG_CXX11
+
+struct ConvertibleToAssertionResult {
+  operator AssertionResult() const { return AssertionResult(true); }
+};
+
+TEST(AssertionResultTest, ConstructibleFromImplicitlyConvertible) {
+  ConvertibleToAssertionResult obj;
+  EXPECT_TRUE(obj);
+}
+
 // Tests streaming a user type whose definition and operator << are
 // both in the global namespace.
 class Base {
@@ -5209,6 +5332,59 @@ TEST_F(TestInfoTest, result) {
   // After the previous assertion, there is still none.
   ASSERT_EQ(0, GetTestResult(test_info)->total_part_count());
 }
+
+#define VERIFY_CODE_LOCATION \
+  const int expected_line = __LINE__ - 1; \
+  const TestInfo* const test_info = GetUnitTestImpl()->current_test_info(); \
+  ASSERT_TRUE(test_info); \
+  EXPECT_STREQ(__FILE__, test_info->file()); \
+  EXPECT_EQ(expected_line, test_info->line())
+
+TEST(CodeLocationForTEST, Verify) {
+  VERIFY_CODE_LOCATION;
+}
+
+class CodeLocationForTESTF : public Test {
+};
+
+TEST_F(CodeLocationForTESTF, Verify) {
+  VERIFY_CODE_LOCATION;
+}
+
+class CodeLocationForTESTP : public TestWithParam<int> {
+};
+
+TEST_P(CodeLocationForTESTP, Verify) {
+  VERIFY_CODE_LOCATION;
+}
+
+INSTANTIATE_TEST_CASE_P(, CodeLocationForTESTP, Values(0));
+
+template <typename T>
+class CodeLocationForTYPEDTEST : public Test {
+};
+
+TYPED_TEST_CASE(CodeLocationForTYPEDTEST, int);
+
+TYPED_TEST(CodeLocationForTYPEDTEST, Verify) {
+  VERIFY_CODE_LOCATION;
+}
+
+template <typename T>
+class CodeLocationForTYPEDTESTP : public Test {
+};
+
+TYPED_TEST_CASE_P(CodeLocationForTYPEDTESTP);
+
+TYPED_TEST_P(CodeLocationForTYPEDTESTP, Verify) {
+  VERIFY_CODE_LOCATION;
+}
+
+REGISTER_TYPED_TEST_CASE_P(CodeLocationForTYPEDTESTP, Verify);
+
+INSTANTIATE_TYPED_TEST_CASE_P(My, CodeLocationForTYPEDTESTP, int);
+
+#undef VERIFY_CODE_LOCATION
 
 // Tests setting up and tearing down a test case.
 
@@ -6225,7 +6401,108 @@ TEST_F(InitGoogleTestTest, WideStrings) {
 
   GTEST_TEST_PARSING_FLAGS_(argv, argv2, expected_flags, false);
 }
-#endif  // GTEST_OS_WINDOWS
+# endif  // GTEST_OS_WINDOWS
+
+#if GTEST_USE_OWN_FLAGFILE_FLAG_
+class FlagfileTest : public InitGoogleTestTest {
+ public:
+  virtual void SetUp() {
+    InitGoogleTestTest::SetUp();
+
+    testdata_path_.Set(internal::FilePath(
+        internal::TempDir() + internal::GetCurrentExecutableName().string() +
+        "_flagfile_test"));
+    testing::internal::posix::RmDir(testdata_path_.c_str());
+    EXPECT_TRUE(testdata_path_.CreateFolder());
+  }
+
+  virtual void TearDown() {
+    testing::internal::posix::RmDir(testdata_path_.c_str());
+    InitGoogleTestTest::TearDown();
+  }
+
+  internal::FilePath CreateFlagfile(const char* contents) {
+    internal::FilePath file_path(internal::FilePath::GenerateUniqueFileName(
+        testdata_path_, internal::FilePath("unique"), "txt"));
+    FILE* f = testing::internal::posix::FOpen(file_path.c_str(), "w");
+    fprintf(f, "%s", contents);
+    fclose(f);
+    return file_path;
+  }
+
+ private:
+  internal::FilePath testdata_path_;
+};
+
+// Tests an empty flagfile.
+TEST_F(FlagfileTest, Empty) {
+  internal::FilePath flagfile_path(CreateFlagfile(""));
+  std::string flagfile_flag =
+      std::string("--" GTEST_FLAG_PREFIX_ "flagfile=") + flagfile_path.c_str();
+
+  const char* argv[] = {
+    "foo.exe",
+    flagfile_flag.c_str(),
+    NULL
+  };
+
+  const char* argv2[] = {
+    "foo.exe",
+    NULL
+  };
+
+  GTEST_TEST_PARSING_FLAGS_(argv, argv2, Flags(), false);
+}
+
+// Tests passing a non-empty --gtest_filter flag via --gtest_flagfile.
+TEST_F(FlagfileTest, FilterNonEmpty) {
+  internal::FilePath flagfile_path(CreateFlagfile(
+      "--"  GTEST_FLAG_PREFIX_  "filter=abc"));
+  std::string flagfile_flag =
+      std::string("--" GTEST_FLAG_PREFIX_ "flagfile=") + flagfile_path.c_str();
+
+  const char* argv[] = {
+    "foo.exe",
+    flagfile_flag.c_str(),
+    NULL
+  };
+
+  const char* argv2[] = {
+    "foo.exe",
+    NULL
+  };
+
+  GTEST_TEST_PARSING_FLAGS_(argv, argv2, Flags::Filter("abc"), false);
+}
+
+// Tests passing several flags via --gtest_flagfile.
+TEST_F(FlagfileTest, SeveralFlags) {
+  internal::FilePath flagfile_path(CreateFlagfile(
+      "--"  GTEST_FLAG_PREFIX_  "filter=abc\n"
+      "--"  GTEST_FLAG_PREFIX_  "break_on_failure\n"
+      "--"  GTEST_FLAG_PREFIX_  "list_tests"));
+  std::string flagfile_flag =
+      std::string("--" GTEST_FLAG_PREFIX_ "flagfile=") + flagfile_path.c_str();
+
+  const char* argv[] = {
+    "foo.exe",
+    flagfile_flag.c_str(),
+    NULL
+  };
+
+  const char* argv2[] = {
+    "foo.exe",
+    NULL
+  };
+
+  Flags expected_flags;
+  expected_flags.break_on_failure = true;
+  expected_flags.filter = "abc";
+  expected_flags.list_tests = true;
+
+  GTEST_TEST_PARSING_FLAGS_(argv, argv2, expected_flags, false);
+}
+#endif  // GTEST_USE_OWN_FLAGFILE_FLAG_
 
 // Tests current_test_info() in UnitTest.
 class CurrentTestInfoTest : public Test {
@@ -6561,6 +6838,12 @@ TEST(ColoredOutputTest, UsesColorsWhenTermSupportsColors) {
   EXPECT_TRUE(ShouldUseColor(true));  // Stdout is a TTY.
 
   SetEnv("TERM", "screen-256color");  // TERM supports colors.
+  EXPECT_TRUE(ShouldUseColor(true));  // Stdout is a TTY.
+
+  SetEnv("TERM", "rxvt-unicode");  // TERM supports colors.
+  EXPECT_TRUE(ShouldUseColor(true));  // Stdout is a TTY.
+
+  SetEnv("TERM", "rxvt-unicode-256color");  // TERM supports colors.
   EXPECT_TRUE(ShouldUseColor(true));  // Stdout is a TTY.
 
   SetEnv("TERM", "linux");  // TERM supports colors.
@@ -7327,7 +7610,7 @@ TEST(CopyArrayTest, WorksForTwoDimensionalArrays) {
 
 TEST(NativeArrayTest, ConstructorFromArrayWorks) {
   const int a[3] = { 0, 1, 2 };
-  NativeArray<int> na(a, 3, kReference);
+  NativeArray<int> na(a, 3, RelationToSourceReference());
   EXPECT_EQ(3U, na.size());
   EXPECT_EQ(a, na.begin());
 }
@@ -7337,7 +7620,7 @@ TEST(NativeArrayTest, CreatesAndDeletesCopyOfArrayWhenAskedTo) {
   Array* a = new Array[1];
   (*a)[0] = 0;
   (*a)[1] = 1;
-  NativeArray<int> na(*a, 2, kCopy);
+  NativeArray<int> na(*a, 2, RelationToSourceCopy());
   EXPECT_NE(*a, na.begin());
   delete[] a;
   EXPECT_EQ(0, na.begin()[0]);
@@ -7357,7 +7640,7 @@ TEST(NativeArrayTest, TypeMembersAreCorrect) {
 
 TEST(NativeArrayTest, MethodsWork) {
   const int a[3] = { 0, 1, 2 };
-  NativeArray<int> na(a, 3, kCopy);
+  NativeArray<int> na(a, 3, RelationToSourceCopy());
   ASSERT_EQ(3U, na.size());
   EXPECT_EQ(3, na.end() - na.begin());
 
@@ -7372,18 +7655,18 @@ TEST(NativeArrayTest, MethodsWork) {
 
   EXPECT_TRUE(na == na);
 
-  NativeArray<int> na2(a, 3, kReference);
+  NativeArray<int> na2(a, 3, RelationToSourceReference());
   EXPECT_TRUE(na == na2);
 
   const int b1[3] = { 0, 1, 1 };
   const int b2[4] = { 0, 1, 2, 3 };
-  EXPECT_FALSE(na == NativeArray<int>(b1, 3, kReference));
-  EXPECT_FALSE(na == NativeArray<int>(b2, 4, kCopy));
+  EXPECT_FALSE(na == NativeArray<int>(b1, 3, RelationToSourceReference()));
+  EXPECT_FALSE(na == NativeArray<int>(b2, 4, RelationToSourceCopy()));
 }
 
 TEST(NativeArrayTest, WorksForTwoDimensionalArray) {
   const char a[2][3] = { "hi", "lo" };
-  NativeArray<char[3]> na(a, 2, kReference);
+  NativeArray<char[3]> na(a, 2, RelationToSourceReference());
   ASSERT_EQ(2U, na.size());
   EXPECT_EQ(a, na.begin());
 }
@@ -7413,3 +7696,4 @@ TEST(SkipPrefixTest, DoesNotSkipWhenPrefixDoesNotMatch) {
   EXPECT_FALSE(SkipPrefix("world!", &p));
   EXPECT_EQ(str, p);
 }
+

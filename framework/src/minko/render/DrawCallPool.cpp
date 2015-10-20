@@ -104,11 +104,9 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
     _batchId++;
     for (const auto& pass : technique)
     {
-        DrawCall* drawCall = new DrawCall(pass, variables, rootData, rendererData, targetData);
+        DrawCall* drawCall = new DrawCall(_batchId, pass, variables, rootData, rendererData, targetData);
 
         initializeDrawCall(*drawCall);
-
-        drawCall->batchIDs().push_back(_batchId);
 
         // if the draw call is meant only for post-processing, then it should only exist once
         if (!pass->isForward())
@@ -780,7 +778,7 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
         uniformBindingPropertyAddedHandler(drawCall, input, pass->uniformBindings(), forceRebind);
 
     // bind index buffer
-    if (pass->isForward())
+    if (!!pass->isForward())
         drawCall.bindIndexBuffer();
 }
 

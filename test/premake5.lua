@@ -2,8 +2,6 @@ include "lib/googletest"
 
 minko.project.application "minko-test"
 
-	removeplatforms { "html5" }
-
 	files {
 		"src/**.hpp",
 		"src/**.cpp",
@@ -25,5 +23,22 @@ minko.project.application "minko-test"
 		minko.plugin.enable("offscreen")
 	end
 
-	configuration { "not windows" }
+	configuration { "osx64 or linux32 or linux64" }
 		links { "pthread" }
+
+	configuration { "not html5" }
+		minko.package.assets {
+			['**.effect'] = { 'copy' },
+			['**.glsl'] = { 'copy' },
+			['**.png'] = { 'copy' }
+		}
+
+	configuration { "html5" }
+		minko.package.assets {
+			['**.effect'] = { 'embed' },
+			['**.glsl'] = { 'embed' },
+			['**.png'] = { 'embed' }
+		}
+
+		includedirs { "${EMSCRIPTEN}/system/lib/libcxxabi/include" }
+

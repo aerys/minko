@@ -17,13 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/StreamingOptions.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/data/HalfEdgeCollection.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/MeshPartitioner.hpp"
+#include "minko/file/StreamingOptions.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/render/IndexBuffer.hpp"
@@ -137,13 +137,32 @@ validateGeometry(Geometry::Ptr geometry)
     auto indices = geometry->indices()->dataPointer<T>();
 
     if (!indices)
+    {
+        LOG_WARNING("Invalid Geometry, MeshPartitioner only supports indexed meshes");
+
         return false;
+    }
+
+    const unsigned int numIndices = indices->size();
+
+    if (numIndices == 0u || (numIndices % 3u) != 0u)
+    {
+        LOG_WARNING("Invalid Geometry, MeshPartitioner only supports triangle primitives");
+
+        return false;
+    }
 
     const auto numVertices = geometry->numVertices();
 
     for (auto index : *indices)
+    {
         if (index >= numVertices)
+        {
+            LOG_WARNING("Invalid Geometry, index out of bound");
+
             return false;
+        }
+    }
 
     return true;
 }

@@ -6,11 +6,15 @@
 #define SHADOW_MAPPING_TECHNIQUE_PCF_POISSON	3
 
 #ifndef SHADOW_MAPPING_TECHNIQUE
-# define SHADOW_MAPPING_TECHNIQUE   SHADOW_MAPPING_TECHNIQUE_ESM
+# define SHADOW_MAPPING_TECHNIQUE   SHADOW_MAPPING_TECHNIQUE_PCF_POISSON
 #endif
 
-#define SHADOW_MAPPING_NEAR_ONE         0.99
-#define SHADOW_MAPPING_MAX_NUM_CASCADES 4
+#ifndef SHADOW_MAPPING_PCF_POISSON_NUM_SAMPLES
+# define SHADOW_MAPPING_PCF_POISSON_NUM_SAMPLES  12
+#endif
+
+#define SHADOW_MAPPING_NEAR_ONE                 0.999
+#define SHADOW_MAPPING_MAX_NUM_CASCADES         4
 
 float shadowMapping_random(vec4 seed)
 {
@@ -35,9 +39,7 @@ float shadowMapping_texture2DDepth(sampler2D depths, vec2 uv, float zNear, float
 
 float shadowMapping_texture2DCompare(sampler2D depths, vec2 uv, float compare, float zNear, float zFar)
 {
-    float depth = shadowMapping_texture2DDepth(depths, uv, zNear, zFar);
-
-    return step(compare, depth);
+    return step(compare, shadowMapping_texture2DDepth(depths, uv, zNear, zFar));
 }
 
 float shadowMapping_texture2DShadowLerp(sampler2D depths, vec2 size, vec2 uv, float compare, float zNear, float zFar)
@@ -61,30 +63,48 @@ float shadowMapping_PCF(sampler2D depths, vec2 size, vec2 uv, float compare, flo
 {
     float result = 0.0;
     for (int x = -2; x <= 2; x++)
-    {
         for (int y = -2; y <= 2; y++)
-        {
-            vec2 off = vec2(x, y) / size;
+            result += shadowMapping_texture2DCompare(depths, uv + vec2(x, y) / size, compare, zNear, zFar);
 
-            result += shadowMapping_texture2DCompare(depths, uv + off, compare, zNear, zFar);
-        }
-    }
     return result / 25.0;
 }
 
-float shadowMapping_PCFPoisson(sampler2D depths, vec2 size, vec2 uv, float compare, float zNear, float zFar, sampler2D randoms, vec2 randomUV, float spread)
+float shadowMapping_PCFPoisson(sampler2D depths, vec2 size, vec2 uv, float compare, float zNear, float zFar, vec4 seed)
 {
-    float result = 0.0;
-    for (int x = 0; x < 10; x++)
-    {
-        vec2 off = (texture2D(randoms, fract(vec2(shadowMapping_random(vec4(randomUV, vec2(x)))))).xy - .5) / size * spread;
-        // vec2 off = normalize(shadowMapping_random(vec4(randomUV, vec2(x))) - 0.5) / size * spread;
+    vec2 poissonDisk[16];
+    poissonDisk[0] = vec2(-0.94201624, -0.39906216);
+    poissonDisk[1] = vec2(0.94558609, -0.76890725);
+    poissonDisk[2] = vec2(-0.094184101, -0.92938870);
+    poissonDisk[3] = vec2(0.34495938, 0.29387760);
+    poissonDisk[4] = vec2(-0.91588581, 0.45771432);
+    poissonDisk[5] = vec2(-0.81544232, -0.87912464);
+    poissonDisk[6] = vec2(-0.38277543, 0.27676845);
+    poissonDisk[7] = vec2(0.97484398, 0.75648379);
+    poissonDisk[8] = vec2(0.44323325, -0.97511554);
+    poissonDisk[9] = vec2(0.53742981, -0.47373420);
+    poissonDisk[10] = vec2(-0.26496911, -0.41893023);
+    poissonDisk[11] = vec2(0.79197514, 0.19090188);
+    poissonDisk[12] = vec2(-0.24188840, 0.99706507);
+    poissonDisk[13] = vec2(-0.81409955, 0.91437590);
+    poissonDisk[14] = vec2(0.19984126, 0.78641367);
+    poissonDisk[15] = vec2(0.14383161, -0.14100790);
 
-        // result += shadowMapping_texture2DShadowLerp(depths, size, uv + off, compare, zNear, zFar);
-        result += shadowMapping_texture2DCompare(depths, uv + off, compare, zNear, zFar);
+    float result = 0.0;
+    vec2 rotation = normalize(vec2(
+        shadowMapping_random(seed),
+        shadowMapping_random(seed * seed)
+    ));
+    for (int x = 0; x < SHADOW_MAPPING_PCF_POISSON_NUM_SAMPLES; x++)
+    {
+        vec2 poissonOffset = vec2(
+            rotation.x * poissonDisk[x].x - rotation.y * poissonDisk[x].y,
+            rotation.y * poissonDisk[x].x + rotation.x * poissonDisk[x].y
+        );
+
+        result += shadowMapping_texture2DCompare(depths, uv + poissonOffset / size, compare, zNear, zFar);
     }
 
-    return result / 10.0;
+    return result / float(SHADOW_MAPPING_PCF_POISSON_NUM_SAMPLES);
 }
 
 float shadowMapping_ESM(sampler2D depths, vec2 uv, float compare, float zNear, float zFar, float c)

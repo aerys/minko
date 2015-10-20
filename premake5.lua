@@ -102,7 +102,7 @@ solution "minko"
 			['frustum']				= false,
 			['hologram']			= false,
 			['html-overlay']		= true,
-			['http']				= false,
+			['http']				= true,
 			['jobs']				= false,
 			['joystick']			= false,
 			['keyboard']			= false,
@@ -238,7 +238,7 @@ newaction {
 	trigger			= "doc",
 	description		= "Create developer reference.",
 	execute			= function()
-		os.execute("doxygen doc/Doxyfile")
+		os.execute("doxygen doc/ref/Doxyfile")
 	end
 }
 

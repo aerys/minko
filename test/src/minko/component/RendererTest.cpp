@@ -198,10 +198,13 @@ TEST_F(RendererTest, DeferredPassDrawCallCount)
     renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 4);
     root->removeComponent(s1);
+    renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 3);
     root->removeComponent(s2);
+    renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 2);
     root->removeComponent(s3);
+    renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 0);
 }
 
@@ -232,4 +235,41 @@ TEST_F(RendererTest, RendererLayoutMaskChanged)
     renderer->render(MinkoTests::canvas()->context());
 
     ASSERT_EQ(renderer->numDrawCalls(), 0);
+}
+
+TEST_F(RendererTest, Priority)
+{
+    auto renderer1 = Renderer::create(0, nullptr, nullptr, "default", 2.f);
+    auto renderer2 = Renderer::create(0, nullptr, nullptr, "default", 1.f);
+    auto renderer3 = Renderer::create(0, nullptr, nullptr, "default", 0.f);
+    auto sceneManager = SceneManager::create(MinkoTests::canvas());
+    auto root = scene::Node::create()
+        ->addComponent(sceneManager)
+        ->addComponent(renderer3)
+        ->addComponent(renderer1)
+        ->addComponent(renderer2);
+
+    int i = 0;
+
+    auto _ = renderer1->renderingBegin()->connect([&](Renderer::Ptr r)
+    {
+        ASSERT_EQ(i, 0);
+        i++;
+    });
+
+    auto __ = renderer2->renderingBegin()->connect([&](Renderer::Ptr r)
+    {
+        ASSERT_EQ(i, 1);
+        i++;
+    });
+
+    auto ___ = renderer3->renderingBegin()->connect([&](Renderer::Ptr r)
+    {
+        ASSERT_EQ(i, 2);
+        i++;
+    });
+
+    sceneManager->nextFrame(0.f, 0.f);
+
+    ASSERT_EQ(i, 3);
 }

@@ -30,7 +30,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string TEXTURE_FILENAME = "http://static.aerys.in:8080/minko3/http/box.png";
+const std::string TEXTURE_FILENAME = "https://pbs.twimg.com/profile_images/3384410223/716fe8ee2a73f0ecf88ad56e19203e28_400x400.png";
 
 int
 main(int argc, char** argv)
@@ -67,7 +67,11 @@ main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+            math::inverse(
+                math::lookAt(
+                    math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0, 1, 0)
+                )
+            )
         ))
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
@@ -85,7 +89,9 @@ main(int argc, char** argv)
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
-        mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+        mesh->component<Transform>()->matrix(
+            mesh->component<Transform>()->matrix() * math::rotate(0.01f, math::vec3(0, 1, 0))
+        );
 
         sceneManager->nextFrame(time, deltaTime);
     });
@@ -96,13 +102,17 @@ main(int argc, char** argv)
 
         mesh->addComponent(Surface::create(
             sceneManager->assets()->geometry("cube"),
-            material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+            material::BasicMaterial::create()
+                ->diffuseColor(0xffffffff)
+                ->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
             sceneManager->assets()->effect("effect/Basic.effect")
         ));
     });
 
     sceneManager->assets()->loader()->load();
     canvas->run();
+
+    return 0;
 }
 
 

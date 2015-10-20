@@ -42,83 +42,88 @@ createRandomCube(scene::Node::Ptr root, geometry::Geometry::Ptr geom, render::Ef
 
 int main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Benchmark Cube");
     auto sceneManager = SceneManager::create(canvas);
     auto root = scene::Node::create("root")->addComponent(sceneManager);
 
-    sceneManager->assets()->loader()
-		->queue("effect/Basic.effect");
+    sceneManager->assets()->loader()->queue("effect/Basic.effect");
+    sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
-	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
-    sceneManager->assets()->material("material", material::BasicMaterial::create());
+    auto mesh = scene::Node::create("mesh");
 
-	auto mesh = scene::Node::create("mesh");
-
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create())
-		->addComponent(Transform::create(
-			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 150.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
-		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
-	root->addChild(camera);
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x7f7f7fff))
+        ->addComponent(Transform::create(
+            math::inverse(math::lookAt(math::vec3(0.f, 0.f, 150.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
+        ))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
     auto meshes = scene::Node::create();
+
+    root->addChild(camera);
     root->addChild(meshes);
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
-        auto numFrames = 0;
-        auto t = 0;
-        auto p = 0;
+    auto numFrames = 0;
+    auto t = 0;
+    auto p = 0;
+    auto ready = false;
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto loaderComplete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+    {
+        ready = true;
+    });
+
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        camera->component<Transform>()->matrix(
+            math::rotate(0.01f, math::vec3(0.f, 1.f, 0.f))
+            * camera->component<Transform>()->matrix()
+        );
+
+        if (!ready)
+            return;
+
+        if (canvas->framerate() > 30.f)
+            t++;
+        else
+            p++;
+
+        if (t > 10)
         {
-            camera->component<Transform>()->matrix(
-                math::rotate(0.01f, math::vec3(0.f, 1.f, 0.f))
-                * camera->component<Transform>()->matrix()
-            );
+            t = 0;
+            p = 0;
 
-            if (canvas->framerate() > 30.f)
-                t++;
-            else
-                p++;
+            for (auto i = 0; i < 100; ++i)
+                createRandomCube(
+                    meshes,
+                    geometry::CubeGeometry::create(sceneManager->assets()->context()),
+                    // sceneManager->assets()->geometry("cube"),
+                    sceneManager->assets()->effect("effect/Basic.effect")
+                );
+        }
 
-            if (t > 10)
-            {
-                t = 0;
-                p = 0;
-                for (auto i = 0; i < 100; ++i)
-                    createRandomCube(
-                        meshes,
-                        sceneManager->assets()->geometry("cube"),
-                        sceneManager->assets()->effect("effect/Basic.effect")
-                    );
-            }
+        if (p > 10 && meshes->children().size() > 0)
+        {
+            t = 0;
+            p = 0;
+            meshes->removeChild(meshes->children().back());
+        }
 
-            if (p > 10 && meshes->children().size() > 0)
-            {
-                t = 0;
-                p = 0;
-                meshes->removeChild(meshes->children().back());
-            }
-            
-            if (++numFrames % 100 == 0)
-                std::cout << "num meshes = " << meshes->children().size()
-                    << ", num draw calls = " << camera->component<Renderer>()->numDrawCalls()
-                    << ", framerate = " << canvas->framerate() << std::endl;
+        if (++numFrames % 100 == 0)
+            std::cout << "num meshes = " << meshes->children().size()
+                << ", num draw calls = " << camera->component<Renderer>()->numDrawCalls()
+                << ", framerate = " << canvas->framerate() << std::endl;
 
-            sceneManager->nextFrame(time, deltaTime);
-        });
-
-    	canvas->run();
-	});
+        sceneManager->nextFrame(time, deltaTime);
+    });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
-	});
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+    });
 
-	sceneManager->assets()->loader()->load();
+    sceneManager->assets()->loader()->load();
+    canvas->run();
 
-	return 0;
+    return 0;
 }

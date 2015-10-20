@@ -20,36 +20,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-
-#ifndef SDL_AUDIO_ENABLED
-# if MINKO_PLATFORM == MINKO_PLATFORM_HTML5 ||    \
-     MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS ||  \
-     MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-#  define SDL_AUDIO_ENABLED
-# elif MINKO_PLATFORM == MINKO_PLATFORM_IOS && MINKO_DEVICE == MINKO_DEVICE_NATIVE
-#  define SDL_AUDIO_ENABLED
-# endif
-#endif
+#include "assimp/ProgressHandler.hpp"
 
 namespace minko
 {
-    class Canvas;
-
-    namespace audio
+    namespace file
     {
-        class SDLAudio
+        class ProgressHandler : public Assimp::ProgressHandler
         {
-            friend class Canvas;
+        public:
+
+            typedef std::shared_ptr<ProgressHandler> Ptr;
+            typedef std::function<void(float)> ProgressFunction;
 
         public:
-            static
-            std::shared_ptr<SDLAudio>
-            create(std::shared_ptr<Canvas> canvas);
 
-            ~SDLAudio();
+            ProgressHandler() {}
+            ~ProgressHandler() {}
+
+            bool Update(float percentage);
+
+            void
+            progressFunction(ProgressFunction progressFunction)
+            {
+                _progressFunction = progressFunction;
+            }
 
         private:
-            SDLAudio(std::shared_ptr<Canvas> canvas);
+            ProgressFunction _progressFunction;
         };
     }
 }

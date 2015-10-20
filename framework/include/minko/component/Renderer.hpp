@@ -74,7 +74,6 @@ namespace minko
             bool                                                                    _clearBeforeRender;
             render::EffectVariables		        				                    _variables;
 
-
 			std::set<std::shared_ptr<Surface>>					                    _toCollect;
 			EffectPtr											                    _effect;
 			std::string											                    _effectTechnique;
@@ -289,6 +288,13 @@ namespace minko
 			enabled(bool value)
 			{
 				_enabled = value;
+			}
+
+			inline
+			const render::DrawCallPool&
+			drawCallPool()
+			{
+				return _drawCallPool;
 			}
 
 			void

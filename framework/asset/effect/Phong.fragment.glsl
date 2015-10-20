@@ -72,9 +72,11 @@ uniform vec3 uCameraPosition;
 // env. mapping
 #ifdef ENVIRONMENT_MAP_2D
 uniform sampler2D uEnvironmentMap2d;
+uniform float uEnvironmentAlpha;
 #endif
 #ifdef ENVIRONMENT_CUBE_MAP
 uniform samplerCube uEnvironmentCubemap;
+uniform float uEnvironmentAlpha;
 #endif
 
 // fresnel
@@ -341,29 +343,19 @@ float getShadow(sampler2D 	shadowMap,
 
 	if (shadowMapping_vertexIsInShadowMap(vertexLightPosition))
 	{
-		float shadowDepth = vertexLightPosition.z - bias;
+		float shadowDepth = vertexLightPosition.z + bias;
 		vec2 depthUV = vertexLightPosition.xy / 2.0 + 0.5;
 
 		depthUV = vec2(depthUV.xy * viewport.zw + viewport.xy);
 
 		#if SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_HARD
 			shadow = shadowMapping_texture2DCompare(shadowMap, depthUV, shadowDepth, near, far);
+		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF
+			shadow = shadowMapping_PCF(shadowMap, vec2(size), depthUV, shadowDepth, near, far);
 		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_ESM
 			shadow = shadowMapping_ESM(shadowMap, depthUV, shadowDepth, near, far, (far - near) * 1.5);
-		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF
-			shadow = shadowMapping_PCF(shadowMap, vec2(size, size), depthUV, shadowDepth, near, far);
-		// #elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF_POISSON
-		// 	shadow = shadowMapping_PCFPoisson(
-		// 		shadowMap,
-		// 		vec2(size, size),
-		// 		depthUV,
-		// 		shadowDepth,
-		// 		zNear,
-		// 		zFar,
-		// 		uShadowRandomMap,
-		// 		vVertexScreenPosition.xy / vVertexScreenPosition.w / 2.0 + 0.5,
-		// 		uShadowSpread
-		// 	);
+		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF_POISSON
+			shadow = shadowMapping_PCFPoisson(shadowMap, vec2(size), depthUV, shadowDepth, near, far, vec4(vVertexPosition.xy, vVertexNormal.xy));
 		#endif
 	}
 
@@ -672,7 +664,11 @@ void main(void)
 			vec4 envmapColor = envmap_sampleEnvironmentCubeMap(uEnvironmentCubemap, eyeVector, normalVector);
 		#endif
 
-		float reflectivity = specular.a;
+        #if defined(ENVIRONMENT_ALPHA)
+		    float reflectivity = uEnvironmentAlpha;
+        #else
+            float reflectivity = specular.a;
+        #endif
         float fresnel = uFresnelReflectance + (1.0 - uFresnelReflectance) * pow(1.0 - dot(normalVector, eyeVector), uFresnelExponent);
 
         reflectivity *= fresnel;

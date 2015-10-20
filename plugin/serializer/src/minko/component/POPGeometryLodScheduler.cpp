@@ -17,7 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/StreamingOptions.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
@@ -27,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Transform.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/StreamingOptions.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/log/Logger.hpp"
 #include "minko/math/Box.hpp"
@@ -39,6 +39,8 @@ using namespace minko::data;
 using namespace minko::file;
 using namespace minko::geometry;
 using namespace minko::scene;
+
+const ProgressiveOrderedMeshLodInfo POPGeometryLodScheduler::POPGeometryResourceInfo::defaultLodInfo = ProgressiveOrderedMeshLodInfo();
 
 POPGeometryLodScheduler::POPGeometryLodScheduler() :
     AbstractLodScheduler(),
@@ -276,14 +278,14 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
         auto requiredPrecisionLevel = 0.f;
 		const auto requiredLod = computeRequiredLod(popGeometryResource, surfaceInfo, requiredPrecisionLevel);
 
-        const auto& lod = popGeometryResource.lodToClosestValidLod.at(math::clamp(
+        const auto* lod = popGeometryResource.lodToClosestValidLod.at(math::clamp(
             requiredLod,
             popGeometryResource.minLod,
             popGeometryResource.fullPrecisionLod
         ));
 
-        if (lod.isValid())
-            activeLod = lod._level;
+        if (lod->isValid())
+            activeLod = lod->_level;
 
         if (previousActiveLod != activeLod)
         {
@@ -364,13 +366,13 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
 
         requiredPrecisionLevel = maxPrecisionLevel;
 
-        const auto& requiredLod = resource.precisionLevelToClosestLod.at(math::clamp(
+        const auto* requiredLod = resource.precisionLevelToClosestLod.at(math::clamp(
             maxPrecisionLevel,
             resource.minLod,
             resource.fullPrecisionLod
         ));
 
-        return requiredLod._level;
+        return requiredLod->_level;
     }
 
     const auto popErrorBound = masterLodScheduler()->streamingOptions()->popGeometryErrorToleranceThreshold();
@@ -389,7 +391,7 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
         resource.fullPrecisionLod
     ));
 
-    return requiredLod._level;
+    return requiredLod->_level;
 }
 
 float
@@ -420,9 +422,9 @@ POPGeometryLodScheduler::computeLodPriority(const POPGeometryResourceInfo& 	reso
 }
 
 bool 
-POPGeometryLodScheduler::findClosestValidLod(const POPGeometryResourceInfo& resource,
-											 int 							lod,
-											 ProgressiveOrderedMeshLodInfo& result) const
+POPGeometryLodScheduler::findClosestValidLod(const POPGeometryResourceInfo&         resource,
+											 int 							        lod,
+											 const ProgressiveOrderedMeshLodInfo*&  result) const
 {
 	auto data = resource.base->data;
 
@@ -431,12 +433,12 @@ POPGeometryLodScheduler::findClosestValidLod(const POPGeometryResourceInfo& reso
     if (lods.empty())
         return false;
 
-    auto validLods = std::map<int, ProgressiveOrderedMeshLodInfo>();
+    auto validLods = std::map<int, const ProgressiveOrderedMeshLodInfo*>();
 
     for (const auto& lod : lods)
     {
         if (lod.second.isValid())
-            validLods.insert(std::make_pair(lod.first, lod.second));
+            validLods.insert(std::make_pair(lod.first, &lod.second));
     }
 
     if (validLods.empty())
@@ -453,9 +455,9 @@ POPGeometryLodScheduler::findClosestValidLod(const POPGeometryResourceInfo& reso
 }
 
 bool
-POPGeometryLodScheduler::findClosestLodByPrecisionLevel(const POPGeometryResourceInfo& 	resource,
-								 					    int 							precisionLevel,
-								 					    ProgressiveOrderedMeshLodInfo& 	result) const
+POPGeometryLodScheduler::findClosestLodByPrecisionLevel(const POPGeometryResourceInfo& 	        resource,
+								 					    int 							        precisionLevel,
+								 					    const ProgressiveOrderedMeshLodInfo*&   result) const
 {
 	auto data = resource.base->data;
 
@@ -470,13 +472,13 @@ POPGeometryLodScheduler::findClosestLodByPrecisionLevel(const POPGeometryResourc
         
         if (lod._precisionLevel >= precisionLevel)
         {
-            result = lod;
+            result = &lod;
 
             return true;
         }
     }
 
-    result = lods.rbegin()->second;
+    result = &lods.rbegin()->second;
 
     return true;
 }
@@ -489,8 +491,17 @@ POPGeometryLodScheduler::updateClosestLods(POPGeometryResourceInfo& resource)
 
     for (auto lod = lowerLod; lod < upperLod; ++lod)
     {
-        findClosestValidLod(resource, lod, resource.lodToClosestValidLod.at(lod));
-        findClosestLodByPrecisionLevel(resource, lod, resource.precisionLevelToClosestLod.at(lod));
+        const ProgressiveOrderedMeshLodInfo* closestValidLod = nullptr;
+
+        resource.lodToClosestValidLod[lod] = findClosestValidLod(resource, lod, closestValidLod)
+            ? closestValidLod
+            : &POPGeometryResourceInfo::defaultLodInfo;
+
+        const ProgressiveOrderedMeshLodInfo* closestLodByPrecisionLevel = nullptr;
+
+        resource.precisionLevelToClosestLod[lod] = findClosestLodByPrecisionLevel(resource, lod, closestLodByPrecisionLevel)
+            ? closestLodByPrecisionLevel
+            : &POPGeometryResourceInfo::defaultLodInfo;
     }
 }
 

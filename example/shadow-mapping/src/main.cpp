@@ -37,8 +37,8 @@ std::array<FrustumDisplay::Ptr, 5> frustums;
 void
 initializeShadowMapping(scene::Node::Ptr root, file::AssetLibrary::Ptr assets)
 {
-    directionalLight->enableShadowMapping();
-    directionalLight2->enableShadowMapping();
+    directionalLight->enableShadowMapping(256);
+    directionalLight2->enableShadowMapping(256);
 
     lightNode = scene::Node::create("light")
         ->addComponent(AmbientLight::create())
@@ -77,12 +77,14 @@ int main(int argc, char** argv)
         << std::endl;
 
     auto effectName = "effect/Phong.effect";
+    // auto effectName = "effect/debug/ShadowMappingDebug.effect";
     auto canvas = Canvas::create("Minko Application", 900, 600);
     auto sceneManager = SceneManager::create(canvas);
+    auto debugDisplay = false;
 
     auto loader = sceneManager->assets()->loader();
     loader->queue(effectName);
-    loader->queue("effect/Basic.effect");
+    // loader->queue("effect/Basic.effect");
 
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager);
@@ -159,10 +161,10 @@ int main(int argc, char** argv)
         directionalLight2->computeShadowProjection(perspective->viewMatrix(), perspective->projectionMatrix());
     });
 
+    bool cameraMoved = true;
+
     auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
     {
-        bool cameraMoved = false;
-
         if (k->keyIsDown(input::Keyboard::Key::UP))
         {
             camera->component<Transform>()->matrix(
@@ -227,11 +229,14 @@ int main(int argc, char** argv)
                 math::vec4(1.f, 1.f, 0.f, .2f)
             };
 
-            directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix());
+            // directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix());
             for (auto i = 0u; i < directionalLight->numShadowCascades(); ++i)
             {
                 if (frustums[i] && debugNode->hasComponent(frustums[i]))
+                {
                     debugNode->removeComponent(frustums[i]);
+                    debugDisplay = false;
+                }
                 else
                 {
                     frustums[i] = FrustumDisplay::create(
@@ -239,6 +244,7 @@ int main(int argc, char** argv)
                     );
                     frustums[i]->material()->diffuseColor(colors[i]);
                     debugNode->addComponent(frustums[i]);
+                    debugDisplay = true;
                 }
 
             }
@@ -263,23 +269,101 @@ int main(int argc, char** argv)
                 cameraMoved = true;
             }
         }
-
-        if (cameraMoved)
-        {
-            auto p = camera->component<PerspectiveCamera>();
-
-            directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix());
-            directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix());
-        }
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        cameraMoved = true;
+    });
+
+    float yaw = 0.3f;
+    float pitch = 1.3f;//float(M_PI) * .5f;
+    // float pitch = float(M_PI) * .5f;
+    auto minPitch = 0.f + 0.1f;
+    auto maxPitch = float(M_PI) * .5f - .1f;
+    // auto maxPitch = float(M_PI) - .1f;
+    auto lookAt = math::vec3(0.f, 0.f, 0.f);
+    float distance = 3.f;
+    float minDistance = 1.f;
+    float maxDistance = 20.f;
+    float zoomSpeed = 0.f;
+
+    // handle mouse signals
+    auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
+    {
+        zoomSpeed -= float(v) * .1f;
+    });
+
+    Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
+    auto cameraRotationXSpeed = 0.f;
+    auto cameraRotationYSpeed = 0.f;
+
+    auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
+    {
+        mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
+        {
+            cameraRotationYSpeed = (float)dx * .02f;
+            cameraRotationXSpeed = (float)dy * -.02f;
+        });
+    });
+
+    auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
+    {
+        mouseMove = nullptr;
     });
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
+        distance += zoomSpeed;
+        zoomSpeed *= 0.9f;
+        if (math::abs(zoomSpeed) > 0.01f)
+        {
+            if (distance < minDistance)
+                distance = minDistance;
+            else if (distance > maxDistance)
+                distance = maxDistance;
+            cameraMoved = true;
+        }
+
+        if (math::abs(cameraRotationYSpeed) > 0.001f)
+        {
+            yaw += cameraRotationYSpeed;
+            cameraRotationYSpeed *= 0.9f;
+            cameraMoved = true;
+        }
+
+        if (math::abs(cameraRotationXSpeed) > 0.001f)
+        {
+            pitch += cameraRotationXSpeed;
+            cameraRotationXSpeed *= 0.9f;
+            cameraMoved = true;
+            if (pitch > maxPitch)
+                pitch = maxPitch;
+            else if (pitch < minPitch)
+                pitch = minPitch;
+        }
+
+        if (cameraMoved)
+        {
+            camera->component<Transform>()->matrix(math::inverse(math::lookAt(
+                math::vec3(
+                    lookAt.x + distance * std::cos(yaw) * std::sin(pitch),
+                    lookAt.y + distance * std::cos(pitch),
+                    lookAt.z + distance * std::sin(yaw) * std::sin(pitch)
+                ),
+                lookAt,
+                math::vec3(0.f, 1.f, 0.f)
+            )));
+
+            auto p = camera->component<PerspectiveCamera>();
+
+            directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 80.f);
+            directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 80.f);
+
+            cameraMoved = false;
+        }
+
         teapot->component<Transform>()->matrix(
             math::rotate(-0.02f, math::vec3(0.f, 1.f, 0.f)) * teapot->component<Transform>()->matrix()
         );

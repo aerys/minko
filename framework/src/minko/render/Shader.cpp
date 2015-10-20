@@ -30,7 +30,7 @@ using namespace minko;
 using namespace minko::render;
 
 #ifdef MINKO_GLSL_OPTIMIZER_ENABLED
-# if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_IOS
+# if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 const glslopt_ctx* Shader::_glslOptimizer = glslopt_initialize(glslopt_target::kGlslTargetOpenGLES20);
 # else
 const glslopt_ctx* Shader::_glslOptimizer = glslopt_initialize(glslopt_target::kGlslTargetOpenGL);
@@ -74,6 +74,19 @@ Shader::upload()
     }
     else
     {
+#ifdef DEBUG
+        auto line = std::string();
+        std::istringstream stream(source);
+        auto lineNumber = 0u;
+
+        while (std::getline(stream, line))
+        {
+            LOG_DEBUG(lineNumber << ": " << line);
+
+            ++lineNumber;
+        }
+#endif
+
         LOG_ERROR(glslopt_get_log(optimizedShader));
         throw std::invalid_argument("source");
     }

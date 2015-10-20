@@ -22,7 +22,7 @@ minko.project.library = function(name)
 	configuration { "not windows*" }
 		includedirs { minko.sdk.path("/framework/lib/sparsehash/include") }
 
-	configuration { "debug"}
+	configuration { "debug" }
 		defines { "DEBUG" }
 		flags { "Symbols" }
 
@@ -35,9 +35,9 @@ minko.project.library = function(name)
 
 	configuration { "vs*" }
 		defines {
-			"NOMINMAX",									    -- do not define min/max as macro in windows.h
-			"_VARIADIC_MAX=10",							    -- fix for faux variadic templates limited to 5 arguments by default
-			"_USE_MATH_DEFINES",						    -- enable M_PI
+			"NOMINMAX",										-- do not define min/max as macro in windows.h
+			"_VARIADIC_MAX=10",								-- fix for faux variadic templates limited to 5 arguments by default
+			"_USE_MATH_DEFINES",							-- enable M_PI
 			"_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS"		-- disable "<hash_map> is deprecated and will be REMOVED" error
 		}
 		flags {
@@ -187,101 +187,105 @@ minko.project.application = function(name)
 
 		targetsuffix ".bc"
 
-	if premake.tools.gcc.tools.emscripten then
-		local emcc = premake.tools.gcc.tools.emscripten.cc
+	local emcc = premake.tools.gcc.tools.emscripten.cc
+	local empkg = premake.tools.gcc.tools.emscripten.pkg
 
-		configuration { "html5", "release" }
-			linkoptions {
-				"--llvm-lto 1"
-			}
+	configuration { "html5", "release" }
+		linkoptions {
+			"--llvm-lto 1"
+		}
 
-			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
 
-			-- optimization
-			cmd = cmd .. buildoptions()[1]
-			cmd = cmd .. ' -O3'
-			-- enable the closure compiler
-			cmd = cmd .. ' --closure 1'
-			-- treat undefined symbol warnings as errors
-			cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
-			-- disable exception catching
-			cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
-			cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
-			cmd = cmd .. ' -s NO_EXIT_RUNTIME=1'
+		-- optimization
+		cmd = cmd .. buildoptions()[1]
+		cmd = cmd .. ' -O3'
+		-- enable the closure compiler
+		cmd = cmd .. ' --closure 1'
 
-			--[[
-				optimize (very) long functions by breaking them into smaller ones
+		-- add minko-specific emscripten library extension
+		cmd = cmd .. ' --js-library "' .. minko.sdk.path("/module/emscripten/library.js") .. '"'
 
-				from emscripten's settings.js:
-				"OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
-	            large functions (JS engines often compile them very slowly, compile them with lower optimizations,
-				or do not optimize them at all)"
-			]]--
-			cmd = cmd .. ' -s OUTLINING_LIMIT=20000'
-			-- use a separate *.mem file to initialize the app memory
-			cmd = cmd .. ' --memory-init-file 1'
-			-- set the app (or the sdk) template.html
-			if os.isfile('template.html') then
-				cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
-			else
-				cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
-			end
+		-- treat undefined symbol warnings as errors
+		cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
+		-- disable exception catching
+		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
+		cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
+		cmd = cmd .. ' -s NO_EXIT_RUNTIME=1'
 
-			postbuildcommands {
-				cmd .. ' || ' .. minko.action.fail()
-			}
+		--[[
+			optimize (very) long functions by breaking them into smaller ones
 
-			libdirs {
-				minko.sdk.path("/framework/bin/html5/release")
-			}
+			from emscripten's settings.js:
+			"OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
+			large functions (JS engines often compile them very slowly, compile them with lower optimizations,
+			or do not optimize them at all)"
+		]]--
+		cmd = cmd .. ' -s OUTLINING_LIMIT=20000'
+		-- use a separate *.mem file to initialize the app memory
+		cmd = cmd .. ' --memory-init-file 1'
+		-- set the app (or the sdk) template.html
+		if os.isfile('template.html') then
+			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
+		else
+			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
+		end
 
-		configuration { "html5", "debug" }
-			linkoptions {
-				"--llvm-lto 0"
-			}
+		postbuildcommands {
+			cmd .. ' || ' .. minko.action.fail()
+		}
 
-			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
+		libdirs {
+			minko.sdk.path("/framework/bin/html5/release")
+		}
 
-			-- disable optimization
-			cmd = cmd .. buildoptions()[1]
+	configuration { "html5", "debug" }
+		linkoptions {
+			"--llvm-lto 0"
+		}
 
-			-- treat undefined symbol warnings as errors
-			-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
-			-- disable exception catching
-			cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
-			-- allow memory pool to be dynamic
-			cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
-			-- demangling C++ symbols
-			cmd = cmd .. ' -s DEMANGLE_SUPPORT=1'
-			-- use a separate *.mem file to initialize the app memory
-			cmd = cmd .. ' --memory-init-file 1'
-			-- set the app (or the sdk) template.html
-			if os.isfile('template.html') then
-				cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
-			else
-				cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
-			end
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
 
-			postbuildcommands {
-				-- minko.action.unless('${TARGETDIR}/' .. name .. '.html') ..
-				cmd .. ' || ' .. minko.action.fail()
-			}
+		-- disable optimization
+		cmd = cmd .. buildoptions()[1]
 
-			libdirs {
-				minko.sdk.path("/framework/bin/html5/debug")
-			}
+		-- add minko-specific emscripten library extension
+		cmd = cmd .. ' --js-library "' .. minko.sdk.path("/module/emscripten/library.js") .. '"'
 
-		configuration { "html5" }
-			-- include the preloaded assets into the file system
-			local empkg = premake.tools.gcc.tools.emscripten.pkg
-			local cmd = empkg .. ' ${TARGETDIR}/' .. name .. '.data'
+		-- treat undefined symbol warnings as errors
+		-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
+		-- disable exception catching
+		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+		-- allow memory pool to be dynamic
+		cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
+		-- demangling C++ symbols
+		cmd = cmd .. ' -s DEMANGLE_SUPPORT=1'
+		-- use a separate *.mem file to initialize the app memory
+		cmd = cmd .. ' --memory-init-file 1'
+		-- set the app (or the sdk) template.html
+		if os.isfile('template.html') then
+			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
+		else
+			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
+		end
 
-			postbuildcommands {
-				-- minko.action.unless('${TARGETDIR}/' .. name .. '.data') ..
-				cmd .. ' || ' .. minko.action.fail()
-			}
+		postbuildcommands {
+			-- minko.action.unless('${TARGETDIR}/' .. name .. '.html') ..
+			cmd .. ' || ' .. minko.action.fail()
+		}
 
-	end
+		libdirs {
+			minko.sdk.path("/framework/bin/html5/debug")
+		}
+
+	configuration { "html5" }
+		-- include the preloaded assets into the file system
+		local cmd = empkg .. ' ${TARGETDIR}/' .. name .. '.data'
+
+		postbuildcommands {
+			-- minko.action.unless('${TARGETDIR}/' .. name .. '.data') ..
+			cmd .. ' || ' .. minko.action.fail()
+		}
 
 	configuration { "ios" }
 
@@ -360,16 +364,16 @@ minko.project.application = function(name)
 		}
 
 	if _OPTIONS['with-offscreen'] then
-            minko.plugin.enable { "offscreen" }
-    end
+			minko.plugin.enable { "offscreen" }
+	end
 
-    configuration { "android", "debug" }
+	configuration { "android", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/android/debug")
 		}
 
 	configuration { "android", "release" }
-    	libdirs {
+		libdirs {
 			minko.sdk.path("/framework/bin/android/release")
 		}
 
@@ -385,14 +389,12 @@ minko.project.worker = function(name)
 
 	removelinks { "minko-framework" }
 
-	if premake.tools.gcc.tools.emscripten then
 	configuration { "html5" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
 		postbuildcommands {
 			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.js -O3 --closure 1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 -s EXPORTED_FUNCTIONS="[\'minkoWorkerEntryPoint\']" || ' .. minko.action.fail()
 		}
-	end
 
 	configuration { }
 end

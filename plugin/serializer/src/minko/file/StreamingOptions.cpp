@@ -17,24 +17,26 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/StreamingOptions.hpp"
 #include "minko/StreamingTypes.hpp"
+#include "minko/file/StreamingOptions.hpp"
 
 using namespace minko;
+using namespace minko::component;
+using namespace minko::file;
 
 const int StreamingOptions::MAX_LOD = 32;
 const int StreamingOptions::MAX_LOD_RANGE = 32;
 
 StreamingOptions::StreamingOptions() :
     _disableProgressiveLodFetching(false),
-    _textureStreamingIsActive(false),
-    _geometryStreamingIsActive(false),
+    _textureStreamingIsActive(true),
+    _geometryStreamingIsActive(true),
     _masterLodScheduler(),
     _popGeometryWriterLodRangeFunction(),
     _popGeometryErrorToleranceThreshold(3),
-    _storeLodData(true),
+    _storeLodData(false),
     _popGeometryLodFunction(),
-    _streamedTextureLodFunction(),
+    _streamedTextureLodFunction([](std::shared_ptr<Surface>) -> int { return MAX_LOD; }),
     _meshPartitionerOptions(),
     _popGeometryPriorityFactor(1.f),
     _streamedTexturePriorityFactor(1.f),
@@ -45,8 +47,8 @@ StreamingOptions::StreamingOptions() :
     _popGeometryBlendingRange(0.f),
     _maxNumActiveParsers(40),
     _popGeometryFunction(),
-    _popGeometryLodDependencyProperties(),
-    _streamedTextureLodDependencyProperties(),
+    _popGeometryLodDependencyProperties{"modelToWorldMatrix"},
+    _streamedTextureLodDependencyProperties{"modelToWorldMatrix"},
     _streamedTextureFunction()
 {
 }

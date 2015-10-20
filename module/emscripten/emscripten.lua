@@ -19,7 +19,7 @@ elseif os.getenv('EMSCRIPTEN_HOME') then
 	EMSCRIPTEN = os.getenv('EMSCRIPTEN_HOME');
 else
 	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN to be able to target HTML5.' .. color.reset)
-	do return end
+	EMSCRIPTEN = ''
 end
 
 if os.is('windows') then
@@ -40,8 +40,7 @@ end
 
 table.inject(premake.tools.gcc, 'cppflags.system.emscripten', {
 	"-MMD", "-MP",
-	"-DEMSCRIPTEN",
-	"-Wno-warn-absolute-paths"
+	"-DEMSCRIPTEN"
 })
 
 table.inject(premake.tools.gcc, 'cxxflags.system.emscripten', {

@@ -4,6 +4,7 @@
         "name" : "default",
         "passes" : [
             {
+                "name" : "phong-opaque-pass",
                 "extends" : {
                     "effect"    : "BaseStreamingTemplate.effect",
                     "technique" : "base-streaming-technique",
@@ -32,11 +33,18 @@
                     "uSpecularMapMaxAvailableLod"   : "material[${materialUuid}].specularMapMaxAvailableLod",
                     "uSpecularMapSize"              : "material[${materialUuid}].specularMapSize",
                     "uSpecularColor"                : { "binding" : "material[${materialUuid}].specularColor", "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] },
-                    "uEnvironmentMap2d"             : "material[${materialUuid}].environmentMap2d",
+                    "uEnvironmentMap2d"             : {
+                        "binding"       : "material[${materialUuid}].environmentMap2d",
+                        "wrapMode"      : "clamp",
+                        "textureFilter" : "linear",
+                        "mipFilter"     : "linear"
+                    },
                     "uEnvironmentMap2dType"         : "material[${materialUuid}].environmentMap2dType",
                     "uEnvironmentCubemap"           : "material[${materialUuid}].environmentCubemap",
                     "uEnvironmentAlpha"             : "material[${materialUuid}].environmentAlpha",
                     "uShininess"                    : "material[${materialUuid}].shininess",
+                    "uFresnelReflectance"           : { "binding" : "material[${materialUuid}].fresnelReflectance", "default" : 0.0 },
+                    "uFresnelExponent"              : { "binding" : "material[${materialUuid}].fresnelExponent", "default" : 1.0 },
                     "uCameraPosition"               : { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
                     "uAmbientLight0_color"          : { "binding" : { "property" : "ambientLight[0].color", "source" : "root" } },
                     "uAmbientLight0_ambient"        : { "binding" : { "property" : "ambientLight[0].ambient", "source" : "root" } },

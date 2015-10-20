@@ -1,0 +1,15 @@
+{
+    "techniques" : [{
+        "passes" : [
+            { "extends" : "base-pass" },
+            { "extends" : "base-pass" },
+            { "extends" : "base-pass" }
+        ]
+    }],
+
+    "passes" : [{
+        "name" : "base-pass",
+        "vertexShader" : "#pragma include \"../../dummy.glsl\"",
+        "fragmentShader" : "#pragma include \"../../dummy.glsl\""
+    }]
+}

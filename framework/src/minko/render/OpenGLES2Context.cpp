@@ -41,7 +41,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #  include "GLES2/gl2ext.h"
 # else
 #  if !defined(MINKO_PLUGIN_OFFSCREEN) // temporary
-#  	include "GL/glew.h"
+#   include "GL/glew.h"
+#   include "GL/wglew.h"
 #  else
 #   include <windows.h>
 #   include <GL/gl.h>
@@ -50,9 +51,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #  endif
 # endif
 #elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
-# include <OpenGL/gl.h>
+# include <OpenGL/gl3.h>
 # include <OpenGL/glext.h>
-# include <GLUT/glut.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX
 # include <GL/gl.h>
 # include <GL/glext.h>
@@ -234,17 +234,14 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentStencilFailOp(StencilOperation::UNSET),
 	_currentStencilZFailOp(StencilOperation::UNSET),
 	_currentStencilZPassOp(StencilOperation::UNSET),
-	_vertexAttributeEnabled(32u, false)
+	_vertexAttributeEnabled(32u, false),
+	_stencilBits(0)
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE) && !defined(MINKO_PLUGIN_OFFSCREEN)
 	glewInit();
 #endif
 
-#if !defined(MINKO_NO_STENCIL)
-	glEnable(GL_STENCIL_TEST);
-#endif
-
-    glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -258,6 +255,14 @@ OpenGLES2Context::OpenGLES2Context() :
 		+ " " + std::string(glRenderer ? glRenderer : "(unknown renderer)")
 		+ " " + std::string(glVersion ? glVersion : "(unknown version)");
 
+#ifdef GL_ES_VERSION_2_0
+	_oglMajorVersion = 2;
+	_oglMinorVersion = 0;
+#else
+	glGetIntegerv(GL_MAJOR_VERSION, &_oglMajorVersion);
+	glGetIntegerv(GL_MINOR_VERSION, &_oglMinorVersion);
+#endif
+
 	// init. viewport x, y, width and height
 	std::vector<int> viewportSettings(4);
 	glGetIntegerv(GL_VIEWPORT, &viewportSettings[0]);
@@ -268,9 +273,16 @@ OpenGLES2Context::OpenGLES2Context() :
 
 	setColorMask(true);
 	setDepthTest(true, CompareMode::LESS);
-	setStencilTest(CompareMode::ALWAYS, 0, 0x1, StencilOperation::KEEP, StencilOperation::KEEP, StencilOperation::KEEP);
 
-    initializeExtFunctions();
+	glGetIntegerv(GL_STENCIL_BITS, &_stencilBits);
+
+	if (_stencilBits)
+	{
+		glEnable(GL_STENCIL_TEST);
+		setStencilTest(CompareMode::ALWAYS, 0, 0x1, StencilOperation::KEEP, StencilOperation::KEEP, StencilOperation::KEEP);
+	}
+
+	initializeExtFunctions();
 }
 
 void
@@ -361,9 +373,8 @@ OpenGLES2Context::clear(float 	red,
 	// Specifies the index used when the stencil buffer is cleared. The initial value is 0.
 	//
 	// glClearStencil specify the clear value for the stencil buffer
-#ifndef MINKO_NO_STENCIL
-	glClearStencil(stencil);
-#endif
+	if (_stencilBits)
+		glClearStencil(stencil);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClear.xml
 	//
@@ -521,7 +532,7 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 									const uint	offset)
 {
 	bool vertexAttributeEnabled = vertexBuffer > 0;
-	bool vertexBufferChanged = _currentVertexBuffer[position] != vertexBuffer;
+    bool vertexBufferChanged = (_currentVertexBuffer[position] != vertexBuffer) || vertexAttributeEnabled;
 
 	if (vertexBufferChanged)
 	{
@@ -1596,7 +1607,6 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 								 StencilOperation stencilZFailOp,
 								 StencilOperation stencilZPassOp)
 {
-#ifndef MINKO_NO_STENCIL
 	if (stencilFunc != _currentStencilFunc
 		|| stencilRef != _currentStencilRef
 		|| stencilMask != _currentStencilMask)
@@ -1623,7 +1633,6 @@ OpenGLES2Context::setStencilTest(CompareMode stencilFunc,
 
 		checkForErrors();
 	}
-#endif
 }
 
 
@@ -1750,13 +1759,14 @@ OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
 	checkForErrors();
 
 	if (enableDepthAndStencil)
+	{
 		glBindRenderbuffer(GL_RENDERBUFFER, _renderBuffers[texture]);
-	checkForErrors();
+		checkForErrors();
+	}
 
 	auto textureSize = _textureSizes[texture];
 
-    configureViewport(0, 0, textureSize.first, textureSize.second);
-
+	configureViewport(0, 0, textureSize.first, textureSize.second);
 	checkForErrors();
 }
 
@@ -1850,11 +1860,27 @@ void
 OpenGLES2Context::generateMipmaps(uint texture)
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glGenerateMipmap(GL_TEXTURE_2D);
 
-	_currentBoundTexture = texture;
+	// glGenerateMipmap exists in OpenGL ES 2.0+ or OpenGL 3.0+
+	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGenerateMipmap.xml
+	// https://www.opengl.org/sdk/docs/man/html/glGenerateMipmap.xhtml
+#ifndef GL_ES_VERSION_2_0
+	if (_oglMajorVersion < 3)
+	{
+		if (supportsExtension("GL_SGIS_generate_mipmap"))
+			glGenerateMipmapEXT(GL_TEXTURE_2D);
+# ifdef DEBUG
+		else
+			throw std::runtime_error("Missing OpenGL extension: 'GL_SGIS_generate_mipmap'.");
+# endif
+	}
+	else
+#endif
+		glGenerateMipmap(GL_TEXTURE_2D);
 
 	checkForErrors();
+
+	_currentBoundTexture = texture;
 }
 
 void

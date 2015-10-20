@@ -23,7 +23,9 @@ int main(int argc, char **argv)
 
 	auto output = RUN_ALL_TESTS();
 
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
 	wait();
+#endif
 
 	return output;
 }

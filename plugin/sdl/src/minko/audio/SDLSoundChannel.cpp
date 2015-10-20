@@ -40,7 +40,7 @@ SDLSoundChannel::~SDLSoundChannel()
 void
 SDLSoundChannel::stop()
 {
-#ifdef SDL_AUDIO_ENABLED
+#if SDL_AUDIO_ENABLED
     if (_channel >= 0)
     {
         Mix_HaltChannel(_channel);
@@ -51,7 +51,7 @@ SDLSoundChannel::stop()
 SoundChannel::Ptr
 SDLSoundChannel::transform(SoundTransform::Ptr value)
 {
-#ifdef SDL_AUDIO_ENABLED
+#if SDL_AUDIO_ENABLED
     if (!!value && _channel >= 0)
     {
         Mix_SetPanning(_channel, uint(value->left() * value->volume() * 255), uint(value->right() * value->volume() * 255));

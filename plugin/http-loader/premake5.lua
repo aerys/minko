@@ -16,8 +16,3 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	minko.plugin.enable("http-worker")
-
-	if os.getenv('EMSCRIPTEN_WGET_HEADERS') then
-		configuration { "html5" }
-			defines { "EMSCRIPTEN_WGET_HEADERS" }
-	end
