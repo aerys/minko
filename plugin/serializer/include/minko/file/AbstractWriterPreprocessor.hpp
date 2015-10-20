@@ -20,16 +20,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 
 namespace minko
 {
     namespace file
     {
         template <typename T>
-        class AbstractWriterPreprocessor
+        class AbstractWriterPreprocessor : public std::enable_shared_from_this<AbstractWriterPreprocessor<T>>
         {
         public:
-            typedef std::shared_ptr<AbstractWriterPreprocessor<T>> Ptr;
+            typedef std::shared_ptr<AbstractWriterPreprocessor<T>>  Ptr;
+
+            typedef Signal<Ptr, std::string>                        StatusChangedSignal;
 
         private:
             typedef std::shared_ptr<file::AssetLibrary> AssetLibraryPtr;
@@ -37,6 +40,14 @@ namespace minko
         public:
             virtual
             ~AbstractWriterPreprocessor<T>() = default;
+
+            virtual
+            float
+            progressRate() const = 0;
+
+            virtual
+            typename StatusChangedSignal::Ptr
+            statusChanged() = 0;
 
             virtual
             void

@@ -35,18 +35,28 @@ using namespace minko::scene;
 
 SceneTreeFlattener::SceneTreeFlattener() :
     AbstractWriterPreprocessor<Node::Ptr>(),
-    _protectedNodePredicateFunction()
+    _protectedNodePredicateFunction(),
+    _progressRate(0.f),
+    _statusChanged(StatusChangedSignal::create())
 {
 }
 
 void
 SceneTreeFlattener::process(Node::Ptr& node, AssetLibrary::Ptr assetLibrary)
 {
+    if (statusChanged() && statusChanged()->numCallbacks() > 0u)
+        statusChanged()->execute(shared_from_this(), "SceneTreeFlattener: start");
+
     auto retargetedSurfaces = std::list<RetargetedSurface>();
 
     collapseNode(node, nullptr, node, retargetedSurfaces);
 
     patchNode(node, retargetedSurfaces);
+
+    _progressRate = 1.f;
+
+    if (statusChanged() && statusChanged()->numCallbacks() > 0u)
+        statusChanged()->execute(shared_from_this(), "SceneTreeFlattener: stop");
 }
 
 bool

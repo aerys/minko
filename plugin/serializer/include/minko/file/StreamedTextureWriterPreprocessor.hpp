@@ -53,7 +53,8 @@ namespace minko
             typedef std::shared_ptr<AssetLibrary>                               AssetLibraryPtr;
 
         private:
-            Options _options;
+            Options                     _options;
+            StatusChangedSignal::Ptr    _statusChanged;
 
         public:
             ~StreamedTextureWriterPreprocessor() = default;
@@ -73,6 +74,20 @@ namespace minko
             options(const Options& options)
             {
                 _options = options;
+            }
+
+            inline
+            float
+            progressRate() const
+            {
+                return 1.f;
+            }
+
+            inline
+            StatusChangedSignal::Ptr
+            statusChanged()
+            {
+                return _statusChanged;
             }
 
             void

@@ -39,7 +39,8 @@ using namespace minko::render;
 using namespace minko::scene;
 
 StreamedTextureWriterPreprocessor::StreamedTextureWriterPreprocessor() :
-    AbstractWriterPreprocessor<Node::Ptr>()
+    AbstractWriterPreprocessor<Node::Ptr>(),
+    _statusChanged(StatusChangedSignal::create())
 {
 }
 

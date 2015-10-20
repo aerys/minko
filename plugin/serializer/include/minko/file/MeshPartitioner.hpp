@@ -178,6 +178,9 @@ namespace minko
 
             std::unordered_map<GeometryPtr, std::vector<GeometryPtr>>   _processedInstances;
 
+            float                                                       _progressRate;
+            StatusChangedSignal::Ptr                                    _statusChanged;
+
         public:
             ~MeshPartitioner() = default;
 
@@ -192,6 +195,20 @@ namespace minko
                 instance->_streamingOptions = streamingOptions;
 
                 return instance;
+            }
+
+            inline
+            float
+            progressRate() const
+            {
+                return _progressRate;
+            }
+
+            inline
+            StatusChangedSignal::Ptr
+            statusChanged()
+            {
+                return _statusChanged;
             }
 
             void
