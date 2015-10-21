@@ -11,7 +11,7 @@
 			"binding" : "material[${materialUuid}].diffuseMap",
 			"textureFilter" : "linear"
 		},
-		"uTexcoordOffset"	: "invertedDiffuseMapSize"
+		"uResolution"	: "resolution"
 	},
 
 	"states" : {
@@ -34,7 +34,7 @@
 				attribute vec3 aPosition;
 				attribute vec2 aUV;
 
-				uniform vec2 uTexcoordOffset;
+				uniform vec2 uResolution;
 
 				varying vec2 vRGBNW;
 				varying vec2 vRGBNE;
@@ -51,8 +51,8 @@
    					// vUV.y = 1.0 - vUV.y;
 					//vUV = aUV;
 
-					vec2 fragCoord = vUV * uTexcoordOffset;
-					fxaa_texcoords(fragCoord, uTexcoordOffset, vRGBNW, vRGBNE, vRGBSW, vRGBSE, vRGBM);
+					vec2 fragCoord = vUV * uResolution;
+					fxaa_texcoords(fragCoord, uResolution, vRGBNW, vRGBNE, vRGBSW, vRGBSE, vRGBM);
 
 					gl_Position = position;
 				}
@@ -77,14 +77,14 @@
 				varying vec2 vRGBM;
 				varying vec2 vUV;
 
-				uniform vec2 uTexcoordOffset;
+				uniform vec2 uResolution;
 
 				void main(void)
 				{
-					vec2 fragCoord = vUV * uTexcoordOffset;
+					vec2 fragCoord = vUV * uResolution;
 
 					//gl_FragColor = vec4(vUV, 0.0, 1.0);
-					gl_FragColor = fxaa(uTextureSampler, fragCoord, uTexcoordOffset, vRGBNW, vRGBNE, vRGBSW, vRGBSE, vRGBM);
+					gl_FragColor = fxaa(uTextureSampler, fragCoord, uResolution, vRGBNW, vRGBNE, vRGBSW, vRGBSE, vRGBM);
 				}
 			"
 		}]
