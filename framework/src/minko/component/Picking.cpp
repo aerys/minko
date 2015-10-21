@@ -67,7 +67,8 @@ Picking::Picking() :
     _emulateMouseWithTouch(true),
     _frameBeginSlot(nullptr),
     _enabled(false),
-    _renderDepth(true)
+    _renderDepth(true),
+    _debug(false)
 {
 }
 
@@ -235,18 +236,22 @@ Picking::targetAdded(NodePtr target)
     
     if (_pickingEffect == nullptr)
         _pickingEffect = _sceneManager->assets()->effect("effect/Picking.effect");
+        
+    auto priority = _debug ? -1000.0f : 1000.0f;
 
     _renderer = Renderer::create(
         0xFFFF00FF,
         nullptr,
         _pickingEffect,
         "default",
-        1000.f,
+        priority,
         "Picking Renderer"
     );
-    _renderer->scissorBox(0, 0, 1, 1);
+    if (!_debug)
+        _renderer->scissorBox(0, 0, 1, 1);
     _renderer->layoutMask(scene::BuiltinLayout::PICKING);
-    _renderer->enabled(false);
+    if (!_debug)
+        _renderer->enabled(false);
 
     if (_pickingDepthEffect == nullptr)
         _pickingDepthEffect = _sceneManager->assets()->effect("effect/PickingDepth.effect");
@@ -298,6 +303,8 @@ Picking::targetAdded(NodePtr target)
 void
 Picking::targetRemoved(NodePtr target)
 {
+    unbindSignals();
+
     _renderer = nullptr;
     _depthRenderer = nullptr;
     _sceneManager = nullptr;
@@ -442,8 +449,6 @@ Picking::removeSurface(SurfacePtr surface, NodePtr node)
 void
 Picking::removedHandler(NodePtr target, NodePtr child, NodePtr parent)
 {
-    unbindSignals();
-
 	if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
 		return;
 
@@ -503,7 +508,7 @@ Picking::updateDescendants(NodePtr target)
 void
 Picking::enabled(bool enabled)
 {
-    if (enabled && !_enabled)
+    if (enabled && !_frameBeginSlot)
     {
         _enabled = true;
 
@@ -515,16 +520,20 @@ Picking::enabled(bool enabled)
 		    std::placeholders::_3
         ), 1000.0f);
     }
-    else if (!enabled && _enabled)
+    else if (!enabled && _frameBeginSlot != nullptr)
     {
-        _enabled = false;
         _frameBeginSlot = nullptr;
     }
+
+    _enabled = enabled;
 }
 
 void
 Picking::frameBeginHandler(SceneManagerPtr, float, float)
 {
+    if (_debug)
+        return;
+
     _renderer->enabled(true);
     _renderer->render(_sceneManager->canvas()->context());
     _renderer->enabled(false);
