@@ -96,8 +96,7 @@ int main(int argc, char** argv)
             for (auto i = 0; i < 100; ++i)
                 createRandomCube(
                     meshes,
-                    geometry::CubeGeometry::create(sceneManager->assets()->context()),
-                    // sceneManager->assets()->geometry("cube"),
+                    sceneManager->assets()->geometry("cube"),
                     sceneManager->assets()->effect("effect/Basic.effect")
                 );
         }
