@@ -194,7 +194,9 @@ MeshPartitioner::defaultNodeFilterFunction(Node::Ptr node)
 }
 
 MeshPartitioner::MeshPartitioner() :
-    AbstractWriterPreprocessor<Node::Ptr>()
+    AbstractWriterPreprocessor<Node::Ptr>(),
+    _progressRate(0.f),
+    _statusChanged(StatusChangedSignal::create())
 {
 }
 
@@ -357,6 +359,9 @@ MeshPartitioner::splitSurface(Surface::Ptr                 surface,
 void
 MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 {
+    if (statusChanged() && statusChanged()->numCallbacks() > 0u)
+        statusChanged()->execute(shared_from_this(), "MeshPartitioner: start");
+
     _assetLibrary = assetLibrary;
 
     auto meshNodes = NodeSet::create(node)
@@ -436,8 +441,20 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
             pendingSurfaceBuckets.push(surfaceBucket);
     }
 
-    for (const auto& surfaceBucket : validSurfaceBuckets)
+    for (auto i = 0u; i < validSurfaceBuckets.size(); ++i)
     {
+        const auto& surfaceBucket = validSurfaceBuckets.at(i);
+
+        if (statusChanged() && statusChanged()->numCallbacks() > 0u)
+        {
+            _progressRate = i / float(validSurfaceBuckets.size());
+
+            statusChanged()->execute(
+                shared_from_this(),
+                "MeshPartitioner: processing new Surface batch with " + std::to_string(surfaceBucket.size()) + " Surface components"
+            );
+        }
+
         if (surfaceBucket.empty())
             continue;
 
@@ -529,6 +546,11 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
     }
 
     node->addChild(mergedComponentRoot);
+
+    _progressRate = 1.f;
+
+    if (statusChanged() && statusChanged()->numCallbacks() > 0u)
+        statusChanged()->execute(shared_from_this(), "MeshPartitioner: stop");
 }
 
 MeshPartitioner::OctreeNodePtr

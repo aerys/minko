@@ -156,6 +156,9 @@ GeometryWriter::computeMetaData(std::shared_ptr<geometry::Geometry> geometry,
 bool
 GeometryWriter::indexBufferFitCharCompression(std::shared_ptr<geometry::Geometry> geometry)
 {
+    if (geometry->indices()->data().empty())
+        return false;
+
 	std::vector<unsigned short>::iterator maxIndice = std::max_element(geometry->indices()->data().begin(), geometry->indices()->data().end());
 
     return *maxIndice <= 255;

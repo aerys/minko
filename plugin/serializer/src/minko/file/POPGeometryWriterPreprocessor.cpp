@@ -40,7 +40,8 @@ using namespace minko::geometry;
 using namespace minko::scene;
 
 POPGeometryWriterPreprocessor::POPGeometryWriterPreprocessor() :
-    AbstractWriterPreprocessor<Node::Ptr>()
+    AbstractWriterPreprocessor<Node::Ptr>(),
+    _statusChanged(StatusChangedSignal::create())
 {
 }
 

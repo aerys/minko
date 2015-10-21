@@ -39,6 +39,9 @@ namespace minko
 
             typedef std::shared_ptr<geometry::Geometry>                         GeometryPtr;
 
+        private:
+            StatusChangedSignal::Ptr                                            _statusChanged;
+
         public:
             ~POPGeometryWriterPreprocessor() = default;
 
@@ -50,6 +53,20 @@ namespace minko
                 auto instance = Ptr(new POPGeometryWriterPreprocessor());
 
                 return instance;
+            }
+
+            inline
+            float
+            progressRate() const
+            {
+                return 1.f;
+            }
+
+            inline
+            StatusChangedSignal::Ptr
+            statusChanged()
+            {
+                return _statusChanged;
             }
 
             void

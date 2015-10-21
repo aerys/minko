@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractWriterPreprocessor.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/log/Logger.hpp"
 #include "msgpack.hpp"
 
 namespace minko
@@ -325,7 +326,18 @@ namespace minko
             preprocess(T& data, std::shared_ptr<file::AssetLibrary> assetLibrary)
             {
                 for (auto preprocessor : _preprocessors)
+                {
+                    auto statusChangedSlot = preprocessor->statusChanged()->connect(
+                        [](AbstractWriterPreprocessor<T>::Ptr preprocessor, const std::string& status)
+                        {
+                            const auto progressRate = static_cast<unsigned int>(preprocessor->progressRate() * 100.f);
+
+                            LOG_INFO(status << " ( " << progressRate << "% )");
+                        }
+                    );
+
                     preprocessor->process(data, assetLibrary);
+                }
             }
 
             inline
