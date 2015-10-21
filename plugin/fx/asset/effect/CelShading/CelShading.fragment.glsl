@@ -23,6 +23,8 @@ uniform sampler2D uDiffuseMap;
 uniform sampler2D uLightMap;
 #endif
 
+uniform sampler2D uDiscretizedLightMap;
+
 #ifdef DIFFUSE_CUBEMAP
 uniform samplerCube uDiffuseCubeMap;
 #endif
@@ -103,19 +105,11 @@ void main(void)
     #endif // (VERTEX_UV || VERTEX_UV1) && LIGHT_MAP
 
     # if NUM_DIRECTIONAL_LIGHTS > 0
-        float intensity = dot(normalize(-uDirLight0_direction), vVertexNormal);
+        vec3 lightDirection = normalize(-uDirLight0_direction);
+        float intensity = dot(lightDirection, vVertexNormal);
 
-        // Discretize the intensity, based on a few cutoff points
-        if (intensity > 0.95)
-            diffuse = vec4(1.0,1.0,1.0,1.0) * diffuse;
-        else if (intensity > 0.75)
-            diffuse = vec4(0.8,0.8,0.8,1.0) * diffuse;
-        else if (intensity > 0.5)
-            diffuse = vec4(0.6,0.6,0.6,1.0) * diffuse;
-        else if (intensity > 0.25)
-            diffuse = vec4(0.3,0.3,0.3,1.0) * diffuse;
-        else
-            diffuse = vec4(0.1,0.1,0.1,1.0) * diffuse;
+        intensity = clamp(intensity, 0.0, 1.0);
+        diffuse *= texture2D(uDiscretizedLightMap, vec2(intensity, 0));
     #endif
 
     gl_FragColor = diffuse;

@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoJPEG.hpp"
+#include "minko/MinkoPNG.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -28,6 +29,7 @@ using namespace minko::component;
 const uint WINDOW_WIDTH = 800;
 const uint WINDOW_HEIGHT = 600;
 const std::string MODEL_FILENAME = "pirate.dae";
+const std::string TEXTURE_LIGHT = "texture_light.png";
 
 int
 main(int argc, char** argv)
@@ -47,7 +49,9 @@ main(int argc, char** argv)
         ->skinningMethod(SkinningMethod::HARDWARE)
         ->startAnimation(true)
         ->registerParser<file::ColladaParser>("dae")
-        ->registerParser<file::JPEGParser>("jpg");
+		->registerParser<file::JPEGParser>("jpg")
+		->registerParser<file::PNGParser>("png")
+		;
 
     auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
         ->queue("effect/Basic.effect")
@@ -57,9 +61,12 @@ main(int argc, char** argv)
         ->queue("effect/CelShading/CelShading.effect")
 		->queue("effect/CelShading/Outline.effect")
 		->queue("effect/CelShading/Sobel.effect")
-		->queue("effect/FXAA/FXAA.effect");
+		->queue("effect/FXAA/FXAA.effect")
+		->queue(TEXTURE_LIGHT)
+		;
 
 	Renderer::Ptr mainRenderer = nullptr;
+	Renderer::Ptr basicRenderer = nullptr;
 	
 	Renderer::Ptr normalRenderer = nullptr;
 	auto renderTargetTexture = render::Texture::create(canvas->context(), math::clp2(WINDOW_WIDTH), math::clp2(WINDOW_HEIGHT), false, true);
@@ -72,11 +79,20 @@ main(int argc, char** argv)
 	auto ppRenderer = Renderer::create();
 	auto ppMaterial = material::BasicMaterial::create();
 	render::Effect::Ptr ppEffect = nullptr;
-
+	render::Effect::Ptr celShadingEffect = nullptr;
+	
     auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
     {
-		mainRenderer = Renderer::create(0x7f7f7fff, nullptr, sceneManager->assets()->effect("effect/CelShading/CelShading.effect"));
+		celShadingEffect = sceneManager->assets()->effect("effect/CelShading/CelShading.effect");
+		auto texture = sceneManager->assets()->texture(TEXTURE_LIGHT);
+		celShadingEffect->data()->set("discretizedLightMap", texture->sampler());
+
+		mainRenderer = Renderer::create(0x7f7f7fff, nullptr, celShadingEffect);
+		basicRenderer = Renderer::create(0x7f7f7fff, nullptr, sceneManager->assets()->effect("effect/Basic.effect"));
 		normalRenderer = Renderer::create(0xff0000ff, normalRenderTargetTexture, sceneManager->assets()->effect("effect/VertexNormal.effect"));
+
+		mainRenderer->enabled(false);
+		basicRenderer->enabled(false);
 
 		ppMaterial->diffuseMap(renderTargetTexture);
 		ppMaterial->data()->set("depthMap", normalRenderTargetTexture->sampler());
@@ -97,6 +113,7 @@ main(int argc, char** argv)
 		
 		camera
 			->addComponent(mainRenderer)
+			->addComponent(basicRenderer)
 			->addComponent(normalRenderer)
 			->addComponent(Transform::create(
 				math::inverse(
@@ -112,7 +129,9 @@ main(int argc, char** argv)
 		root->addChild(camera);
 
         sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
-		sceneManager->assets()->loader()->queue(MODEL_FILENAME);
+		sceneManager->assets()->loader()
+			->queue(MODEL_FILENAME)
+			;
         sceneManager->assets()->loader()->load();
 	});
 
@@ -221,6 +240,16 @@ main(int argc, char** argv)
 			ppMaterial->data()->set("borderThickness", newValue);
 
 			std::cout << "Border thickness: " << newValue << std::endl;
+		}
+		else if (k->keyIsDown(input::Keyboard::B))
+		{
+			mainRenderer->enabled(false);
+			basicRenderer->enabled(true);
+		}
+		else if (k->keyIsDown(input::Keyboard::C))
+		{
+			basicRenderer->enabled(false);
+			mainRenderer->enabled(true);
 		}
     });
 	

@@ -18,7 +18,8 @@
                       "uAmbientLight0_ambient": { "binding" : { "property" : "ambientLight[0].ambient", "source" : "root" } },
                       "uDirLight0_direction": { "binding" : { "property" : "directionalLight[0].direction", "source" : "root" } },
                       "uDirLight0_color": { "binding" : { "property" : "directionalLight[0].color", "source" : "root" } },
-                      "uDirLight0_diffuse": { "binding" : { "property" : "directionalLight[0].diffuse", "source" : "root" } }
+                      "uDirLight0_diffuse": { "binding" : { "property" : "directionalLight[0].diffuse", "source" : "root" } },
+                      "uDiscretizedLightMap": "discretizedLightMap"
                     },
                     "attributes": {
                       "aNormal": "geometry[${geometryUuid}].normal"
