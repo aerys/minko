@@ -15,8 +15,6 @@
 
 uniform vec4 uDiffuseColor;
 
-uniform sampler2D uRenderTargetTexture;
-
 #ifdef DIFFUSE_MAP
 uniform sampler2D uDiffuseMap;
 #endif
@@ -48,6 +46,14 @@ uniform vec2 uDiffuseMapSize;
 uniform float uLightMapMaxAvailableLod;
 uniform vec2 uLightMapSize;
 #endif
+
+# if NUM_DIRECTIONAL_LIGHTS > 0
+uniform vec3 uDirLight0_direction;
+uniform vec3 uDirLight0_color;
+uniform float uDirLight0_diffuse;
+# endif
+
+uniform vec3 uCameraDirection;
 
 varying vec2 vVertexUV;
 varying vec2 vVertexUV1;
@@ -96,23 +102,22 @@ void main(void)
         #endif
     #endif // (VERTEX_UV || VERTEX_UV1) && LIGHT_MAP
 
-    vec3 diffuseLightDirection = normalize(vec3(1.0, 0.0, 1.0));
-    float intensity = dot(normalize(diffuseLightDirection), vVertexNormal);
-    if(intensity < 0)
-        intensity = 0;
-    diffuse.a = 1;
- 
-    // Discretize the intensity, based on a few cutoff points
-    if (intensity > 0.95)
-        diffuse = vec4(1.0,1,1,1.0) * diffuse;
-    else if (intensity > 0.5)
-        diffuse = vec4(0.7,0.7,0.7,1.0) * diffuse;
-    else if (intensity > 0.05)
-        diffuse = vec4(0.35,0.35,0.35,1.0) * diffuse;
-    else
-        diffuse = vec4(0.1,0.1,0.1,1.0) * diffuse;
- 
-    diffuse = texture2D(uRenderTargetTexture, vVertexUV);// + diffuse;
+    # if NUM_DIRECTIONAL_LIGHTS > 0
+        float intensity = dot(normalize(-uDirLight0_direction), vVertexNormal);
+
+        // Discretize the intensity, based on a few cutoff points
+        if (intensity > 0.95)
+            diffuse = vec4(1.0,1.0,1.0,1.0) * diffuse;
+        else if (intensity > 0.75)
+            diffuse = vec4(0.8,0.8,0.8,1.0) * diffuse;
+        else if (intensity > 0.5)
+            diffuse = vec4(0.6,0.6,0.6,1.0) * diffuse;
+        else if (intensity > 0.25)
+            diffuse = vec4(0.3,0.3,0.3,1.0) * diffuse;
+        else
+            diffuse = vec4(0.1,0.1,0.1,1.0) * diffuse;
+    #endif
+
     gl_FragColor = diffuse;
 }
 
