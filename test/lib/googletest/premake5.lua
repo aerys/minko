@@ -28,4 +28,4 @@ project "googletest"
 		buildoptions { "-std=c++11", "-isystem include", "-pthread" }
 
 	configuration { "html5" }
-		includedirs { "${EMSCRIPTEN}/system/lib/libcxxabi/include" }
+		includedirs { '"${EMSCRIPTEN}/system/lib/libcxxabi/include"' }
