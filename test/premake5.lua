@@ -40,5 +40,5 @@ minko.project.application "minko-test"
 			['**.png'] = { 'embed' }
 		}
 
-		includedirs { "${EMSCRIPTEN}/system/lib/libcxxabi/include" }
+		includedirs { '"${EMSCRIPTEN}/system/lib/libcxxabi/include"' }
 
