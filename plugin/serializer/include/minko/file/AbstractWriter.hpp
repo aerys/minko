@@ -328,7 +328,7 @@ namespace minko
                 for (auto preprocessor : _preprocessors)
                 {
                     auto statusChangedSlot = preprocessor->statusChanged()->connect(
-                        [](AbstractWriterPreprocessor<T>::Ptr preprocessor, const std::string& status)
+                        [](typename AbstractWriterPreprocessor<T>::Ptr preprocessor, const std::string& status)
                         {
                             const auto progressRate = static_cast<unsigned int>(preprocessor->progressRate() * 100.f);
 
