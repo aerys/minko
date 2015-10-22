@@ -305,6 +305,11 @@ Picking::targetRemoved(NodePtr target)
 {
     unbindSignals();
 
+    if (target->hasComponent(_renderer))
+        target->removeComponent(_renderer);
+    if (target->hasComponent(_depthRenderer))
+        target->removeComponent(_depthRenderer);
+
     _renderer = nullptr;
     _depthRenderer = nullptr;
     _sceneManager = nullptr;
@@ -427,23 +432,15 @@ Picking::addSurface(SurfacePtr surface)
 void
 Picking::removeSurface(SurfacePtr surface, NodePtr node)
 {
-	/*if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
+	if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
 		return;
+
+    surface->data()->unset("pickingColor");
 
 	auto surfacePickingId = _surfaceToPickingId[surface];
 
-	if (_surfaceToProvider.find(surface) == _surfaceToProvider.end())
-	{
-		node->data().removeProvider(_surfaceToProvider[surface]);
-
-		if (_targetToProvider[node] == _surfaceToProvider[surface])
-			_targetToProvider.erase(node);
-
-		_surfaceToProvider.erase(surface);
-	}
-
 	_surfaceToPickingId.erase(surface);
-	_pickingIdToSurface.erase(surfacePickingId);*/
+	_pickingIdToSurface.erase(surfacePickingId);
 }
 
 void
@@ -452,15 +449,9 @@ Picking::removedHandler(NodePtr target, NodePtr child, NodePtr parent)
 	if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
 		return;
 
-	/*if (target == child)
-	{
-		_renderingBeginSlot = nullptr;
-		_renderingEndSlot = nullptr;
-	}*/
+	removeSurfacesForNode(child);
 
-	//removeSurfacesForNode(child);
-
-	//updateDescendants(target);
+	updateDescendants(target);
 }
 
 void
