@@ -48,7 +48,10 @@ namespace minko
             }
 
         private:
-            StarGeometry() = default;
+            StarGeometry() :
+                Geometry("star")
+            {
+            }
 
             void
             initialize(std::shared_ptr<render::AbstractContext> context,
