@@ -167,8 +167,12 @@ NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRender
             ovrUVScaleOffset
         );
 
-        _uvScaleOffset[eyeNum].first = math::vec2(ovrUVScaleOffset[0].x, ovrUVScaleOffset[0].y);
-        _uvScaleOffset[eyeNum].second = math::vec2(ovrUVScaleOffset[1].x, ovrUVScaleOffset[1].y);
+        //_uvScaleOffset[eyeNum].first = math::vec2(ovrUVScaleOffset[0].x, ovrUVScaleOffset[0].y);
+        //_uvScaleOffset[eyeNum].second = math::vec2(ovrUVScaleOffset[1].x, ovrUVScaleOffset[1].y);
+
+        // Workaround
+        _uvScaleOffset[eyeNum].first = math::vec2(ovrUVScaleOffset[0].x * 2.f, ovrUVScaleOffset[0].y);
+        _uvScaleOffset[eyeNum].second = math::vec2(0.5f, ovrUVScaleOffset[1].y);
     }
 
     // FIXME: Direct to HMD mode.
