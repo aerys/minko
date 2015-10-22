@@ -60,11 +60,10 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - VR");
-
     auto sceneManager = SceneManager::create(canvas);
-
     auto loader = sceneManager->assets()->loader();
 
+    canvas->context()->errorsEnabled(true);
     canvas->desiredFramerate(120);
 
     // setup assets
@@ -91,7 +90,7 @@ main(int argc, char** argv)
     Node::Ptr quads;
     Node::Ptr camera;
 
-    auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+    auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr l)
     {
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
@@ -102,7 +101,7 @@ main(int argc, char** argv)
 		auto HMDDetected = VRCamera::detected();
 
 		if (HMDDetected)
-			camera->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 100.0f));
+			camera->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 1000.0f));
 		else
 		{
 			camera
@@ -134,7 +133,36 @@ main(int argc, char** argv)
         root->addChild(quads);
     });
 
-    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
+    auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+    {
+        if (k->keyIsDown(input::Keyboard::L))
+        {
+            auto vrCamera = camera->component<VRCamera>();
+
+            if (vrCamera)
+            {
+                auto newValue = !vrCamera->leftRendererEnabled();
+                vrCamera->enableLeftRenderer(newValue);
+
+                std::cout << "Left renderer enabled? => " << newValue << std::endl;
+
+            }
+        }
+        else if(k->keyIsDown(input::Keyboard::R))
+        {
+            auto vrCamera = camera->component<VRCamera>();
+
+            if (vrCamera)
+            {
+                auto newValue = !vrCamera->rightRendererEnabled();
+                vrCamera->enableRightRenderer(newValue);
+
+                std::cout << "Right renderer enabled? => " << newValue << std::endl;
+            }
+        }
+    });
+
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr c, uint width, uint height)
     {
 		if (camera->hasComponent<VRCamera>())
 			camera->component<VRCamera>()->updateViewport(width, height);
@@ -142,7 +170,7 @@ main(int argc, char** argv)
 			camera->component<PerspectiveCamera>()->aspectRatio(float(width) / float(height));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr c, float time, float deltaTime)
     {
         //animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, time, spheresAnimData);
         spheres->component<Transform>()->matrix(math::rotate(.001f, math::vec3(0, 1, 0)) * spheres->component<Transform>()->matrix());

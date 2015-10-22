@@ -48,9 +48,11 @@ NativeOculus::_hmd = nullptr;
 
 NativeOculus::NativeOculus(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     _ppRenderer(Renderer::create()),
+    _renderTargetWidth(32),
+    _renderTargetHeight(32),
+    _renderEndSlot(nullptr),
     _zNear(zNear),
-    _zFar(zFar),
-    _renderEndSlot(nullptr)
+    _zFar(zFar)
 {
     _uvScaleOffset[0].first = math::vec2();
     _uvScaleOffset[0].second = math::vec2();
@@ -107,7 +109,7 @@ NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRender
     renderTargetSize.w = recommenedTex0Size.w + recommenedTex1Size.w;
     renderTargetSize.h = std::max(recommenedTex0Size.h, recommenedTex1Size.h);
 
-    // enforce a power of 2 size because that's what minko expects
+    // Enforce a power of 2 size because that's what minko expects
     renderTargetSize.w = math::clp2(renderTargetSize.w);
     renderTargetSize.h = math::clp2(renderTargetSize.h);
 
@@ -117,7 +119,7 @@ NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRender
     _renderTargetWidth = renderTargetSize.w;
     _renderTargetHeight = renderTargetSize.h;
 
-    // compute each viewport pos and size
+    // Compute each viewport pos and size
     ovrRecti eyeRenderViewport[2];
     ovrFovPort eyeFov[2] = {
         _hmd->DefaultEyeFov[0],
@@ -129,6 +131,19 @@ NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRender
     eyeRenderViewport[1].Pos = OVR::Vector2i((renderTargetSize.w + 1) / 2, 0);
     eyeRenderViewport[1].Size = eyeRenderViewport[0].Size;
 
+    _leftRendererViewport = math::ivec4(
+        eyeRenderViewport[0].Pos.x,
+        eyeRenderViewport[0].Pos.y,
+        eyeRenderViewport[0].Size.w,
+        eyeRenderViewport[0].Size.h
+    );
+
+    _rightRendererViewport = math::ivec4(
+        eyeRenderViewport[1].Pos.x,
+        eyeRenderViewport[1].Pos.y,
+        eyeRenderViewport[1].Size.w,
+        eyeRenderViewport[1].Size.h
+    );
 
     ovrHmd_SetEnabledCaps(_hmd, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction);
 
@@ -158,7 +173,7 @@ NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRender
 
     // FIXME: Direct to HMD mode.
     if (!!window)
-        ovrHmd_AttachToWindow(_hmd, window, NULL, NULL);
+        ovrHmd_AttachToWindow(_hmd, window, nullptr, nullptr);
 }
 
 void
@@ -176,7 +191,7 @@ NativeOculus::initializePostProcessingRenderer(std::shared_ptr<component::SceneM
 
     loader->queue("effect/OculusVR/OculusVR.effect");
 
-    auto complete = loader->complete()->connect([&](file::Loader::Ptr loader)
+    auto complete = loader->complete()->connect([&](file::Loader::Ptr l)
     {
         auto effect = sceneManager->assets()->effect("effect/OculusVR/OculusVR.effect");
 
@@ -215,6 +230,25 @@ NativeOculus::targetRemoved()
 void
 NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
 {
+    // Renderer viewports and aspect ratio are updated into VRCamera, 
+    // for Oculus we need a specific viewport given by SDK
+    auto aspectRatio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
+    if (_leftRenderer)
+    {
+        if (_leftRendererViewport.z > 0 && _leftRendererViewport.w > 0)
+            _leftRenderer->viewport(_leftRendererViewport);
+
+        _leftRenderer->target()->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
+    }
+
+    if (_rightRenderer)
+    {
+        if (_rightRendererViewport.z > 0 && _rightRendererViewport.w > 0)
+            _rightRenderer->viewport(_rightRendererViewport);
+     
+        _rightRenderer->target()->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
+    }
+
     _ppRenderer->viewport(math::ivec4(0, 0, viewportWidth, viewportHeight));
 }
 
@@ -231,15 +265,15 @@ NativeOculus::createDistortionGeometry(std::shared_ptr<render::AbstractContext> 
         ovrDistortionMesh meshData;
         ovrHmd_CreateDistortionMesh(
             _hmd,
-            (ovrEyeType)eyeNum,
+            static_cast<ovrEyeType>(eyeNum),
             _hmd->DefaultEyeFov[eyeNum],
             ovrDistortionCap_Chromatic | ovrDistortionCap_TimeWarp,
             &meshData
-            );
+        );
 
         auto vb = render::VertexBuffer::create(
             context,
-            (float*)meshData.pVertexData,
+            reinterpret_cast<float*>(meshData.pVertexData),
             (sizeof(ovrDistortionVertex) / sizeof(float)) * meshData.VertexCount
          );
 
@@ -292,7 +326,7 @@ NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::
     static ovrPosef eyeRenderPose[2];
     const static float BodyYaw(0.f);
     static OVR::Vector3f HeadPos(0.0f, 0.f, 0.f);
-    static auto state = (OVR::CAPI::HMDState*)(_hmd->Handle);
+    static auto state = static_cast<OVR::CAPI::HMDState*>(_hmd->Handle);
     static auto renderInfo = state->RenderState.RenderInfo;
 
     HeadPos.y = ovrHmd_GetFloat(_hmd, OVR_KEY_EYE_HEIGHT, HeadPos.y);
@@ -315,17 +349,18 @@ NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::
         );
 
         auto cameraNode = eyeNum == 0 ? leftCamera : rightCamera;
-        auto matrix = cameraNode->component<Transform>()->matrix();
 
-		matrix = glm::make_mat4((float*)view.M);
-		matrix *= math::translate(math::vec3(viewAdjust.x, viewAdjust.y, viewAdjust.z));
+        auto viewMatrix = glm::make_mat4(reinterpret_cast<float*>(view.M));
+		viewMatrix = math::translate(math::vec3(viewAdjust.x, viewAdjust.y, viewAdjust.z)) * viewMatrix;
 
-        // update time warp matrices
+        cameraNode->component<Transform>()->matrix(math::transpose(math::inverse(viewMatrix)));
+
+        // Update time warp matrices
         ovrMatrix4f twMatrices[2];
-        ovrHmd_GetEyeTimewarpMatrices(_hmd, (ovrEyeType)eyeNum, eyeRenderPose[eyeNum], twMatrices);
+        ovrHmd_GetEyeTimewarpMatrices(_hmd, static_cast<ovrEyeType>(eyeNum), eyeRenderPose[eyeNum], twMatrices);
 
-        auto rotationStart = glm::make_mat4((float*)twMatrices[0].M);
-        auto rotationEnd = glm::make_mat4((float*)twMatrices[1].M);
+        auto rotationStart = glm::make_mat4(reinterpret_cast<float*>(twMatrices[0].M));
+        auto rotationEnd = glm::make_mat4(reinterpret_cast<float*>(twMatrices[1].M));
 
         _ppScene->component<Surface>(eyeNum)->material()->data()
             ->set("eyeRotationStart", rotationStart)
