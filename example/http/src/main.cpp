@@ -82,12 +82,12 @@ main(int argc, char** argv)
 
     root->addChild(mesh);
 
-    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr c, math::uint w, math::uint h)
     {
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr c, float time, float deltaTime)
     {
         mesh->component<Transform>()->matrix(
             mesh->component<Transform>()->matrix() * math::rotate(0.01f, math::vec3(0, 1, 0))
