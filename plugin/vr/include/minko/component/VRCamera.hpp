@@ -88,6 +88,30 @@ namespace minko
             bool
             detected();
 
+            void
+            enableLeftRenderer(bool value)
+            {
+                _leftRenderer->enabled(value);
+            }
+
+            bool
+            leftRendererEnabled()
+            {
+                return _leftRenderer->enabled();
+            }
+
+            void
+            enableRightRenderer(bool value)
+            {
+                _rightRenderer->enabled(value);
+            }
+
+            bool
+            rightRendererEnabled()
+            {
+                return _rightRenderer->enabled();
+            }
+
         public:
             ~VRCamera();
 

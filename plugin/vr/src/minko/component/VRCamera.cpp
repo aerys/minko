@@ -234,12 +234,10 @@ VRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 
     _sceneManager = sceneManager;
 
-    _frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-        &VRCamera::updateCameraOrientation,
-        std::static_pointer_cast<VRCamera>(shared_from_this()),
-        _leftCameraNode,
-        _rightCameraNode
-    ));
+    _frameBeginSlot = sceneManager->frameBegin()->connect([&](SceneMgrPtr sm, float dt, float t)
+    {
+        updateCameraOrientation(_leftCameraNode, _rightCameraNode);
+    });
 
     if (_VRImpl)
         _VRImpl->initialize(_sceneManager);

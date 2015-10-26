@@ -36,7 +36,7 @@ generateColor()
     return vec4(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 0.5);
 }
 
-uint
+math::uint
 generateHexColor()
 {
     vec4 color = generateColor();
