@@ -32,7 +32,7 @@
 	},
 
     "techniques" : [{
-    	"name"		: "normal-technique", 
+    	"name"		: "default", 
     	"passes"	: [{
     		"name"			: "normal-pass",
 		    "vertexShader" 	: "

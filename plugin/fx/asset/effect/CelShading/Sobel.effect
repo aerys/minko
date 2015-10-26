@@ -1,0 +1,29 @@
+{
+    "name": "Sobel",
+    "attributes": {
+        "aPosition": "geometry[${geometryUuid}].position",
+        "aUV": "geometry[${geometryUuid}].uv"
+    },
+    "uniforms" : {
+        "uTextureSampler": {
+            "binding": "material[${materialUuid}].diffuseMap",
+            "textureFilter": "linear"
+        },
+        "uDepthTextureSampler": {
+            "binding" : "material[${materialUuid}].depthMap",
+            "textureFilter" : "linear"
+        },
+        "uBorderThickness": "material[${materialUuid}].borderThickness",
+        "uBorderColor": "material[${materialUuid}].borderColor",
+        "uTexcoordOffset": "invertedDiffuseMapSize"
+    },
+    "states" : {
+        "triangleCulling" : "none"
+    },
+    "techniques": [{
+        "passes": [{
+            "vertexShader": "#pragma include \"Sobel.vertex.glsl\"",
+            "fragmentShader": "#pragma include \"Sobel.fragment.glsl\""
+        }]
+    }]
+}
