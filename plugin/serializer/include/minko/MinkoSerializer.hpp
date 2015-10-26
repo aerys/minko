@@ -11,4 +11,5 @@
 #include "minko/file/SceneTreeFlattener.hpp"
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
+#include "minko/file/VertexWelder.hpp"
 #include "minko/file/WriterOptions.hpp"

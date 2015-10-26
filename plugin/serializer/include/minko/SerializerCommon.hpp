@@ -51,6 +51,7 @@ namespace minko
         class SurfaceOperator;
         class TextureParser;
         class TextureWriter;
+        class VertexWelder;
         class WriterOptions;
 	}
 
