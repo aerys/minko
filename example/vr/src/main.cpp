@@ -235,14 +235,15 @@ createObjectGroup(unsigned int              numObjects,
         }
 
         auto transform = Transform::create(matrix);
-
+        
         auto objectMaterial = material::BasicMaterial::create();
         objectMaterial->data()
             ->set("diffuseColor", color)
             ->set("triangleCulling", doQuads ? render::TriangleCulling::FRONT : render::TriangleCulling::BACK)
             ->set("priority", priority)
-            ->set("blendMode", render::Blending::Mode::ALPHA)
             ->set("zsorted", false);
+        
+        objectMaterial->blendingMode(render::Blending::Mode::ALPHA);
 
         auto objectNode = scene::Node::create((doQuads ? "quad_" : "sphere_") + std::to_string(i))
             ->addComponent(transform)
