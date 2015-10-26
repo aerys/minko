@@ -82,7 +82,6 @@ NativeOculus::detected()
         return true;
 
     ovr_Initialize();
-
     _hmd = ovrHmd_Create(0);
 
     return _hmd != nullptr;
@@ -145,6 +144,9 @@ NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRender
         eyeRenderViewport[1].Size.h
     );
 
+    _leftRenderer->viewport(_leftRendererViewport);
+    _rightRenderer->viewport(_rightRendererViewport);
+
     ovrHmd_SetEnabledCaps(_hmd, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction);
 
     // Start the sensor which informs of the Rift's pose and motion
@@ -167,12 +169,8 @@ NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRender
             ovrUVScaleOffset
         );
 
-        //_uvScaleOffset[eyeNum].first = math::vec2(ovrUVScaleOffset[0].x, ovrUVScaleOffset[0].y);
-        //_uvScaleOffset[eyeNum].second = math::vec2(ovrUVScaleOffset[1].x, ovrUVScaleOffset[1].y);
-
-        // Workaround
-        _uvScaleOffset[eyeNum].first = math::vec2(ovrUVScaleOffset[0].x * 2.f, ovrUVScaleOffset[0].y);
-        _uvScaleOffset[eyeNum].second = math::vec2(0.5f, ovrUVScaleOffset[1].y);
+        _uvScaleOffset[eyeNum].first = math::vec2(ovrUVScaleOffset[0].x, ovrUVScaleOffset[0].y);
+        _uvScaleOffset[eyeNum].second = math::vec2(ovrUVScaleOffset[1].x, ovrUVScaleOffset[1].y);
     }
 
     // FIXME: Direct to HMD mode.
@@ -237,12 +235,18 @@ NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
     // Renderer viewports and aspect ratio are updated into VRCamera, 
     // for Oculus we need a specific viewport given by SDK
     auto aspectRatio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
+
+    if (_renderTarget)
+        aspectRatio = static_cast<float>(_renderTarget->width()) / static_cast<float>(_renderTarget->height());
+
     if (_leftRenderer)
     {
         if (_leftRendererViewport.z > 0 && _leftRendererViewport.w > 0)
             _leftRenderer->viewport(_leftRendererViewport);
 
-        _leftRenderer->target()->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
+        auto leftCamera = _leftRenderer->target()->component<PerspectiveCamera>();
+        leftCamera->aspectRatio(aspectRatio);
+        leftCamera->fieldOfView(getLeftEyeFov());
     }
 
     if (_rightRenderer)
@@ -250,7 +254,9 @@ NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
         if (_rightRendererViewport.z > 0 && _rightRendererViewport.w > 0)
             _rightRenderer->viewport(_rightRendererViewport);
      
-        _rightRenderer->target()->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
+        auto rightCamera = _rightRenderer->target()->component<PerspectiveCamera>();
+        rightCamera->aspectRatio(aspectRatio);
+        rightCamera->fieldOfView(getRightEyeFov());
     }
 
     _ppRenderer->viewport(math::ivec4(0, 0, viewportWidth, viewportHeight));
@@ -279,7 +285,7 @@ NativeOculus::createDistortionGeometry(std::shared_ptr<render::AbstractContext> 
             context,
             reinterpret_cast<float*>(meshData.pVertexData),
             (sizeof(ovrDistortionVertex) / sizeof(float)) * meshData.VertexCount
-         );
+        );
 
         // struct ovrDistortionVertex {
         //     ovrVector2f ScreenPosNDC;    // [-1,+1],[-1,+1] over the entire framebuffer.
@@ -290,12 +296,12 @@ NativeOculus::createDistortionGeometry(std::shared_ptr<render::AbstractContext> 
         //     ovrVector2f TanEyeAnglesB;
         // }
 
-        vb->addAttribute("screenPosNDC", 2);
-        vb->addAttribute("timeWarpFactor", 1);
-        vb->addAttribute("vignetteFactor", 1);
-        vb->addAttribute("tanEyeAnglesR", 2);
-        vb->addAttribute("tanEyeAnglesG", 2);
-        vb->addAttribute("tanEyeAnglesB", 2);
+        vb->addAttribute("screenPosNDC", 2, 0);
+        vb->addAttribute("timeWarpFactor", 1, 2);
+        vb->addAttribute("vignetteFactor", 1, 3);
+        vb->addAttribute("tanEyeAnglesR", 2, 4);
+        vb->addAttribute("tanEyeAnglesG", 2, 6);
+        vb->addAttribute("tanEyeAnglesB", 2, 8);
         geom->addVertexBuffer(vb);
 
         auto ib = render::IndexBuffer::create(
@@ -355,9 +361,13 @@ NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::
         auto cameraNode = eyeNum == 0 ? leftCamera : rightCamera;
 
         auto viewMatrix = glm::make_mat4(reinterpret_cast<float*>(view.M));
-		viewMatrix = math::translate(math::vec3(viewAdjust.x, viewAdjust.y, viewAdjust.z)) * viewMatrix;
+        viewMatrix = math::inverse(viewMatrix);
+        viewMatrix = math::transpose(viewMatrix);
 
-        cameraNode->component<Transform>()->matrix(math::transpose(math::inverse(viewMatrix)));
+        auto eyesLag = math::translate(math::vec3(viewAdjust.x, viewAdjust.y, viewAdjust.z));
+        viewMatrix = eyesLag * viewMatrix;
+
+        cameraNode->component<Transform>()->matrix(viewMatrix);
 
         // Update time warp matrices
         ovrMatrix4f twMatrices[2];
