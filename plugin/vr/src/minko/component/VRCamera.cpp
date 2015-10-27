@@ -104,7 +104,14 @@ VRCamera::detected()
 }
 
 void
-VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, minko::uint rendererClearColor, void* window)
+VRCamera::initialize(int viewportWidth, 
+                     int viewportHeight, 
+                     float zNear, 
+                     float zFar, 
+                     minko::uint rendererClearColor, 
+                     void* window,
+                     Renderer::Ptr leftRenderer,
+                     Renderer::Ptr rightRenderer)
 {
 #ifdef EMSCRIPTEN
     if (detected())
@@ -120,8 +127,16 @@ VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float z
 #endif
 
     // Initialize both eyes' renderers
-    _leftRenderer = Renderer::create(rendererClearColor);
-    _rightRenderer = Renderer::create(rendererClearColor);
+    if (leftRenderer != nullptr)
+        _leftRenderer = leftRenderer;
+    else
+        _leftRenderer = Renderer::create(rendererClearColor);
+
+    if (rightRenderer != nullptr)
+        _rightRenderer = rightRenderer;
+    else
+        _rightRenderer = Renderer::create(rendererClearColor);
+
     _rightRenderer->clearBeforeRender(false);
 
     updateViewport(viewportWidth, viewportHeight);

@@ -56,12 +56,15 @@ uniform float uDirLight0_diffuse;
 # endif
 
 uniform vec3 uCameraDirection;
+uniform vec3 uCameraPosition;
+uniform float uBorderThreshold;
 
 varying vec2 vVertexUV;
 varying vec2 vVertexUV1;
 varying vec3 vVertexUVW;
 varying vec4 vVertexScreenPosition;
 varying vec3 vVertexNormal;
+varying vec3 vVertexPosition;
 
 void main(void)
 {
@@ -112,6 +115,15 @@ void main(void)
         diffuse *= texture2D(uDiscretizedLightMap, vec2(intensity, 0));
     #endif
 
+    vec3 eyeVector = normalize(uCameraPosition - vVertexPosition);
+    float powValue = 10.;
+    float value = pow(dot(normalize(vVertexNormal), normalize(eyeVector)), powValue);
+
+    // if (value < pow(uBorderThreshold, powValue))
+    //     diffuse.rgb = vec3(0.0, 0.0, 0.0);
+
+    //value = (value + 1.0) * 0.5;
+    //diffuse.rgb = vec3(value, value, value);
     gl_FragColor = diffuse;
 }
 

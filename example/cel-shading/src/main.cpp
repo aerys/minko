@@ -75,7 +75,7 @@ main(int argc, char** argv)
 	auto normalRenderTargetTexture = render::Texture::create(canvas->context(), math::clp2(WINDOW_WIDTH), math::clp2(WINDOW_HEIGHT), false, true);
 	normalRenderTargetTexture->upload();
 
-	auto enablePP = true;
+	auto enablePP = false;
 	auto ppRenderer = Renderer::create();
 	auto ppMaterial = material::BasicMaterial::create();
 	render::Effect::Ptr ppEffect = nullptr;
@@ -85,18 +85,18 @@ main(int argc, char** argv)
     {
 		celShadingEffect = sceneManager->assets()->effect("effect/CelShading/CelShading.effect");
 		auto texture = sceneManager->assets()->texture(TEXTURE_LIGHT);
-		celShadingEffect->data()->set("discretizedLightMap", texture->sampler());
+        celShadingEffect->data()->set("discretizedLightMap", texture->sampler());
 
 		mainRenderer = Renderer::create(0x7f7f7fff, nullptr, celShadingEffect);
 		basicRenderer = Renderer::create(0x7f7f7fff, nullptr, sceneManager->assets()->effect("effect/Basic.effect"));
 		normalRenderer = Renderer::create(0xff0000ff, normalRenderTargetTexture, sceneManager->assets()->effect("effect/VertexNormal.effect"));
 
-		mainRenderer->enabled(false);
+		mainRenderer->enabled(true);
 		basicRenderer->enabled(false);
 
 		ppMaterial->diffuseMap(renderTargetTexture);
 		ppMaterial->data()->set("depthMap", normalRenderTargetTexture->sampler());
-		ppMaterial->data()->set("borderThickness", 0.35f);
+        ppMaterial->data()->set("borderThickness", 0.35f);
 		ppMaterial->data()->set("borderColor", math::vec3(0.f, 0.f, 0.f));
 
 		ppEffect = sceneManager->assets()->effect("effect/CelShading/Sobel.effect");
@@ -125,6 +125,12 @@ main(int argc, char** argv)
 				)
 			)
 			->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
+        camera->data().set("discretizedLightMap", texture->sampler());
+
+        auto rootProvider = data::Provider::create();
+        rootProvider->set("borderThreshold", 0.33f);
+        root->data().addProvider(rootProvider);
 
 		root->addChild(camera);
 
@@ -208,11 +214,11 @@ main(int argc, char** argv)
     {
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 
-		renderTargetTexture = render::Texture::create(sceneManager->assets()->context(), math::clp2(w), math::clp2(h), false, true);
-		renderTargetTexture->upload();
+		//renderTargetTexture = render::Texture::create(sceneManager->assets()->context(), math::clp2(w), math::clp2(h), false, true);
+		//renderTargetTexture->upload();
 
-		ppMaterial->diffuseMap(renderTargetTexture);
-		ppEffect->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTargetTexture->width()), 1.f / float(renderTargetTexture->height())));
+		//ppMaterial->diffuseMap(renderTargetTexture);
+		//ppEffect->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTargetTexture->width()), 1.f / float(renderTargetTexture->height())));
     });
 
     // currently, keyUp events seem not to be fired at the individual key level
@@ -220,13 +226,27 @@ main(int argc, char** argv)
     {
 		if (k->keyIsDown(input::Keyboard::SPACE))
 		{
-			enablePP = !enablePP;
+            enablePP = !enablePP;
 
 			if (enablePP)
 				std::cout << "Enable post processing" << std::endl;
 			else
 				std::cout << "Disable post processing" << std::endl;
 		}
+        else if (k->keyIsDown(input::Keyboard::A))
+        {
+            auto newValue = root->data().get<float>("borderThreshold") + 0.001f;
+            root->data().set("borderThreshold", newValue);
+
+            std::cout << "Border threshold: " << newValue << std::endl;
+        }
+        else if (k->keyIsDown(input::Keyboard::Z))
+        {
+            auto newValue = root->data().get<float>("borderThreshold") - 0.001f;
+            root->data().set("borderThreshold", newValue);
+
+            std::cout << "Border threshold: " << newValue << std::endl;
+        }
 		else if (k->keyIsDown(input::Keyboard::P))
 		{
 			auto newValue = ppMaterial->data()->get<float>("borderThickness") + 0.001f;
