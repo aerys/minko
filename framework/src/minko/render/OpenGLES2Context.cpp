@@ -274,7 +274,11 @@ OpenGLES2Context::OpenGLES2Context() :
 	setColorMask(true);
 	setDepthTest(true, CompareMode::LESS);
 
+#ifdef GL_ES_VERSION_2_0
 	glGetIntegerv(GL_STENCIL_BITS, &_stencilBits);
+#else
+    glGetFramebufferAttachmentParameteriv(GL_FRAMEBUFFER, GL_STENCIL, GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, &_stencilBits);
+#endif
 
 	if (_stencilBits)
 	{

@@ -136,6 +136,8 @@ namespace minko
             bool                                        _enabled;
             bool                                        _renderDepth;
 
+            bool                                        _debug;
+
 		public:
 			inline static
 			Ptr
@@ -287,6 +289,13 @@ namespace minko
 			{
 			    return _lastMergingMask;
 			}
+
+            inline
+            void
+            debug(bool v)
+            {
+                _debug = v;
+            }
 
         protected:
 			void

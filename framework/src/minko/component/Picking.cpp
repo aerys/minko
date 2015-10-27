@@ -67,7 +67,8 @@ Picking::Picking() :
     _emulateMouseWithTouch(true),
     _frameBeginSlot(nullptr),
     _enabled(false),
-    _renderDepth(true)
+    _renderDepth(true),
+    _debug(false)
 {
 }
 
@@ -235,18 +236,22 @@ Picking::targetAdded(NodePtr target)
     
     if (_pickingEffect == nullptr)
         _pickingEffect = _sceneManager->assets()->effect("effect/Picking.effect");
+        
+    auto priority = _debug ? -1000.0f : 1000.0f;
 
     _renderer = Renderer::create(
         0xFFFF00FF,
         nullptr,
         _pickingEffect,
         "default",
-        1000.f,
+        priority,
         "Picking Renderer"
     );
-    _renderer->scissorBox(0, 0, 1, 1);
+    if (!_debug)
+        _renderer->scissorBox(0, 0, 1, 1);
     _renderer->layoutMask(scene::BuiltinLayout::PICKING);
-    _renderer->enabled(false);
+    if (!_debug)
+        _renderer->enabled(false);
 
     if (_pickingDepthEffect == nullptr)
         _pickingDepthEffect = _sceneManager->assets()->effect("effect/PickingDepth.effect");
@@ -298,6 +303,13 @@ Picking::targetAdded(NodePtr target)
 void
 Picking::targetRemoved(NodePtr target)
 {
+    unbindSignals();
+
+    if (target->hasComponent(_renderer))
+        target->removeComponent(_renderer);
+    if (target->hasComponent(_depthRenderer))
+        target->removeComponent(_depthRenderer);
+
     _renderer = nullptr;
     _depthRenderer = nullptr;
     _sceneManager = nullptr;
@@ -420,42 +432,26 @@ Picking::addSurface(SurfacePtr surface)
 void
 Picking::removeSurface(SurfacePtr surface, NodePtr node)
 {
-	/*if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
+	if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
 		return;
+
+    surface->data()->unset("pickingColor");
 
 	auto surfacePickingId = _surfaceToPickingId[surface];
 
-	if (_surfaceToProvider.find(surface) == _surfaceToProvider.end())
-	{
-		node->data().removeProvider(_surfaceToProvider[surface]);
-
-		if (_targetToProvider[node] == _surfaceToProvider[surface])
-			_targetToProvider.erase(node);
-
-		_surfaceToProvider.erase(surface);
-	}
-
 	_surfaceToPickingId.erase(surface);
-	_pickingIdToSurface.erase(surfacePickingId);*/
+	_pickingIdToSurface.erase(surfacePickingId);
 }
 
 void
 Picking::removedHandler(NodePtr target, NodePtr child, NodePtr parent)
 {
-    unbindSignals();
-
 	if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
 		return;
 
-	/*if (target == child)
-	{
-		_renderingBeginSlot = nullptr;
-		_renderingEndSlot = nullptr;
-	}*/
+	removeSurfacesForNode(child);
 
-	//removeSurfacesForNode(child);
-
-	//updateDescendants(target);
+	updateDescendants(target);
 }
 
 void
@@ -503,7 +499,7 @@ Picking::updateDescendants(NodePtr target)
 void
 Picking::enabled(bool enabled)
 {
-    if (enabled && !_enabled)
+    if (enabled && !_frameBeginSlot)
     {
         _enabled = true;
 
@@ -515,16 +511,20 @@ Picking::enabled(bool enabled)
 		    std::placeholders::_3
         ), 1000.0f);
     }
-    else if (!enabled && _enabled)
+    else if (!enabled && _frameBeginSlot != nullptr)
     {
-        _enabled = false;
         _frameBeginSlot = nullptr;
     }
+
+    _enabled = enabled;
 }
 
 void
 Picking::frameBeginHandler(SceneManagerPtr, float, float)
 {
+    if (_debug)
+        return;
+
     _renderer->enabled(true);
     _renderer->render(_sceneManager->canvas()->context());
     _renderer->enabled(false);

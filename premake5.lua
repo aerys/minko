@@ -119,7 +119,7 @@ solution "minko"
 			['sensors']				= true,
 			['serializer']			= true,
 			['sky-box']				= true,
-			['stencil']				= false,
+			['stencil']				= true,
 			['visibility']			= false,
 			['video-camera']		= true,
 			['vr']				    = minko.plugin.requested('sensors'),
