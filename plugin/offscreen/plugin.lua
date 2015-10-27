@@ -38,12 +38,21 @@ function minko.plugin.offscreen:enable()
 		minko.plugin.path("offscreen") .. "/lib/osmesa/linux/include"
 	}
 
-	configuration { "windows32 or windows64" }
-		libdirs { minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib" }
+	configuration { "windows32" }
+		libdirs { minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/x86" }
 
 		removeincludedirs { minko.sdk.path("/framework/lib/glew/include") }
 
 		prelinkcommands {
-			minko.action.copy(minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/*.dll")
+			minko.action.copy(minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/x86/*.dll")
+		}
+
+	configuration { "windows64" }
+		libdirs { minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/x64" }
+
+		removeincludedirs { minko.sdk.path("/framework/lib/glew/include") }
+
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/x64/*.dll")
 		}
 end
