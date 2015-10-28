@@ -31,5 +31,5 @@ main(void)
     float g = texture2D(uTexture, vec2(vTexCoord1.x, 1.0 - vTexCoord1.y)).g;
     float b = texture2D(uTexture, vec2(vTexCoord2.x, 1.0 - vTexCoord2.y)).b;
 
-	gl_FragColor = /* vVignette * */vec4(r, g, b, 1.);
+	gl_FragColor = vVignette * vec4(r, g, b, 1.);
 }
