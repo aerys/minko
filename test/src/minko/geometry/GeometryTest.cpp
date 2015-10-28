@@ -157,6 +157,30 @@ TEST_F(GeometryTest, VertexAttributeOffset)
     }
 }
 
+TEST_F(GeometryTest, NumVerticesAfterAddVertexBufferAndRemoveVertexBuffer)
+{
+    auto g = Geometry::create();
+
+    const auto vertices = std::vector<float>(18u, 0.f);
+    auto vb = render::VertexBuffer::create(MinkoTests::canvas()->context(), vertices);
+
+    vb->addAttribute("position", 3u, 0u);
+    vb->addAttribute("normal", 3u, 3u);
+
+    g->addVertexBuffer(vb);
+    g->removeVertexBuffer(vb);
+
+    const auto newVertices = std::vector<float>(24u, 0.f);
+    auto newVb = render::VertexBuffer::create(MinkoTests::canvas()->context(), newVertices);
+
+    for (const auto& attribute : vb->attributes())
+        newVb->addAttribute(*attribute.name, attribute.size, attribute.offset);
+
+    g->addVertexBuffer(newVb);
+
+    ASSERT_EQ(g->numVertices(), 4u);
+}
+
 TEST_F(GeometryTest, ComputeNotExistingNormals)
 {
     auto context = MinkoTests::canvas()->context();
