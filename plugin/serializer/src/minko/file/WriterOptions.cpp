@@ -52,8 +52,8 @@ WriterOptions::WriterOptions() :
     _imageFormat(ImageFormat::PNG),
     _textureFormats(),
     _textureOptions{ 
-        { "",           { true, 1.f, true, true, true, math::vec2(1.f), math::ivec2(2048), MipFilter::LINEAR } },
-        { "lightMap",   { true, 1.f, true, true, true, math::vec2(1.f), math::ivec2(2048), MipFilter::LINEAR } }
+        { "",           { true, 0.f, true, true, true, math::vec2(1.f), math::ivec2(2048), MipFilter::LINEAR } },
+        { "lightMap",   { true, 0.f, true, true, true, math::vec2(1.f), math::ivec2(2048), MipFilter::LINEAR } }
     },
     _writeAnimations(false),
     _nullAssetUuids()
