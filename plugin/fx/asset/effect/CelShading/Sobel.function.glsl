@@ -1,3 +1,5 @@
+#pragma include "../Pack.function.glsl"
+
 float intensity(vec4 color)
 {
   return sqrt((color.x * color.x) + (color.y * color.y) + (color.z * color.z));
@@ -6,14 +8,14 @@ float intensity(vec4 color)
 bool sobel(sampler2D texture, vec2 center, float step, float limit)
 {
   // get samples around pixel
-  float tleft = intensity(texture2D(texture, center + vec2(-step, step)));
-  float left = intensity(texture2D(texture, center + vec2(-step, 0)));
-  float bleft = intensity(texture2D(texture, center + vec2(-step, -step)));
-  float top = intensity(texture2D(texture, center + vec2(0, step)));
-  float bottom = intensity(texture2D(texture, center + vec2(0, -step)));
-  float tright = intensity(texture2D(texture, center + vec2(step, step)));
-  float right = intensity(texture2D(texture, center + vec2(step, 0)));
-  float bright = intensity(texture2D(texture, center + vec2(step, -step)));
+  float tleft = unpackFloat8bitRGBA(texture2D(texture, center + vec2(-step, step)));
+  float left = unpackFloat8bitRGBA(texture2D(texture, center + vec2(-step, 0)));
+  float bleft = unpackFloat8bitRGBA(texture2D(texture, center + vec2(-step, -step)));
+  float top = unpackFloat8bitRGBA(texture2D(texture, center + vec2(0, step)));
+  float bottom = unpackFloat8bitRGBA(texture2D(texture, center + vec2(0, -step)));
+  float tright = unpackFloat8bitRGBA(texture2D(texture, center + vec2(step, step)));
+  float right = unpackFloat8bitRGBA(texture2D(texture, center + vec2(step, 0)));
+  float bright = unpackFloat8bitRGBA(texture2D(texture, center + vec2(step, -step)));
 
   // Sobel masks (to estimate gradient)
   //        1 0 -1     -1 -2 -1
