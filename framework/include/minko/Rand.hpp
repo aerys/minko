@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2015 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,26 +17,34 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/Rand.hpp"
-#include "minko/Uuid.hpp"
+#include <random>
 
-using namespace minko;
+#include "minko/Common.hpp"
 
-bool minko::Uuid::_randSeeded = false;
+#pragma once
 
-std::string
-Uuid::s4()
+namespace minko
 {
-    if (!_randSeeded)
+    class Rand
     {
-        Rand::srand(static_cast<uint>(std::time(0)));
-        _randSeeded = true;
-    }
+    private:
+        static std::mt19937 _engine;
 
-    int rand = Rand::rand();
+    public:
+        inline
+        static
+        void
+        srand(unsigned int seed)
+        {
+            _engine = std::mt19937(seed);
+        }
 
-    std::ostringstream os;
-    os << std::hex << rand;
+        static
+        int
+        rand();
 
-    return os.str().substr(0, 4);
+    private:
+        Rand() = delete;
+        ~Rand() = delete;
+    };
 }
