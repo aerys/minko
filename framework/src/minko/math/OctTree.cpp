@@ -130,7 +130,7 @@ math::OctTree::insert(std::shared_ptr<scene::Node> node)
 		return shared_from_this();
 
 	if (!node->hasComponent<component::BoundingBox>())
-		node->addComponent(component::BoundingBox::create());
+        return shared_from_this();
 
 	uint optimalDepth = std::min(computeDepth(node), _maxDepth);
 	uint currentDepth = 0u;
