@@ -31,6 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Renderer.hpp"
 #include "minko/CloneOption.hpp"
 #include "minko/material/Material.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::scene;
@@ -59,7 +60,13 @@ Surface::Surface(const std::string&	name,
 	_technique(technique)
 {
 	if (_effect != nullptr && !_effect->hasTechnique(_technique))
-		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+    {
+        const auto message = "Effect " + _effect->name() + " does not provide a '" + _technique + "' technique.";
+
+        LOG_ERROR(message);
+
+		throw std::logic_error(message);
+    }
 
     initializeIndexRange(geometry);
 }
@@ -78,8 +85,14 @@ Surface::Surface(const std::string& uuid,
     _provider(data::Provider::create(uuid)),
 	_technique(technique)
 {
-	if (_effect != nullptr && !_effect->hasTechnique(_technique))
-		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+    if (_effect != nullptr && !_effect->hasTechnique(_technique))
+    {
+        const auto message = "Effect " + _effect->name() + " does not provide a '" + _technique + "' technique.";
+
+        LOG_ERROR(message);
+
+        throw std::logic_error(message);
+    }
 
     initializeIndexRange(geometry);
 }
