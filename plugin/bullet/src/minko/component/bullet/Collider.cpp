@@ -96,6 +96,17 @@ bullet::Collider::targetAdded(Node::Ptr target)
         )
     );
 
+    _componentAddedSlot = target->componentAdded().connect(
+        [this](Node::Ptr node, Node::Ptr target, AbstractComponent::Ptr component)
+        {
+            auto physicsWorld = std::dynamic_pointer_cast<bullet::PhysicsWorld>(component);
+
+            if (physicsWorld)
+                initializeFromNode(this->target());
+        }
+    );
+
+
     addedHandler(target, target, target->parent());
 }
 
@@ -104,7 +115,7 @@ bullet::Collider::targetRemoved(Node::Ptr target)
 {
     if (_physicsWorld != nullptr)
         _physicsWorld->removeCollider(std::static_pointer_cast<Collider>(shared_from_this()));
-    
+
     _frameBeginSlot = nullptr;
     _physicsWorld = nullptr;
     _graphicsTransform = nullptr;
@@ -122,9 +133,11 @@ bullet::Collider::addedHandler(Node::Ptr target, Node::Ptr child, Node::Ptr ance
 
         _frameBeginSlot = sceneManager->frameBegin()->connect([=](std::shared_ptr<SceneManager>, float, float)
         {
-            _frameBeginSlot = nullptr;
+            if (!_physicsWorld)
+                initializeFromNode(target);
 
-            initializeFromNode(target);
+            if (_physicsWorld)
+                _frameBeginSlot = nullptr;
 
             assert(_graphicsTransform);
         });
@@ -142,7 +155,7 @@ bullet::Collider::removedHandler(Node::Ptr target, Node::Ptr child, Node::Ptr an
         _physicsWorld->removeCollider(std::static_pointer_cast<Collider>(shared_from_this()));
 
     _frameBeginSlot = nullptr;
-    
+
     _physicsWorld = nullptr;
     _graphicsTransform = nullptr;
 }
@@ -154,7 +167,7 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
         return;
 
     // This matrix is automatically updated by physicsWorldTransformChangedHandler
-    _physicsTransform = math::mat4(); 
+    _physicsTransform = math::mat4();
 
     // Get existing transform component or create one if necessary
     if (!node->hasComponent<Transform>())
@@ -340,11 +353,11 @@ bullet::Collider::raycast(const math::vec3& direction, float maxDist, float* dis
     if (_physicsWorld)
     {
         math::vec3 hit;
-        
+
         auto pos = math::vec3(_graphicsTransform->modelToWorldMatrix()[3]);
 
         if (_physicsWorld->raycast(pos, direction, maxDist, hit));
-        {   
+        {
             distance[0] = math::distance(pos, hit);
             return true;
         }
