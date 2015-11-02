@@ -132,6 +132,31 @@ TEST_F(GeometryTest, VertexBufferRemovedFromData)
 	ASSERT_FALSE(g->data()->hasProperty("position"));
 }
 
+TEST_F(GeometryTest, VertexAttributeOffset)
+{
+    int numVertices = 3;
+    float data[9] = { 0.f, 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f };
+    auto vb = render::VertexBuffer::create(MinkoTests::canvas()->context(), std::begin(data), std::end(data));
+
+    vb->addAttribute("a", 1);
+    vb->addAttribute("b", 2);
+
+    float counter = 0.f;
+    for (auto i = 0; i < numVertices; i++)
+    {
+        auto vertexsize = vb->vertexSize();
+        for (auto attribute : vb->attributes())
+        {
+            for (auto j = 0; j < attribute.size; j++)
+            {
+                auto value = vb->data()[i * vertexsize + attribute.offset + j];
+                ASSERT_EQ(value, counter);
+                counter++;
+            }
+        }
+    }
+}
+
 TEST_F(GeometryTest, ComputeNotExistingNormals)
 {
     auto context = MinkoTests::canvas()->context();

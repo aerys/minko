@@ -132,7 +132,11 @@ VertexBuffer::addAttribute(const std::string& 	name,
 	if (hasAttribute(name))
 		throw std::invalid_argument("name");
 
-	_attributes.push_back({ &_id, &_vertexSize, name, size, offset });
+    auto actualOffset = offset;
+    if (actualOffset == 0)
+        actualOffset = _vertexSize;
+
+	_attributes.push_back({ &_id, &_vertexSize, name, size, actualOffset });
 
 	vertexSize(_vertexSize + size);
 }
