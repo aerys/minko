@@ -348,9 +348,6 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
 											SurfaceInfo& 				    surfaceInfo,
                                             float&                          requiredPrecisionLevel)
 {
-    if (masterLodScheduler()->streamingOptions()->popGeometryLodFunction())
-        return masterLodScheduler()->streamingOptions()->popGeometryLodFunction()(surfaceInfo.surface);
-
     auto target = surfaceInfo.surface->target();
 
     auto box = surfaceInfo.box;
@@ -372,7 +369,12 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
             resource.fullPrecisionLod
         ));
 
-        return requiredLod->_level;
+        return masterLodScheduler()->streamingOptions()->popGeometryLodFunction()
+            ? masterLodScheduler()->streamingOptions()->popGeometryLodFunction()(
+                requiredLod->_level,
+                surfaceInfo.surface
+            )
+            : requiredLod->_level;
     }
 
     const auto popErrorBound = masterLodScheduler()->streamingOptions()->popGeometryErrorToleranceThreshold();
@@ -391,7 +393,12 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
         resource.fullPrecisionLod
     ));
 
-    return requiredLod->_level;
+    return masterLodScheduler()->streamingOptions()->popGeometryLodFunction()
+        ? masterLodScheduler()->streamingOptions()->popGeometryLodFunction()(
+            requiredLod->_level,
+            surfaceInfo.surface
+            )
+        : requiredLod->_level;
 }
 
 float

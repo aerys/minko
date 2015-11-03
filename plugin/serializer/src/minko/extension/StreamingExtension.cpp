@@ -190,6 +190,20 @@ StreamingExtension::loadingContextDisposed()
     _parserScheduler = nullptr;
 }
 
+void
+StreamingExtension::pauseStreaming()
+{
+    if (_parserScheduler)
+        _parserScheduler->priority(0.f);
+}
+
+void
+StreamingExtension::resumeStreaming()
+{
+    if (_parserScheduler)
+        _parserScheduler->priority(10.f);
+}
+
 StreamedAssetParserScheduler::Ptr
 StreamingExtension::parserScheduler(Options::Ptr options, std::list<JobManager::Job::Ptr>& jobList)
 {

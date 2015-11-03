@@ -308,14 +308,16 @@ int
 TextureLodScheduler::computeRequiredLod(const TextureResourceInfo&  resource,
 										Surface::Ptr 				surface)
 {
-    if (masterLodScheduler()->streamingOptions()->streamedTextureLodFunction())
-        return masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()(surface);
-
     auto target = surface->target();
     const auto targetDistance = distanceFromEye(resource, surface, _eyePosition);
 
     if (targetDistance <= 0)
-        return std::numeric_limits<int>::max();
+        return masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()
+            ? masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()(
+                std::numeric_limits<int>::max(),
+                surface
+            )
+            : std::numeric_limits<int>::max();
 
     const auto fov = _fov;
     const auto viewportHeight = _viewport.w > 0.f ? _viewport.w : 600.f;
@@ -353,7 +355,12 @@ TextureLodScheduler::computeRequiredLod(const TextureResourceInfo&  resource,
 
     const auto requiredLod = mipLevelToLod(requiredMipLevel, textureWidth, textureHeight);
 
-    return requiredLod;
+    return masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()
+        ? masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()(
+            requiredLod,
+            surface
+        )
+        : requiredLod;
 }
 
 float

@@ -35,6 +35,7 @@ StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr options,
     _entries(),
     _activeEntries(),
     _complete(false),
+    _priority(10.f),
     _maxNumActiveParsers(maxNumActiveParsers),
     _useJobBasedParsing(useJobBasedParsing),
     _active(Signal<Ptr>::create()),
@@ -83,7 +84,7 @@ StreamedAssetParserScheduler::priority()
     if (!hasPendingRequest() || _activeEntries.size() >= _maxNumActiveParsers)
         return 0.f;
 
-    return 10.f;
+    return _priority;
 }
 
 void

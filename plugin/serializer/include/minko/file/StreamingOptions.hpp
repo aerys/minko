@@ -82,8 +82,8 @@ namespace minko
 
             bool                                                    _storeLodData;
 
-            std::function<int(SurfacePtr)>                          _popGeometryLodFunction;
-            std::function<int(SurfacePtr)>                          _streamedTextureLodFunction;
+            std::function<int(int, SurfacePtr)>                     _popGeometryLodFunction;
+            std::function<int(int, SurfacePtr)>                     _streamedTextureLodFunction;
 
             LodPriorityFunction                                     _popGeometryLodPriorityFunction;
             LodPriorityFunction                                     _streamedTextureLodPriorityFunction;
@@ -233,7 +233,7 @@ namespace minko
             }
 
             inline
-            const std::function<int(SurfacePtr)>&
+            const std::function<int(int, SurfacePtr)>&
             popGeometryLodFunction() const
             {
                 return _popGeometryLodFunction;
@@ -241,7 +241,7 @@ namespace minko
 
             inline
             Ptr
-            popGeometryLodFunction(const std::function<int(SurfacePtr)>& function)
+            popGeometryLodFunction(const std::function<int(int, SurfacePtr)>& function)
             {
                 _popGeometryLodFunction = function;
 
@@ -249,7 +249,7 @@ namespace minko
             }
 
             inline
-            const std::function<int(SurfacePtr)>&
+            const std::function<int(int, SurfacePtr)>&
             streamedTextureLodFunction() const
             {
                 return _streamedTextureLodFunction;
@@ -257,7 +257,7 @@ namespace minko
 
             inline
             Ptr
-            streamedTextureLodFunction(const std::function<int(SurfacePtr)>& function)
+            streamedTextureLodFunction(const std::function<int(int, SurfacePtr)>& function)
             {
                 _streamedTextureLodFunction = function;
 

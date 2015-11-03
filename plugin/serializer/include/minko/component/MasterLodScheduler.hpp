@@ -33,6 +33,10 @@ namespace minko
         public:
             typedef std::shared_ptr<MasterLodScheduler>         Ptr;
 
+            typedef std::shared_ptr<AbstractComponent>          AbstractComponentPtr;
+            typedef std::shared_ptr<scene::Node>                NodePtr;
+            typedef std::shared_ptr<AbstractLodScheduler>       AbstractLodSchedulerPtr;
+
             typedef std::shared_ptr<data::Provider>             ProviderPtr;
 
             typedef std::shared_ptr<geometry::Geometry>         GeometryPtr;
@@ -42,10 +46,18 @@ namespace minko
             typedef std::shared_ptr<file::StreamingOptions>     StreamingOptionsPtr;
 
         private:
-            std::unordered_map<GeometryPtr, ProviderPtr>        _geometryToDataMap;
-            std::unordered_map<AbstractTexturePtr, ProviderPtr> _textureToDataMap;
+            std::unordered_map<GeometryPtr, ProviderPtr>            _geometryToDataMap;
+            std::unordered_map<AbstractTexturePtr, ProviderPtr>     _textureToDataMap;
 
-            StreamingOptionsPtr                                 _streamingOptions;
+            StreamingOptionsPtr                                     _streamingOptions;
+
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                 _nodeAddedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                 _nodeRemovedSlot;
+
+            Signal<NodePtr, NodePtr, AbstractComponentPtr>::Slot    _componentAddedSlot;
+            Signal<NodePtr, NodePtr, AbstractComponentPtr>::Slot    _componentRemovedSlot;
+
+            std::vector<AbstractLodSchedulerPtr>                    _lodSchedulers;
 
         public:
             inline
@@ -67,6 +79,9 @@ namespace minko
                 return _streamingOptions;
             }
 
+            void
+            invalidateLodRequirement();
+
             Ptr
             registerGeometry(GeometryPtr geometry, ProviderPtr data);
 
@@ -84,6 +99,13 @@ namespace minko
 
             ProviderPtr
             textureData(AbstractTexturePtr texture);
+
+        protected:
+            void
+            targetAdded(NodePtr target) override;
+
+            void
+            targetRemoved(NodePtr target) override;
 
         private:
             MasterLodScheduler();

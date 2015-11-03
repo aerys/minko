@@ -89,6 +89,12 @@ namespace minko
             void
             loadingContextDisposed();
 
+            void
+            pauseStreaming();
+
+            void
+            resumeStreaming();
+
 			static
 			inline
 			Ptr

@@ -101,6 +101,8 @@ namespace minko
 
             bool                        _complete;
 
+            float                       _priority;
+
             Signal<Ptr>::Ptr            _active;
             Signal<Ptr>::Ptr            _inactive;
 
@@ -118,6 +120,12 @@ namespace minko
 
             void
             removeParser(std::shared_ptr<AbstractStreamedAssetParser> parser);
+
+            void
+            priority(float value)
+            {
+                _priority = value;
+            }
 
             inline
             Signal<Ptr>::Ptr
