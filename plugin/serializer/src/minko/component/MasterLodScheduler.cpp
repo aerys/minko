@@ -48,6 +48,20 @@ MasterLodScheduler::invalidateLodRequirement()
         lodScheduler->invalidateLodRequirement();
 }
 
+void
+MasterLodScheduler::forceUpdate()
+{
+    for (auto lodScheduler : _lodSchedulers)
+        lodScheduler->forceUpdate();
+}
+
+void
+MasterLodScheduler::enabled(bool enabled)
+{
+    for (auto lodScheduler : _lodSchedulers)
+        lodScheduler->enabled(enabled);
+}
+
 MasterLodScheduler::Ptr
 MasterLodScheduler::registerGeometry(Geometry::Ptr geometry, Provider::Ptr data)
 {
@@ -107,7 +121,8 @@ MasterLodScheduler::targetAdded(Node::Ptr target)
                 ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<AbstractLodScheduler>(); });
 
             for (auto lodSchedulerNode : lodSchedulerNodes->nodes())
-                _lodSchedulers.push_back(lodSchedulerNode->component<AbstractLodScheduler>());
+                for (auto lodScheduler : lodSchedulerNode->components<AbstractLodScheduler>())
+                    _lodSchedulers.push_back(lodScheduler);
         }
     );
 
@@ -121,10 +136,11 @@ MasterLodScheduler::targetAdded(Node::Ptr target)
                 ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<AbstractLodScheduler>(); });
 
             for (auto lodSchedulerNode : lodSchedulerNodes->nodes())
-                _lodSchedulers.erase(
-                    std::remove(_lodSchedulers.begin(), _lodSchedulers.end(), lodSchedulerNode->component<AbstractLodScheduler>()),
-                    _lodSchedulers.end()
-                );
+                for (auto lodScheduler : lodSchedulerNode->components<AbstractLodScheduler>())
+                    _lodSchedulers.erase(
+                        std::remove(_lodSchedulers.begin(), _lodSchedulers.end(), lodScheduler),
+                        _lodSchedulers.end()
+                    );
         }
     );
 

@@ -45,7 +45,9 @@ AbstractLodScheduler::AbstractLodScheduler() :
     _componentAddedSlot(),
     _componentRemovedSlot(),
     _frameBeginSlot(),
-    _candidateNodes()
+    _candidateNodes(),
+    _enabled(true),
+    _frameTime(0.f)
 {
 }
 
@@ -169,6 +171,14 @@ AbstractLodScheduler::invalidateLodRequirement()
 {
     for (auto& resource : _resources)
         invalidateLodRequirement(resource.second);
+}
+
+void
+AbstractLodScheduler::forceUpdate()
+{
+    invalidateLodRequirement();
+
+    updated(_frameTime);
 }
 
 void
@@ -427,6 +437,17 @@ AbstractLodScheduler::componentRemovedHandler(Node::Ptr target, AbstractComponen
 
 void
 AbstractLodScheduler::frameBeginHandler(SceneManager::Ptr sceneManager, float time, float deltaTime)
+{
+    _frameTime = time;
+
+    if (!enabled())
+        return;
+
+    updated(time);
+}
+
+void
+AbstractLodScheduler::updated(float time)
 {
     for (auto& uuidToResourcePair : _resources)
     {

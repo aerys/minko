@@ -82,6 +82,12 @@ namespace minko
             void
             invalidateLodRequirement();
 
+            void
+            forceUpdate();
+
+            void
+            enabled(bool enabled);
+
             Ptr
             registerGeometry(GeometryPtr geometry, ProviderPtr data);
 

@@ -129,6 +129,10 @@ namespace minko
             std::list<SurfacePtr>															_removedSurfaces;
             NodeSetPtr																		_candidateNodes;
 
+            bool                                                                            _enabled;
+
+            float                                                                           _frameTime;
+
         public:
             ~AbstractLodScheduler() = default;
 
@@ -183,6 +187,31 @@ namespace minko
             void
             invalidateLodRequirement();
 
+            void
+            forceUpdate();
+
+            inline
+            bool
+            enabled() const
+            {
+                return _enabled;
+            }
+
+            inline
+            Ptr
+            enabled(bool value)
+            {
+                if (_enabled == value)
+                    return std::static_pointer_cast<AbstractLodScheduler>(shared_from_this());
+
+                _enabled = value;
+
+                if (_enabled)
+                    invalidateLodRequirement();
+
+                return std::static_pointer_cast<AbstractLodScheduler>(shared_from_this());
+            }
+
         protected:
             AbstractLodScheduler();
 
@@ -204,6 +233,9 @@ namespace minko
 
             void
             unregisterResource(const std::string& uuid);
+
+            void
+            updated(float time);
 
             void
             invalidateLodRequirement(ResourceInfo& resource);
