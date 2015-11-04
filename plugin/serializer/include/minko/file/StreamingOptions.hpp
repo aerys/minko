@@ -44,6 +44,14 @@ namespace minko
 
             typedef std::shared_ptr<render::AbstractTexture>        AbstractTexturePtr;
 
+            typedef std::function<int(
+                int,
+                int,
+                int,
+                float,
+                SurfacePtr
+            )>                                                      LodFunction;
+
             typedef std::function<float(
                 int,
                 int,
@@ -82,8 +90,8 @@ namespace minko
 
             bool                                                    _storeLodData;
 
-            std::function<int(int, SurfacePtr)>                     _popGeometryLodFunction;
-            std::function<int(int, SurfacePtr)>                     _streamedTextureLodFunction;
+            LodFunction                                             _popGeometryLodFunction;
+            LodFunction                                             _streamedTextureLodFunction;
 
             LodPriorityFunction                                     _popGeometryLodPriorityFunction;
             LodPriorityFunction                                     _streamedTextureLodPriorityFunction;
@@ -233,7 +241,7 @@ namespace minko
             }
 
             inline
-            const std::function<int(int, SurfacePtr)>&
+            const LodFunction&
             popGeometryLodFunction() const
             {
                 return _popGeometryLodFunction;
@@ -241,7 +249,7 @@ namespace minko
 
             inline
             Ptr
-            popGeometryLodFunction(const std::function<int(int, SurfacePtr)>& function)
+            popGeometryLodFunction(const LodFunction& function)
             {
                 _popGeometryLodFunction = function;
 
@@ -249,7 +257,7 @@ namespace minko
             }
 
             inline
-            const std::function<int(int, SurfacePtr)>&
+            const LodFunction&
             streamedTextureLodFunction() const
             {
                 return _streamedTextureLodFunction;
@@ -257,7 +265,7 @@ namespace minko
 
             inline
             Ptr
-            streamedTextureLodFunction(const std::function<int(int, SurfacePtr)>& function)
+            streamedTextureLodFunction(const LodFunction& function)
             {
                 _streamedTextureLodFunction = function;
 

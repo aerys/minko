@@ -57,6 +57,9 @@ namespace minko
                 std::unordered_set<MaterialPtr>                 materials;
                 std::unordered_map<SurfacePtr, int>             surfaceToActiveLodMap;
 
+                int                                             maxAvailableLod;
+                int                                             maxLod;
+
                 std::unordered_multimap<
                     NodePtr,
                     Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot

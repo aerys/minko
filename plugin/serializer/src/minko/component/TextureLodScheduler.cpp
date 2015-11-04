@@ -172,6 +172,8 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
 
         resource->materials.insert(material);
         resource->surfaceToActiveLodMap.insert(std::make_pair(surface, -1));
+
+        resource->maxLod = textureData->get<int>("maxLod");
     }
 }
 
@@ -216,6 +218,10 @@ TextureLodScheduler::maxAvailableLodChanged(ResourceInfo&    resource,
     AbstractLodScheduler::maxAvailableLodChanged(resource, maxAvailableLod);
 
     invalidateLodRequirement(resource);
+
+    auto& textureResource = _textureResources.at(resource.uuid());
+
+    textureResource.maxAvailableLod = maxAvailableLod;
 }
 
 TextureLodScheduler::LodInfo
@@ -315,6 +321,9 @@ TextureLodScheduler::computeRequiredLod(const TextureResourceInfo&  resource,
         return masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()
             ? masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()(
                 std::numeric_limits<int>::max(),
+                resource.maxLod,
+                resource.maxLod,
+                0.f,
                 surface
             )
             : std::numeric_limits<int>::max();
@@ -358,6 +367,9 @@ TextureLodScheduler::computeRequiredLod(const TextureResourceInfo&  resource,
     return masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()
         ? masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()(
             requiredLod,
+            resource.maxLod,
+            resource.maxLod,
+            0.f,
             surface
         )
         : requiredLod;

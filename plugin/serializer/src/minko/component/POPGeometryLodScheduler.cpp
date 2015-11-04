@@ -125,6 +125,8 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     surfaceInfo.box = surfaceTarget->component<BoundingBox>()->box();
 
+    surfaceInfo.weight = 0.f;
+
     resource->geometry = geometry;
 
     auto resourceData = resource->base->data;
@@ -308,6 +310,9 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
 
         const auto priority = computeLodPriority(popGeometryResource, surfaceInfo, requiredLod, activeLod, time);
 
+        if (priority > 0.f)
+            surfaceInfo.weight = priority;
+
         maxPriority = std::max(priority, maxPriority);
 	}
 
@@ -372,6 +377,9 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
         return masterLodScheduler()->streamingOptions()->popGeometryLodFunction()
             ? masterLodScheduler()->streamingOptions()->popGeometryLodFunction()(
                 requiredLod->_level,
+                resource.maxLod,
+                resource.fullPrecisionLod,
+                surfaceInfo.weight,
                 surfaceInfo.surface
             )
             : requiredLod->_level;
@@ -396,8 +404,11 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
     return masterLodScheduler()->streamingOptions()->popGeometryLodFunction()
         ? masterLodScheduler()->streamingOptions()->popGeometryLodFunction()(
             requiredLod->_level,
+            resource.maxLod,
+            resource.fullPrecisionLod,
+            surfaceInfo.weight,
             surfaceInfo.surface
-            )
+        )
         : requiredLod->_level;
 }
 

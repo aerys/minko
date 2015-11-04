@@ -110,6 +110,7 @@ StreamedTextureParser::createTexture(AssetLibrary::Ptr     assetLibrary,
 
         data()->set("size", math::vec2(width, height));
         data()->set("maxAvailableLod", 0);
+        data()->set("maxLod", maxLod());
 
         break;
     }

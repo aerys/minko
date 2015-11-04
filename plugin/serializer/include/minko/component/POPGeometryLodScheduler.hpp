@@ -58,6 +58,8 @@ namespace minko
 
                 float                           requiredPrecisionLevel;
 
+                float                           weight;
+
                 SurfaceInfo(SurfacePtr surface) :
                     surface(surface),
                     box(),
