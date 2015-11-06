@@ -157,6 +157,11 @@ namespace minko
             canWeldVertices(GeometryPtr                         geometry,
                             const std::vector<unsigned int>&    indices);
 
+            math::vec2
+            weldVec2VertexAttribute(const render::VertexAttribute&      attribute,
+                                    const std::vector<float>&           data,
+                                    const std::vector<unsigned int>&    indices);
+
             math::vec3
             weldVec3VertexAttribute(const render::VertexAttribute&      attribute,
                                     const std::vector<float>&           data,

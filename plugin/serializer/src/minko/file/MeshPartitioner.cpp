@@ -1076,7 +1076,22 @@ MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
     const auto vertexSize = referenceGeometry->vertexSize();
 
     partitionInfo.vertexSize = vertexSize;
-    partitionInfo.positionAttributeOffset = 0u;
+
+    auto globalPositionVertexAttributeOffset = 0u;
+
+    for (auto vertexBuffer : referenceGeometry->vertexBuffers())
+    {
+        if (vertexBuffer->hasAttribute("position"))
+        {
+            partitionInfo.positionAttributeOffset = globalPositionVertexAttributeOffset + vertexBuffer->attribute("position").offset;
+
+            break;
+        }
+
+        globalPositionVertexAttributeOffset += vertexBuffer->vertexSize();
+    }
+
+    partitionInfo.positionAttributeOffset = globalPositionVertexAttributeOffset;
 
     auto& indices = partitionInfo.indices;
     auto& vertices = partitionInfo.vertices;
