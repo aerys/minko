@@ -20,9 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Canvas.hpp"
-
-#if SDL_AUDIO_ENABLED
-# include "minko/audio/SDLSound.hpp"
-# include "minko/audio/SDLSoundChannel.hpp"
-# include "minko/audio/SoundParser.hpp"
-#endif
+#include "minko/SDLBackend.hpp"
+#include "minko/SDLWebGLBackend.hpp"
+#include "minko/audio/SDLAudio.hpp"
+#include "minko/audio/SDLSound.hpp"
+#include "minko/audio/SDLSoundChannel.hpp"
+#include "minko/audio/SoundParser.hpp"
+#include "minko/file/APKProtocol.hpp"
+#include "minko/input/SDLMouse.hpp"
+#include "minko/input/SDLKeyboard.hpp"
+#include "minko/input/SDLTouch.hpp"
+#include "minko/input/SDLJoystick.hpp"
