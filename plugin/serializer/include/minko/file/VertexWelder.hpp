@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/file/AbstractWriterPreprocessor.hpp"
+#include "minko/render/VertexAttribute.hpp"
 
 namespace minko
 {
