@@ -157,15 +157,49 @@ namespace minko
             canWeldVertices(GeometryPtr                         geometry,
                             const std::vector<unsigned int>&    indices);
 
-            math::vec2
-            weldVec2VertexAttribute(const render::VertexAttribute&      attribute,
-                                    const std::vector<float>&           data,
-                                    const std::vector<unsigned int>&    indices);
+            template <typename T>
+            T
+            weldAttribute(const render::VertexAttribute&        attribute,
+                          const std::vector<float>&             data,
+                          const std::vector<unsigned int>&      indices,
+                          std::function<T(const float* const)>  makeVec)
+            {
+                auto values = std::vector<T>(indices.size());
 
-            math::vec3
-            weldVec3VertexAttribute(const render::VertexAttribute&      attribute,
-                                    const std::vector<float>&           data,
-                                    const std::vector<unsigned int>&    indices);
+                for (auto i = 0u; i < indices.size(); ++i)
+                    values[i] = makeVec(&data.at(indices.at(i) * *attribute.vertexSize + attribute.offset));
+
+                auto result = values.front();
+
+                for (auto i = 1; i < values.size(); ++i)
+                    result += values.at(i);
+
+                result /= float(values.size());
+
+                return result;
+            }
+
+            template <typename T>
+            bool
+            canWeldAttribute(const render::VertexAttribute&                 attribute,
+                             const std::vector<float>&                      data,
+                             const std::pair<unsigned int, unsigned int>&   indices,
+                             std::function<T(const float* const)>           makeVec,
+                             VertexAttributePredicateFunction<T>            predicate)
+            {
+                const auto lhsValue = makeVec(&data.at(
+                    indices.first * *attribute.vertexSize + attribute.offset
+                ));
+
+                const auto rhsValue = makeVec(&data.at(
+                    indices.second * *attribute.vertexSize + attribute.offset
+                ));
+
+                if (predicate && !predicate(*attribute.name, lhsValue, rhsValue))
+                    return false;
+
+                return true;
+            }
         };
     }
 }
