@@ -562,48 +562,20 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 }
 
 MeshPartitioner::OctreeNodePtr
-MeshPartitioner::pickBestPartitions(OctreeNodePtr       root,
-                                    const math::vec3&   modelMinBound,
-                                    const math::vec3&   modelMaxBound,
-                                    PartitionInfo&      partitionInfo)
-{
-    auto currentMinBound = root->minBound;
-    auto currentMaxBound = root->maxBound;
-
-    auto validNode = OctreeNodePtr();
-
-    if (!contains(math::Box::create(root->maxBound, root->minBound), math::Box::create(modelMaxBound, modelMinBound)))
-        return root;
-
-    splitNode(root, partitionInfo);
-
-    for (auto child : root->children)
-    {
-        if (contains(math::Box::create(child->maxBound, child->minBound), math::Box::create(modelMaxBound, modelMinBound)))
-        {
-            validNode = pickBestPartitions(child, modelMinBound, modelMaxBound, partitionInfo);
-
-            break;
-        }
-    }
-
-    if (validNode == nullptr)
-    {
-        root->children.clear();
-
-        return root;
-    }
-
-    return validNode;
-}
-
-MeshPartitioner::OctreeNodePtr
 MeshPartitioner::ensurePartitionSizeIsValid(OctreeNodePtr       node,
                                             const math::vec3&   maxSize,
                                             PartitionInfo&      partitionInfo)
 {
-    const auto minBound = node->minBound;
-    const auto maxBound = node->maxBound;
+    auto minBound = node->minBound;
+    auto maxBound = node->maxBound;
+
+    if (!partitionInfo.useRootSpace)
+    {
+        auto transform = partitionInfo.surfaces.front()->target()->component<Transform>();
+
+        minBound = (transform->modelToWorldMatrix() * math::vec4(minBound, 1.f)).xyz();
+        maxBound = (transform->modelToWorldMatrix() * math::vec4(maxBound, 1.f)).xyz();
+    }
 
     const auto nodeSize = maxBound - minBound;
     const auto nodeSizeGreaterThanMaxSize = math::greaterThan(nodeSize, maxSize);
@@ -1298,17 +1270,8 @@ MeshPartitioner::buildHalfEdges(PartitionInfo& partitionInfo)
 bool
 MeshPartitioner::buildPartitions(PartitionInfo& partitionInfo)
 {
-    const auto minBound = partitionInfo.minBound;
-    const auto maxBound = partitionInfo.maxBound;
-
-    auto rootPartitionMinBound = minBound;
-    auto rootPartitionMaxBound = maxBound;
-
-    if (_options.flags & Options::uniformizeSize)
-    {
-        rootPartitionMinBound = _worldMinBound;
-        rootPartitionMaxBound = _worldMaxBound;
-    }
+    const auto rootPartitionMinBound = partitionInfo.minBound;
+    const auto rootPartitionMaxBound = partitionInfo.maxBound;
 
     auto& octreeRoot = partitionInfo.rootPartitionNode;
 
@@ -1319,21 +1282,7 @@ MeshPartitioner::buildPartitions(PartitionInfo& partitionInfo)
         nullptr
     ));
 
-    if (_options.flags & Options::uniformizeSize)
-    {
-        auto nodeMinBound = minBound;
-        auto nodeMaxBound = maxBound;
-
-        // fixme apply transform according to partitionInfo.useRootSpace
-
-        octreeRoot = pickBestPartitions(octreeRoot, nodeMinBound, nodeMaxBound, partitionInfo);
-
-        partitionInfo.baseDepth = octreeRoot->depth;
-    }
-    else
-    {
-        partitionInfo.baseDepth = 0;
-    }
+    partitionInfo.baseDepth = 0;
 
     octreeRoot = ensurePartitionSizeIsValid(
         octreeRoot,
@@ -1421,12 +1370,6 @@ MeshPartitioner::buildGeometries(Node::Ptr                      node,
 
             auto minBound = pendingNode->minBound;
             auto maxBound = pendingNode->maxBound;
-
-            if (_options.flags & Options::uniformizeSize)
-            {
-                minBound = math::vec3(worldToModelMatrix * math::vec4(minBound, 1.f));
-                maxBound = math::vec3(worldToModelMatrix * math::vec4(maxBound, 1.f));
-            }
 
             if (referenceGeometry->data()->hasProperty("type"))
                 newGeometry->data()->set("type", referenceGeometry->data()->get<std::string>("type"));

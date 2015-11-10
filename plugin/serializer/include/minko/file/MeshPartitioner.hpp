@@ -54,12 +54,10 @@ namespace minko
 
                 static const unsigned int mergeSurfaces                     = 1 << 0;
                 static const unsigned int createOneNodePerSurface           = 1 << 1;
-                static const unsigned int uniformizeSize                    = 1 << 3;
-                static const unsigned int applyCrackFreePolicy              = 1 << 4;
+                static const unsigned int applyCrackFreePolicy              = 1 << 2;
 
                 static const unsigned int all                               = mergeSurfaces |
                                                                               createOneNodePerSurface |
-                                                                              uniformizeSize |
                                                                               applyCrackFreePolicy;
 
                 int                                                         maxNumTrianglesPerNode;
@@ -259,12 +257,6 @@ namespace minko
             void
             splitSurface(SurfacePtr                 surface,
                          std::vector<SurfacePtr>&   splitSurface);
-
-            OctreeNodePtr
-            pickBestPartitions(OctreeNodePtr        root,
-                               const math::vec3&    modelMinBound,
-                               const math::vec3&    modelMaxBound,
-                               PartitionInfo&       partitionInfo);
 
             OctreeNodePtr
             ensurePartitionSizeIsValid(OctreeNodePtr        node,
