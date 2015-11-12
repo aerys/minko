@@ -223,6 +223,17 @@ NativeOculus::initializePostProcessingRenderer(std::shared_ptr<component::SceneM
 }
 
 void
+NativeOculus::targetAdded()
+{
+    if (_leftRenderer)
+    {
+        auto root = _leftRenderer->target()->root();
+        if (root->data().hasProperty("viewport"))
+            root->data().set<math::vec4>("viewport", _leftRendererViewport);
+    }
+}
+
+void
 NativeOculus::targetRemoved()
 {
     ovrHmd_Destroy(_hmd);
@@ -246,7 +257,13 @@ NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
 
         auto leftCamera = _leftRenderer->target()->component<PerspectiveCamera>();
         leftCamera->aspectRatio(aspectRatio);
-        leftCamera->fieldOfView(getLeftEyeFov());
+        leftCamera->fieldOfView(getLeftEyeFov() * M_PI_2);
+
+        auto root = _leftRenderer->target()->root();
+        if (root->data().hasProperty("viewport"))
+        {
+            root->data().set<math::vec4>("viewport", _leftRendererViewport);
+        }
     }
 
     if (_rightRenderer)
@@ -256,7 +273,7 @@ NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
      
         auto rightCamera = _rightRenderer->target()->component<PerspectiveCamera>();
         rightCamera->aspectRatio(aspectRatio);
-        rightCamera->fieldOfView(getRightEyeFov());
+        rightCamera->fieldOfView(getRightEyeFov() * M_PI_2);
     }
 
     _ppRenderer->viewport(math::ivec4(0, 0, viewportWidth, viewportHeight));
@@ -364,10 +381,11 @@ NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::
         viewMatrix = math::inverse(viewMatrix);
         viewMatrix = math::transpose(viewMatrix);
 
-        auto eyesLag = math::translate(math::vec3(viewAdjust.x, viewAdjust.y, viewAdjust.z));
+        auto eyesLag = math::translate(math::vec3(viewAdjust.x / 3.f, viewAdjust.y, viewAdjust.z));
         viewMatrix = eyesLag * viewMatrix;
 
         cameraNode->component<Transform>()->matrix(viewMatrix);
+        //cameraNode->component<Transform>()->updateModelToWorldMatrix();
 
         // Update time warp matrices
         ovrMatrix4f twMatrices[2];

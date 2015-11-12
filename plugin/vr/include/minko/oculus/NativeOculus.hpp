@@ -72,6 +72,9 @@ namespace minko
             initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr);
 
             void
+            targetAdded();
+
+            void
             targetRemoved();
 
             std::array<std::shared_ptr<geometry::Geometry>, 2>

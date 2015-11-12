@@ -200,6 +200,9 @@ VRCamera::targetAdded(NodePtr target)
         ->addComponent(_rightRenderer);
 
     target->addChild(_rightCameraNode);
+
+    if (_VRImpl)
+        _VRImpl->targetAdded();
 }
 
 void
