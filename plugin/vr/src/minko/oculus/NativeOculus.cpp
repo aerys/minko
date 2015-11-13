@@ -385,7 +385,7 @@ NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::
         viewMatrix = eyesLag * viewMatrix;
 
         cameraNode->component<Transform>()->matrix(viewMatrix);
-        //cameraNode->component<Transform>()->updateModelToWorldMatrix();
+        cameraNode->component<Transform>()->updateModelToWorldMatrix();
 
         // Update time warp matrices
         ovrMatrix4f twMatrices[2];
