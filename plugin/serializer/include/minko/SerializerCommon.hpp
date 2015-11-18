@@ -55,6 +55,12 @@ namespace minko
         class WriterOptions;
 	}
 
+    namespace math
+    {
+        template <typename T>
+        class SpatialIndex;
+    }
+
 	namespace serialize
 	{
 		class TypeSerializer;

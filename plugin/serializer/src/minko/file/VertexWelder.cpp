@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/VertexWelder.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/log/Logger.hpp"
+#include "minko/math/SpatialIndex.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 
@@ -32,28 +33,6 @@ using namespace minko::geometry;
 using namespace minko::scene;
 
 const float VertexWelder::_defaultEpsilon = 1e-3f;
-
-template <typename T>
-static
-T
-changePrecision(const T& value, float precision)
-{
-    return math::floor(value * precision + T(0.5f)) / precision;
-}
-
-std::size_t
-VertexWelder::SpatialIndexHash::operator()(const math::vec3& position) const
-{
-    return minko::Hash<math::vec3>()(changePrecision(position, 1.f / epsilon));
-}
-
-bool
-VertexWelder::SpatialIndexEqual::operator()(const math::vec3& lhs, const math::vec3& rhs) const
-{
-    const auto epsilonEqual = math::epsilonEqual(lhs, rhs, epsilon);
-
-    return epsilonEqual.x && epsilonEqual.y && epsilonEqual.z;
-}
 
 VertexWelder::VertexWelder() :
     AbstractWriterPreprocessor<Node::Ptr>(),
@@ -114,15 +93,11 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
 {
     auto geometry = surface->geometry();
 
-    auto spatialIndex = SpatialIndex(
-        0u,
-        SpatialIndexHash(_defaultEpsilon),
-        SpatialIndexEqual(_defaultEpsilon)
-    );
+    auto spatialIndex = math::SpatialIndex<std::vector<unsigned int>>::create(_defaultEpsilon);
 
     buildSpatialIndex(geometry, spatialIndex);
 
-    const auto expectedNumVertices = spatialIndex.size();
+    const auto expectedNumVertices = spatialIndex->size();
 
     if (expectedNumVertices == geometry->numVertices())
     {
@@ -174,7 +149,7 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
             index * positionVertexBuffer->vertexSize() + positionAttribute.offset
         ));
 
-        const auto& indicesToWeld = spatialIndex.at(position);
+        const auto& indicesToWeld = spatialIndex->at(position);
 
         const auto canWeldVertices = this->canWeldVertices(geometry, indicesToWeld);
 
@@ -403,7 +378,7 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
 }
 
 void
-VertexWelder::buildSpatialIndex(Geometry::Ptr geometry, SpatialIndex& index)
+VertexWelder::buildSpatialIndex(Geometry::Ptr geometry, math::SpatialIndex<std::vector<unsigned int>>::Ptr index)
 {
     auto positionVertexBuffer = geometry->vertexBuffer("position");
     const auto& positionAttribute = positionVertexBuffer->attribute("position");
@@ -416,7 +391,7 @@ VertexWelder::buildSpatialIndex(Geometry::Ptr geometry, SpatialIndex& index)
             &data.at(i * positionVertexBuffer->vertexSize() + positionAttribute.offset)
         );
 
-        index[position].push_back(i);
+        index->at(position).push_back(i);
     }
 }
 
