@@ -60,6 +60,18 @@ namespace chromium
 			_enableInput = value;
 		}
 
+        void
+        secure(bool value)
+        {
+            _secure = value;
+        }
+
+        bool
+        secure()
+        {
+            return _secure;
+        }
+
 	private:
 		void
 		bindControls();
@@ -82,6 +94,7 @@ namespace chromium
 		ChromiumPimpl* _impl;
 		Signal<std::shared_ptr<AbstractCanvas>, uint, uint>::Slot _canvasResizedSlot;
         std::map<uint, bool> _keyIsDown;
+        bool _secure;
 
 		IMPLEMENT_REFCOUNTING(ChromiumApp);
 	};
