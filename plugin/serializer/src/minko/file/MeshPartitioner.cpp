@@ -518,9 +518,11 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
         }
         else if (!uniqueTarget)
         {
-            auto newNodeName = targetNode->name();
+            const auto newNodeName = targetNode->name();
+            const auto newNodeLayout = targetNode->layout();
 
             targetNode = Node::create(newNodeName)
+                ->layout(newNodeLayout)
                 ->addComponent(Transform::create())
                 ->addComponent(BoundingBox::create());
 
@@ -1428,6 +1430,7 @@ MeshPartitioner::patchNode(Node::Ptr                            node,
         if (_options.flags & Options::createOneNodePerSurface)
         {
             auto newNode = Node::create(node->name())
+                ->layout(node->layout())
                 ->addComponent(Transform::create())
                 ->addComponent(BoundingBox::create())
                 ->addComponent(newSurface);
