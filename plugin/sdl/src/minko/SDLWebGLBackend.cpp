@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #if MINKO_PLATFORM & MINKO_PLATFORM_HTML5
 # include "emscripten/emscripten.h"
+# include "emscripten/html5.h"
 #endif
 #include "SDL.h"
 #include "SDL_syswm.h"
@@ -30,6 +31,7 @@ using namespace minko;
 
 Canvas::Ptr currentCanvas;
 std::chrono::high_resolution_clock::time_point previousFrameTime = std::chrono::high_resolution_clock::now();
+int canvasHidden = 0;
 
 SDLWebGLBackend::SDLWebGLBackend()
 {
@@ -51,6 +53,31 @@ emscriptenMainLoop()
     currentCanvas->step();
 }
 
+EM_BOOL emscriptenVisibilityChangeHandler(int eventType, const EmscriptenVisibilityChangeEvent *e, void *userData)
+{
+    if (e->hidden == canvasHidden)
+        return 0;
+
+    if (!canvasHidden && e->hidden)
+        currentCanvas->resetInputs();
+
+    canvasHidden = e->hidden;
+
+	return 0;
+}
+
+EM_BOOL emscriptenFocusBlurHandler(int eventType, const EmscriptenFocusEvent *focusEvent, void *userData)
+{
+    auto hidden = eventType == EMSCRIPTEN_EVENT_BLUR ? 1 : 0;
+
+    if (!canvasHidden && hidden)
+        currentCanvas->resetInputs();
+
+    canvasHidden = hidden;
+
+    return 0;
+}
+
 void
 SDLWebGLBackend::initialize(std::shared_ptr<Canvas> canvas)
 {
@@ -67,6 +94,10 @@ void
 SDLWebGLBackend::run(std::shared_ptr<Canvas> canvas)
 {
     currentCanvas = canvas;
+
+    emscripten_set_visibilitychange_callback(0, false, emscriptenVisibilityChangeHandler);
+    emscripten_set_focus_callback("#window", 0, false, emscriptenFocusBlurHandler);
+    emscripten_set_blur_callback("#window", 0, false, emscriptenFocusBlurHandler);
     
     emscripten_set_main_loop(emscriptenMainLoop, 0, 1);
 }

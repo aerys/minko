@@ -258,6 +258,23 @@ Minko.redispatchKeyboardEvent = function(event) //EMSCRIPTEN
 	document.dispatchEvent(eventCopy);
 }
 
+Minko.redispatchBlurEvent = function(event) //EMSCRIPTEN
+{
+	if (event.ignoreOnMinko)
+		return;
+
+	var eventCopy = document.createEvent('Event');
+
+	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
+
+	var copiedProperties = ['type', 'bubbles', 'cancelable'];
+
+	for(var k in copiedProperties)
+		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
+
+	window.dispatchEvent(eventCopy);
+}
+
 Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
 {
 	if (event.ignoreOnMinko)
@@ -521,6 +538,11 @@ Minko.bindRedispatchEvents = function() //EMSCRIPTEN
 
 	for(var k in a)
 		Minko.window.addEventListener(a[k], Minko.redispatchKeyboardEvent);
+
+	a = ['blur', 'focus'];
+
+	for(var k in a)
+		Minko.window.addEventListener(a[k], Minko.redispatchBlurEvent);
 }
 
 Minko.changeViewportWidth = function(width)
