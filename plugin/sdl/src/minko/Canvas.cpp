@@ -1050,5 +1050,28 @@ Canvas::desiredFramerate(float desiredFramerate)
 void
 Canvas::resetInputs()
 {
-    std::cout << "resetInputs" << std::endl;
+    while (_touch->numTouches())
+    {
+        auto id = _touch->identifiers()[0];
+        auto touch = _touch->touches()[id];
+
+        auto x = touch.x;
+        auto y = touch.y;
+
+        _touch->updateTouch(id, x, y, 0, 0);
+        _touch->touchMove()->execute(_touch, id, 0, 0);
+
+        _touch->removeTouch(id);
+        _touch->touchUp()->execute(_touch, id, x, y);
+    }
+
+    _mouse->dX(0);
+    _mouse->dY(0);
+
+    if (_mouse->leftButtonIsDown())
+        _mouse->leftButtonUp()->execute(_mouse);
+    if (_mouse->rightButtonIsDown())
+        _mouse->rightButtonUp()->execute(_mouse);
+    if (_mouse->middleButtonIsDown())
+        _mouse->middleButtonUp()->execute(_mouse);
 }
