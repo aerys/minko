@@ -33,6 +33,11 @@ minko.project.library = function(name)
 	configuration { "windows32 or windows64" }
 		includedirs { minko.sdk.path("/framework/lib/glew/include") }
 
+	configuration { "ios" }
+		xcodebuildsettings {
+			IPHONEOS_DEPLOYMENT_TARGET = "7.0"
+		}
+
 	configuration { "vs*" }
 		defines {
 			"NOMINMAX",										-- do not define min/max as macro in windows.h
@@ -46,6 +51,7 @@ minko.project.library = function(name)
 		buildoptions {
 			"/wd4503",				-- remove warnings about too long type names
 			--"/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
+			"/MT"					-- Used to statically link runtime libraries
 		}
 
 	configuration { "html5", "debug" }

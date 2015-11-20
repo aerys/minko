@@ -37,6 +37,7 @@ ChromiumApp::~ChromiumApp()
 std::shared_ptr<render::Texture>
 ChromiumApp::initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context, ChromiumPimpl* impl)
 {
+    _secure = true;
 	_canvas = canvas;
 	_context = context;
 	_impl = impl;
@@ -52,7 +53,7 @@ ChromiumApp::OnContextInitialized()
 	CefWindowInfo window_info;
 	CefBrowserSettings browserSettings;
 
-	browserSettings.web_security = STATE_DISABLED;
+	browserSettings.web_security = _secure ? STATE_ENABLED : STATE_DISABLED;
 	browserSettings.file_access_from_file_urls = STATE_ENABLED;
 	browserSettings.universal_access_from_file_urls = STATE_ENABLED;
 	browserSettings.webgl = STATE_DISABLED;

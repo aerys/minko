@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/file/AbstractWriterPreprocessor.hpp"
+#include "minko/render/VertexAttribute.hpp"
 
 namespace minko
 {
@@ -109,6 +110,38 @@ namespace minko
             }
 
             inline
+            const VertexAttributePredicateFunction<float>&
+            scalarAttributeWeldablePredicateFunction() const
+            {
+                return _scalarAttributeWeldablePredicateFunction;
+            }
+
+            inline
+            Ptr
+            scalarAttributeWeldablePredicateFunction(const VertexAttributePredicateFunction<float>& func)
+            {
+                _scalarAttributeWeldablePredicateFunction = func;
+
+                return std::static_pointer_cast<VertexWelder>(shared_from_this());
+            }
+
+            inline
+            const VertexAttributePredicateFunction<math::vec2>&
+            vec2AttributeWeldablePredicateFunction() const
+            {
+                return _vec2AttributeWeldablePredicateFunction;
+            }
+
+            inline
+            Ptr
+            vec2AttributeWeldablePredicateFunction(const VertexAttributePredicateFunction<math::vec2>& func)
+            {
+                _vec2AttributeWeldablePredicateFunction = func;
+
+                return std::static_pointer_cast<VertexWelder>(shared_from_this());
+            }
+
+            inline
             const VertexAttributePredicateFunction<math::vec3>&
             vec3AttributeWeldablePredicateFunction() const
             {
@@ -120,6 +153,22 @@ namespace minko
             vec3AttributeWeldablePredicateFunction(const VertexAttributePredicateFunction<math::vec3>& func)
             {
                 _vec3AttributeWeldablePredicateFunction = func;
+
+                return std::static_pointer_cast<VertexWelder>(shared_from_this());
+            }
+
+            inline
+            const VertexAttributePredicateFunction<math::vec4>&
+            vec4AttributeWeldablePredicateFunction() const
+            {
+                return _vec4AttributeWeldablePredicateFunction;
+            }
+
+            inline
+            Ptr
+            vec4AttributeWeldablePredicateFunction(const VertexAttributePredicateFunction<math::vec4>& func)
+            {
+                _vec4AttributeWeldablePredicateFunction = func;
 
                 return std::static_pointer_cast<VertexWelder>(shared_from_this());
             }
@@ -157,10 +206,49 @@ namespace minko
             canWeldVertices(GeometryPtr                         geometry,
                             const std::vector<unsigned int>&    indices);
 
-            math::vec3
-            weldVec3VertexAttribute(const render::VertexAttribute&      attribute,
-                                    const std::vector<float>&           data,
-                                    const std::vector<unsigned int>&    indices);
+            template <typename T>
+            T
+            weldAttribute(const render::VertexAttribute&        attribute,
+                          const std::vector<float>&             data,
+                          const std::vector<unsigned int>&      indices,
+                          std::function<T(const float* const)>  makeVec)
+            {
+                auto values = std::vector<T>(indices.size());
+
+                for (auto i = 0u; i < indices.size(); ++i)
+                    values[i] = makeVec(&data.at(indices.at(i) * *attribute.vertexSize + attribute.offset));
+
+                auto result = values.front();
+
+                for (auto i = 1; i < values.size(); ++i)
+                    result += values.at(i);
+
+                result /= float(values.size());
+
+                return result;
+            }
+
+            template <typename T>
+            bool
+            canWeldAttribute(const render::VertexAttribute&                 attribute,
+                             const std::vector<float>&                      data,
+                             const std::pair<unsigned int, unsigned int>&   indices,
+                             std::function<T(const float* const)>           makeVec,
+                             VertexAttributePredicateFunction<T>            predicate)
+            {
+                const auto lhsValue = makeVec(&data.at(
+                    indices.first * *attribute.vertexSize + attribute.offset
+                ));
+
+                const auto rhsValue = makeVec(&data.at(
+                    indices.second * *attribute.vertexSize + attribute.offset
+                ));
+
+                if (predicate && !predicate(*attribute.name, lhsValue, rhsValue))
+                    return false;
+
+                return true;
+            }
         };
     }
 }

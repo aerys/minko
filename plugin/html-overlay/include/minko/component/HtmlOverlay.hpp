@@ -111,6 +111,18 @@ namespace minko
             bool
 			visible();
 
+            void
+            secure(bool value)
+            {
+                _secure = value;
+            }
+            
+            bool
+            secure()
+            {
+                return _secure;
+            }
+
         private:
 
 			minko::dom::AbstractDOMEngine::Ptr
@@ -141,6 +153,8 @@ namespace minko
 			dom::AbstractDOMEngine::Ptr					    _domEngine;
 
 			bool										    _cleared;
+
+            bool                                            _secure;
 		};
 	}
 }

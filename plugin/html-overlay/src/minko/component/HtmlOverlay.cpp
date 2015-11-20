@@ -36,7 +36,8 @@ HtmlOverlay::Ptr HtmlOverlay::_instance = nullptr;
 
 HtmlOverlay::HtmlOverlay(int argc, char** argv) :
 	AbstractComponent(),
-	_cleared(false)
+	_cleared(false),
+    _secure(true)
 {
 #if defined(__APPLE__)
     AppleWebViewDOMEngine::Ptr engine = AppleWebViewDOMEngine::create();
@@ -77,7 +78,7 @@ HtmlOverlay::targetAdded(scene::Node::Ptr target)
     engine->initialize(_canvas, _sceneManager);
 #elif defined(CHROMIUM)
     ChromiumDOMEngine::Ptr engine = std::dynamic_pointer_cast<ChromiumDOMEngine>(_domEngine);
-    engine->initialize(_canvas, _sceneManager, target);
+    engine->initialize(_canvas, _sceneManager, target, _secure);
 #elif defined(EMSCRIPTEN)
     EmscriptenDOMEngine::Ptr engine = std::dynamic_pointer_cast<EmscriptenDOMEngine>(_domEngine);
     engine->initialize(_canvas, _sceneManager);

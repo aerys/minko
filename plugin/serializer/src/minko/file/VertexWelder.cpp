@@ -96,6 +96,16 @@ VertexWelder::acceptsSurface(Surface::Ptr surface)
     if (!data->hasProperty("position"))
         return false;
 
+    for (auto vertexBuffer : geometry->vertexBuffers())
+    {
+        for (const auto& vertexAttribute : vertexBuffer->attributes())
+        {
+            if (vertexAttribute.size == 0u ||
+                vertexAttribute.size > 4u)
+                return false;
+        }
+    }
+
     return true;
 }
 
@@ -123,7 +133,26 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
 
     auto weldedIndices = std::unordered_set<unsigned int>();
 
-    auto& indices = geometry->indices()->data();
+    auto indices = std::vector<unsigned int>();
+
+    auto ushortIndexDataPointer = geometry->indices()->dataPointer<unsigned short>();
+    std::vector<unsigned int>* indexDataPointer = nullptr;
+
+    if (ushortIndexDataPointer)
+    {
+        indices.resize(ushortIndexDataPointer->size());
+
+        for (auto i = 0u; i < ushortIndexDataPointer->size(); ++i)
+            indices[i] = static_cast<unsigned int>(ushortIndexDataPointer->at(i));
+    }
+    else
+    {
+        indexDataPointer = geometry->indices()->dataPointer<unsigned int>();
+
+        const auto& indexData = *indexDataPointer;
+
+        indices.assign(indexData.begin(), indexData.end());
+    }
 
     auto positionVertexBuffer = geometry->vertexBuffer("position");
     const auto& positionAttribute = positionVertexBuffer->attribute("position");
@@ -169,14 +198,52 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
 
                     for (const auto& vertexAttribute : vertexBuffer->attributes())
                     {
-                        if (vertexAttribute.size == 3u)
+                        if (vertexAttribute.size == 1u)
                         {
-                            auto result = math::make_vec3(&vertexBufferData.at(
-                                indexToWeld * *vertexAttribute.vertexSize + vertexAttribute.offset
+                            const auto result = vertexBufferData.at(
+                                indexToWeld * vertexBuffer->vertexSize() + vertexAttribute.offset
+                            );
+
+                            weldedVertices[currentNewIndex * *vertexAttribute.vertexSize + vertexAttribute.offset] = result;
+                        }
+                        else if (vertexAttribute.size == 2u)
+                        {
+                            const auto result = math::make_vec2(&vertexBufferData.at(
+                                indexToWeld * vertexBuffer->vertexSize() + vertexAttribute.offset
                             ));
 
                             const auto resultBegin = &result[0];
-                            const auto resultEnd = resultBegin + 3u;
+                            const auto resultEnd = resultBegin + vertexAttribute.size;
+
+                            std::copy(
+                                resultBegin,
+                                resultEnd,
+                                weldedVertices.begin() + currentNewIndex * *vertexAttribute.vertexSize + vertexAttribute.offset
+                            );
+                        }
+                        else if (vertexAttribute.size == 3u)
+                        {
+                            const auto result = math::make_vec3(&vertexBufferData.at(
+                                indexToWeld * vertexBuffer->vertexSize() + vertexAttribute.offset
+                            ));
+
+                            const auto resultBegin = &result[0];
+                            const auto resultEnd = resultBegin + vertexAttribute.size;
+
+                            std::copy(
+                                resultBegin,
+                                resultEnd,
+                                weldedVertices.begin() + currentNewIndex * *vertexAttribute.vertexSize + vertexAttribute.offset
+                            );
+                        }
+                        else if (vertexAttribute.size == 4u)
+                        {
+                            const auto result = math::make_vec4(&vertexBufferData.at(
+                                indexToWeld * vertexBuffer->vertexSize() + vertexAttribute.offset
+                            ));
+
+                            const auto resultBegin = &result[0];
+                            const auto resultEnd = resultBegin + vertexAttribute.size;
 
                             std::copy(
                                 resultBegin,
@@ -202,7 +269,7 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
             auto& weldedVertices = vertexBufferToWeldedVertices[vertexBuffer];
 
             weldedVertices.resize(
-                weldedVertices.size() + indicesToWeld.size() * vertexBuffer->vertexSize(),
+                weldedVertices.size() + vertexBuffer->vertexSize(),
                 0.f
             );
             
@@ -210,10 +277,44 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
 
             for (const auto& vertexAttribute : vertexBuffer->attributes())
             {
-                if (vertexAttribute.size == 3u)
+                if (vertexAttribute.size == 1u)
+                {
+                    const auto result = weldAttribute<float>(
+                        vertexAttribute,
+                        vertexBufferData,
+                        indicesToWeld,
+                        [](const float* const data) -> float {  return *data; }
+                    );
+
+                    weldedVertices[currentNewIndex * *vertexAttribute.vertexSize + vertexAttribute.offset] = result;
+                }
+                else if (vertexAttribute.size == 2u)
+                {
+                    const auto result = weldAttribute<math::vec2>(
+                        vertexAttribute,
+                        vertexBufferData,
+                        indicesToWeld,
+                        math::make_vec2<float>
+                    );
+
+                    const auto resultBegin = &result[0];
+                    const auto resultEnd = resultBegin + vertexAttribute.size;
+
+                    std::copy(
+                        resultBegin,
+                        resultEnd,
+                        weldedVertices.begin() + currentNewIndex * *vertexAttribute.vertexSize + vertexAttribute.offset
+                    );
+                }
+                else if (vertexAttribute.size == 3u)
                 {
                     auto result = !(vertexAttribute == positionAttribute)
-                        ? weldVec3VertexAttribute(vertexAttribute, vertexBufferData, indicesToWeld)
+                        ? weldAttribute<math::vec3>(
+                            vertexAttribute,
+                            vertexBufferData,
+                            indicesToWeld,
+                            math::make_vec3<float>
+                        )
                         : position;
 
                     if (*vertexAttribute.name == "normal" ||
@@ -223,7 +324,25 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
                     }
 
                     const auto resultBegin = &result[0];
-                    const auto resultEnd = resultBegin + 3u;
+                    const auto resultEnd = resultBegin + vertexAttribute.size;
+
+                    std::copy(
+                        resultBegin,
+                        resultEnd,
+                        weldedVertices.begin() + currentNewIndex * *vertexAttribute.vertexSize + vertexAttribute.offset
+                    );
+                }
+                else if (vertexAttribute.size == 4u)
+                {
+                    const auto result = weldAttribute<math::vec4>(
+                        vertexAttribute,
+                        vertexBufferData,
+                        indicesToWeld,
+                        math::make_vec4<float>
+                    );
+
+                    const auto resultBegin = &result[0];
+                    const auto resultEnd = resultBegin + vertexAttribute.size;
 
                     std::copy(
                         resultBegin,
@@ -251,8 +370,13 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
         if (newIndex == -1)
             break;
 
-        indices[i] = static_cast<unsigned short>(newIndex);
+        if (ushortIndexDataPointer)
+            (*ushortIndexDataPointer)[i] = static_cast<unsigned short>(newIndex);
+        else if (indexDataPointer)
+            (*indexDataPointer)[i] = static_cast<unsigned int>(newIndex);
     }
+
+    auto newVertexBuffers = std::vector<render::VertexBuffer::Ptr>();
 
     for (const auto& vertexBufferToWeldedVerticesPair : vertexBufferToWeldedVertices)
     {
@@ -268,8 +392,12 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
             newVertexBuffer->addAttribute(*attribute.name, attribute.size, attribute.offset);
 
         geometry->removeVertexBuffer(vertexBuffer);
-        geometry->addVertexBuffer(newVertexBuffer);
+
+        newVertexBuffers.push_back(newVertexBuffer);
     }
+
+    for (auto vertexBuffer : newVertexBuffers)
+        geometry->addVertexBuffer(vertexBuffer);
 
     _weldedGeometrySet.insert(geometry);
 }
@@ -296,6 +424,9 @@ bool
 VertexWelder::canWeldVertices(Geometry::Ptr                     geometry,
                               const std::vector<unsigned int>&  indices)
 {
+    if (indices.size() <= 1u)
+        return false;
+
     auto permutations = std::vector<bool>(indices.size());
     std::fill(permutations.begin() + indices.size() - 2u, permutations.end(), true);
 
@@ -341,18 +472,44 @@ VertexWelder::canWeldVertices(Geometry::Ptr                     geometry,
 
             for (const auto& pair : pairs)
             {
-                if (vertexAttribute.size == 3u)
+                if (vertexAttribute.size == 1u)
                 {
-                    const auto lhsValue = math::make_vec3(&vertexBuffer->data().at(
-                        pair.first * *vertexAttribute.vertexSize + vertexAttribute.offset
-                    ));
-
-                    const auto rhsValue = math::make_vec3(&vertexBuffer->data().at(
-                        pair.second * *vertexAttribute.vertexSize + vertexAttribute.offset
-                    ));
-
-                    if (_vec3AttributeWeldablePredicateFunction &&
-                        !_vec3AttributeWeldablePredicateFunction(*vertexAttribute.name, lhsValue, rhsValue))
+                    if (!canWeldAttribute<float>(
+                        vertexAttribute,
+                        vertexBuffer->data(),
+                        pair,
+                        [](const float* const data) -> float { return *data; },
+                        _scalarAttributeWeldablePredicateFunction))
+                        return false;
+                }
+                else if (vertexAttribute.size == 2u)
+                {
+                    if (!canWeldAttribute<math::vec2>(
+                        vertexAttribute,
+                        vertexBuffer->data(),
+                        pair,
+                        math::make_vec2<float>,
+                        _vec2AttributeWeldablePredicateFunction))
+                        return false;
+                }
+                else if (vertexAttribute.size == 3u)
+                {
+                    if (!canWeldAttribute<math::vec3>(
+                        vertexAttribute,
+                        vertexBuffer->data(),
+                        pair,
+                        math::make_vec3<float>,
+                        _vec3AttributeWeldablePredicateFunction))
+                        return false;
+                }
+                else if (vertexAttribute.size == 4u)
+                {
+                    if (!canWeldAttribute<math::vec4>(
+                        vertexAttribute,
+                        vertexBuffer->data(),
+                        pair,
+                        math::make_vec4<float>,
+                        _vec4AttributeWeldablePredicateFunction))
                         return false;
                 }
             }
@@ -360,24 +517,4 @@ VertexWelder::canWeldVertices(Geometry::Ptr                     geometry,
     }
 
     return true;
-}
-
-math::vec3
-VertexWelder::weldVec3VertexAttribute(const render::VertexAttribute&    attribute,
-                                      const std::vector<float>&         data,
-                                      const std::vector<unsigned int>&  indices)
-{
-    auto values = std::vector<math::vec3>(indices.size());
-
-    for (auto i = 0u; i < indices.size(); ++i)
-        values[i] = math::make_vec3(&data.at(indices.at(i) * *attribute.vertexSize + attribute.offset));
-
-    auto result = values.front();
-
-    for (auto i = 1; i < values.size(); ++i)
-        result += values.at(i);
-
-    result /= float(values.size());
-
-    return result;
 }
