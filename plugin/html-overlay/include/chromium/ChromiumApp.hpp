@@ -85,7 +85,7 @@ namespace chromium
         Signal<std::shared_ptr<input::Mouse>>::Slot _middleUpSlot;
         Signal<std::shared_ptr<input::Keyboard>>::Slot  _keyDownSlot;
         Signal<std::shared_ptr<input::Keyboard>>::Slot  _keyUpSlot;
-        Signal<std::shared_ptr<input::Keyboard>, char>::Slot  _textInputSlot;
+        Signal<std::shared_ptr<input::Keyboard>, char16_t>::Slot  _textInputSlot;
 
 		bool _enableInput;
 

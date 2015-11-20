@@ -264,7 +264,7 @@ ChromiumApp::bindControls()
         }
     }, std::numeric_limits<float>::max());
 
-    _textInputSlot = _canvas->keyboard()->textInput()->connect([&](input::Keyboard::Ptr keyboard, char c)
+    _textInputSlot = _canvas->keyboard()->textInput()->connect([&](input::Keyboard::Ptr keyboard, char16_t c)
     {
         if (!_enableInput)
             return;

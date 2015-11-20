@@ -444,7 +444,7 @@ Canvas::step()
 
     auto enteredOrLeftThisFrame = false;
 
-    auto gotTextInput = false;
+    std::vector<char16_t> chars;
 
     _mouse->dX(0);
     _mouse->dY(0);
@@ -469,15 +469,50 @@ Canvas::step()
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
-            if (gotTextInput)
-                break;
-
-            gotTextInput = true;
             int i = 0;
 
+            char16_t c = 0;
+
             while (event.text.text[i] != '\0' && event.text.text[i] != 0)
+                i++;
+
+            if (i == 1)
             {
-                _keyboard->textInput()->execute(_keyboard, event.text.text[i++]);
+                c = event.text.text[0] & 0x00FF;
+            }
+            else if (i == 2)
+            {
+                int c1 = event.text.text[0] & 0xFF;
+                int c2 = event.text.text[1] & 0xFF;
+
+                if (c1 == 0xC3)
+                    c2 += 0x40;
+                else if (c1 == 0xC4)
+                    c2 += 0x80;
+                else if (c1 == 0xC5)
+                    c2 += 0xC0;
+
+                c = c2;
+            }
+            
+            if (c != 0)
+            {
+                bool found = false;
+
+                for (int i = 0; i < chars.size(); ++i)
+                {
+                    if (chars[i] == c)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    chars.push_back(c);
+                    _keyboard->textInput()->execute(_keyboard, c);
+                }
             }
 
             break;
@@ -1010,4 +1045,10 @@ void
 Canvas::desiredFramerate(float desiredFramerate)
 {
     _desiredFramerate = desiredFramerate;
+}
+
+void
+Canvas::resetInputs()
+{
+    std::cout << "resetInputs" << std::endl;
 }
