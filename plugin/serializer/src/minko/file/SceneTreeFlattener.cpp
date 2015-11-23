@@ -127,7 +127,10 @@ SceneTreeFlattener::patchNode(Node::Ptr node, const std::list<RetargetedSurface>
 {
     for (const auto& retargetedSurface : retargetedSurfaces)
     {
-        auto surfaceNode = Node::create(retargetedSurface.surface->target()->name())
+        auto target = retargetedSurface.surface->target();
+
+        auto surfaceNode = Node::create(target->name())
+            ->layout(target->layout())
             ->addComponent(Transform::create(retargetedSurface.matrix))
             ->addComponent(BoundingBox::create())
             ->addComponent(retargetedSurface.surface);
