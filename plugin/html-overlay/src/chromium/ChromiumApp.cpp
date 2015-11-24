@@ -94,6 +94,13 @@ ChromiumApp::bindControls()
 		}
 
 		_impl->browser->GetHost()->SendMouseMoveEvent(mouseEvent, false);
+
+        if (_impl->renderHandler->currentCursor())
+        {
+#if defined(_MSC_VER) 
+            SetCursor(_impl->renderHandler->currentCursor());
+#endif
+        }
 	}, std::numeric_limits<float>::max());
 
 	_leftDownSlot = _canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
