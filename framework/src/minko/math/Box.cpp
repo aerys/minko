@@ -31,6 +31,41 @@ Box::Box() :
 
 }
 
+float
+Box::distance(const math::vec3& position)
+{
+    const auto withinBounds =
+        position.x > _bottomLeft.x &&
+        position.y > _bottomLeft.y &&
+        position.z > _bottomLeft.z &&
+        position.x < _topRight.x &&
+        position.y < _topRight.y &&
+        position.z < _topRight.z;
+
+    if (withinBounds)
+        return 0.f;
+
+    auto squareDistance = 0.f;
+
+    for (auto i = 0u; i < 3u; ++i)
+    {
+        if (position[i] < _bottomLeft[i])
+        {
+            const auto delta = _bottomLeft[i] - position[i];
+
+            squareDistance += delta * delta;
+        }
+        else if (position[i] > _topRight[i])
+        {
+            const auto delta = position[i] - _topRight[i];
+
+            squareDistance += delta * delta;
+        }
+    }
+
+    return math::sqrt(squareDistance);
+}
+
 bool
 Box::cast(Ray::Ptr ray, float& distance)
 {
