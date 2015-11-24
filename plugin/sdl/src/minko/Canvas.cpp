@@ -499,7 +499,7 @@ Canvas::step()
             {
                 bool found = false;
 
-                for (int i = 0; i < chars.size(); ++i)
+                for (size_t i = 0; i < chars.size(); ++i)
                 {
                     if (chars[i] == c)
                     {
