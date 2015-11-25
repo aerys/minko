@@ -153,10 +153,9 @@ namespace minko
                 std::unordered_set<
                     unsigned int
                 >                           protectedIndices;
-                std::unordered_map<
-                    math::vec3,
-                    std::unordered_set<unsigned int>,
-                    Hash<math::vec3>
+
+                std::shared_ptr<
+                    math::SpatialIndex<std::unordered_set<unsigned int>>
                 >                           mergedIndices;
                 std::unordered_set<
                     unsigned int

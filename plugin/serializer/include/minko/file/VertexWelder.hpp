@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "minko/SerializerCommon.hpp"
 #include "minko/file/AbstractWriterPreprocessor.hpp"
 #include "minko/render/VertexAttribute.hpp"
 
@@ -44,44 +45,6 @@ namespace minko
             typedef std::shared_ptr<component::Surface> SurfacePtr;
 
             typedef std::shared_ptr<geometry::Geometry> GeometryPtr;
-
-            struct SpatialIndexHash;
-            struct SpatialIndexEqual;
-
-            typedef std::unordered_map<
-                math::vec3,
-                std::vector<unsigned int>,
-                SpatialIndexHash,
-                SpatialIndexEqual
-            >                                           SpatialIndex;
-
-            struct SpatialIndexHash
-            {
-                float epsilon;
-
-                std::size_t
-                operator()(const math::vec3& position) const;
-
-                explicit
-                SpatialIndexHash(float epsilon) :
-                    epsilon(epsilon)
-                {
-                }
-            };
-
-            struct SpatialIndexEqual
-            {
-                float epsilon;
-
-                bool
-                operator()(const math::vec3& lhs, const math::vec3& rhs) const;
-
-                explicit
-                SpatialIndexEqual(float epsilon) :
-                    epsilon(epsilon)
-                {
-                }
-            };
 
         private:
             StatusChangedSignal::Ptr                        _statusChanged;
@@ -200,7 +163,8 @@ namespace minko
             weldSurfaceGeometry(SurfacePtr surface);
 
             void
-            buildSpatialIndex(GeometryPtr geometry, SpatialIndex& index);
+            buildSpatialIndex(GeometryPtr                                                       geometry,
+                              std::shared_ptr<math::SpatialIndex<std::vector<unsigned int>>>    index);
 
             bool
             canWeldVertices(GeometryPtr                         geometry,

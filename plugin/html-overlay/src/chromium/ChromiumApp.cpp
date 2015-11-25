@@ -94,6 +94,13 @@ ChromiumApp::bindControls()
 		}
 
 		_impl->browser->GetHost()->SendMouseMoveEvent(mouseEvent, false);
+
+        if (_impl->renderHandler->currentCursor())
+        {
+#if defined(_MSC_VER) 
+            SetCursor(_impl->renderHandler->currentCursor());
+#endif
+        }
 	}, std::numeric_limits<float>::max());
 
 	_leftDownSlot = _canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
@@ -264,7 +271,7 @@ ChromiumApp::bindControls()
         }
     }, std::numeric_limits<float>::max());
 
-    _textInputSlot = _canvas->keyboard()->textInput()->connect([&](input::Keyboard::Ptr keyboard, char c)
+    _textInputSlot = _canvas->keyboard()->textInput()->connect([&](input::Keyboard::Ptr keyboard, char16_t c)
     {
         if (!_enableInput)
             return;

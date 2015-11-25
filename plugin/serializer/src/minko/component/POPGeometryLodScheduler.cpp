@@ -528,25 +528,11 @@ POPGeometryLodScheduler::distanceFromEye(const POPGeometryResourceInfo&  resourc
                                          SurfaceInfo&                    surfaceInfo,
                                          const math::vec3&               eyePosition)
 {
-    static auto ray = math::Ray::create();
-
-    auto target = surfaceInfo.surface->target();
     auto box = surfaceInfo.box;
 
-    const auto boxCenter = (box->bottomLeft() + box->topRight()) / 2.f;
+    const auto distance = box->distance(eyePosition);
 
-    if (boxCenter == eyePosition)
-        return 0.f;
-
-    ray->origin(eyePosition);
-    ray->direction(math::normalize(boxCenter - eyePosition));
-
-    auto targetDistance = 0.f;
-
-    if (!box->cast(ray, targetDistance))
-        return math::distance(eyePosition, boxCenter);
-
-    return math::max(0.f, targetDistance);
+    return math::max(0.f, distance);
 }
 
 void

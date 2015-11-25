@@ -444,7 +444,7 @@ Canvas::step()
 
     auto enteredOrLeftThisFrame = false;
 
-    auto gotTextInput = false;
+    std::vector<char16_t> chars;
 
     _mouse->dX(0);
     _mouse->dY(0);
@@ -469,15 +469,50 @@ Canvas::step()
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
-            if (gotTextInput)
-                break;
-
-            gotTextInput = true;
             int i = 0;
 
+            char16_t c = 0;
+
             while (event.text.text[i] != '\0' && event.text.text[i] != 0)
+                i++;
+
+            if (i == 1)
             {
-                _keyboard->textInput()->execute(_keyboard, event.text.text[i++]);
+                c = event.text.text[0] & 0x00FF;
+            }
+            else if (i == 2)
+            {
+                int c1 = event.text.text[0] & 0xFF;
+                int c2 = event.text.text[1] & 0xFF;
+
+                if (c1 == 0xC3)
+                    c2 += 0x40;
+                else if (c1 == 0xC4)
+                    c2 += 0x80;
+                else if (c1 == 0xC5)
+                    c2 += 0xC0;
+
+                c = c2;
+            }
+            
+            if (c != 0)
+            {
+                bool found = false;
+
+                for (size_t i = 0; i < chars.size(); ++i)
+                {
+                    if (chars[i] == c)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    chars.push_back(c);
+                    _keyboard->textInput()->execute(_keyboard, c);
+                }
             }
 
             break;
@@ -1010,4 +1045,33 @@ void
 Canvas::desiredFramerate(float desiredFramerate)
 {
     _desiredFramerate = desiredFramerate;
+}
+
+void
+Canvas::resetInputs()
+{
+    while (_touch->numTouches())
+    {
+        auto id = _touch->identifiers()[0];
+        auto touch = _touch->touches()[id];
+
+        auto x = touch.x;
+        auto y = touch.y;
+
+        _touch->updateTouch(id, x, y, 0, 0);
+        _touch->touchMove()->execute(_touch, id, 0, 0);
+
+        _touch->removeTouch(id);
+        _touch->touchUp()->execute(_touch, id, x, y);
+    }
+
+    _mouse->dX(0);
+    _mouse->dY(0);
+
+    if (_mouse->leftButtonIsDown())
+        _mouse->leftButtonUp()->execute(_mouse);
+    if (_mouse->rightButtonIsDown())
+        _mouse->rightButtonUp()->execute(_mouse);
+    if (_mouse->middleButtonIsDown())
+        _mouse->middleButtonUp()->execute(_mouse);
 }

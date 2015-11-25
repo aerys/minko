@@ -366,6 +366,9 @@ namespace minko
         void
         quit();
 
+        void
+        resetInputs();
+
     private:
         Canvas(const std::string&   name,
                const uint           width,

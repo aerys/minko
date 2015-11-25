@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/StreamingOptions.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/material/Material.hpp"
+#include "minko/math/SpatialIndex.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/scene/Node.hpp"
@@ -468,6 +469,8 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
         auto partitionInfo = PartitionInfo();
 
+        partitionInfo.mergedIndices = math::SpatialIndex<std::unordered_set<unsigned int>>::create(1e-3f);
+
         for (auto surface : surfaceBucket)
         {
             if (!_options.validSurfacePredicate(surface))
@@ -515,9 +518,11 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
         }
         else if (!uniqueTarget)
         {
-            auto newNodeName = targetNode->name();
+            const auto newNodeName = targetNode->name();
+            const auto newNodeLayout = targetNode->layout();
 
             targetNode = Node::create(newNodeName)
+                ->layout(newNodeLayout)
                 ->addComponent(Transform::create())
                 ->addComponent(BoundingBox::create());
 
@@ -777,7 +782,7 @@ MeshPartitioner::registerSharedTriangle(OctreeNodePtr    partitionNode,
                 partitionInfo
             );
 
-            const auto& secondaryDiscontinousHalfEdgeIndices = partitionInfo.mergedIndices.at(
+            const auto& secondaryDiscontinousHalfEdgeIndices = partitionInfo.mergedIndices->at(
                 discontinousHalfEdgeVertexPosition
             );
 
@@ -1256,12 +1261,9 @@ MeshPartitioner::buildHalfEdges(PartitionInfo& partitionInfo)
             index * partitionInfo.vertexSize + partitionInfo.positionAttributeOffset
         ));
 
-        auto it = partitionInfo.mergedIndices.insert(std::make_pair(
-            position,
-            std::unordered_set<unsigned int>()
-        ));
+        auto& mergedIndices = partitionInfo.mergedIndices->at(position);
 
-        it.first->second.insert(index);
+        mergedIndices.insert(index);
     }
 
     return true;
@@ -1428,6 +1430,7 @@ MeshPartitioner::patchNode(Node::Ptr                            node,
         if (_options.flags & Options::createOneNodePerSurface)
         {
             auto newNode = Node::create(node->name())
+                ->layout(node->layout())
                 ->addComponent(Transform::create())
                 ->addComponent(BoundingBox::create())
                 ->addComponent(newSurface);

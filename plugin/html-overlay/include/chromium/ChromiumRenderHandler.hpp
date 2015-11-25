@@ -101,10 +101,18 @@ namespace chromium
 
 		bool textureChanged;
 
+        CefCursorHandle
+        currentCursor()
+        {
+            return _currentCursor;
+        }
+
 	private:
 		bool			_visible;
 		unsigned char*	_popupBuffer;
 		unsigned char*	_viewBuffer;
+
+        CefCursorHandle _currentCursor;
 
 		IMPLEMENT_REFCOUNTING(ChromiumRenderHandler);
 	};
