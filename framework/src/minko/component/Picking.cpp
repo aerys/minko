@@ -55,6 +55,7 @@ Picking::Picking() :
 	_mouseRightUp(Signal<NodePtr>::create()),
 	_mouseOut(Signal<NodePtr>::create()),
 	_mouseOver(Signal<NodePtr>::create()),
+    _mouseWheel(Signal<NodePtr>::create()),
     _touchDown(Signal<NodePtr>::create()),
     _touchMove(Signal<NodePtr>::create()),
     _touchUp(Signal<NodePtr>::create()),
@@ -132,6 +133,13 @@ Picking::bindSignals()
         &Picking::mouseRightUpHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
         std::placeholders::_1));
+
+    _mouseWheelSlot = _mouse->wheel()->connect(std::bind(
+        &Picking::mouseWheelHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
     
     _touchDownSlot = _touch->touchDown()->connect(std::bind(
         &Picking::touchDownHandler,
@@ -170,7 +178,7 @@ Picking::bindSignals()
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3));
-    
+
     _touchLongHoldSlot = _touch->longHold()->connect(std::bind(
         &Picking::touchLongHoldHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
@@ -718,6 +726,11 @@ Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
         _mouseLeftUp->execute(_lastPickedSurface->target());
     }
 
+    if (_executeMouseWheel && _lastPickedSurface)
+    {
+        _mouseWheel->execute(_lastPickedSurface->target());
+    }
+
     if (_executeTouchDownHandler && _lastPickedSurface)
     {
         _touchDown->execute(_lastPickedSurface->target());
@@ -824,10 +837,20 @@ void
 Picking::mouseLeftDownHandler(MousePtr mouse)
 {
     if (_mouseLeftDown->numCallbacks() > 0)
-	{
-		_executeLeftDownHandler = true;
-		enabled(true);
-	}
+    {
+        _executeLeftDownHandler = true;
+        enabled(true);
+    }
+}
+
+void
+Picking::mouseWheelHandler(MousePtr mouse, int x, int y)
+{
+    if (_mouseWheel->numCallbacks() > 0)
+    {
+        _executeMouseWheel = true;
+        enabled(true);
+    }
 }
 
 void

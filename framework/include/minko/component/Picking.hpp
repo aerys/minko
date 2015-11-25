@@ -88,6 +88,7 @@ namespace minko
 			Signal<NodePtr>::Ptr						_mouseLeftClick;
 			Signal<NodePtr>::Ptr						_mouseOut;
 			Signal<NodePtr>::Ptr						_mouseMove;
+            Signal<NodePtr>::Ptr                        _mouseWheel;
 
             Signal<NodePtr>::Ptr                        _touchDown;
             Signal<NodePtr>::Ptr                        _touchUp;
@@ -109,6 +110,7 @@ namespace minko
             Signal<MousePtr>::Slot                      _mouseLeftUpSlot;
 			Signal<MousePtr>::Slot						_mouseRightClickSlot;
 			Signal<MousePtr>::Slot						_mouseLeftClickSlot;
+            Signal<MousePtr, int, int>::Slot            _mouseWheelSlot;
             Signal<TouchPtr, int, float, float>::Slot   _touchDownSlot;
             Signal<TouchPtr, int, float, float>::Slot   _touchUpSlot;
             Signal<TouchPtr, int, float, float>::Slot   _touchMoveSlot;
@@ -123,12 +125,16 @@ namespace minko
 			bool										_executeLeftDownHandler;
             bool                                        _executeRightUpHandler;
             bool                                        _executeLeftUpHandler;
+            bool                                        _executeMouseWheel;
             bool                                        _executeTouchDownHandler;
             bool                                        _executeTouchUpHandler;
             bool                                        _executeTouchMoveHandler;
             bool                                        _executeTapHandler;
             bool                                        _executeDoubleTapHandler;
             bool                                        _executeLongHoldHandler;
+
+            int                                         _wheelX;
+            int                                         _wheelY;
 
 			bool										_addPickingLayout;
             bool                                        _emulateMouseWithTouch;
@@ -212,6 +218,13 @@ namespace minko
 			{
 				return _mouseMove;
 			}
+
+            inline
+            Signal<NodePtr>::Ptr
+            mouseWheel()
+            {
+                return _mouseWheel;
+            }
 
 			inline
             Signal<NodePtr>::Ptr
@@ -376,6 +389,9 @@ namespace minko
 
             void
             mouseLeftUpHandler(MousePtr mouse);
+
+            void
+            mouseWheelHandler(MousePtr mouse, int, int);
 
             void
             touchDownHandler(TouchPtr touch, int identifier, float x, float y);
