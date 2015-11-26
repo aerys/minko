@@ -18,8 +18,8 @@
         "uModelToWorldMatrix"   : "modelToWorldMatrix",
         "uWorldToViewMatrix"    : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
         "uPickingProjection"    : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
-        "uboneMatrices[0]"      : "geometry[${geometryUuid}].boneMatrices",
-        "numBones"              : "geometry[${geometryUuid}].numBones",
+        "uBoneMatrices[0]"      : "geometry[${geometryUuid}].boneMatrices",
+        "uNumBones"             : "geometry[${geometryUuid}].numBones",
         "uPopLod"               : "surface[${surfaceUuid}].popLod",
         "uPopBlendingLod"       : "surface[${surfaceUuid}].popBlendingLod",
         "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
@@ -30,7 +30,7 @@
     "macros" : {
         "HAS_POSITION"          : "geometry[${geometryUuid}].position",
         "MODEL_TO_WORLD"        : "modelToWorldMatrix",
-        "SKINNING_NUM_BONES"    : { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
+        "SKINNING_NUM_BONES"    : { "binding" : "geometry[${geometryUuid}].numBones", "type" : "int" },
         "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
         "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
         "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected",
@@ -38,7 +38,7 @@
     },
     
     "techniques" : [{
-        "name" : "picking-depth-technique",
+        "name" : "default",
         "passes"    : [{
             "name" : "picking-depth-pass",
             "vertexShader"      : "#pragma include \"PickingDepth.vertex.glsl\"",
