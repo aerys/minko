@@ -37,7 +37,8 @@ const float VertexWelder::_defaultEpsilon = 1e-3f;
 VertexWelder::VertexWelder() :
     AbstractWriterPreprocessor<Node::Ptr>(),
     _statusChanged(StatusChangedSignal::create()),
-    _progressRate(0.f)
+    _progressRate(0.f),
+    _nodePredicateFunction([](Node::Ptr) -> bool { return true; })
 {
 }
 
@@ -49,7 +50,12 @@ VertexWelder::process(Node::Ptr& node, AssetLibrary::Ptr assetLibrary)
 
     auto surfaceNodes = NodeSet::create(node)
         ->descendants(true)
-        ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<Surface>(); });
+        ->where([this](Node::Ptr descendant) -> bool
+            {
+                return descendant->hasComponent<Surface>() &&
+                    (!nodePredicateFunction() || nodePredicateFunction()(descendant)); 
+            }
+        );
 
     for (auto surfaceNode : surfaceNodes->nodes())
         for (auto surface : surfaceNode->components<Surface>())
