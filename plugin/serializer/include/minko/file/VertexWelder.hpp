@@ -33,13 +33,16 @@ namespace minko
         public:
             typedef std::shared_ptr<VertexWelder>           Ptr;
 
+            typedef std::shared_ptr<scene::Node>            NodePtr;
+
+            typedef std::function<bool(NodePtr)>            NodePredicateFunction;
+
             template <typename T>
             using VertexAttributePredicateFunction = std::function<bool(const std::string&,
                                                                         const T&,
                                                                         const T&)>;
 
         private:
-            typedef std::shared_ptr<scene::Node>        NodePtr;
             typedef std::shared_ptr<AssetLibrary>       AssetLibraryPtr;
 
             typedef std::shared_ptr<component::Surface> SurfacePtr;
@@ -49,6 +52,8 @@ namespace minko
         private:
             StatusChangedSignal::Ptr                        _statusChanged;
             float                                           _progressRate;
+
+            NodePredicateFunction                           _nodePredicateFunction;
 
             VertexAttributePredicateFunction<float>         _scalarAttributeWeldablePredicateFunction;
             VertexAttributePredicateFunction<math::vec2>    _vec2AttributeWeldablePredicateFunction;
@@ -70,6 +75,22 @@ namespace minko
                 auto instance = Ptr(new VertexWelder());
 
                 return instance;
+            }
+
+            inline
+            const NodePredicateFunction&
+            nodePredicateFunction() const
+            {
+                return _nodePredicateFunction;
+            }
+
+            inline
+            Ptr
+            nodePredicateFunction(const NodePredicateFunction& func)
+            {
+                _nodePredicateFunction = func;
+
+                return std::static_pointer_cast<VertexWelder>(shared_from_this());
             }
 
             inline

@@ -1,5 +1,6 @@
 package minko.plugin.htmloverlay;
 
+import android.graphics.Color;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
@@ -40,7 +41,6 @@ public class InitWebViewTask implements Runnable
     public void run() 
     {
         ViewGroup layout = SDLActivity.getLayout();
-        //layout.setBackgroundColor(Color.RED);
         
         // Create the WebView from SDLActivity context
         _webView = new MinkoWebView(SDLActivity.getContext());
@@ -55,8 +55,16 @@ public class InitWebViewTask implements Runnable
         _webView.setWebViewClient(new MinkoWebViewClient());
         
         // Transparent background
-        _webView.setBackgroundColor(0x00ff0000);
-        _webView.setLayerType(WebView.LAYER_TYPE_HARDWARE, null);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) 
+        {
+            _webView.setBackgroundColor(Color.argb(1, 0, 0, 0));
+            _webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+        }
+        else
+        {
+            _webView.setBackgroundColor(0x00ff0000);
+            _webView.setLayerType(WebView.LAYER_TYPE_HARDWARE, null);
+        }
 
         // Scale to fit the page
         _webView.getSettings().setLoadWithOverviewMode(true);
