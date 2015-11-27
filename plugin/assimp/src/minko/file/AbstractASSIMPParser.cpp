@@ -1721,8 +1721,10 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 	auto reflectiveColor = setColorProperty(material, "reflectiveColor", aiMat, AI_MATKEY_COLOR_REFLECTIVE);
 	auto transparentColor = setColorProperty(material, "transparentColor", aiMat, AI_MATKEY_COLOR_TRANSPARENT);
 
-    const auto hasSpecular = (specularColor.w > 0.f || aiMat->GetTextureCount(aiTextureType_SPECULAR) >= 1u) && 
-        shininess >= 1.f;
+    static const auto epsilon = 0.1f;
+    const auto hasSpecular = ((specularColor.rgb() != math::zero<math::vec3>() && specularColor.w > 0.f) ||
+        aiMat->GetTextureCount(aiTextureType_SPECULAR) >= 1u) &&
+        shininess > (1.f + epsilon);
 
     if (!hasSpecular)
     {
