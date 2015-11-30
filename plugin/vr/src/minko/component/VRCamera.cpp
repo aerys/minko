@@ -93,30 +93,29 @@ bool
 VRCamera::detected()
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    return WebVROculus::detected();
+	return WebVROculus::detected() || sensors::Attitude::getInstance()->isSupported();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    return true;
 #else
-	#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-		return true;
-	#else
-		return NativeOculus::detected();
-	#endif
+	return NativeOculus::detected();
 #endif
 }
 
 void
 VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, minko::uint rendererClearColor, void* window)
 {
-#ifdef EMSCRIPTEN
-    if (detected())
-	    _VRImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
-    else
+    if (!detected())
+        return;
+    
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    _VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    if (WebVROculus::detected())
+        _VRImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
+    else if (sensors::Attitude::getInstance()->isSupported())
         _VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
-#else
-	#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-		_VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
-	#else
-		_VRImpl = NativeOculus::create(viewportWidth, viewportHeight, zNear, zFar);
-	#endif
+#elif MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+    _VRImpl = NativeOculus::create(viewportWidth, viewportHeight, zNear, zFar);
 #endif
 
     // Initialize both eyes' renderers
