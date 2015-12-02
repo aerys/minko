@@ -81,7 +81,7 @@ ChromiumDOMEngine::start(int argc, char** argv)
 }
 
 void
-ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<component::SceneManager> sceneManager, minko::scene::Node::Ptr root)
+ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<component::SceneManager> sceneManager, minko::scene::Node::Ptr root, bool secure)
 {
 	_canvas = canvas;
 	_sceneManager = sceneManager;
@@ -93,6 +93,7 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	{
 		std::shared_ptr<render::Texture> texture = _impl->app->initialize(canvas, _sceneManager->assets()->context(), _impl);
 
+        _impl->app->secure(secure);
 		_impl->renderHandler->visible(_visible);
 
 		CefSettings settings;
@@ -100,6 +101,7 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 		settings.single_process = 1;
 		settings.no_sandbox = 1;
 		settings.command_line_args_disabled = 1;
+        settings.ignore_certificate_errors = secure ? 0 : 1;
 
 		int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
 

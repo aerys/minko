@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2015 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,35 +17,16 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include <random>
 
-#include "minko/Common.hpp"
+#include "minko/Rand.hpp"
 
-namespace minko
+using namespace minko;
+
+std::mt19937 Rand::_engine = std::mt19937(std::random_device()());
+
+int
+Rand::rand()
 {
-    namespace scene
-    {
-        typedef uint32_t Layout;
-
-        struct BuiltinLayout
-        {
-            static const Layout DEFAULT;
-            static const Layout DEBUG_ONLY;
-            static const Layout STATIC;
-            static const Layout IGNORE_RAYCASTING;
-            static const Layout IGNORE_CULLING;
-            static const Layout HIDDEN;
-            static const Layout PICKING;
-            static const Layout _RESERVED_3;
-            static const Layout MINOR_OBJECT;
-            static const Layout PICKING_DEPTH;
-        };
-
-        struct LayoutMask
-        {
-            static const Layout NOTHING;
-            static const Layout EVERYTHING;
-            static const Layout COLLISIONS_DYNAMIC_DEFAULT;
-        };
-    }
+    return std::uniform_int_distribution<int>(0, RAND_MAX)(_engine);
 }

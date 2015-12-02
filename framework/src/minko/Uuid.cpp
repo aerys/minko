@@ -17,6 +17,26 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/Rand.hpp"
 #include "minko/Uuid.hpp"
 
+using namespace minko;
+
 bool minko::Uuid::_randSeeded = false;
+
+std::string
+Uuid::s4()
+{
+    if (!_randSeeded)
+    {
+        Rand::srand(static_cast<uint>(std::time(0)));
+        _randSeeded = true;
+    }
+
+    int rand = Rand::rand();
+
+    std::ostringstream os;
+    os << std::hex << rand;
+
+    return os.str().substr(0, 4);
+}

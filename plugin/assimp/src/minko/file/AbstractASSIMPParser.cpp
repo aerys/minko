@@ -1721,26 +1721,34 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 	auto reflectiveColor = setColorProperty(material, "reflectiveColor", aiMat, AI_MATKEY_COLOR_REFLECTIVE);
 	auto transparentColor = setColorProperty(material, "transparentColor", aiMat, AI_MATKEY_COLOR_TRANSPARENT);
 
-	if (shininess < 1.0f)
-		// Gouraud-like shading (-> no specular)
-		specularColor.w = 0.f;
+    static const auto epsilon = 0.1f;
+    const auto hasSpecular = ((specularColor.rgb() != math::zero<math::vec3>() && specularColor.w > 0.f) ||
+        aiMat->GetTextureCount(aiTextureType_SPECULAR) >= 1u) &&
+        shininess > (1.f + epsilon);
 
-	if (shininess == 0.f)
-		material->data()->set("shininess", 64.0f);
+    if (!hasSpecular)
+    {
+        // Gouraud-like shading (-> no specular)
+
+        material->data()->unset("shininess");
+        specularColor.w = 0.f;
+    }
 
     auto transparent = opacity > 0.f && opacity < 1.f;
 
     if (transparent)
     {
         diffuseColor.w = opacity;
-        specularColor.w = opacity;
+        if (hasSpecular)
+            specularColor.w = opacity;
         ambientColor.w = opacity;
         emissiveColor.w = opacity;
         reflectiveColor.w = opacity;
         transparentColor.w = opacity;
 
 		material->data()->set("diffuseColor", diffuseColor);
-		material->data()->set("specularColor", specularColor);
+        if (hasSpecular)
+		    material->data()->set("specularColor", specularColor);
 		material->data()->set("ambientColor", ambientColor);
 		material->data()->set("emissiveColor", emissiveColor);
 		material->data()->set("reflectiveColor", reflectiveColor);

@@ -124,12 +124,14 @@ namespace minko
 				return shared_from_this();
 			}
 
+            float
+            distance(const math::vec3& position);
+
 			bool
 			cast(std::shared_ptr<Ray> ray, float& distance);
 
 			std::array<vec3, 8>
 			getVertices();
-
 			
 			ShapePosition
 			testBoundingBox(std::shared_ptr<math::Box> box);

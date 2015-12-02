@@ -62,7 +62,7 @@ namespace chromium
 			clear();
 			
 			void
-			initialize(std::shared_ptr<minko::AbstractCanvas>, std::shared_ptr<minko::component::SceneManager>, std::shared_ptr<minko::scene::Node>);
+			initialize(std::shared_ptr<minko::AbstractCanvas>, std::shared_ptr<minko::component::SceneManager>, std::shared_ptr<minko::scene::Node>, bool secure = true);
 			
 			void
 			remove();

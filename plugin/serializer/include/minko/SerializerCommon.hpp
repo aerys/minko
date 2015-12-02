@@ -51,8 +51,15 @@ namespace minko
         class SurfaceOperator;
         class TextureParser;
         class TextureWriter;
+        class VertexWelder;
         class WriterOptions;
 	}
+
+    namespace math
+    {
+        template <typename T>
+        class SpatialIndex;
+    }
 
 	namespace serialize
 	{

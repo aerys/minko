@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/StreamingOptions.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/material/Material.hpp"
+#include "minko/math/SpatialIndex.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/scene/Node.hpp"
@@ -202,25 +203,33 @@ MeshPartitioner::MeshPartitioner() :
 
 static
 void
-bounds(Node::Ptr root, math::vec3& minBound, math::vec3& maxBound)
+bounds(NodeSet::Ptr nodes, math::vec3& minBound, math::vec3& maxBound)
 {
+    if (nodes->nodes().empty())
+        return;
+
+    auto root = nodes->nodes().front()->root();
+
     if (!root->hasComponent<Transform>())
         root->addComponent(Transform::create());
 
-    auto meshNodes = NodeSet::create(root)
-        ->descendants(true)
-        ->where([](Node::Ptr descendant){ return descendant->hasComponent<Surface>(); });
-
-    for (auto meshNode : meshNodes->nodes())
-        if (!meshNode->hasComponent<BoundingBox>())
-            meshNode->addComponent(BoundingBox::create());
+    for (auto node : nodes->nodes())
+        if (!node->hasComponent<BoundingBox>())
+            node->addComponent(BoundingBox::create());
 
     root->component<Transform>()->updateModelToWorldMatrix();
 
-    auto worldBox = math::Box::create();
+    auto worldBox = math::Box::Ptr();
 
-    for (auto meshNode : meshNodes->nodes())
-        worldBox = worldBox->merge(meshNode->component<BoundingBox>()->box());
+    for (auto node : nodes->nodes())
+    {
+        auto box = node->component<BoundingBox>()->box();
+
+        if (!worldBox)
+            worldBox = math::Box::create(box->topRight(), box->bottomLeft());
+        else
+            worldBox = worldBox->merge(box);
+    }
 
     minBound = worldBox->bottomLeft();
     maxBound = worldBox->topRight();
@@ -239,18 +248,18 @@ contains(math::Box::Ptr left, math::Box::Ptr right)
 }
 
 void
-MeshPartitioner::defaultWorldBoundsFunction(Node::Ptr root, math::vec3& minBound, math::vec3& maxBound)
+MeshPartitioner::defaultWorldBoundsFunction(NodeSet::Ptr nodes, math::vec3& minBound, math::vec3& maxBound)
 {
-    bounds(root, minBound, maxBound);
+    bounds(nodes, minBound, maxBound);
 }
 
 math::vec3
-MeshPartitioner::defaultPartitionMaxSizeFunction(Node::Ptr root)
+MeshPartitioner::defaultPartitionMaxSizeFunction(Options& options, NodeSet::Ptr nodes)
 {
     auto minBound = math::vec3();
     auto maxBound = math::vec3();
 
-    bounds(root, minBound, maxBound);
+    options.worldBoundsFunction(nodes, minBound, maxBound);
 
     return (maxBound - minBound);
 }
@@ -364,7 +373,7 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
     _assetLibrary = assetLibrary;
 
-    auto meshNodes = NodeSet::create(node)
+    _filteredNodes = NodeSet::create(node)
         ->descendants(true)
         ->where([this](Node::Ptr descendant) -> bool
         {
@@ -375,13 +384,13 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
         }
     );
 
-    if (meshNodes->nodes().empty())
+    if (_filteredNodes->nodes().empty())
         return;
 
     if (_options.worldBoundsFunction)
-        _options.worldBoundsFunction(node, _worldMinBound, _worldMaxBound);
+        _options.worldBoundsFunction(_filteredNodes, _worldMinBound, _worldMaxBound);
     else
-        defaultWorldBoundsFunction(node, _worldMinBound, _worldMaxBound);
+        defaultWorldBoundsFunction(_filteredNodes, _worldMinBound, _worldMaxBound);
 
     auto mergedComponentRoot = Node::create()
         ->addComponent(Transform::create());
@@ -397,9 +406,9 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
     auto surfaces = std::vector<Surface::Ptr>();
 
-    for (auto meshNode : meshNodes->nodes())
-        for (auto surface : meshNode->components<Surface>())
-        surfaces.push_back(surface);
+    for (auto filteredNode : _filteredNodes->nodes())
+        for (auto surface : filteredNode->components<Surface>())
+            surfaces.push_back(surface);
 
     findInstances(surfaces);
 
@@ -460,6 +469,8 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
         auto partitionInfo = PartitionInfo();
 
+        partitionInfo.mergedIndices = math::SpatialIndex<std::unordered_set<unsigned int>>::create(1e-3f);
+
         for (auto surface : surfaceBucket)
         {
             if (!_options.validSurfacePredicate(surface))
@@ -507,9 +518,11 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
         }
         else if (!uniqueTarget)
         {
-            auto newNodeName = targetNode->name();
+            const auto newNodeName = targetNode->name();
+            const auto newNodeLayout = targetNode->layout();
 
             targetNode = Node::create(newNodeName)
+                ->layout(newNodeLayout)
                 ->addComponent(Transform::create())
                 ->addComponent(BoundingBox::create());
 
@@ -554,54 +567,27 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 }
 
 MeshPartitioner::OctreeNodePtr
-MeshPartitioner::pickBestPartitions(OctreeNodePtr       root,
-                                    const math::vec3&   modelMinBound,
-                                    const math::vec3&   modelMaxBound,
-                                    PartitionInfo&      partitionInfo)
-{
-    auto currentMinBound = root->minBound;
-    auto currentMaxBound = root->maxBound;
-
-    auto validNode = OctreeNodePtr();
-
-    if (!contains(math::Box::create(root->maxBound, root->minBound), math::Box::create(modelMaxBound, modelMinBound)))
-        return root;
-
-    splitNode(root, partitionInfo);
-
-    for (auto child : root->children)
-    {
-        if (contains(math::Box::create(child->maxBound, child->minBound), math::Box::create(modelMaxBound, modelMinBound)))
-        {
-            validNode = pickBestPartitions(child, modelMinBound, modelMaxBound, partitionInfo);
-
-            break;
-        }
-    }
-
-    if (validNode == nullptr)
-    {
-        root->children.clear();
-
-        return root;
-    }
-
-    return validNode;
-}
-
-MeshPartitioner::OctreeNodePtr
 MeshPartitioner::ensurePartitionSizeIsValid(OctreeNodePtr       node,
                                             const math::vec3&   maxSize,
                                             PartitionInfo&      partitionInfo)
 {
-    const auto minBound = node->minBound;
-    const auto maxBound = node->maxBound;
+    auto minBound = node->minBound;
+    auto maxBound = node->maxBound;
+
+    if (!partitionInfo.useRootSpace)
+    {
+        auto transform = partitionInfo.surfaces.front()->target()->component<Transform>();
+
+        minBound = (transform->modelToWorldMatrix() * math::vec4(minBound, 1.f)).xyz();
+        maxBound = (transform->modelToWorldMatrix() * math::vec4(maxBound, 1.f)).xyz();
+    }
 
     const auto nodeSize = maxBound - minBound;
+    const auto nodeSizeGreaterThanMaxSize = math::greaterThan(nodeSize, maxSize);
 
-    if (nodeSize.x > maxSize.x ||
-        nodeSize.y > maxSize.y ||
-        nodeSize.z > maxSize.z)
+    if (nodeSizeGreaterThanMaxSize.x ||
+        nodeSizeGreaterThanMaxSize.y ||
+        nodeSizeGreaterThanMaxSize.z)
     {
         splitNode(node, partitionInfo);
 
@@ -796,7 +782,7 @@ MeshPartitioner::registerSharedTriangle(OctreeNodePtr    partitionNode,
                 partitionInfo
             );
 
-            const auto& secondaryDiscontinousHalfEdgeIndices = partitionInfo.mergedIndices.at(
+            const auto& secondaryDiscontinousHalfEdgeIndices = partitionInfo.mergedIndices->at(
                 discontinousHalfEdgeVertexPosition
             );
 
@@ -1067,7 +1053,22 @@ MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
     const auto vertexSize = referenceGeometry->vertexSize();
 
     partitionInfo.vertexSize = vertexSize;
-    partitionInfo.positionAttributeOffset = 0u;
+
+    auto globalPositionVertexAttributeOffset = 0u;
+
+    for (auto vertexBuffer : referenceGeometry->vertexBuffers())
+    {
+        if (vertexBuffer->hasAttribute("position"))
+        {
+            partitionInfo.positionAttributeOffset = globalPositionVertexAttributeOffset + vertexBuffer->attribute("position").offset;
+
+            break;
+        }
+
+        globalPositionVertexAttributeOffset += vertexBuffer->vertexSize();
+    }
+
+    partitionInfo.positionAttributeOffset = globalPositionVertexAttributeOffset;
 
     auto& indices = partitionInfo.indices;
     auto& vertices = partitionInfo.vertices;
@@ -1260,12 +1261,9 @@ MeshPartitioner::buildHalfEdges(PartitionInfo& partitionInfo)
             index * partitionInfo.vertexSize + partitionInfo.positionAttributeOffset
         ));
 
-        auto it = partitionInfo.mergedIndices.insert(std::make_pair(
-            position,
-            std::unordered_set<unsigned int>()
-        ));
+        auto& mergedIndices = partitionInfo.mergedIndices->at(position);
 
-        it.first->second.insert(index);
+        mergedIndices.insert(index);
     }
 
     return true;
@@ -1274,17 +1272,8 @@ MeshPartitioner::buildHalfEdges(PartitionInfo& partitionInfo)
 bool
 MeshPartitioner::buildPartitions(PartitionInfo& partitionInfo)
 {
-    const auto minBound = partitionInfo.minBound;
-    const auto maxBound = partitionInfo.maxBound;
-
-    auto rootPartitionMinBound = minBound;
-    auto rootPartitionMaxBound = maxBound;
-
-    if (_options.flags & Options::uniformizeSize)
-    {
-        rootPartitionMinBound = _worldMinBound;
-        rootPartitionMaxBound = _worldMaxBound;
-    }
+    const auto rootPartitionMinBound = partitionInfo.minBound;
+    const auto rootPartitionMaxBound = partitionInfo.maxBound;
 
     auto& octreeRoot = partitionInfo.rootPartitionNode;
 
@@ -1295,29 +1284,15 @@ MeshPartitioner::buildPartitions(PartitionInfo& partitionInfo)
         nullptr
     ));
 
-    if (_options.flags & Options::uniformizeSize)
-    {
-        auto nodeMinBound = minBound;
-        auto nodeMaxBound = maxBound;
+    partitionInfo.baseDepth = 0;
 
-        // fixme apply transform according to partitionInfo.useRootSpace
-
-        octreeRoot = pickBestPartitions(octreeRoot, nodeMinBound, nodeMaxBound, partitionInfo);
-
-        partitionInfo.baseDepth = octreeRoot->depth;
-    }
-    else
-    {
-        partitionInfo.baseDepth = 0;
-    }
-
-    //octreeRoot = ensurePartitionSizeIsValid(
-    //    octreeRoot,
-    //    _options._partitionMaxSizeFunction
-    //        ? _options._partitionMaxSizeFunction(root)
-    //        : defaultPartitionMaxSizeFunction(root),
-    //    math::mat4()
-    //);
+    octreeRoot = ensurePartitionSizeIsValid(
+        octreeRoot,
+        _options.partitionMaxSizeFunction
+            ? _options.partitionMaxSizeFunction(_options, _filteredNodes)
+            : defaultPartitionMaxSizeFunction(_options, _filteredNodes),
+        partitionInfo
+    );
 
     for (auto i = 0; i < partitionInfo.indices.size(); i += 3)
     {
@@ -1398,12 +1373,6 @@ MeshPartitioner::buildGeometries(Node::Ptr                      node,
             auto minBound = pendingNode->minBound;
             auto maxBound = pendingNode->maxBound;
 
-            if (_options.flags & Options::uniformizeSize)
-            {
-                minBound = math::vec3(worldToModelMatrix * math::vec4(minBound, 1.f));
-                maxBound = math::vec3(worldToModelMatrix * math::vec4(maxBound, 1.f));
-            }
-
             if (referenceGeometry->data()->hasProperty("type"))
                 newGeometry->data()->set("type", referenceGeometry->data()->get<std::string>("type"));
 
@@ -1461,6 +1430,7 @@ MeshPartitioner::patchNode(Node::Ptr                            node,
         if (_options.flags & Options::createOneNodePerSurface)
         {
             auto newNode = Node::create(node->name())
+                ->layout(node->layout())
                 ->addComponent(Transform::create())
                 ->addComponent(BoundingBox::create())
                 ->addComponent(newSurface);

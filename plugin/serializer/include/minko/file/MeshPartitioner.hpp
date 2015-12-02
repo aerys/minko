@@ -33,9 +33,12 @@ namespace minko
             public AbstractWriterPreprocessor<std::shared_ptr<scene::Node>>
         {
         public:
-            typedef std::shared_ptr<MeshPartitioner> Ptr;
+            struct Options;
 
-            typedef std::shared_ptr<scene::Node> NodePtr;
+            typedef std::shared_ptr<MeshPartitioner>    Ptr;
+
+            typedef std::shared_ptr<scene::Node>        NodePtr;
+            typedef std::shared_ptr<scene::NodeSet>     NodeSetPtr;
 
             typedef std::shared_ptr<component::Surface> SurfacePtr;
 
@@ -51,31 +54,29 @@ namespace minko
 
                 static const unsigned int mergeSurfaces                     = 1 << 0;
                 static const unsigned int createOneNodePerSurface           = 1 << 1;
-                static const unsigned int uniformizeSize                    = 1 << 3;
-                static const unsigned int applyCrackFreePolicy              = 1 << 4;
+                static const unsigned int applyCrackFreePolicy              = 1 << 2;
 
                 static const unsigned int all                               = mergeSurfaces |
                                                                               createOneNodePerSurface |
-                                                                              uniformizeSize |
                                                                               applyCrackFreePolicy;
 
-                int                                                     maxNumTrianglesPerNode;
-                int                                                     maxNumIndicesPerNode;
+                int                                                         maxNumTrianglesPerNode;
+                int                                                         maxNumIndicesPerNode;
 
-                int                                                     maxNumSurfacesPerSurfaceBucket;
-                int                                                     maxNumTrianglesPerSurfaceBucket;
+                int                                                         maxNumSurfacesPerSurfaceBucket;
+                int                                                         maxNumTrianglesPerSurfaceBucket;
 
-                unsigned int                                            flags;
+                unsigned int                                                flags;
 
-                std::function<math::vec3(NodePtr)>                      partitionMaxSizeFunction;
+                std::function<math::vec3(Options&, NodeSetPtr)>             partitionMaxSizeFunction;
 
-                std::function<void(NodePtr, math::vec3&, math::vec3&)>  worldBoundsFunction;
+                std::function<void(NodeSetPtr, math::vec3&, math::vec3&)>   worldBoundsFunction;
 
-                std::function<bool(NodePtr)>                            nodeFilterFunction;
-                SurfaceIndexer                                          surfaceIndexer;
+                std::function<bool(NodePtr)>                                nodeFilterFunction;
+                SurfaceIndexer                                              surfaceIndexer;
 
-                std::function<bool(SurfacePtr)>                         validSurfacePredicate;
-                std::function<bool(SurfacePtr)>                         instanceSurfacePredicate;
+                std::function<bool(SurfacePtr)>                             validSurfacePredicate;
+                std::function<bool(SurfacePtr)>                             instanceSurfacePredicate;
 
                 Options();
             };
@@ -152,10 +153,9 @@ namespace minko
                 std::unordered_set<
                     unsigned int
                 >                           protectedIndices;
-                std::unordered_map<
-                    math::vec3,
-                    std::unordered_set<unsigned int>,
-                    Hash<math::vec3>
+
+                std::shared_ptr<
+                    math::SpatialIndex<std::unordered_set<unsigned int>>
                 >                           mergedIndices;
                 std::unordered_set<
                     unsigned int
@@ -172,6 +172,8 @@ namespace minko
             std::shared_ptr<StreamingOptions>                           _streamingOptions;
 
             AssetLibraryPtr                                             _assetLibrary;
+
+            NodeSetPtr                                                  _filteredNodes;
 
             math::vec3                                                  _worldMinBound;
             math::vec3                                                  _worldMaxBound;
@@ -235,11 +237,11 @@ namespace minko
 
             static
             void
-            defaultWorldBoundsFunction(NodePtr root, math::vec3& minBound, math::vec3& maxBound);
+            defaultWorldBoundsFunction(NodeSetPtr nodes, math::vec3& minBound, math::vec3& maxBound);
 
             static
             math::vec3
-            defaultPartitionMaxSizeFunction(NodePtr root);
+            defaultPartitionMaxSizeFunction(Options& options, NodeSetPtr nodes);
 
             void
             findInstances(const std::vector<SurfacePtr>& surfaces);
@@ -254,12 +256,6 @@ namespace minko
             void
             splitSurface(SurfacePtr                 surface,
                          std::vector<SurfacePtr>&   splitSurface);
-
-            OctreeNodePtr
-            pickBestPartitions(OctreeNodePtr        root,
-                               const math::vec3&    modelMinBound,
-                               const math::vec3&    modelMaxBound,
-                               PartitionInfo&       partitionInfo);
 
             OctreeNodePtr
             ensurePartitionSizeIsValid(OctreeNodePtr        node,

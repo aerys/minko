@@ -30,18 +30,19 @@ using namespace minko;
 using namespace chromium;
 
 ChromiumRenderHandler::ChromiumRenderHandler(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<render::AbstractContext> context) :
-	_canvas(canvas), 
-	_context(context),
-	_popupH(0),
-	_popupW(0),
-	_popupY(0),
-	_popupX(0),
-	_viewBuffer(nullptr),
-	_popupBuffer(nullptr),
-	renderTexture(nullptr),
-	textureChanged(false),
-	_popupUpdated(false),
-	_popupShown(false)
+    _canvas(canvas),
+    _context(context),
+    _popupH(0),
+    _popupW(0),
+    _popupY(0),
+    _popupX(0),
+    _viewBuffer(nullptr),
+    _popupBuffer(nullptr),
+    renderTexture(nullptr),
+    textureChanged(false),
+    _popupUpdated(false),
+    _popupShown(false),
+    _currentCursor(0)
 {
 	generateTexture();
 }
@@ -255,6 +256,7 @@ ChromiumRenderHandler::OnCursorChange(CefRefPtr<CefBrowser> browser, CefCursorHa
 {
 #if defined(_MSC_VER) 
 	SetCursor(cursor);
+    _currentCursor = cursor;
 #endif
 }
 #endif

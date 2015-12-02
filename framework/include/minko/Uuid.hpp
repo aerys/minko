@@ -78,20 +78,6 @@ namespace minko
 	private:
 		static
 		std::string
-		s4()
-		{
-			if (!_randSeeded)
-			{
-				std::srand(static_cast<uint>(std::time(0)));
-				_randSeeded = true;
-			}
-
-			int rand = std::rand();
-
-			std::ostringstream os;
-			os << std::hex << rand;
-
-			return os.str().substr(0, 4);
-		}
+		s4();
 	};
 }

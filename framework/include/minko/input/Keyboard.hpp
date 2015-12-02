@@ -689,7 +689,7 @@ namespace minko
             Signal<Ptr>::Ptr                                    _down;
             Signal<Ptr>::Ptr                                    _up;
 
-            Signal<Ptr, char>::Ptr                              _textInput;
+            Signal<Ptr, char16_t>::Ptr                          _textInput;
 
         public:
             inline static
@@ -714,7 +714,7 @@ namespace minko
             }
 
             virtual
-            Signal<Ptr, char>::Ptr
+            Signal<Ptr, char16_t>::Ptr
             textInput() const
             {
                 return _textInput;

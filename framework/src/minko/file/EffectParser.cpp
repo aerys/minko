@@ -156,8 +156,22 @@ EffectParser::parse(const std::string&				    filename,
 	Json::Value root;
 	Json::Reader reader;
 
-	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
-		_error->execute(shared_from_this(), file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages()));
+    // Add a line ending to avoid JSON parsing error
+    auto tempData = data;
+    tempData.push_back('\n');
+
+    auto parseSuccess = reader.parse(
+        reinterpret_cast<const char*>(&tempData[0]),
+        reinterpret_cast<const char*>(&tempData[tempData.size() - 1]), root, false
+    );
+
+    if (!parseSuccess)
+    {
+        _error->execute(
+            shared_from_this(), 
+            file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages())
+        );
+    }
 
 	_options = options;
 

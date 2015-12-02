@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/log/Logger.hpp"
+
 #include "VRImpl.hpp"
 
 namespace minko
@@ -88,6 +90,8 @@ namespace minko
             Ptr
             create(int viewportWidth, int viewportHeight, float zNear, float zFar)
             {
+                LOG_INFO("Create a WebVROculus instance.");
+
                 auto ptr = std::shared_ptr<WebVROculus>(new WebVROculus(viewportWidth, viewportHeight, zNear, zFar));
 
                 return ptr;

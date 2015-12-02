@@ -27,7 +27,7 @@
     "macros" : {
         "HAS_POSITION"          : "geometry[${geometryUuid}].position",
         "MODEL_TO_WORLD"        : "modelToWorldMatrix",
-        "SKINNING_NUM_BONES"    : { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
+        "SKINNING_NUM_BONES"    : { "binding" : "geometry[${geometryUuid}].numBones", "type" : "int" },
         "PICKING_COLOR"         : "surface[${surfaceUuid}].pickingColor",
         "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
         "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",

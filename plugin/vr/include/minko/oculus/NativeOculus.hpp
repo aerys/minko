@@ -20,8 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "VRImpl.hpp"
 #include "minko/Signal.hpp"
+#include "minko/log/Logger.hpp"
+
+#include "VRImpl.hpp"
 
 extern "C"
 {
@@ -114,6 +116,8 @@ namespace minko
             Ptr
             create(int viewportWidth, int viewportHeight, float zNear, float zFar)
             {
+                LOG_INFO("Create a NativeOculus instance.");
+
                 auto ptr = std::shared_ptr<NativeOculus>(new NativeOculus(viewportWidth, viewportHeight, zNear, zFar));
 
                 return ptr;
