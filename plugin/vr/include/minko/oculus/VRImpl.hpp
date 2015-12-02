@@ -45,6 +45,10 @@ namespace minko
 
             virtual
             void
+            targetAdded() = 0;
+
+            virtual
+            void
             updateViewport(int viewportWidth, int viewportHeight) = 0;
 
             virtual

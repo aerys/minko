@@ -76,8 +76,14 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 			destdir = path.getdirectory(destpath)
 		end
 
+		local xcopyoptions = '/y /i'
+
+		if os.isdir(sourcepath) then
+			xcopyoptions = xcopyoptions .. ' /e'
+		end
+
 		return 'mkdir ' .. translate(destdir) .. ' & ' ..
-			   'xcopy /y /e /i ' .. translate(sourcepath) .. ' ' .. translate(destdir)
+			   'xcopy ' .. xcopyoptions .. ' ' .. translate(sourcepath) .. ' ' .. translate(destdir)
 	else
 		if destpath ~= gettargetdir() and not string.endswith(destpath, '/') then
 			destdir = path.getdirectory(destpath)

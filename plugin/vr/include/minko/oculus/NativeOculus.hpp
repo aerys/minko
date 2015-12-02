@@ -51,6 +51,8 @@ namespace minko
 
             std::shared_ptr<component::Renderer>                _leftRenderer;
             std::shared_ptr<component::Renderer>                _rightRenderer;
+            math::ivec4                                         _leftRendererViewport;
+            math::ivec4                                         _rightRendererViewport;
 
             void
             initializePostProcessingRenderer(std::shared_ptr<component::SceneManager> sceneManager);
@@ -70,6 +72,9 @@ namespace minko
 
             void
             initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr);
+
+            void
+            targetAdded();
 
             void
             targetRemoved();

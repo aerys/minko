@@ -1,0 +1,30 @@
+{
+    "name" : "cel-shading",
+    "techniques" : [
+        {
+            "name" : "default",
+            "passes" : [
+                {
+                    "name" : "basic-opaque-pass",
+                    "extends" : {
+                        "effect"    : "../BaseStreamingTemplate.effect",
+                        "technique" : "base-streaming-technique",
+                        "pass"      : "base-streaming-pass"
+                    },
+                    "attributes" : {
+                        "aNormal"   : "geometry[${geometryUuid}].normal"
+                    },
+                    "uniforms" : {
+                        "uViewMatrix"           : { "binding" : { "property" : "viewMatrix", "source" : "renderer" } },
+                        "uProjectionMatrix"     : { "binding" : { "property" : "projectionMatrix", "source" : "renderer" } }
+                    },
+                    "states" : {
+                        "triangleCulling" : "front"
+                    },
+                    "vertexShader" : "#pragma include \"Outline.vertex.glsl\"",
+                    "fragmentShader" : "#pragma include \"Outline.fragment.glsl\""
+                }
+            ]
+        }
+    ]
+}

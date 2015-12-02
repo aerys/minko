@@ -154,7 +154,7 @@ bullet::ColliderDebug::addRootColliderDebugNode()
 
     _node = Node::create("colliderDebugNode")
         ->addComponent(_surface)
-        ->addComponent(Transform::create());
+        ->addComponent(Transform::create((target()->component<Transform>()->modelToWorldMatrix(true))));
 
     target()->root()->addChild(_node);
 }

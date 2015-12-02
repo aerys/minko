@@ -74,6 +74,7 @@ namespace minko
 
                 Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
                 Signal<AbsCmpPtr, NodePtr>::Slot                    _targetRemovedSlot;
+                Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot           _componentAddedSlot;
                 Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
                 Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
                 Signal<SceneManagerPtr, float, float>::Slot         _frameBeginSlot;

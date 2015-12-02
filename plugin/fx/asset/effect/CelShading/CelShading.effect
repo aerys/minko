@@ -1,0 +1,37 @@
+{
+    "name": "cel-shading",
+    "techniques": [
+        {
+            "name": "default",
+            "passes": [
+                {
+                    "name": "cel-shading-pass",
+                    "extends": {
+                      "effect": "../BaseStreamingTemplate.effect",
+                      "technique": "base-streaming-technique",
+                      "pass": "base-streaming-pass"
+                    },
+                    "uniforms": {
+                      "uCameraPosition": { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
+                      "uCameraDirection": { "binding" : { "property" : "eyeDirection", "source" : "renderer" } },
+                      "uAmbientLight0_color": { "binding" : { "property" : "ambientLight[0].color", "source" : "root" } },
+                      "uAmbientLight0_ambient": { "binding" : { "property" : "ambientLight[0].ambient", "source" : "root" } },
+                      "uDirLight0_direction": { "binding" : { "property" : "directionalLight[0].direction", "source" : "root" } },
+                      "uDirLight0_color": { "binding" : { "property" : "directionalLight[0].color", "source" : "root" } },
+                      "uDirLight0_diffuse": { "binding" : { "property" : "directionalLight[0].diffuse", "source" : "root" } },
+                      "uDiscretizedLightMap": { "binding" : { "property" : "discretizedLightMap", "source" : "renderer" } },
+                      "uBorderThreshold": { "binding" : { "property" : "borderThreshold", "source" : "root" } }
+                    },
+                    "attributes": {
+                      "aNormal": "geometry[${geometryUuid}].normal"
+                    },
+                    "macros": {
+                      "NUM_DIRECTIONAL_LIGHTS": { "binding" : { "property" : "directionalLight.length", "source" : "root", "max" : 4 }, "type" : "int" }
+                    },
+                    "vertexShader": "#pragma include \"CelShading.vertex.glsl\"",
+                    "fragmentShader": "#pragma include \"CelShading.fragment.glsl\""
+                }
+            ]
+        }
+    ]
+}

@@ -27,9 +27,9 @@ float4 main(in float4 oPosition  : SV_Position,  in float2 oTexCoord0 : TEXCOORD
 void 
 main(void)
 {
-	float r = texture2D(uTexture, vec2(vTexCoord0.x, 1. - vTexCoord0.y)).r;
-    float g = texture2D(uTexture, vec2(vTexCoord1.x, 1. - vTexCoord1.y)).g;
-    float b = texture2D(uTexture, vec2(vTexCoord2.x, 1. - vTexCoord2.y)).b;
+	float r = texture2D(uTexture, vec2(vTexCoord0.x, 1.0 - vTexCoord0.y)).r;
+    float g = texture2D(uTexture, vec2(vTexCoord1.x, 1.0 - vTexCoord1.y)).g;
+    float b = texture2D(uTexture, vec2(vTexCoord2.x, 1.0 - vTexCoord2.y)).b;
 
 	gl_FragColor = vVignette * vec4(r, g, b, 1.);
 }
