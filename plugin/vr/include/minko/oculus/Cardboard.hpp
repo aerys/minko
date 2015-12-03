@@ -62,6 +62,9 @@ namespace minko
                 void* window = nullptr);
 
             void
+            targetAdded();
+
+            void
             targetRemoved();
 
             void

@@ -151,16 +151,16 @@ namespace minko
         createScene();
 
         uint
-        x();
+        x() override;
 
         uint
-        y();
+        y() override;
 
         uint
-        width();
+        width() override;
 
         uint
-        height();
+        height() override;
 
         float
         aspectRatio() override
@@ -179,11 +179,11 @@ namespace minko
         systemWindow() const;
 
         int
-        getJoystickAxis(input::Joystick::Ptr joystick, int axis);
+        getJoystickAxis(input::Joystick::Ptr joystick, int axis) override;
 
         inline
         std::shared_ptr<data::Provider>
-        data() const
+        data() const override
         {
             return _data;
         }
@@ -204,28 +204,28 @@ namespace minko
 
         inline
         std::shared_ptr<input::Mouse>
-        mouse()
+        mouse() override
         {
             return _mouse;
         }
 
         inline
         std::shared_ptr<input::Keyboard>
-        keyboard()
+        keyboard() override
         {
             return _keyboard;
         }
 
         inline
         std::shared_ptr<input::Touch>
-        touch()
+        touch() override
         {
             return _touch;
         }
 
         inline
         std::shared_ptr<input::Joystick>
-        joystick(uint id)
+        joystick(uint id) override
         {
             return id < numJoysticks() ? _joysticks[id] : nullptr;
         }
@@ -239,28 +239,28 @@ namespace minko
 
         inline
         uint
-        numJoysticks()
+        numJoysticks() override
         {
             return _joysticks.size();
         }
 
         inline
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
-        joystickAdded()
+        joystickAdded() override
         {
             return _joystickAdded;
         }
 
         inline
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
-        joystickRemoved()
+        joystickRemoved() override
         {
             return _joystickRemoved;
         }
 
         inline
         Signal<AbstractCanvas::Ptr, uint, uint>::Ptr
-        resized()
+        resized() override
         {
             return _resized;
         }
@@ -274,21 +274,21 @@ namespace minko
 
         inline
         Signal<AbstractCanvas::Ptr>::Ptr
-        suspended()
+        suspended() override
         {
             return _suspended;
         }
 
         inline
         Signal<AbstractCanvas::Ptr>::Ptr
-        resumed()
+        resumed() override
         {
             return _resumed;
         }
 
         inline
         minko::render::AbstractContext::Ptr
-        context()
+        context() override
         {
             return _context;
         }
@@ -330,7 +330,7 @@ namespace minko
         // Current frame execution time in milliseconds.
         inline
         float
-        frameDuration() const
+        frameDuration() const override
         {
             return _frameDuration;
         }
@@ -346,16 +346,16 @@ namespace minko
         // Time in milliseconds since application started.
         inline
         float
-        relativeTime() const
+        relativeTime() const override
         {
             return _relativeTime;
         }
 
         WorkerPtr
-        getWorker(const std::string& name);
+        getWorker(const std::string& name) override;
 
         bool
-        isWorkerRegistered(const std::string& name)
+        isWorkerRegistered(const std::string& name) override
         {
             return _workers.count(name) != 0;
         };
