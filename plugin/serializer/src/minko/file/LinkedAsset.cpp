@@ -45,6 +45,14 @@ LinkedAsset::resolve(Options::Ptr options)
             ->seekingOffset(loaderOptions->seekingOffset() + offset())
             ->storeDataIfNotParsed(false);
 
+        _loaderProgressSlot = loader->progress()->connect(
+            [=](Loader::Ptr loaderThis,
+                float       progressRate)
+            {
+                progress()->execute(shared_from_this(), progressRate);
+            }
+        );
+
         _loaderErrorSlot = loader->error()->connect(
             [=](Loader::Ptr     loaderThis,
                 const Error&    error)

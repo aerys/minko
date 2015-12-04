@@ -111,6 +111,8 @@ namespace minko
 
             int                                                     _maxNumActiveParsers;
 
+            float                                                   _abortableRequestProgressThreshold;
+
             POPGeometryFunction                                     _popGeometryFunction;
             StreamedTextureFunction                                 _streamedTextureFunction;
 
@@ -448,6 +450,21 @@ namespace minko
                 return shared_from_this();
             }
 
+            inline
+            float
+            abortableRequestProgressThreshold() const
+            {
+                return _abortableRequestProgressThreshold;
+            }
+
+            inline
+            Ptr
+            abortableRequestProgressThreshold(float value)
+            {
+                _abortableRequestProgressThreshold = value;
+
+                return shared_from_this();
+            }
             inline
             const POPGeometryFunction&
             popGeometryFunction() const

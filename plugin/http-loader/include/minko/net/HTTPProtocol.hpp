@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/file/AbstractProtocol.hpp"
+#include "minko/file/Options.hpp"
 #include "minko/Any.hpp"
 
 #include <stdarg.h>
@@ -35,10 +36,22 @@ namespace minko
         public:
             typedef std::shared_ptr<HTTPProtocol>    Ptr;
 
+        protected:
+            std::list<Any> _workerSlots;
+
+            static std::unordered_set<Ptr> _httpProtocolReferences;
+
+            file::Options::FileStatus _status;
+
+#if defined(EMSCRIPTEN)
+            int _handle;
+#endif
+
         public:
             virtual ~HTTPProtocol() = default;
 
-            inline static
+            inline
+            static
             Ptr
             create()
             {
@@ -55,38 +68,30 @@ namespace minko
             isAbsolutePath(const std::string& filename) const;
 
         protected:
-            HTTPProtocol() = default;
+            HTTPProtocol();
 
-            static void
-            completeHandler(void*, void*, unsigned int);
+            void
+            completeHandler(void* data, unsigned int size);
+
+            void
+            errorHandler(int code = 0, const char* message = "");
+
+            void
+            progressHandler(int loadedBytes, int totalBytes);
 
 #if defined(EMSCRIPTEN)
-            static void
-            wget2CompleteHandler(unsigned int, void*, void *, unsigned int);
-
-            static void
-            wget2ErrorHandler(unsigned int, void*, int, const char*);
-
-            static void
-            wget2ProgressHandler(unsigned int, void*, int, int);
-#endif
-
-            static void
-            errorHandler(void*, int code = 0, const char* = "");
-
-            static void
-            progressHandler(void*, int, int);
-
-        protected:
-            std::list<Any>
-            _workerSlots;
+            static
+            void
+            wget2CompleteHandler(unsigned int id, void* arg, void* data, unsigned int size);
 
             static
-            std::list<std::shared_ptr<HTTPProtocol>>
-            _runningLoaders;
+            void
+            wget2ErrorHandler(unsigned int id, void* arg, int code, const char* message);
 
-            static uint
-            _uid;
+            static
+            void
+            wget2ProgressHandler(unsigned int id, void* arg, int loadedBytes, int totalBytes);
+#endif
 
 #if !defined(EMSCRIPTEN)
             static size_t

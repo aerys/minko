@@ -27,17 +27,21 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::file;
 
-StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr options,
-                                                           int          maxNumActiveParsers,
-                                                           bool         useJobBasedParsing) :
+StreamedAssetParserScheduler::Parameters::Parameters() :
+    maxNumActiveParsers(20),
+    useJobBasedParsing(false),
+    abortableRequestProgressThreshold(0.5f)
+{
+}
+
+StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr         options,
+                                                           const Parameters&    parameters) :
     JobManager::Job(),
     _options(options),
     _entries(),
     _activeEntries(),
+    _parameters(parameters),
     _complete(false),
-    _priority(10.f),
-    _maxNumActiveParsers(maxNumActiveParsers),
-    _useJobBasedParsing(useJobBasedParsing),
     _active(Signal<Ptr>::create()),
     _inactive(Signal<Ptr>::create())
 {
@@ -81,7 +85,7 @@ StreamedAssetParserScheduler::complete()
 float
 StreamedAssetParserScheduler::priority()
 {
-    if (!hasPendingRequest() || _activeEntries.size() >= _maxNumActiveParsers)
+    if (!hasPendingRequest() || _activeEntries.size() >= _parameters.maxNumActiveParsers)
         return 0.f;
 
     return _priority;
@@ -90,7 +94,7 @@ StreamedAssetParserScheduler::priority()
 void
 StreamedAssetParserScheduler::step()
 {
-    while (hasPendingRequest() && _activeEntries.size() < _maxNumActiveParsers)
+    while (hasPendingRequest() && _activeEntries.size() < _parameters.maxNumActiveParsers)
     {
         auto entry = popHeadingParser();
 
@@ -185,16 +189,37 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
         ->seekingOffset(offset)
         ->seekedLength(size)
         ->loadAsynchronously(true)
-        ->storeDataIfNotParsed(false);
+        ->storeDataIfNotParsed(false)
+        ->fileStatusFunction([this, entry](File::Ptr file, float progress) -> Options::FileStatus
+        {
+            if (progress < 1.f && entry->parser->priority() <= 0.f)
+                return Options::FileStatus::Aborted;
+
+            if (progress < _parameters.abortableRequestProgressThreshold)
+            {
+                auto priorityRank = 0;
+
+                for (auto inactiveEntry : _entries)
+                {
+                    if (priorityRank >= _parameters.maxNumActiveParsers ||
+                        inactiveEntry->parser->priority() - entry->parser->priority() < 1e-3f)
+                        break;
+
+                    ++priorityRank;
+                }
+
+                if (priorityRank >= _parameters.maxNumActiveParsers)
+                    return Options::FileStatus::Aborted;
+            }
+            
+            return Options::FileStatus::Pending;
+        });
 
     entry->loaderErrorSlot = linkedAsset->error()->connect(
         [=](LinkedAsset::Ptr    loaderThis,
             const Error&        error) -> void
     {
-        parser->error()->execute(
-            parser,
-            Error("StreamedAssetLoadingError", std::string("Failed to load streamed asset ") + filename)
-        );
+        parser->lodRequestFetchingError(Error("StreamedAssetLoadingError", std::string("Failed to load streamed asset ") + filename));
 
         requestDisposed(entry);
     });
@@ -205,6 +230,8 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
     {
         requestComplete(entry, data);
     });
+
+    parser->lodRequestFetchingBegin();
 
     linkedAsset->resolve(options);
 }
@@ -219,9 +246,9 @@ StreamedAssetParserScheduler::requestComplete(ParserEntryPtr entry, const std::v
         }
     );
 
-    entry->parser->useJobBasedParsing(_useJobBasedParsing ? jobManager() : nullptr);
+    entry->parser->useJobBasedParsing(_parameters.useJobBasedParsing ? jobManager() : nullptr);
 
-    entry->parser->parseLodRequest(data);
+    entry->parser->lodRequestFetchingComplete(data);
 }
 
 void

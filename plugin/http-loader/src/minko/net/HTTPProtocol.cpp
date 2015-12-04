@@ -31,9 +31,6 @@ using namespace minko::file;
 using namespace minko::async;
 using namespace minko::net;
 
-std::list<std::shared_ptr<HTTPProtocol>>
-HTTPProtocol::_runningLoaders;
-
 #if defined(EMSCRIPTEN)
 # include "emscripten/emscripten.h"
 
@@ -42,96 +39,81 @@ extern "C" {
 }
 #endif
 
-uint
-HTTPProtocol::_uid = 0;
+std::unordered_set<HTTPProtocol::Ptr> HTTPProtocol::_httpProtocolReferences;
+
+HTTPProtocol::HTTPProtocol() :
+    AbstractProtocol(),
+    _status(Options::FileStatus::Pending)
+{
+}
 
 void
-HTTPProtocol::progressHandler(void* arg, int loadedBytes, int totalBytes)
+HTTPProtocol::progressHandler(int loadedBytes, int totalBytes)
 {
+    if (_status == Options::FileStatus::Aborted)
+        return;
+
     float progress = 0.0;
 
     if (totalBytes != 0)
         progress = (float)(loadedBytes) / (float)(totalBytes);
 
-    auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
-                                 HTTPProtocol::_runningLoaders.end(),
-                                 [=](std::shared_ptr<HTTPProtocol> loader) -> bool {
-        return loader.get() == arg;
-    });
-
-    if (iterator == HTTPProtocol::_runningLoaders.end())
+#if defined(EMSCRIPTEN)
+    if (options()->fileStatusFunction())
     {
-        LOG_ERROR("cannot find loader");
-        return;
+        const auto fileStatus = options()->fileStatusFunction()(file(), progress);
+
+        if (fileStatus == Options::FileStatus::Aborted)
+        {
+            _status = Options::FileStatus::Aborted;
+
+            emscripten_async_wget2_abort(_handle);
+
+            error()->execute(shared_from_this());
+
+            return;
+        }
     }
+#endif
 
-    std::shared_ptr<HTTPProtocol> loader = *iterator;
-
-    loader->_progress->execute(loader, progress);
+    this->progress()->execute(shared_from_this(), progress);
 }
 
 void
-HTTPProtocol::completeHandler(void* arg, void* data, unsigned int size)
+HTTPProtocol::completeHandler(void* data, unsigned int size)
 {
-    auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
-                                 HTTPProtocol::_runningLoaders.end(),
-                                 [=](std::shared_ptr<HTTPProtocol> loader) -> bool {
-        return loader.get() == arg;
-    });
-
-    if (iterator == HTTPProtocol::_runningLoaders.end())
-    {
-        LOG_ERROR("cannot find loader");
+    if (_status == Options::FileStatus::Aborted)
         return;
-    }
+    
+    this->data().assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
 
-    std::shared_ptr<HTTPProtocol> loader = *iterator;
+    progress()->execute(shared_from_this(), 1.0);
+    complete()->execute(shared_from_this());
 
-    loader->data().assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
-
-    loader->_progress->execute(loader, 1.0);
-    loader->_complete->execute(loader);
-
-    HTTPProtocol::_runningLoaders.remove(loader);
+    _httpProtocolReferences.erase(std::static_pointer_cast<HTTPProtocol>(shared_from_this()));
 }
 
 void
-HTTPProtocol::errorHandler(void* arg, int code, const char * message)
+HTTPProtocol::errorHandler(int code, const char * message)
 {
-    auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
-                                 HTTPProtocol::_runningLoaders.end(),
-                                 [=](std::shared_ptr<HTTPProtocol> loader) -> bool {
-        return loader.get() == arg;
-    });
-
-    if (iterator == HTTPProtocol::_runningLoaders.end())
-    {
-        LOG_ERROR("cannot find loader");
-        return;
-    }
-
-    std::shared_ptr<HTTPProtocol> loader = *iterator;
-
     LOG_ERROR(message);
 
-    loader->_error->execute(loader);
+    error()->execute(shared_from_this());
 
-    HTTPProtocol::_runningLoaders.remove(loader);
+    _httpProtocolReferences.erase(std::static_pointer_cast<HTTPProtocol>(shared_from_this()));
 }
 
 void
 HTTPProtocol::load()
 {
+    _httpProtocolReferences.insert(std::static_pointer_cast<HTTPProtocol>(shared_from_this()));
+
     _options->protocolFunction([](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
     {
         return HTTPProtocol::create();
     });
 
-    auto loader = shared_from_this();
-
-    _runningLoaders.push_back(std::static_pointer_cast<HTTPProtocol>(loader));
-
-    loader->progress()->execute(loader, 0.0);
+    progress()->execute(shared_from_this(), 0.0);
 
     auto username = std::string();
     auto password = std::string();
@@ -188,12 +170,12 @@ HTTPProtocol::load()
             additionalHeadersJsonString += " }";
         }
 
-        emscripten_async_wget3_data(
+        _handle = emscripten_async_wget3_data(
             resolvedFilename().c_str(),
             "GET",
             "",
             additionalHeadersJsonString.c_str(),
-            loader.get(),
+            this,
             true,
             &wget2CompleteHandler,
             &wget2ErrorHandler,
@@ -241,11 +223,11 @@ HTTPProtocol::load()
 
             unsigned char* bytes = (unsigned char*)emscripten_run_script_int(eval.c_str());
 
-            completeHandler(loader.get(), (void*)bytes, size);
+            completeHandler((void*)bytes, size);
         }
         else
         {
-            errorHandler(loader.get());
+            errorHandler();
         }
     }
 #else
@@ -256,16 +238,16 @@ HTTPProtocol::load()
         _workerSlots.push_back(worker->message()->connect([=](Worker::Ptr, Worker::Message message) {
             if (message.type == "complete")
             {
-                completeHandler(loader.get(), &*message.data.begin(), message.data.size());
+                completeHandler(&*message.data.begin(), message.data.size());
             }
             else if (message.type == "progress")
             {
                 float ratio = *reinterpret_cast<float*>(&*message.data.begin());
-                progressHandler(loader.get(), int(ratio * 100.f), 100);
+                progressHandler(int(ratio * 100.f), 100);
             }
             else if (message.type == "error")
             {
-                errorHandler(loader.get());
+                errorHandler();
             }
         }));
 
@@ -335,7 +317,7 @@ HTTPProtocol::load()
         });
 
         auto requestProgressSlot = request.progress()->connect([&](float p){
-            progressHandler(loader.get(), int(p * 100.f), 100);
+            progressHandler(int(p * 100.f), 100);
         });
 
         request.run();
@@ -344,7 +326,7 @@ HTTPProtocol::load()
         {
             std::vector<char>& output = request.output();
 
-            completeHandler(loader.get(), &*output.begin(), output.size());
+            completeHandler(&*output.begin(), output.size());
         }
     }
 #endif
@@ -372,7 +354,7 @@ HTTPProtocol::fileExists(const std::string& filename)
         verifyPeer = httpOptions->verifyPeer();
     }
 
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+#if defined(EMSCRIPTEN)
     auto evalString = std::string();
 
     evalString += "var xhr = new XMLHttpRequest();\n";
@@ -412,18 +394,18 @@ HTTPProtocol::isAbsolutePath(const std::string& filename) const
 void
 HTTPProtocol::wget2CompleteHandler(unsigned int id, void* arg, void* data, unsigned int size)
 {
-    HTTPProtocol::completeHandler(arg, data, size);
+    static_cast<HTTPProtocol*>(arg)->completeHandler(data, size);
 }
 
 void
 HTTPProtocol::wget2ErrorHandler(unsigned int id, void* arg, int code, const char* message)
 {
-    HTTPProtocol::errorHandler(arg, code, message);
+    static_cast<HTTPProtocol*>(arg)->errorHandler(code, message);
 }
 
 void
 HTTPProtocol::wget2ProgressHandler(unsigned int id, void* arg, int loadedBytes, int totalBytes)
 {
-    HTTPProtocol::progressHandler(arg, loadedBytes, totalBytes);
+    static_cast<HTTPProtocol*>(arg)->progressHandler(loadedBytes, totalBytes);
 }
 #endif

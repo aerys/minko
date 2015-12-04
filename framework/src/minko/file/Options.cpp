@@ -116,6 +116,7 @@ Options::Options(const Options& copy) :
     _effectFunction(copy._effectFunction),
     _textureFormatFunction(copy._textureFormatFunction),
     _attributeFunction(copy._attributeFunction),
+    _fileStatusFunction(copy._fileStatusFunction),
     _loadAsynchronously(copy._loadAsynchronously),
     _seekingOffset(copy._seekingOffset),
     _seekedLength(copy._seekedLength)

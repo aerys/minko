@@ -50,9 +50,11 @@ namespace minko
             LinkType                                                _linkType;
 
             Signal<Ptr, const std::vector<unsigned char>&>::Ptr     _complete;
+            Signal<Ptr, float>::Ptr                                 _progress;
             Signal<Ptr, const Error&>::Ptr                          _error;
 
             Signal<std::shared_ptr<Loader>>::Slot                   _loaderCompleteSlot;
+            Signal<std::shared_ptr<Loader>, float>::Slot            _loaderProgressSlot;
             Signal<std::shared_ptr<Loader>, const Error&>::Slot     _loaderErrorSlot;
 
         public:
@@ -161,6 +163,13 @@ namespace minko
             }
 
             inline
+            Signal<Ptr, float>::Ptr
+            progress() const
+            {
+                return _progress;
+            }
+
+            inline
             Signal<Ptr, const Error&>::Ptr
             error() const
             {
@@ -179,6 +188,7 @@ namespace minko
                 _data(),
                 _linkType(LinkType::Internal),
                 _complete(Signal<Ptr, const std::vector<unsigned char>&>::create()),
+                _progress(Signal<Ptr, float>::create()),
                 _error(Signal<Ptr, const Error&>::create())
             {
             }

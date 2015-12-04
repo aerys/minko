@@ -50,6 +50,7 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<Options>													Ptr;
+            typedef std::shared_ptr<File>                                                       FilePtr;
 			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>					MaterialFunction;
 			typedef std::function<AbstractTexturePtr(const std::string&, AbstractTexturePtr)>	TextureFunction;
 			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 						GeometryFunction;
@@ -60,7 +61,14 @@ namespace minko
 			typedef std::function<EffectPtr(EffectPtr)>											EffectFunction;
             typedef std::function<render::TextureFormat(const TextureFormatSet&)>				TextureFormatFunction;
             typedef std::function<void(NodePtr, const std::string&, const std::string&)> 		AttributeFunction;
-            typedef std::function<void()>                                               ProgressFunction;
+
+            enum class FileStatus
+            {
+                Pending,
+                Aborted
+            };
+
+            typedef std::function<FileStatus(FilePtr, float)>                                   FileStatusFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	                _context;
@@ -102,8 +110,8 @@ namespace minko
 			NodeFunction								                _nodeFunction;
 			EffectFunction								                _effectFunction;
             TextureFormatFunction                                       _textureFormatFunction;
-            ProgressFunction                                            _progressFunction;
             AttributeFunction                                           _attributeFunction;
+            FileStatusFunction                                          _fileStatusFunction;
             int                                                         _seekingOffset;
             int                                                         _seekedLength;
 
@@ -676,17 +684,17 @@ namespace minko
             }
 
             inline
-            const ProgressFunction&
-            progressFunction() const
+            const FileStatusFunction&
+            fileStatusFunction() const
             {
-                return _progressFunction;
+                return _fileStatusFunction;
             }
 
             inline
             Ptr
-            progressFunction(const ProgressFunction& func)
+            fileStatusFunction(const FileStatusFunction& func)
             {
-                _progressFunction = func;
+                _fileStatusFunction = func;
 
                 return shared_from_this();
             }

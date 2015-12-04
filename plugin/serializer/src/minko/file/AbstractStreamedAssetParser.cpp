@@ -121,7 +121,23 @@ AbstractStreamedAssetParser::getNextLodRequestInfo(int& offset, int& size)
 }
 
 void
-AbstractStreamedAssetParser::parseLodRequest(const std::vector<unsigned char>& data)
+AbstractStreamedAssetParser::lodRequestFetchingBegin()
+{
+}
+
+void
+AbstractStreamedAssetParser::lodRequestFetchingProgress(float progressRate)
+{
+}
+
+void
+AbstractStreamedAssetParser::lodRequestFetchingError(const Error& error)
+{
+    this->error()->execute(shared_from_this(), error);
+}
+
+void
+AbstractStreamedAssetParser::lodRequestFetchingComplete(const std::vector<unsigned char>& data)
 {
     if (_jobManager)
     {

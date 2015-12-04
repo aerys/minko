@@ -209,10 +209,14 @@ StreamingExtension::parserScheduler(Options::Ptr options, std::list<JobManager::
 {
     if (!_parserScheduler || _parserScheduler->complete())
     {
+        auto parameters = StreamedAssetParserScheduler::Parameters();
+        parameters.maxNumActiveParsers = _streamingOptions->maxNumActiveParsers();
+        parameters.useJobBasedParsing = false;
+        parameters.abortableRequestProgressThreshold = _streamingOptions->abortableRequestProgressThreshold();
+
         _parserScheduler = StreamedAssetParserScheduler::create(
             options,
-            _streamingOptions->maxNumActiveParsers(),
-            false
+            parameters
         );
 
         _parserSchedulerActiveSlot = _parserScheduler->active()->connect(

@@ -46,6 +46,7 @@ StreamingOptions::StreamingOptions() :
     _streamedTextureLodRangeFetchingBoundFunction(),
     _popGeometryBlendingRange(0.f),
     _maxNumActiveParsers(40),
+    _abortableRequestProgressThreshold(0.8f),
     _popGeometryFunction(),
     _popGeometryLodDependencyProperties{"modelToWorldMatrix"},
     _streamedTextureLodDependencyProperties{"modelToWorldMatrix"},

@@ -229,7 +229,16 @@ namespace minko
             getNextLodRequestInfo(int& offset, int& size);
 
             void
-            parseLodRequest(const std::vector<unsigned char>& data);
+            lodRequestFetchingBegin();
+
+            void
+            lodRequestFetchingProgress(float progressRate);
+
+            void
+            lodRequestFetchingError(const Error& error);
+
+            void
+            lodRequestFetchingComplete(const std::vector<unsigned char>& data);
 
         protected:
             AbstractStreamedAssetParser(std::shared_ptr<data::Provider> data);

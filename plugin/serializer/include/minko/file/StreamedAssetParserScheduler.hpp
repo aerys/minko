@@ -35,6 +35,15 @@ namespace minko
         public:
             typedef std::shared_ptr<StreamedAssetParserScheduler> Ptr;
 
+            struct Parameters
+            {
+                int     maxNumActiveParsers;
+                bool    useJobBasedParsing;
+                float   abortableRequestProgressThreshold;
+
+                Parameters();
+            };
+
         private:
             struct ParserEntry;
 
@@ -96,8 +105,7 @@ namespace minko
             >                           _entries;
             std::list<ParserEntryPtr>   _activeEntries;
 
-            int                         _maxNumActiveParsers;
-            bool                        _useJobBasedParsing;
+            Parameters                  _parameters;
 
             bool                        _complete;
 
@@ -110,9 +118,9 @@ namespace minko
             inline
             static
             Ptr
-            create(std::shared_ptr<Options> options, int maxNumActiveParsers, bool useJobBasedParsing)
+            create(std::shared_ptr<Options> options, const Parameters& parameters)
             {
-                return Ptr(new StreamedAssetParserScheduler(options, maxNumActiveParsers, useJobBasedParsing));
+                return Ptr(new StreamedAssetParserScheduler(options, parameters));
             }
 
             void
@@ -158,8 +166,7 @@ namespace minko
 
         private:
             StreamedAssetParserScheduler(std::shared_ptr<Options>   options,
-                                         int                        maxNumActiveParsers,
-                                         bool                       useJobBasedParsing);
+                                         const Parameters&          parameters);
 
             bool
             hasPendingRequest() const;
