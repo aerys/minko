@@ -49,22 +49,22 @@ namespace minko
                 }
 
                 void
-                initialize();
+                initialize() override;
 
                 void
-                startTracking();
+                startTracking() override;
 
                 void
-                stopTracking();
+                stopTracking() override;
                 
                 math::mat4
-                rotationMatrix();
+                rotationMatrix() override;
 
                 const math::quat&
-                quaternion();
+                quaternion() override;
 
                 bool
-                isSupported();
+                isSupported() override;
 
                 inline
                 float

@@ -77,6 +77,12 @@ Cardboard::updateViewport(int viewportWidth, int viewportHeight)
 }
 
 void
+Cardboard::targetAdded()
+{
+}
+
+
+void
 Cardboard::targetRemoved()
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5

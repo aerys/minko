@@ -159,14 +159,14 @@ namespace minko
 
             inline
             float
-            progressRate() const
+            progressRate() const override
             {
                 return _progressRate;
             }
 
             inline
             StatusChangedSignal::Ptr
-            statusChanged()
+            statusChanged() override
             {
                 return _statusChanged;
             }

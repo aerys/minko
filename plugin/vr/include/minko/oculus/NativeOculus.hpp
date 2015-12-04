@@ -20,8 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "VRImpl.hpp"
 #include "minko/Signal.hpp"
+#include "minko/log/Logger.hpp"
+
+#include "VRImpl.hpp"
 
 extern "C"
 {
@@ -49,6 +51,8 @@ namespace minko
 
             std::shared_ptr<component::Renderer>                _leftRenderer;
             std::shared_ptr<component::Renderer>                _rightRenderer;
+            math::ivec4                                         _leftRendererViewport;
+            math::ivec4                                         _rightRendererViewport;
 
             void
             initializePostProcessingRenderer(std::shared_ptr<component::SceneManager> sceneManager);
@@ -68,6 +72,9 @@ namespace minko
 
             void
             initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr);
+
+            void
+            targetAdded();
 
             void
             targetRemoved();
@@ -109,6 +116,8 @@ namespace minko
             Ptr
             create(int viewportWidth, int viewportHeight, float zNear, float zFar)
             {
+                LOG_INFO("Create a NativeOculus instance.");
+
                 auto ptr = std::shared_ptr<NativeOculus>(new NativeOculus(viewportWidth, viewportHeight, zNear, zFar));
 
                 return ptr;

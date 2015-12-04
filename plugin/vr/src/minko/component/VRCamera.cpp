@@ -93,35 +93,49 @@ bool
 VRCamera::detected()
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    return WebVROculus::detected();
+	return WebVROculus::detected() || sensors::Attitude::getInstance()->isSupported();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    return true;
 #else
-	#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-		return true;
-	#else
-		return NativeOculus::detected();
-	#endif
+	return NativeOculus::detected();
 #endif
 }
 
 void
-VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, minko::uint rendererClearColor, void* window)
+VRCamera::initialize(int viewportWidth, 
+                     int viewportHeight, 
+                     float zNear, 
+                     float zFar, 
+                     minko::uint rendererClearColor, 
+                     void* window,
+                     Renderer::Ptr leftRenderer,
+                     Renderer::Ptr rightRenderer)
 {
-#ifdef EMSCRIPTEN
-    if (detected())
-	    _VRImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
-    else
+    if (!detected())
+        return;
+    
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    _VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    if (WebVROculus::detected())
+        _VRImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
+    else if (sensors::Attitude::getInstance()->isSupported())
         _VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
-#else
-	#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-		_VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
-	#else
-		_VRImpl = NativeOculus::create(viewportWidth, viewportHeight, zNear, zFar);
-	#endif
+#elif MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+    _VRImpl = NativeOculus::create(viewportWidth, viewportHeight, zNear, zFar);
 #endif
 
     // Initialize both eyes' renderers
-    _leftRenderer = Renderer::create(rendererClearColor);
-    _rightRenderer = Renderer::create(rendererClearColor);
+    if (leftRenderer != nullptr)
+        _leftRenderer = leftRenderer;
+    else
+        _leftRenderer = Renderer::create(rendererClearColor);
+
+    if (rightRenderer != nullptr)
+        _rightRenderer = rightRenderer;
+    else
+        _rightRenderer = Renderer::create(rendererClearColor);
+
     _rightRenderer->clearBeforeRender(false);
 
     updateViewport(viewportWidth, viewportHeight);
@@ -185,6 +199,9 @@ VRCamera::targetAdded(NodePtr target)
         ->addComponent(_rightRenderer);
 
     target->addChild(_rightCameraNode);
+
+    if (_VRImpl)
+        _VRImpl->targetAdded();
 }
 
 void
@@ -234,12 +251,10 @@ VRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 
     _sceneManager = sceneManager;
 
-    _frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-        &VRCamera::updateCameraOrientation,
-        std::static_pointer_cast<VRCamera>(shared_from_this()),
-        _leftCameraNode,
-        _rightCameraNode
-    ));
+    _frameBeginSlot = sceneManager->frameBegin()->connect([&](SceneMgrPtr sm, float dt, float t)
+    {
+        updateCameraOrientation(_leftCameraNode, _rightCameraNode);
+    });
 
     if (_VRImpl)
         _VRImpl->initialize(_sceneManager);

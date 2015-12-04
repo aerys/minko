@@ -90,6 +90,12 @@ WebVROculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRendere
 }
 
 void
+WebVROculus::targetAdded()
+{
+}
+
+
+void
 WebVROculus::targetRemoved()
 {
 }

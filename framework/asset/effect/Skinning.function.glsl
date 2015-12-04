@@ -21,5 +21,21 @@
 		) * inputVec;
 	}
 
+	vec3 skinning_skinNormal(vec3 inputVec,
+							 vec4 boneWeightsA,
+							 vec4 boneWeightsB)
+	{
+		return (
+			boneWeightsA.x * mat3(uBoneMatrices[int(aBoneIdsA.x)]) +
+			boneWeightsA.y * mat3(uBoneMatrices[int(aBoneIdsA.y)]) +
+			boneWeightsA.z * mat3(uBoneMatrices[int(aBoneIdsA.z)]) +
+			boneWeightsA.w * mat3(uBoneMatrices[int(aBoneIdsA.w)]) +
+			boneWeightsB.x * mat3(uBoneMatrices[int(aBoneIdsB.x)]) +
+			boneWeightsB.y * mat3(uBoneMatrices[int(aBoneIdsB.y)]) +
+			boneWeightsB.z * mat3(uBoneMatrices[int(aBoneIdsB.z)]) +
+			boneWeightsB.w * mat3(uBoneMatrices[int(aBoneIdsB.w)])
+		) * inputVec;
+	}
+
 # endif
 #endif

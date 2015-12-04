@@ -71,13 +71,21 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 
 	if os.is('windows') and not os.iscygwin() then
 		-- print(' -> xcopy /y /i /e "' .. translate(sourcepath) .. '" "' .. translate(destdir) .. '"')
+		local filename = path.getname(sourcepath)
 
 		if destpath ~= gettargetdir() and not os.isdir(sourcepath) then
 			destdir = path.getdirectory(destpath)
 		end
 
+		local xcopyoptions = '/y /i'
+
+		-- /e copies all subdirectories, even if they are empty
+		if os.isdir(sourcepath) or string.startswith(filename, '*') then
+			xcopyoptions = xcopyoptions .. ' /e'
+		end
+
 		return 'mkdir ' .. translate(destdir) .. ' & ' ..
-			   'xcopy /y /e /i ' .. translate(sourcepath) .. ' ' .. translate(destdir)
+			   'xcopy ' .. xcopyoptions .. ' ' .. translate(sourcepath) .. ' ' .. translate(destdir)
 	else
 		if destpath ~= gettargetdir() and not string.endswith(destpath, '/') then
 			destdir = path.getdirectory(destpath)

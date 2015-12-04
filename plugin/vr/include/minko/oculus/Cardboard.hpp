@@ -20,8 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "VRImpl.hpp"
 #include "minko/Signal.hpp"
+#include "minko/log/Logger.hpp"
+
+#include "VRImpl.hpp"
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 #include "minko/sensors/Attitude.hpp"
@@ -60,6 +62,9 @@ namespace minko
                 void* window = nullptr);
 
             void
+            targetAdded();
+
+            void
             targetRemoved();
 
             void
@@ -93,6 +98,8 @@ namespace minko
             Ptr
             create(int viewportWidth, int viewportHeight, float zNear, float zFar)
             {
+                LOG_INFO("Create a Cardboard instance.");
+
                 auto ptr = std::shared_ptr<Cardboard>(new Cardboard(viewportWidth, viewportHeight, zNear, zFar));
 
                 return ptr;

@@ -66,14 +66,16 @@ namespace minko
                    float zNear  = 0.1f,
                    float zFar   = 1000.0f,
                    uint rendererClearColor = 0,
-                   void* window = nullptr)
+                   void* window = nullptr,
+                   Renderer::Ptr leftRenderer = nullptr,
+                   Renderer::Ptr rightRenderer = nullptr)
             {
                 auto ptr = std::shared_ptr<VRCamera>(new VRCamera());
 
                 if (!ptr)
                     return nullptr;
 
-                ptr->initialize(viewportWidth, viewportHeight, zNear, zFar, rendererClearColor, window);
+                ptr->initialize(viewportWidth, viewportHeight, zNear, zFar, rendererClearColor, window, leftRenderer, rightRenderer);
 
                 return ptr;
             }
@@ -88,6 +90,30 @@ namespace minko
             bool
             detected();
 
+            void
+            enableLeftRenderer(bool value)
+            {
+                _leftRenderer->enabled(value);
+            }
+
+            bool
+            leftRendererEnabled()
+            {
+                return _leftRenderer->enabled();
+            }
+
+            void
+            enableRightRenderer(bool value)
+            {
+                _rightRenderer->enabled(value);
+            }
+
+            bool
+            rightRendererEnabled()
+            {
+                return _rightRenderer->enabled();
+            }
+
         public:
             ~VRCamera();
 
@@ -95,7 +121,14 @@ namespace minko
             VRCamera();
 
             void
-            initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, uint rendererClearColor, void* window);
+            initialize(int viewportWidth, 
+                       int viewportHeight, 
+                       float zNear, 
+                       float zFar, 
+                       uint rendererClearColor,
+                       void* window, 
+                       Renderer::Ptr leftRenderer = nullptr,
+                       Renderer::Ptr rightRenderer = nullptr);
 
             void
             updateCameraOrientation(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera);

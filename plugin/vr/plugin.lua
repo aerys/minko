@@ -34,28 +34,32 @@ minko.plugin.vr = {}
 
 function minko.plugin.vr:enable()
 
-	defines { "MINKO_PLUGIN_VR" }
-	minko.plugin.links { "vr" }
+    defines { "MINKO_PLUGIN_VR" }
+    minko.plugin.links { "vr" }
 
-	includedirs {
-		minko.plugin.path("vr") .. "/include"
-	}
+    includedirs {
+        minko.plugin.path("vr") .. "/include"
+    }
 
-	prelinkcommands {
-		minko.action.copy(minko.plugin.path("vr") .. "/asset"),
-	}
+    prelinkcommands {
+        minko.action.copy(minko.plugin.path("vr") .. "asset")
+    }
 
-	configuration { "android or ios or html5" }
-		minko.plugin.enable { "sensors" }
+    minko.package.assetdirs {
+        path.join(minko.plugin.path("vr"), "asset")
+    }
 
-	configuration { "windows32 or windows64" }
-		links { "winmm", "setupapi", "ws2_32" }
+    configuration { "android or ios or html5" }
+        minko.plugin.enable { "sensors" }
 
-	configuration { "linux32 or linux64" }
-		links { "udev", "Xinerama", "X11", "pthread", "rt", "Xrandr" }
+    configuration { "windows32 or windows64" }
+        links { "winmm", "setupapi", "ws2_32" }
+
+    configuration { "linux32 or linux64" }
+        links { "udev", "Xinerama", "X11", "pthread", "rt", "Xrandr" }
 end
 
 newoption {
-	trigger		= "with-vr",
-	description	= "Enable the Minko VR plugin."
+    trigger     = "with-vr",
+    description = "Enable the Minko VR plugin."
 }

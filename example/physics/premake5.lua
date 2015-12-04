@@ -8,6 +8,10 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 		"asset/**"
 	}
 
+	minko.package.assets{
+		['**'] = {'copy'}
+	}
+	
 	includedirs { "src" }
 
 	-- plugins

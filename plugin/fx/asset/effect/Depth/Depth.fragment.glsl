@@ -8,19 +8,19 @@
 # endif
 #endif
 
-#pragma include "Depth.function.glsl"
+#pragma include "../Pack.function.glsl"
 
 uniform vec3 uCameraPosition;
-
 varying vec3 vWorldPosition;
 
 void main(void)
 {
 	// FIXME
-	float eyeToVertex	= sqrt(pow(uCameraPosition.x - vWorldPosition.x, 2) + pow(uCameraPosition.y - vWorldPosition.y, 2) + pow(uCameraPosition.z - vWorldPosition.z, 2));
-	float depth			= eyeToVertex / 100.0f;
+	float maxDistance = 100.f;
+	float eyeToVertex = sqrt(pow(uCameraPosition.x - vWorldPosition.x, 2) + pow(uCameraPosition.y - vWorldPosition.y, 2) + pow(uCameraPosition.z - vWorldPosition.z, 2));
+	float depth = eyeToVertex / maxDistance;
 
-	gl_FragColor = pack(depth);
+	gl_FragColor = packFloat8bitRGBA(depth);
 }
 
 #endif // FRAGMENT_SHADER
