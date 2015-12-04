@@ -111,6 +111,7 @@ namespace minko
 
             int                                                     _maxNumActiveParsers;
 
+            bool                                                    _requestAbortingEnabled;
             float                                                   _abortableRequestProgressThreshold;
 
             POPGeometryFunction                                     _popGeometryFunction;
@@ -451,6 +452,22 @@ namespace minko
             }
 
             inline
+            bool
+            requestAbortingEnabled() const
+            {
+                return _requestAbortingEnabled;
+            }
+
+            inline
+            Ptr
+            requestAbortingEnabled(bool value)
+            {
+                _requestAbortingEnabled = value;
+
+                return shared_from_this();
+            }
+
+            inline
             float
             abortableRequestProgressThreshold() const
             {
@@ -465,6 +482,7 @@ namespace minko
 
                 return shared_from_this();
             }
+
             inline
             const POPGeometryFunction&
             popGeometryFunction() const

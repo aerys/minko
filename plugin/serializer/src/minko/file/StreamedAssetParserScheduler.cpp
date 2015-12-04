@@ -30,6 +30,7 @@ using namespace minko::file;
 StreamedAssetParserScheduler::Parameters::Parameters() :
     maxNumActiveParsers(20),
     useJobBasedParsing(false),
+    requestAbortingEnabled(true),
     abortableRequestProgressThreshold(0.5f)
 {
 }
@@ -198,34 +199,39 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
         ->seekingOffset(offset)
         ->seekedLength(size)
         ->loadAsynchronously(true)
-        ->storeDataIfNotParsed(false)
-        ->fileStatusFunction([this, entry](File::Ptr file, float progress) -> Options::FileStatus
-        {
-            if (progress < 1.f && entry->parser->priority() <= 0.f)
-                return Options::FileStatus::Aborted;
+        ->storeDataIfNotParsed(false);
 
-            if (progress < _parameters.abortableRequestProgressThreshold)
+    if (_parameters.requestAbortingEnabled)
+    {
+        options
+            ->fileStatusFunction([this, entry](File::Ptr file, float progress) -> Options::FileStatus
             {
-                if (priority() <= 0.f)
+                if (progress < 1.f && entry->parser->priority() <= 0.f)
                     return Options::FileStatus::Aborted;
 
-                auto priorityRank = 0;
-
-                for (auto inactiveEntry : _entries)
+                if (progress < _parameters.abortableRequestProgressThreshold)
                 {
-                    if (priorityRank >= _parameters.maxNumActiveParsers ||
-                        inactiveEntry->parser->priority() - entry->parser->priority() < 1e-3f)
-                        break;
+                    if (priority() <= 0.f)
+                        return Options::FileStatus::Aborted;
 
-                    ++priorityRank;
+                    auto priorityRank = 0;
+
+                    for (auto inactiveEntry : _entries)
+                    {
+                        if (priorityRank >= _parameters.maxNumActiveParsers ||
+                            inactiveEntry->parser->priority() - entry->parser->priority() < 1e-3f)
+                            break;
+
+                        ++priorityRank;
+                    }
+
+                    if (priorityRank >= _parameters.maxNumActiveParsers)
+                        return Options::FileStatus::Aborted;
                 }
-
-                if (priorityRank >= _parameters.maxNumActiveParsers)
-                    return Options::FileStatus::Aborted;
-            }
             
-            return Options::FileStatus::Pending;
-        });
+                return Options::FileStatus::Pending;
+            });
+    }
 
     entry->loaderErrorSlot = linkedAsset->error()->connect(
         [=](LinkedAsset::Ptr    loaderThis,

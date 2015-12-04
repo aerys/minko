@@ -39,6 +39,7 @@ namespace minko
             {
                 int     maxNumActiveParsers;
                 bool    useJobBasedParsing;
+                bool    requestAbortingEnabled;
                 float   abortableRequestProgressThreshold;
 
                 Parameters();
