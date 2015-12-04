@@ -85,7 +85,7 @@ StreamedAssetParserScheduler::complete()
 float
 StreamedAssetParserScheduler::priority()
 {
-    if (!hasPendingRequest() || _activeEntries.size() >= _parameters.maxNumActiveParsers)
+    if (_pendingDataEntries.empty() && (!hasPendingRequest() || _activeEntries.size() >= _parameters.maxNumActiveParsers))
         return 0.f;
 
     return _priority;
@@ -101,12 +101,21 @@ StreamedAssetParserScheduler::step()
         const int previousNumActiveEntries = _activeEntries.size();
         const int numActiveEntries = previousNumActiveEntries + 1;
 
-        _activeEntries.push_back(entry);
+        _activeEntries.insert(entry);
 
         entryActivated(entry, numActiveEntries, previousNumActiveEntries);
 
         executeRequest(entry);
     }
+
+    for (auto entry : _pendingDataEntries)
+    {
+        entry->parser->lodRequestFetchingComplete(entry->pendingData);
+
+        std::vector<unsigned char>().swap(entry->pendingData);
+    }
+
+    _pendingDataEntries.clear();
 }
 
 void
@@ -153,7 +162,7 @@ StreamedAssetParserScheduler::removeEntry(ParserEntryPtr entry)
 
     const int previousNumActiveEntries = _activeEntries.size();
 
-    _activeEntries.remove(entry);
+    _activeEntries.erase(entry);
 
     const int numActiveEntries = _activeEntries.size();
 
@@ -197,6 +206,9 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
 
             if (progress < _parameters.abortableRequestProgressThreshold)
             {
+                if (priority() <= 0.f)
+                    return Options::FileStatus::Aborted;
+
                 auto priorityRank = 0;
 
                 for (auto inactiveEntry : _entries)
@@ -248,7 +260,14 @@ StreamedAssetParserScheduler::requestComplete(ParserEntryPtr entry, const std::v
 
     entry->parser->useJobBasedParsing(_parameters.useJobBasedParsing ? jobManager() : nullptr);
 
-    entry->parser->lodRequestFetchingComplete(data);
+    if (_priority > 0.f)
+        entry->parser->lodRequestFetchingComplete(data);
+    else
+    {
+        _pendingDataEntries.insert(entry);
+
+        entry->pendingData = data;
+    }
 }
 
 void
@@ -261,7 +280,7 @@ StreamedAssetParserScheduler::requestDisposed(ParserEntryPtr entry)
     const int previousNumActiveEntries = _activeEntries.size();
     const int numActiveEntries = previousNumActiveEntries - 1;
 
-    _activeEntries.remove(entry);
+    _activeEntries.erase(entry);
 
     entryDeactivated(entry, numActiveEntries, previousNumActiveEntries);
 

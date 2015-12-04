@@ -61,6 +61,8 @@ namespace minko
                 Signal<std::shared_ptr<AbstractStreamedAssetParser>>::Slot                      parserLodRequestCompleteSlot;
                 Signal<std::shared_ptr<AbstractParser>>::Slot                                   parserCompleteSlot;
 
+                std::vector<unsigned char>                                                      pendingData;
+
                 inline
                 explicit
                 ParserEntry(std::shared_ptr<AbstractStreamedAssetParser> parser) :
@@ -103,7 +105,12 @@ namespace minko
                 ParserEntryPtr,
                 ParserEntryPriorityComparator
             >                           _entries;
-            std::list<ParserEntryPtr>   _activeEntries;
+            std::unordered_set<
+                ParserEntryPtr
+            >                           _activeEntries;
+            std::unordered_set<
+                ParserEntryPtr
+            >                           _pendingDataEntries;
 
             Parameters                  _parameters;
 
