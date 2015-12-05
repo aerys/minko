@@ -59,6 +59,8 @@ namespace minko
             };
 
 		private:
+            static const float                                                  _parserSchedulerDefaultPriority;
+
             std::shared_ptr<file::StreamingOptions>                             _streamingOptions;
 
             Signal<Ptr>::Ptr                                                    _sceneStreamingComplete;

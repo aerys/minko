@@ -75,6 +75,8 @@ using namespace minko::render;
 using namespace minko::scene;
 using namespace minko::serialize;
 
+const float StreamingExtension::_parserSchedulerDefaultPriority = 10.f;
+
 StreamingExtension::StreamingExtension() :
     AbstractExtension(),
     _sceneStreamingComplete(Signal<Ptr>::create()),
@@ -219,6 +221,8 @@ StreamingExtension::parserScheduler(Options::Ptr options, std::list<JobManager::
             options,
             parameters
         );
+
+        _parserScheduler->priority(_parserSchedulerDefaultPriority);
 
         _parserSchedulerActiveSlot = _parserScheduler->active()->connect(
             [this](StreamedAssetParserScheduler::Ptr parserScheduler)
