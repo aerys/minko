@@ -49,8 +49,6 @@ Culling::targetAdded(NodePtr target)
 {
     if (target->components<Culling>().size() > 1)
         throw std::logic_error("The same camera node cannot have more than one Culling.");
-    /*if (target->components<component::PerspectiveCamera>().size() < 1)
-        throw std::logic_error("Culling must be added to a camera");*/
 
     if (_octTree == nullptr)
         _octTree = math::OctTree::create(worldSize(), maxDepth(), math::vec3(0.f));
@@ -58,13 +56,12 @@ Culling::targetAdded(NodePtr target)
     if (target->root()->hasComponent<SceneManager>())
         targetAddedToSceneHandler(nullptr, target, nullptr);
     else
-        _addedToSceneSlot = target->added().connect(std::bind(
-            &Culling::targetAddedToSceneHandler,
-            std::static_pointer_cast<Culling>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3
-        ));
+        _addedToSceneSlot = target->added().connect(
+            [this](NodePtr node, NodePtr target, NodePtr ancestor)
+            {
+                targetAddedToSceneHandler(node, target, ancestor);
+            }
+        );
 
     _viewMatrixChangedSlot = target->data().propertyChanged(_bindProperty).connect(
         [this](data::Store& d, data::Provider::Ptr p, const String& n)
@@ -91,20 +88,27 @@ Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancesto
     {
         _addedToSceneSlot = nullptr;
 
-        _layoutChangedSlot = target->root()->layoutChanged().connect(std::bind(
-            &Culling::layoutChangedHandler,
-            std::static_pointer_cast<Culling>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2
-        ));
+        _layoutChangedSlot = target->root()->layoutChanged().connect(
+            [this](NodePtr node, NodePtr target)
+            {
+                layoutChangedHandler(node, target);
+            }
+        );
 
-        _addedSlot = target->root()->added().connect(std::bind(
-            &Culling::addedHandler,
-            std::static_pointer_cast<Culling>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3
-        ), -1.f);
+        _addedSlot = target->root()->added().connect(
+            [this](NodePtr node, NodePtr target, NodePtr ancestor)
+            {
+                addedHandler(node, target, ancestor);
+            },
+            -1.f
+        );
+
+        _removedSlot = target->root()->removed().connect(
+            [this](NodePtr node, NodePtr target, NodePtr ancestor)
+            {
+                removedHandler(node, target, ancestor);
+            }
+        );
 
         _renderingBeginSlot = sceneManager->renderingBegin()->connect(
             [this](SceneManager::Ptr sm, uint fid, render::AbstractTexture::Ptr rt)
@@ -159,14 +163,25 @@ Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 }
 
 void
+Culling::removedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
+{
+    auto nodeSet = scene::NodeSet::create(target)
+        ->descendants(true)
+        ->where([](NodePtr descendant)
+    {
+        return (descendant->layout() & scene::BuiltinLayout::IGNORE_CULLING) == 0
+            && descendant->hasComponent<Surface>();
+    });
+
+    for (auto nodeToRemove : nodeSet->nodes())
+        _octTree->remove(nodeToRemove);
+}
+
+void
 Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 {
-    // FIXME
-
-/*
     if ((target->layout() & scene::BuiltinLayout::IGNORE_CULLING) == 0)
         _octTree->insert(target);
     else
         _octTree->remove(target);
-*/
 }

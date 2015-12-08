@@ -54,7 +54,8 @@ namespace minko
 
 			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
             Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot			_removedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedToSceneSlot;
 			Signal<NodePtr, NodePtr>::Slot					_layoutChangedSlot;
 			PropertyChangedSignal::Slot	                    _viewMatrixChangedSlot;
@@ -115,6 +116,9 @@ namespace minko
 
             void
             addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
+
+            void
+            removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 
 			void
 			layoutChangedHandler(NodePtr node, NodePtr target);
