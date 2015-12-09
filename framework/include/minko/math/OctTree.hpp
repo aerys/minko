@@ -75,6 +75,8 @@ namespace minko
 			NodePtr 							        _debugNode;
 
             unsigned int 								_frustumLastPlaneId;
+
+            std::unordered_set<NodePtr>                 _invalidNodes;
 			
 		public:
 			inline static
@@ -125,6 +127,9 @@ namespace minko
 
 			void
 			nodeModelToWorldChanged(NodePtr node);
+
+            void
+            invalidateNode(NodePtr node);
 
             Ptr
             doInsert(NodePtr node, unsigned int currentDepth, unsigned int optimalDepth);

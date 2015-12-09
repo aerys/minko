@@ -139,9 +139,7 @@ math::OctTree::insert(std::shared_ptr<scene::Node> node)
 	uint optimalDepth = std::min(computeDepth(node), _maxDepth);
 	uint currentDepth = 0u;
 
-    _root.lock()->doInsert(node, 0, optimalDepth);
-
-	return shared_from_this();
+	return _root.lock()->doInsert(node, 0, optimalDepth);
 }
 
 math::OctTree::Ptr
@@ -225,8 +223,13 @@ math::OctTree::childOctantsIntersection(scene::Node::Ptr    node,
 void
 math::OctTree::nodeModelToWorldChanged(scene::Node::Ptr node)
 {
-    remove(node);
-    insert(node);
+    invalidateNode(node);
+}
+
+void
+math::OctTree::invalidateNode(scene::Node::Ptr node)
+{
+    _root.lock()->_invalidNodes.insert(node);
 }
 
 void
@@ -234,6 +237,19 @@ math::OctTree::testFrustum(std::shared_ptr<math::AbstractShape>				    frustum,
 					       std::function<void(std::shared_ptr<scene::Node>)>	insideFrustumCallback,
 					       std::function<void(std::shared_ptr<scene::Node>)>	outsideFustumCallback)
 {
+    if (!_invalidNodes.empty())
+    {
+        for (auto nodeIt = _invalidNodes.begin(); nodeIt != _invalidNodes.end();)
+        {
+            auto node = *nodeIt;
+
+            nodeIt = _invalidNodes.erase(nodeIt);
+
+            remove(node);
+            insert(node);
+        }
+    }
+
     auto frustumPtr = std::dynamic_pointer_cast<Frustum>(frustum);
 
     if (frustumPtr)
@@ -275,7 +291,11 @@ math::OctTree::testFrustum(std::shared_ptr<math::AbstractShape>				    frustum,
 math::OctTree::Ptr
 math::OctTree::remove(scene::Node::Ptr node)
 {
-    return _root.lock()->doRemove(node);
+    auto root = _root.lock();
+
+    root->_invalidNodes.erase(node);
+    
+    return root->doRemove(node);
 }
 
 math::OctTree::Ptr
@@ -298,7 +318,7 @@ math::OctTree::doRemove(scene::Node::Ptr node)
 
     _nodeToOctant.erase(node);
 
-    if (removeFromContent(node))
+    if (removeFromContent(node) || octant == shared_from_this())
         return shared_from_this();
 
     return octant->doRemove(node);
@@ -335,15 +355,21 @@ void
 math::OctTree::addToChildContent(NodePtr node)
 {
     _childrenContent.push_back(node);
-    _nodeToOctant[node] = shared_from_this();
 
-    if (!_parent.expired())
-        _parent.lock()->addToChildContent(node);
+    if (_parent.expired())
+        return;
+
+    auto parent = _parent.lock();
+
+    parent->_nodeToOctant[node] = shared_from_this();
+    parent->addToChildContent(node);
 }
 
 void
 math::OctTree::addToContent(scene::Node::Ptr node)
 {
+    _nodeToOctant[node] = shared_from_this();
+
     addToChildContent(node);
 
     _content.emplace_back(node, node->component<component::BoundingBox>()->box());
