@@ -122,16 +122,19 @@ Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancesto
                         [&](NodePtr node)
                         {
                             auto layout = node->layout();
-                            layout = layout | scene::BuiltinLayout::DEFAULT;
-                            layout = layout & ~scene::BuiltinLayout::HIDDEN;
+
+                            if ((layout & scene::BuiltinLayout::HIDDEN) == 0u)
+                                layout = layout | scene::BuiltinLayout::DEFAULT;
+                            layout = layout | scene::BuiltinLayout::INSIDE_FRUSTUM;
 
                             node->layout(layout);
                         },
                         [&](NodePtr node)
                         {
                             auto layout = node->layout();
+
                             layout = layout & ~scene::BuiltinLayout::DEFAULT;
-                            layout = layout | scene::BuiltinLayout::HIDDEN;
+                            layout = layout & ~scene::BuiltinLayout::INSIDE_FRUSTUM;
 
                             node->layout(layout);
                         }

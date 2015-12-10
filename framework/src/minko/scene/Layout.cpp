@@ -29,7 +29,7 @@ const Layout BuiltinLayout::IGNORE_RAYCASTING   = 1 << 3;
 const Layout BuiltinLayout::IGNORE_CULLING      = 1 << 4;
 const Layout BuiltinLayout::HIDDEN              = 1 << 5;
 const Layout BuiltinLayout::PICKING             = 1 << 6;
-const Layout BuiltinLayout::_RESERVED_3         = 1 << 7;
+const Layout BuiltinLayout::INSIDE_FRUSTUM      = 1 << 7;
 const Layout BuiltinLayout::MINOR_OBJECT        = 1 << 8;
 const Layout BuiltinLayout::PICKING_DEPTH       = 1 << 9;
 

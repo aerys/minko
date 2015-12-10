@@ -659,7 +659,8 @@ Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
 	}
 	else
 	{
-        if ((surface->target()->layout() & scene::BuiltinLayout::HIDDEN) != 0)
+        if ((surface->target()->layout() & scene::BuiltinLayout::HIDDEN) != 0 ||
+            (surface->target()->layout() & scene::BuiltinLayout::INSIDE_FRUSTUM) == 0)
         {
             enableDrawCalls(surface, false);
         }
