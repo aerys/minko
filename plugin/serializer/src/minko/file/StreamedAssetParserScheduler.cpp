@@ -77,6 +77,22 @@ StreamedAssetParserScheduler::removeParser(AbstractStreamedAssetParser::Ptr pars
         removeEntry(*entryIt);
 }
 
+void
+StreamedAssetParserScheduler::priority(float value)
+{
+    if (_priority == value)
+        return;
+
+    const auto previousValue = _priority;
+
+    _priority = value;
+
+    if (_priority <= 0.f)
+        inactive()->execute(shared_from_this());
+    else if (previousValue <= 0.f)
+        active()->execute(shared_from_this());
+}
+
 bool
 StreamedAssetParserScheduler::complete()
 {
@@ -211,7 +227,7 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
 
                 if (progress < _parameters.abortableRequestProgressThreshold)
                 {
-                    if (priority() <= 0.f)
+                    if (_priority <= 0.f)
                         return Options::FileStatus::Aborted;
 
                     auto priorityRank = 0;

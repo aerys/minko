@@ -138,10 +138,7 @@ namespace minko
             removeParser(std::shared_ptr<AbstractStreamedAssetParser> parser);
 
             void
-            priority(float value)
-            {
-                _priority = value;
-            }
+            priority(float value);
 
             inline
             Signal<Ptr>::Ptr
