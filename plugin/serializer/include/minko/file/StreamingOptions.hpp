@@ -61,6 +61,11 @@ namespace minko
                 const data::Store&
             )>                                                      LodPriorityFunction;
 
+            typedef std::function<float(
+                float,
+                SurfacePtr
+            )>                                                      PopGeometryErrorFunction;
+
         private:
             typedef std::shared_ptr<scene::Node>                    NodePtr;
             typedef std::shared_ptr<file::AbstractWriter<NodePtr>>  SceneWriter;
@@ -95,6 +100,8 @@ namespace minko
 
             LodPriorityFunction                                     _popGeometryLodPriorityFunction;
             LodPriorityFunction                                     _streamedTextureLodPriorityFunction;
+
+            PopGeometryErrorFunction                                _popGeometryErrorFunction;
 
             file::MeshPartitioner::Options                          _meshPartitionerOptions;
 
@@ -303,6 +310,22 @@ namespace minko
             streamedTextureLodPriorityFunction(const LodPriorityFunction& function)
             {
                 _streamedTextureLodPriorityFunction = function;
+
+                return shared_from_this();
+            }
+
+            inline
+            const PopGeometryErrorFunction&
+            popGeometryErrorFunction() const
+            {
+                return _popGeometryErrorFunction;
+            }
+
+            inline
+            Ptr
+            popGeometryErrorFunction(const PopGeometryErrorFunction& function)
+            {
+                _popGeometryErrorFunction = function;
 
                 return shared_from_this();
             }

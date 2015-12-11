@@ -385,7 +385,11 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
             : requiredLod->_level;
     }
 
-    const auto popErrorBound = masterLodScheduler()->streamingOptions()->popGeometryErrorToleranceThreshold();
+    const auto defaultPopGeometryError = float(masterLodScheduler()->streamingOptions()->popGeometryErrorToleranceThreshold());
+
+    const auto popErrorBound = masterLodScheduler()->streamingOptions()->popGeometryErrorFunction()
+        ? masterLodScheduler()->streamingOptions()->popGeometryErrorFunction()(defaultPopGeometryError, surfaceInfo.surface)
+        : defaultPopGeometryError;
 
     const auto viewportHeight = _viewport.w > 0.f ? _viewport.w : 600.f;
 
