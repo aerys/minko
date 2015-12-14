@@ -93,7 +93,7 @@ bool
 VRCamera::detected()
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-	return WebVROculus::detected() || sensors::Attitude::getInstance()->isSupported();
+	return WebVROculus::detected() || (system::Platform::isMobile() && sensors::Attitude::getInstance()->isSupported());
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     return true;
 #else
