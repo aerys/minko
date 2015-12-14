@@ -483,8 +483,6 @@ Renderer::render(render::AbstractContext::Ptr	context,
 				}
 			}
 
-	context->setRenderToBackBuffer();
-
     _beforePresent->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
     context->present();
