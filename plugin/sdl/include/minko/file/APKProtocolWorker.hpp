@@ -17,46 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
-
-#include "minko/Common.hpp"
 #include "minko/async/Worker.hpp"
-#include "minko/file/AbstractProtocol.hpp"
 
 namespace minko
 {
     namespace file
     {
-        class APKProtocol :
-            public AbstractProtocol
-        {
-        public:
-            typedef std::shared_ptr<APKProtocol>    Ptr;
-
-        private:
-            static std::unordered_set<Ptr>                              _activeInstances;
-
-            Signal<async::Worker::Ptr, async::Worker::Message>::Slot    _workerSlot;
-
-        public:
-            inline static
-            Ptr
-            create()
-            {
-                return std::shared_ptr<APKProtocol>(new APKProtocol());
-            }
-
-            void
-            load();
-
-            bool
-            fileExists(const std::string& filename);
-
-            bool
-            isAbsolutePath(const std::string& filename) const;
-
-        protected:
-            APKProtocol();
-        };
+        MINKO_DECLARE_WORKER(APKProtocolWorker);
     }
 }

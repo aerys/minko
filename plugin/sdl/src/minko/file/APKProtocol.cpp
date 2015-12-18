@@ -17,15 +17,18 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/AbstractCanvas.hpp"
+#include "minko/Signal.hpp"
 #include "minko/file/APKProtocol.hpp"
 
 #include "minko/file/Options.hpp"
-#include "minko/Signal.hpp"
 
 #include "SDL_rwops.h"
 
 using namespace minko;
 using namespace minko::file;
+
+std::unordered_set<APKProtocol::Ptr> APKProtocol::_activeInstances;
 
 APKProtocol::APKProtocol()
 {
@@ -53,20 +56,73 @@ APKProtocol::load()
 
     if (file)
     {
-        auto offset = options->seekingOffset();
-        auto size = options->seekedLength() > 0 ? options->seekedLength() : file->size(file);
+        if (_options->loadAsynchronously() &&
+            AbstractCanvas::defaultCanvas() != nullptr &&
+            AbstractCanvas::defaultCanvas()->isWorkerRegistered("apk-protocol"))
+        {
+            file->close(file);
 
-        _progress->execute(shared_from_this(), 0.0);
+            auto worker = AbstractCanvas::defaultCanvas()->getWorker("apk-protocol");
+            auto instance = std::static_pointer_cast<APKProtocol>(shared_from_this());
 
-        data().resize(size);
+            _workerSlot = worker->message()->connect(
+                [this, instance](async::Worker::Ptr, async::Worker::Message message)
+                {
+                    if (message.type == "complete")
+                    {
+                        data().assign(message.data.begin(), message.data.end());
 
-        file->seek(file, offset, RW_SEEK_SET);
-        file->read(file, (char*) &data()[0], size, 1);
-        file->close(file);
+                        complete()->execute(instance);
 
-        _progress->execute(loader, 1.0);
+                        _activeInstances.erase(instance);
 
-        _complete->execute(shared_from_this());
+                        _workerSlot = nullptr;
+                    }
+                    else if (message.type == "progress")
+                    {
+                        // FIXME
+                    }
+                    else if (message.type == "error")
+                    {
+                        error()->execute(instance);
+
+                        _activeInstances.erase(instance);
+
+                        _workerSlot = nullptr;
+                    }
+                }
+            );
+
+            auto offset = options->seekingOffset();
+            auto length = options->seekedLength();
+
+            std::stringstream inputStream;
+
+            inputStream.write(reinterpret_cast<const char*>(&offset), 4u);
+            inputStream.write(reinterpret_cast<const char*>(&length), 4u);
+            inputStream.write(resolvedFilename.data(), resolvedFilename.size());
+
+            const auto input = inputStream.str();
+
+            worker->start(std::vector<char>(input.begin(), input.end()));
+        }
+        else
+        {
+            auto offset = options->seekingOffset();
+            auto size = options->seekedLength() > 0 ? options->seekedLength() : file->size(file);
+
+            _progress->execute(shared_from_this(), 0.0);
+
+            data().resize(size);
+
+            file->seek(file, offset, RW_SEEK_SET);
+            file->read(file, (char*) &data()[0], size, 1);
+            file->close(file);
+
+            _progress->execute(loader, 1.0);
+
+            _complete->execute(shared_from_this());
+        }
     }
     else
     {
