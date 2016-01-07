@@ -43,7 +43,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	configuration { "not android" }
 		excludes {
 			"include/minko/file/APKProtocol.hpp",
-			"src/minko/file/APKProtocol.cpp"
+			"src/minko/file/APKProtocol.cpp",
+			"include/minko/file/APKProtocolWorker.hpp",
+			"src/minko/file/APKProtocolWorker.cpp"
 		}
 
 	configuration { }
