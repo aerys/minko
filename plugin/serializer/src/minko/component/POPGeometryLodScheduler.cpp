@@ -112,86 +112,93 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
         newResource.base = &resourceBase;
 
         resource = &newResource;
+
+        resource->geometry = geometry;
+        resource->fullPrecisionLod = geometry->data()->get<float>("popFullPrecisionLod");
+
+        const auto* availableLods = resourceBase.data->getPointer<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
+
+        resource->availableLods = availableLods;
+
+        resource->minLod = availableLods->begin()->second._level;
+
+        auto maxLodIt = availableLods->rbegin();
+        if (maxLodIt->second._level == resource->fullPrecisionLod)
+            ++maxLodIt;
+
+        resource->maxLod = maxLodIt->second._level;
+
+        const auto lodRangeSize = resource->fullPrecisionLod + 1;
+
+        resource->lodToClosestValidLod.resize(lodRangeSize);
+        resource->precisionLevelToClosestLod.resize(lodRangeSize);
+
+        updateClosestLods(*resource);
+        const auto& lodDependencyProperties =
+            this->masterLodScheduler()->streamingOptions()->popGeometryLodDependencyProperties();
+
+        for (const auto& propertyName : lodDependencyProperties)
+        {
+            resource->propertyChangedSlots.insert(std::make_pair(
+                surfaceTarget,
+                surfaceTarget->data().propertyChanged(propertyName).connect(
+                    [=](Store&              store,
+                        Provider::Ptr       provider,
+                        const data::Provider::PropertyName&)
+                    {
+                        invalidateLodRequirement(*resource->base);
+                    }
+                )
+            ));
+        }
 	}
 	else
 	{
 		resource = &resourceIt->second;
 	}
 
+    auto surfaceInfoIt = std::find_if(
+        resource->surfaceInfoCollection.begin(),
+        resource->surfaceInfoCollection.end(),
+        [surface](const SurfaceInfo& surfaceInfo)
+        {
+            return surfaceInfo.surface == surface;
+        }
+    );
+
+    if (surfaceInfoIt != resource->surfaceInfoCollection.end())
+        return;
+
     resource->surfaceInfoCollection.emplace_back(surface);
+    auto* surfaceInfo = &resource->surfaceInfoCollection.back();
 
-    auto& surfaceInfo = resource->surfaceInfoCollection.back();
-    auto surfaceInfoPtr = &surfaceInfo;
+    surfaceInfo->box = surfaceTarget->component<BoundingBox>()->box();
 
-    surfaceInfo.box = surfaceTarget->component<BoundingBox>()->box();
+    surfaceInfo->weight = 0.f;
 
-    surfaceInfo.weight = 0.f;
-
-    resource->geometry = geometry;
-
-    auto resourceData = resource->base->data;
-    resource->fullPrecisionLod = surface->geometry()->data()->get<float>("popFullPrecisionLod");
-
-    const auto& lodDependencyProperties =
-        this->masterLodScheduler()->streamingOptions()->popGeometryLodDependencyProperties();
-
-    for (const auto& propertyName : lodDependencyProperties)
-    {
-	    resource->propertyChangedSlots.insert(std::make_pair(
-		    surfaceTarget,
-		    surfaceTarget->data().propertyChanged(propertyName).connect(
-			    [=](Store&          	store,
-            	    Provider::Ptr       provider,
-				    const data::Provider::PropertyName&)
-        	    {
-        	        invalidateLodRequirement(*resource->base);
-        	    }
-		    )
-	    ));
-    }
-
-    surfaceInfo.layoutChangedSlot = surfaceTarget->layoutChanged().connect(
-        [this, resource, surfaceInfoPtr](Node::Ptr node, Node::Ptr target)
+    surfaceInfo->layoutChangedSlot = surfaceTarget->layoutChanged().connect(
+        [this, resource, surfaceInfo](Node::Ptr node, Node::Ptr target)
         {
             if (node != target)
                 return;
 
-            layoutChanged(*resource, *surfaceInfoPtr);
+            layoutChanged(*resource, *surfaceInfo);
         }
     );
 
-    surfaceInfo.layoutMaskChangedSlot = surface->layoutMaskChanged().connect(
-        [this, resource, surfaceInfoPtr](AbstractComponent::Ptr component)
+    surfaceInfo->layoutMaskChangedSlot = surface->layoutMaskChanged().connect(
+        [this, resource, surfaceInfo](AbstractComponent::Ptr component)
         {
-            layoutChanged(*resource, *surfaceInfoPtr);
+            layoutChanged(*resource, *surfaceInfo);
         }
     );
-
-    const auto* availableLods = resourceData->getPointer<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
-
-    resource->availableLods = availableLods;
-
-    resource->minLod = availableLods->begin()->second._level;
-
-    auto maxLodIt = availableLods->rbegin();
-    if (maxLodIt->second._level == resource->fullPrecisionLod)
-        ++maxLodIt;
-
-    resource->maxLod = maxLodIt->second._level;
-
-    const auto lodRangeSize = resource->fullPrecisionLod + 1;
-
-    resource->lodToClosestValidLod.resize(lodRangeSize);
-    resource->precisionLevelToClosestLod.resize(lodRangeSize);
-
-    updateClosestLods(*resource);
 
     surface->numIndices(0u);
-	surface->data()->set("popLod", 0.f);
-	surface->data()->set("popLodEnabled", true);
+    surface->data()->set("popLod", 0.f);
+    surface->data()->set("popLodEnabled", true);
 
-    if (blendingIsActive(*resource, surfaceInfo))
-        blendingRangeChanged(*resource, surfaceInfo, _blendingRange);
+    if (blendingIsActive(*resource, *surfaceInfo))
+        blendingRangeChanged(*resource, *surfaceInfo, _blendingRange);
 }
 
 void
@@ -199,7 +206,31 @@ POPGeometryLodScheduler::surfaceRemoved(Surface::Ptr surface)
 {
     AbstractLodScheduler::surfaceRemoved(surface);
 
-    // TODO
+    auto surfaceTarget = surface->target();
+    auto geometry = surface->geometry();
+
+    auto masterLodScheduler = this->masterLodScheduler();
+
+    auto geometryData = masterLodScheduler->geometryData(geometry);
+
+    if (geometryData == nullptr)
+        return;
+
+    auto resourceIt = _popGeometryResources.find(geometryData);
+
+    if (resourceIt == _popGeometryResources.end())
+        return;
+
+    auto& resource = resourceIt->second;
+
+    resource.surfaceInfoCollection.erase(std::remove_if(
+        resource.surfaceInfoCollection.begin(),
+        resource.surfaceInfoCollection.end(),
+        [&surface](const SurfaceInfo& surfaceInfo)
+        {
+            return surfaceInfo.surface == surface;
+        }), resource.surfaceInfoCollection.end()
+    );
 }
 
 void

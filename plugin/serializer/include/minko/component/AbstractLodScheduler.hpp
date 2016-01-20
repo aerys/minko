@@ -73,14 +73,17 @@ namespace minko
 
                 LodInfo															lodInfo;
 
-                Signal<ProviderPtr, const data::Provider::PropertyName&>::Slot   propertyChangedSlot;
+                Signal<ProviderPtr, const data::Provider::PropertyName&>::Slot  propertyChangedSlot;
+                Signal<NodePtr, NodePtr>::Slot                                  layoutChangedSlot;
 
                 inline
                 explicit
                 ResourceInfo(ProviderPtr data) :
                     data(data),
                     lodRequirementIsInvalid(true),
-                    lodInfo()
+                    lodInfo(),
+                    propertyChangedSlot(),
+                    layoutChangedSlot()
                 {
                 }
 
@@ -93,8 +96,6 @@ namespace minko
             };
 
         private:
-            typedef std::shared_ptr<scene::NodeSet>         NodeSetPtr;
-
             typedef std::shared_ptr<AbstractComponent>      AbstractComponentPtr;
             typedef std::shared_ptr<Renderer>               RendererPtr;
             typedef std::shared_ptr<SceneManager>           SceneManagerPtr;
@@ -125,9 +126,11 @@ namespace minko
             Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot	_rootNodePropertyChangedSlot;
             Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot	_rendererNodePropertyChangedSlot;
 
+            std::unordered_map<NodePtr, Signal<NodePtr, NodePtr>::Slot>                     _nodeLayoutChangedSlots;
+            std::unordered_map<SurfacePtr, Signal<AbstractComponentPtr>::Slot>              _surfaceLayoutmaskChangedSlots;
+
             std::list<SurfacePtr>															_addedSurfaces;
             std::list<SurfacePtr>															_removedSurfaces;
-            NodeSetPtr																		_candidateNodes;
 
             bool                                                                            _enabled;
 
@@ -212,6 +215,9 @@ namespace minko
                 return std::static_pointer_cast<AbstractLodScheduler>(shared_from_this());
             }
 
+            void
+            layoutMask(scene::Layout value) override;
+
         protected:
             AbstractLodScheduler();
 
@@ -251,14 +257,6 @@ namespace minko
             virtual
             void
             masterLodSchedulerSet(MasterLodSchedulerPtr masterLodScheduler);
-
-            virtual
-            void
-            candidateNodeAdded(NodePtr target, NodePtr node);
-
-            virtual
-            void
-            candidateNodeRemoved(NodePtr target, NodePtr node);
 
             virtual
             void
@@ -340,11 +338,23 @@ namespace minko
                                                ProviderPtr								provider,
 											   const data::Provider::PropertyName&		propertyName);
 
-            void
-            updateCandidateNodes(NodePtr target);
-
             bool
-            nodeIsCandidate(NodePtr node);
+            checkSurfaceLayout(SurfacePtr surface);
+
+            void
+            surfaceLayoutMaskInvalidated(SurfacePtr surface);
+
+            void
+            watchSurface(SurfacePtr surface);
+
+            void
+            unwatchSurface(SurfacePtr surface);
+
+            void
+            addPendingSurface(SurfacePtr surface);
+
+            void
+            removePendingSurface(SurfacePtr surface);
         };
     }
 }
