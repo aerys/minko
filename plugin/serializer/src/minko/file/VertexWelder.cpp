@@ -32,8 +32,6 @@ using namespace minko::file;
 using namespace minko::geometry;
 using namespace minko::scene;
 
-const float VertexWelder::_defaultEpsilon = 1e-3f;
-
 VertexWelder::VertexWelder() :
     AbstractWriterPreprocessor<Node::Ptr>(),
     _statusChanged(StatusChangedSignal::create()),
@@ -99,7 +97,7 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
 {
     auto geometry = surface->geometry();
 
-    auto spatialIndex = math::SpatialIndex<std::vector<unsigned int>>::create(_defaultEpsilon);
+    auto spatialIndex = math::SpatialIndex<std::vector<unsigned int>>::create();
 
     buildSpatialIndex(geometry, spatialIndex);
 
@@ -405,7 +403,7 @@ bool
 VertexWelder::canWeldVertices(Geometry::Ptr                     geometry,
                               const std::vector<unsigned int>&  indices)
 {
-    if (indices.size() <= 1u)
+    if (indices.size() <= 1u || indices.size() > 8u)
         return false;
 
     auto permutations = std::vector<bool>(indices.size());

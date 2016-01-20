@@ -469,7 +469,7 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
         auto partitionInfo = PartitionInfo();
 
-        partitionInfo.mergedIndices = math::SpatialIndex<std::unordered_set<unsigned int>>::create(1e-3f);
+        partitionInfo.mergedIndices = math::SpatialIndex<std::unordered_set<unsigned int>>::create();
 
         for (auto surface : surfaceBucket)
         {
