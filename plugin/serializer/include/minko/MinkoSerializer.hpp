@@ -13,5 +13,6 @@
 #include "minko/file/SurfaceClusterBuilder.hpp"
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
+#include "minko/file/UnusedVertexCleaner.hpp"
 #include "minko/file/VertexWelder.hpp"
 #include "minko/file/WriterOptions.hpp"
