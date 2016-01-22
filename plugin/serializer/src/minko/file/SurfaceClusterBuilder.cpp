@@ -125,6 +125,11 @@ SurfaceClusterBuilder::cacheNodeInfo(Node::Ptr                  root,
 
         nodeInfo.bounds = std::make_pair(box->bottomLeft(), box->topRight());
         nodeInfo.size = nodeInfo.bounds.second - nodeInfo.bounds.first;
+        nodeInfo.size = math::vec3(
+            math::max(nodeInfo.size.x, 1e-6f),
+            math::max(nodeInfo.size.y, 1e-6f),
+            math::max(nodeInfo.size.z, 1e-6f)
+        );
         nodeInfo.xyArea = nodeInfo.size.x * nodeInfo.size.y;
         nodeInfo.xzArea = nodeInfo.size.x * nodeInfo.size.z;
         nodeInfo.yzArea = nodeInfo.size.y * nodeInfo.size.z;
