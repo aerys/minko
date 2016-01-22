@@ -86,6 +86,9 @@ UnusedVertexCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPtr asset
     const auto numIndices = geometry->indices()->numIndices();
     const auto numVertices = geometry->numVertices();
 
+    if (numVertices == 0u)
+        return;
+
     auto* u16IndexData = geometry->indices()->dataPointer<unsigned short>();
     auto* u32IndexData = geometry->indices()->dataPointer<unsigned int>();
 
@@ -129,9 +132,10 @@ UnusedVertexCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPtr asset
             (*u32IndexData)[i] = newIndex;
     }
 
+    const auto vertexBuffers = geometry->vertexBuffers();
     auto newVertexBuffers = std::vector<render::VertexBuffer::Ptr>();
 
-    for (auto vertexBuffer : geometry->vertexBuffers())
+    for (auto vertexBuffer : vertexBuffers)
     {
         const auto& vertexBufferData = vertexBuffer->data();
         auto newVertexBufferData = std::vector<float>(newNumVertices * vertexBuffer->vertexSize(), 0.f);
@@ -164,10 +168,11 @@ UnusedVertexCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPtr asset
         for (const auto& attribute : vertexBuffer->attributes())
             newVertexBuffer->addAttribute(*attribute.name, attribute.size, attribute.offset);
 
-        geometry->removeVertexBuffer(vertexBuffer);
-
         newVertexBuffers.push_back(newVertexBuffer);
     }
+
+    for (auto vertexBuffer : vertexBuffers)
+        geometry->removeVertexBuffer(vertexBuffer);
 
     for (auto vertexBuffer : newVertexBuffers)
         geometry->addVertexBuffer(vertexBuffer);
