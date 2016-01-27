@@ -54,14 +54,14 @@ We have to apply a translation matrix `math::translate(math::vec3)` on our matri
 
 ```cpp
 auto transform = node->component<Transform>();
-transform->matrix(transform->matrix() * translate(vec3(42.f, 0.f, 0.f));
+transform->matrix(translate(vec3(42.f, 0.f, 0.f)) * transform->matrix());
 ```
 
 For instance, if `node` was located in (0, 0, 0), it should now be in (42, 0, 0). This code has the effect of an appending translation (it will apply a translation "after" the actual 3D transform currently held by the `mat4` object). To get the opposite effect like a prepending translation you should invert the getter and the `translate()` like that:
 
 ```cpp
 auto transform = node->component<Transform>();
-transform->matrix(translate(vec3(42.f, 0.f, 0.f) * transform->matrix());
+transform->matrix(transform->matrix() * translate(vec3(42.f, 0.f, 0.f)));
 ```
 
 ### Setting the 3D position
@@ -142,7 +142,7 @@ int	main(int argc, char** argv)
 			// We translate the cube to the left
 			auto transform = cube->component<Transform>();
 
-			transform->matrix(transform->matrix() * translate(vec3(-1.f, 0.f, 0.f)));
+			transform->matrix(translate(vec3(-1.f, 0.f, 0.f)) * transform->matrix());
 		}
 		else
 		{
@@ -154,7 +154,7 @@ int	main(int argc, char** argv)
 			// We translate the cube in front of the camera with a little lag to the right
 			auto translation = cube->component<Transform>();
 
-			translation->matrix(transform->matrix() * translate(vec3(1.f, 0.f, -5.f)));
+			translation->matrix(translate(vec3(1.f, 0.f, -5.f)) * transform->matrix());
 		}
 	});
 
