@@ -59,6 +59,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "StreamReader.h"
 #include "MemoryIOWrapper.h"
 #include "../include/assimp/Importer.hpp"
+#include "../include/assimp/scene.h"
 
 namespace Assimp {
     template<> const std::string LogFunctions<FBXImporter>::log_prefix = "FBX: ";
@@ -179,6 +180,17 @@ void FBXImporter::InternReadFile( const std::string& pFile,
 
         // convert the FBX DOM to aiScene
         ConvertToAssimpScene(pScene,doc);
+
+        // FBX base unit is in centimeters, we need to convert it into meters
+        auto globalSettings = doc.GlobalSettings();
+        auto unitScaleFactor = globalSettings.UnitScaleFactor();
+        
+        auto unitSize = unitScaleFactor / 100.f;
+
+        pScene->mRootNode->mTransformation *= aiMatrix4x4(unitSize, 0, 0, 0,
+            0, unitSize, 0, 0,
+            0, 0, unitSize, 0,
+            0, 0, 0, 1);
 
         std::for_each(tokens.begin(),tokens.end(),Util::delete_fun<Token>());
     }
