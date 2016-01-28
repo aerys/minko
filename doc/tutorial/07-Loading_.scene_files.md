@@ -87,7 +87,7 @@ const std::string SCENE_FILENAME = "model/myScene/myScene.scene";
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Moving objets", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Tutorial - Loading .scene files", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()

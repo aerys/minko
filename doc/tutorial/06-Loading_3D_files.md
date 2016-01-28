@@ -112,7 +112,7 @@ const std::string DAE_MODEL_FILENAME = "model/pirate.dae";
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Moving objets", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Tutorial - Loading 3D files", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
