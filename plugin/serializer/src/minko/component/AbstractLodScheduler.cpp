@@ -45,7 +45,6 @@ AbstractLodScheduler::AbstractLodScheduler() :
     _componentAddedSlot(),
     _componentRemovedSlot(),
     _frameBeginSlot(),
-    _candidateNodes(),
     _enabled(true),
     _frameTime(0.f)
 {
@@ -93,14 +92,14 @@ AbstractLodScheduler::targetAdded(Node::Ptr target)
     _componentAddedSlot = target->componentAdded().connect(std::bind(
         &AbstractLodScheduler::componentAddedHandler,
         std::static_pointer_cast<AbstractLodScheduler>(shared_from_this()),
-        std::placeholders::_1,
+        std::placeholders::_2,
         std::placeholders::_3
     ));
 
     _componentRemovedSlot = target->componentRemoved().connect(std::bind(
         &AbstractLodScheduler::componentRemovedHandler,
         std::static_pointer_cast<AbstractLodScheduler>(shared_from_this()),
-        std::placeholders::_1,
+        std::placeholders::_2,
         std::placeholders::_3
     ));
 
@@ -182,22 +181,16 @@ AbstractLodScheduler::forceUpdate()
 }
 
 void
-AbstractLodScheduler::candidateNodeAdded(Node::Ptr target, Node::Ptr node)
+AbstractLodScheduler::layoutMask(Layout value)
 {
-    auto meshNodes = NodeSet::create(node)
-        ->descendants(true)
-        ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<Surface>(); });
+    AbstractComponent::layoutMask(value);
 
-    for (auto meshNode : meshNodes->nodes())
-    for (auto surface : meshNode->components<Surface>())
-        _addedSurfaces.push_back(surface);
-}
+    for (auto surfaceEntry : _surfaceLayoutmaskChangedSlots)
+    {
+        auto surface = surfaceEntry.first;
 
-void
-AbstractLodScheduler::candidateNodeRemoved(Node::Ptr target, Node::Ptr node)
-{
-    for (auto surface : node->components<Surface>())
-        _removedSurfaces.push_back(surface);
+        surfaceLayoutMaskInvalidated(surface);
+    }
 }
 
 void
@@ -343,12 +336,25 @@ AbstractLodScheduler::nodeAddedHandler(Node::Ptr target, Node::Ptr node)
         masterLodScheduler == nullptr ? nullptr : std::static_pointer_cast<MasterLodScheduler>(masterLodScheduler)
     );
 
-    updateCandidateNodes(target);
+    _nodeLayoutChangedSlots.emplace(node, node->layoutChanged().connect(
+        [this](Node::Ptr target, Node::Ptr node)
+        {
+            for (auto surface : node->components<Surface>())
+                surfaceLayoutMaskInvalidated(surface);
+        })
+    );
 
-    if (nodeIsCandidate(node))
-    {
-        candidateNodeAdded(target, node);
-    }
+    auto meshNodes = NodeSet::create(node)
+        ->descendants(true)
+        ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<Surface>(); });
+
+    for (auto meshNode : meshNodes->nodes())
+        for (auto surface : meshNode->components<Surface>())
+        {
+            watchSurface(surface);
+
+            addPendingSurface(surface);
+        }
 }
 
 void
@@ -365,73 +371,70 @@ AbstractLodScheduler::nodeRemovedHandler(Node::Ptr target, Node::Ptr node)
         masterLodScheduler == nullptr ? nullptr : std::static_pointer_cast<MasterLodScheduler>(masterLodScheduler)
     );
 
-    updateCandidateNodes(target);
+    _nodeLayoutChangedSlots.erase(node);
 
-    if (!nodeIsCandidate(node))
+    for (auto surface : node->components<Surface>())
     {
-        candidateNodeRemoved(target, node);
+        unwatchSurface(surface);
+
+        removePendingSurface(surface);
     }
 }
 
 void
 AbstractLodScheduler::componentAddedHandler(Node::Ptr target, AbstractComponent::Ptr component)
 {
-    auto node = component->target();
-
     auto sceneManager = std::dynamic_pointer_cast<SceneManager>(component);
 
     if (sceneManager != nullptr)
-        sceneManagerSet(std::static_pointer_cast<SceneManager>(sceneManagerFunction()(node)));
+        sceneManagerSet(std::static_pointer_cast<SceneManager>(sceneManagerFunction()(target)));
 
     auto renderer = std::dynamic_pointer_cast<Renderer>(component);
 
     if (renderer != nullptr)
-        rendererSet(std::static_pointer_cast<Renderer>(rendererFunction()(node)));
+        rendererSet(std::static_pointer_cast<Renderer>(rendererFunction()(target)));
 
     auto masterLodScheduler = std::dynamic_pointer_cast<MasterLodScheduler>(component);
 
     if (masterLodScheduler != nullptr)
-        masterLodSchedulerSet(std::static_pointer_cast<MasterLodScheduler>(masterLodSchedulerFunction()(node)));
+        masterLodSchedulerSet(std::static_pointer_cast<MasterLodScheduler>(masterLodSchedulerFunction()(target)));
 
-    if (nodeIsCandidate(component->target()))
+    auto surface = std::dynamic_pointer_cast<Surface>(component);
+
+    if (surface != nullptr)
     {
-        auto surface = std::dynamic_pointer_cast<Surface>(component);
+        watchSurface(surface);
 
-        if (surface != nullptr)
-        {
-            _addedSurfaces.push_back(surface);
-        }
+        if (checkSurfaceLayout(surface))
+            addPendingSurface(surface);
     }
 }
 
 void
 AbstractLodScheduler::componentRemovedHandler(Node::Ptr target, AbstractComponent::Ptr component)
 {
-    auto node = component->target();
-
     auto sceneManager = std::dynamic_pointer_cast<SceneManager>(component);
 
     if (sceneManager != nullptr)
-        sceneManagerSet(std::static_pointer_cast<SceneManager>(sceneManagerFunction()(node)));
+        sceneManagerSet(std::static_pointer_cast<SceneManager>(sceneManagerFunction()(nullptr)));
 
     auto renderer = std::dynamic_pointer_cast<Renderer>(component);
 
     if (renderer != nullptr)
-        rendererSet(std::static_pointer_cast<Renderer>(rendererFunction()(node)));
+        rendererSet(std::static_pointer_cast<Renderer>(rendererFunction()(nullptr)));
 
     auto masterLodScheduler = std::dynamic_pointer_cast<MasterLodScheduler>(component);
 
     if (masterLodScheduler != nullptr)
-        masterLodSchedulerSet(std::static_pointer_cast<MasterLodScheduler>(masterLodSchedulerFunction()(node)));
+        masterLodSchedulerSet(std::static_pointer_cast<MasterLodScheduler>(masterLodSchedulerFunction()(nullptr)));
 
-    if (nodeIsCandidate(component->target()))
+    auto surface = std::dynamic_pointer_cast<Surface>(component);
+
+    if (surface != nullptr)
     {
-        auto surface = std::dynamic_pointer_cast<Surface>(component);
+        unwatchSurface(surface);
 
-        if (surface != nullptr)
-        {
-            _removedSurfaces.push_back(surface);
-        }
+        removePendingSurface(surface);
     }
 }
 
@@ -525,16 +528,65 @@ AbstractLodScheduler::lodInfoChanged(ResourceInfo&    resource,
     }
 }
 
-void
-AbstractLodScheduler::updateCandidateNodes(Node::Ptr target)
+bool
+AbstractLodScheduler::checkSurfaceLayout(Surface::Ptr surface)
 {
+    auto surfaceLayout = surface->target()->layout() & surface->layoutMask();
+
+    if ((surfaceLayout & BuiltinLayout::HIDDEN) != 0u)
+        return false;
+
+    return (AbstractComponent::layoutMask() & surfaceLayout) != 0u;
 }
 
-bool
-AbstractLodScheduler::nodeIsCandidate(Node::Ptr node)
+void
+AbstractLodScheduler::surfaceLayoutMaskInvalidated(SurfacePtr surface)
 {
-    // fixme
-    // filter node based on layout
+    if (checkSurfaceLayout(surface))
+        addPendingSurface(surface);
+    else
+        removePendingSurface(surface);
+}
 
-    return true;
+void
+AbstractLodScheduler::watchSurface(Surface::Ptr surface)
+{
+    _surfaceLayoutmaskChangedSlots.emplace(surface, surface->layoutMaskChanged().connect(
+        [this, surface](AbstractComponent::Ptr)
+        {
+            surfaceLayoutMaskInvalidated(surface);
+        })
+    );
+}
+
+void
+AbstractLodScheduler::unwatchSurface(Surface::Ptr surface)
+{
+    _surfaceLayoutmaskChangedSlots.erase(surface);
+}
+
+void
+AbstractLodScheduler::addPendingSurface(Surface::Ptr surface)
+{
+    auto addedSurfaceIt = std::find(_addedSurfaces.begin(), _addedSurfaces.end(), surface);
+    auto removedSurfaceIt = std::find(_removedSurfaces.begin(), _removedSurfaces.end(), surface);
+
+    if (removedSurfaceIt != _removedSurfaces.end())
+        _removedSurfaces.erase(removedSurfaceIt);
+
+    if (addedSurfaceIt == _addedSurfaces.end())
+        _addedSurfaces.push_back(surface);
+}
+
+void
+AbstractLodScheduler::removePendingSurface(Surface::Ptr surface)
+{
+    auto addedSurfaceIt = std::find(_addedSurfaces.begin(), _addedSurfaces.end(), surface);
+    auto removedSurfaceIt = std::find(_removedSurfaces.begin(), _removedSurfaces.end(), surface);
+
+    if (addedSurfaceIt != _addedSurfaces.end())
+        _addedSurfaces.erase(addedSurfaceIt);
+
+    if (removedSurfaceIt == _removedSurfaces.end())
+        _removedSurfaces.push_back(surface);
 }

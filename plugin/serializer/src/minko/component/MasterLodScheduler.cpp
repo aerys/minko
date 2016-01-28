@@ -107,6 +107,15 @@ MasterLodScheduler::textureData(AbstractTexture::Ptr texture)
 }
 
 void
+MasterLodScheduler::layoutMask(scene::Layout value)
+{
+    AbstractComponent::layoutMask(value);
+
+    for (auto lodScheduler : _lodSchedulers)
+        lodScheduler->layoutMask(value);
+}
+
+void
 MasterLodScheduler::targetAdded(Node::Ptr target)
 {
     AbstractComponent::targetAdded(target);
@@ -122,7 +131,7 @@ MasterLodScheduler::targetAdded(Node::Ptr target)
 
             for (auto lodSchedulerNode : lodSchedulerNodes->nodes())
                 for (auto lodScheduler : lodSchedulerNode->components<AbstractLodScheduler>())
-                    _lodSchedulers.push_back(lodScheduler);
+                    addLodScheduler(lodScheduler);
         }
     );
 
@@ -137,10 +146,7 @@ MasterLodScheduler::targetAdded(Node::Ptr target)
 
             for (auto lodSchedulerNode : lodSchedulerNodes->nodes())
                 for (auto lodScheduler : lodSchedulerNode->components<AbstractLodScheduler>())
-                    _lodSchedulers.erase(
-                        std::remove(_lodSchedulers.begin(), _lodSchedulers.end(), lodScheduler),
-                        _lodSchedulers.end()
-                    );
+                    removeLodScheduler(lodScheduler);
         }
     );
 
@@ -152,7 +158,7 @@ MasterLodScheduler::targetAdded(Node::Ptr target)
             auto lodScheduler = std::dynamic_pointer_cast<AbstractLodScheduler>(component);
 
             if (lodScheduler)
-                _lodSchedulers.push_back(lodScheduler);
+                addLodScheduler(lodScheduler);
         }
     );
 
@@ -164,10 +170,7 @@ MasterLodScheduler::targetAdded(Node::Ptr target)
             auto lodScheduler = std::dynamic_pointer_cast<AbstractLodScheduler>(component);
 
             if (lodScheduler)
-                _lodSchedulers.erase(
-                    std::remove(_lodSchedulers.begin(), _lodSchedulers.end(), lodScheduler),
-                    _lodSchedulers.end()
-                );
+                removeLodScheduler(lodScheduler);
         }
     );
 }
@@ -190,4 +193,21 @@ MasterLodScheduler::initialize()
     _streamingOptions = StreamingOptions::create();
 
     _streamingOptions->masterLodScheduler(std::static_pointer_cast<MasterLodScheduler>(shared_from_this()));
+}
+
+void
+MasterLodScheduler::addLodScheduler(AbstractLodScheduler::Ptr lodScheduler)
+{
+    lodScheduler->layoutMask(AbstractComponent::layoutMask());
+
+    _lodSchedulers.push_back(lodScheduler);
+}
+
+void
+MasterLodScheduler::removeLodScheduler(AbstractLodScheduler::Ptr lodScheduler)
+{
+    _lodSchedulers.erase(
+        std::remove(_lodSchedulers.begin(), _lodSchedulers.end(), lodScheduler),
+        _lodSchedulers.end()
+    );
 }

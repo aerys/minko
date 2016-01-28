@@ -122,58 +122,106 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
             newResource.base = &resourceBase;
 
             resource = &newResource;
+
+            resource->texture = texture;
+
+            const auto& lodDependencyProperties =
+                this->masterLodScheduler()->streamingOptions()->streamedTextureLodDependencyProperties();
+
+            for (const auto& propertyName : lodDependencyProperties)
+            {
+                resource->propertyChangedSlots.insert(std::make_pair(
+                    surfaceTarget,
+                    surfaceTarget->data().propertyChanged(propertyName).connect(
+                        [=](Store&          	store,
+                            Provider::Ptr       provider,
+                            const data::Provider::PropertyName&)
+                        {
+                            invalidateLodRequirement(*resource->base);
+                        }
+                    )
+                ));
+            }
+
+            material->data()->set(
+                textureName + std::string("MaxAvailableLod"),
+                static_cast<float>(lodToMipLevel(
+                    DEFAULT_LOD,
+                    resource->texture->width(),
+                    resource->texture->height())
+                )
+            );
+
+            material->data()->set(
+                textureName + std::string("Size"),
+                math::vec2(texture->width(), texture->height())
+            );
+
+            material->data()->set(
+                textureName + std::string("LodEnabled"),
+                true
+            );
+
+            resource->textureName = textureName;
+
+            resource->materials.insert(material);
+            resource->surfaceToActiveLodMap.insert(std::make_pair(surface, -1));
+
+            resource->maxLod = textureData->get<int>("maxLod");
         }
         else
         {
             resource = &resourceIt->second;
         }
 
-        resource->texture = texture;
         resource->surfaceToActiveLodMap.insert(std::make_pair(surface, DEFAULT_LOD));
+    }
+}
 
-        const auto& lodDependencyProperties =
-            this->masterLodScheduler()->streamingOptions()->streamedTextureLodDependencyProperties();
+void
+TextureLodScheduler::surfaceRemoved(Surface::Ptr surface)
+{
+    AbstractLodScheduler::surfaceRemoved(surface);
 
-        for (const auto& propertyName : lodDependencyProperties)
+    auto surfaceTarget = surface->target();
+    auto material = surface->material();
+
+    auto textures = std::unordered_map<AbstractTexture::Ptr, Flyweight<std::string>>();
+
+    for (const auto& propertyNameToValuePair : material->data()->values())
+    {
+        const auto propertyName = propertyNameToValuePair.first;
+
+        if (!material->data()->propertyHasType<TextureSampler>(propertyName))
+            continue;
+
+        auto texture = _assetLibrary->getTextureByUuid(
+            material->data()->get<TextureSampler>(propertyName).uuid
+        );
+
+        textures.insert(std::make_pair(texture, propertyName));
+    }
+
+    for (auto textureToTextureNamePair : textures)
+    {
+        auto texture = textureToTextureNamePair.first;
+        const auto textureName = *textureToTextureNamePair.second;
+
+        auto masterLodScheduler = this->masterLodScheduler();
+
+        auto textureData = masterLodScheduler->textureData(texture);
+
+        if (textureData == nullptr)
+            continue;
+
+        auto resourceIt = _textureResources.find(textureData->uuid());
+
+        if (resourceIt != _textureResources.end())
         {
-	        resource->propertyChangedSlots.insert(std::make_pair(
-		        surfaceTarget,
-		        surfaceTarget->data().propertyChanged(propertyName).connect(
-			        [=](Store&          	store,
-            	        Provider::Ptr       provider,
-				        const data::Provider::PropertyName&)
-        	        {
-        	            invalidateLodRequirement(*resource->base);
-        	        }
-		        )
-	        ));
+            auto& resource = resourceIt->second;
+
+            resource.surfaceToActiveLodMap.erase(surface);
         }
-
-        material->data()->set(
-			textureName + std::string("MaxAvailableLod"),
-            static_cast<float>(lodToMipLevel(
-                DEFAULT_LOD,
-                resource->texture->width(),
-                resource->texture->height())
-            )
-        );
-
-        material->data()->set(
-			textureName + std::string("Size"),
-            math::vec2(texture->width(), texture->height())
-        );
-
-        material->data()->set(
-			textureName + std::string("LodEnabled"),
-            true
-        );
-
-        resource->textureName = textureName;
-
-        resource->materials.insert(material);
-        resource->surfaceToActiveLodMap.insert(std::make_pair(surface, -1));
-
-        resource->maxLod = textureData->get<int>("maxLod");
     }
 }
 
@@ -407,21 +455,11 @@ TextureLodScheduler::distanceFromEye(const TextureResourceInfo&  resource,
                                      Surface::Ptr                surface,
                                      const math::vec3&           eyePosition)
 {
-    auto target = surface->target();
-    auto box = target->component<BoundingBox>()->box();
+    auto box = surface->target()->component<BoundingBox>()->box();
 
-    const auto boxCenter = (box->bottomLeft() + box->topRight()) / 2.f;
+    const auto distance = box->distance(eyePosition);
 
-    if (boxCenter == eyePosition)
-        return 0.f;
-
-    auto ray = math::Ray::create(eyePosition, math::normalize(boxCenter - eyePosition));
-    auto targetDistance = 0.f;
-
-    if (!box->cast(ray, targetDistance))
-        return math::distance(eyePosition, boxCenter);
-
-    return math::max(0.f, targetDistance);
+    return math::max(0.f, distance);
 }
 
 int
