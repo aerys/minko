@@ -55,7 +55,7 @@ const std::string MYTEXTURE = "texture/diffuseMap.png";
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Working with the PhongMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Tutorial - Working with the NormalMap", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
@@ -183,7 +183,7 @@ const std::string NORMALMAP = "texture/normalMap.png";
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Working with the PhongMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Tutorial - Working with the NormalMap", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
