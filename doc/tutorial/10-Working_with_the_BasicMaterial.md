@@ -6,7 +6,7 @@ Step 1: Creating the material
 To create a new `BasicMaterial` object, we simply create the `BasicMaterial::create()` static method:
 
 ```cpp
-auto material = material::BasicMaterial::create(); 
+auto material = material::BasicMaterial::create();
 ```
 
 
@@ -31,23 +31,23 @@ The `BasicMaterial` is expected to work along with the `Basic.effect`. As such, 
 
 The diffuse color is a solid RGBA color that will be used as the final pixel color. It can be set using three different methods that will all have the exact same behavior:
 
--   `BasicMaterial::diffuseColor(Vector4::Ptr color)`, where `color` is an RGBA Vector4 value
+-   `BasicMaterial::diffuseColor(math::vec4 color)`, where `color` is an RGBA Vector4 value
 -   `BasicMaterial::diffuseColor(uint rgba)`, where `rgba` is an RGBA formatted unsigned integer value
--   `BasicMaterial::set("diffuseColor", Vector3::Ptr color)`, where `color` is an RGBA Vector4 value
+-   `BasicMaterial::set({{ "diffuseColor", math::vec4 color }})`, where `color` is an RGBA Vector4 value
 
 It is important to understand that the first two methods are just syntaxic sugar on top of the `BasicMaterial::set()` method. This method itself is inherited from the `[data::Provider`](data::Provider`) class. In the end, any material is just a "dynamic" `[data::Provider`](data::Provider`) that declares user-friendly inlined getter/setters for the properties expected by the corresponding effect.
 
 Therefore, this code:
 
 ```cpp
-material->diffuseColor(Vector4::create(1.f, 0.f, 0.f, 1.f)); 
+material->diffuseColor(Vector4::create(1.f, 0.f, 0.f, 1.f));
 ```
 
 
 is strictly equivalent to:
 
 ```cpp
-material->set("diffuseColor", Vector4::create(1.f, 0.f, 0.f, 1.f)); 
+material->set({{"diffuseColor", vec4(1.f, 0.f, 0.f, 1.f)}});
 ```
 
 
@@ -55,7 +55,7 @@ This approach is very useful because it mixes the flexibility of dynamic propert
 
 Performance wise, the static getters/setters declared in a material are (should be) inlined so it should make no difference.
 
-To learn more on this subject, please read the [The difference between the Material_set() method and setter methods](../article/The_difference_between_the_Material_set()_method_and_setter_methods.md) article.
+To learn more on this subject, please read the [The difference between the Material_set() method and setter methods](../article/The_difference_between_the_Material_set%28%29_method_and_setter_methods.md]) article.
 
 Step 3: Setting a diffuse map (or texture)
 ------------------------------------------
@@ -63,14 +63,14 @@ Step 3: Setting a diffuse map (or texture)
 The `BasicMaterial` can also sample an RGBA texture as the final color of the pixel. To do this, we just have to set the `diffuseMap` property using the `BasicMaterial::diffuseMap()` setter:
 
 ```cpp
-material->diffuseMap(texture); 
+material->diffuseMap(texture);
 ```
 
 
 or the `BasicMaterial::set()` dynamic method directly:
 
 ```cpp
-material->set("diffuseMap", texture); 
+material->set({{"diffuseMap", texture}});
 ```
 
 
@@ -82,63 +82,96 @@ Final code
 ----------
 
 ```cpp
-#include "minko/Minko.hpp" 
-#include "minko/MinkoPNG.hpp" 
-#include "minko/MinkoSDL.hpp"
+/*
+Copyright (c) 2016 Aerys
 
-using namespace minko; 
-using namespace minko::math; 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
+#include "minko/MinkoSDL.hpp"
+#include "minko/MinkoPNG.hpp"
+
+using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600;
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv) {
+const std::string TEXTURE_BOX = "texture/box.png";
 
- auto canvas = Canvas::create("Minko Tutorial - Working with the BasicMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
- auto sceneManager = component::SceneManager::create(canvas);
- sceneManager->assets()
-   ->registerParser<[file::PNGParser>](file::PNGParser>)("png")
-   ->queue("effect/Basic.effect")
-   ->queue("texture/box.jpg");
+int	main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Tutorial - Working with the BasicMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
 
- auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
- {
-   auto root = scene::Node::create("root")
-     ->addComponent(sceneManager);
-   auto camera = scene::Node::create("camera")
-     ->addComponent(Renderer::create(0x7f7f7fff))
-     ->addComponent(PerspectiveCamera::create(
-       (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
-     );
-   root->addChild(camera);
-   auto texturedCube = scene::Node::create("texturedCube")
-     ->addComponent(Transform::create(Matrix4x4::create()->translation(-2.f, 0.f, -5.f)))
-     ->addComponent(Surface::create(
-       geometry::CubeGeometry::create(assets->context()),
-   material::Material::create()->set("diffuseMap", assets->texture("texture/box.jpg")),
-       assets->effect("effect/Basic.effect")
-     ));
-   root->addChild(texturedCube);
+	sceneManager->assets()->loader()->options()
+		->registerParser<file::PNGParser>("png");
 
-   auto coloredCube = scene::Node::create("coloredCube")
-     ->addComponent(Transform::create(Matrix4x4::create()->translation(2.f, 0.f, -5.f)))
-     ->addComponent(Surface::create(
-       geometry::CubeGeometry::create(assets->context()),
-       material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-       assets->effect("effect/Basic.effect")
-     ));
-   root->addChild(coloredCube);
-   auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-   {
-     sceneManager->nextFrame(t, dt);
-   });
-   canvas->run();
- });
- sceneManager->assets()->load();
- return 0;
+	sceneManager->assets()->loader()
+		->queue("effect/Basic.effect")
+		->queue(TEXTURE_BOX);
 
-} 
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
+
+	auto material = material::BasicMaterial::create();
+
+	material->diffuseColor(vec4(1.f, 0.f, 0.f, 1.f));
+	material->set({{"diffuseColor", vec4(1.f, 0.f, 0.f, 1.f)}});
+
+	root->addChild(camera);
+
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto texturedCube = scene::Node::create("texturedCube")
+			->addComponent(Transform::create(translate(vec3(-2.f, 0.f, -5.f))))
+			->addComponent(Surface::create(
+				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				material::Material::create()->set({ {"diffuseMap", sceneManager->assets()->texture(TEXTURE_BOX)} }),
+				sceneManager->assets()->effect("effect/Basic.effect")
+			));
+
+		root->addChild(texturedCube);
+
+		auto coloredCube = scene::Node::create("coloredCube")
+			->addComponent(Transform::create(translate(vec3(2.f, 0.f, -5.f))))
+			->addComponent(Surface::create(
+				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				material::BasicMaterial::create()->diffuseColor(vec4(0.f, 0.f, 1.f, 1.f)),
+				sceneManager->assets()->effect("effect/Basic.effect")
+				));
+
+		root->addChild(coloredCube);
+	});
+
+	sceneManager->assets()->loader()->load();
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
+
+	return 0;
+}
 ```
-
-
