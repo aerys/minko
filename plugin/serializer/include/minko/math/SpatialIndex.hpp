@@ -86,7 +86,7 @@ namespace minko
         public:
             static
             Ptr
-            create(float epsilon = 1e-3f)
+            create(float epsilon = 1e-5f)
             {
                 auto instance = Ptr(new SpatialIndex<T>(epsilon));
 
@@ -121,6 +121,12 @@ namespace minko
             size() const
             {
                 return _index.size();
+            }
+
+            void
+            clear()
+            {
+                _index.clear();
             }
 
         private:

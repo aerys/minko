@@ -604,8 +604,11 @@ POPGeometryLodScheduler::blendingLod(const POPGeometryResourceInfo&    resource,
         ? resource.fullPrecisionLod
         : requiredPrecisionLevel;
 
-    blendingLod = std::max<float>(resource.minAvailableLod, blendingLod);
-    blendingLod = std::min<float>(resource.maxAvailableLod, blendingLod);
+    blendingLod = math::clamp(
+        blendingLod,
+        float(surfaceInfo.activeLod - 1),
+        float(surfaceInfo.activeLod)
+    );
 
     return blendingLod;
 }
