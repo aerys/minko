@@ -90,7 +90,7 @@ const math::uint WINDOW_HEIGHT = 600;
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Tutorial - Hello Cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Handle canvas resizing", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 	sceneManager->assets()->loader()->queue("effect/Basic.effect");
 
