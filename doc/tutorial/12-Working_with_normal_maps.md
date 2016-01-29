@@ -42,7 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoPNG.hpp"
+#include "minko/MinkoJPEG.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -51,7 +51,7 @@ using namespace minko::component;
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
-const std::string MYTEXTURE = "texture/diffuseMap.png";
+const std::string MYTEXTURE = "texture/diffuseMap.jpg";
 
 int	main(int argc, char** argv)
 {
@@ -59,7 +59,7 @@ int	main(int argc, char** argv)
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
-		->registerParser<file::PNGParser>("png");
+		->registerParser<file::JPEGParser>("jpg");
 
 	sceneManager->assets()->loader()
 		->queue("effect/Phong.effect")
@@ -78,6 +78,12 @@ int	main(int argc, char** argv)
 		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f)))));
 	spotLight->component<SpotLight>()->diffuse(0.5f);
 
+	auto ambientLight = scene::Node::create("ambientLight")
+		->addComponent(AmbientLight::create(.2f));
+
+	ambientLight->component<AmbientLight>()->color(vec3(1.f, 1.f, 1.f));
+
+	root->addChild(ambientLight);
 	root->addChild(spotLight);
 	root->addChild(camera);
 
@@ -169,7 +175,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoPNG.hpp"
+#include "minko/MinkoJPEG.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -178,8 +184,8 @@ using namespace minko::component;
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
-const std::string MYTEXTURE = "texture/diffuseMap.png";
-const std::string NORMALMAP = "texture/normalMap.png";
+const std::string DIFFUSEMAP = "texture/diffuseMap.jpg";
+const std::string NORMALMAP = "texture/normalMap.jpg";
 
 int	main(int argc, char** argv)
 {
@@ -187,11 +193,11 @@ int	main(int argc, char** argv)
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
-		->registerParser<file::PNGParser>("png");
+		->registerParser<file::JPEGParser>("jpg");
 
 	sceneManager->assets()->loader()
 		->queue("effect/Phong.effect")
-		->queue(MYTEXTURE)
+		->queue(DIFFUSEMAP)
 		->queue(NORMALMAP);
 
 	auto root = scene::Node::create("root")
@@ -199,12 +205,12 @@ int	main(int argc, char** argv)
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x00000000))
-		->addComponent(Transform::create(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f))))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
 	auto spotLight = scene::Node::create("spotLight")
 		->addComponent(SpotLight::create(.6f, .78f, 20.f))
-		->addComponent(Transform::create(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f))));
+		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f)))));
 	spotLight->component<SpotLight>()->diffuse(0.5f);
 
 	auto ambientLight = scene::Node::create("ambientLight")
@@ -220,7 +226,7 @@ int	main(int argc, char** argv)
 		auto phongMaterial = material::PhongMaterial::create();
 
 		phongMaterial->diffuseColor(0xffffffff);
-		phongMaterial->diffuseMap(sceneManager->assets()->texture(MYTEXTURE));
+		phongMaterial->diffuseMap(sceneManager->assets()->texture(DIFFUSEMAP));
 		phongMaterial->normalMap(sceneManager->assets()->texture(NORMALMAP));
 
 		auto mesh = scene::Node::create("mesh")

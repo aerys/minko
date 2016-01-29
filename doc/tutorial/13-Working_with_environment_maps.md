@@ -50,7 +50,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoPNG.hpp"
+#include "minko/MinkoJPEG.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -59,7 +59,7 @@ using namespace minko::component;
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
-const std::string MYTEXTURE = "texture/diffuseMap.png";
+const std::string MYTEXTURE = "texture/diffuseMap.jpg";
 
 int	main(int argc, char** argv)
 {
@@ -67,7 +67,7 @@ int	main(int argc, char** argv)
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
-		->registerParser<file::PNGParser>("png");
+		->registerParser<file::JPEGParser>("jpg");
 
 	sceneManager->assets()->loader()
 		->queue("effect/Phong.effect")
@@ -86,6 +86,12 @@ int	main(int argc, char** argv)
 		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f)))));
 	spotLight->component<SpotLight>()->diffuse(0.5f);
 
+	auto ambientLight = scene::Node::create("ambientLight")
+		->addComponent(AmbientLight::create(.2f));
+
+	ambientLight->component<AmbientLight>()->color(vec3(1.f, 1.f, 1.f));
+
+	root->addChild(ambientLight);
 	root->addChild(spotLight);
 	root->addChild(camera);
 
@@ -187,7 +193,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoPNG.hpp"
+#include "minko/MinkoJPEG.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -196,9 +202,9 @@ using namespace minko::component;
 const math::uint WINDOW_WIDTH = 800;
 const math::uint WINDOW_HEIGHT = 600;
 
-const std::string MYTEXTURE = "texture/sphere.png";
-const std::string ENVMAP = "texture/envMap.png";
-const std::string CUBEMAP = "texture/cubeMap.png";
+const std::string MYTEXTURE = "texture/diffuseMap.jpg";
+const std::string ENVMAP = "texture/envMap.jpg";
+const std::string CUBEMAP = "texture/cubeMap.jpg";
 
 int	main(int argc, char** argv)
 {
@@ -206,7 +212,7 @@ int	main(int argc, char** argv)
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
-		->registerParser<file::PNGParser>("png");
+		->registerParser<file::JPEGParser>("jpg");
 
 	auto cubeTextureOptions = sceneManager->assets()->loader()->options()->clone();
 
@@ -231,6 +237,12 @@ int	main(int argc, char** argv)
 		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f)))));
 	spotLight->component<SpotLight>()->diffuse(0.5f);
 
+	auto ambientLight = scene::Node::create("ambientLight")
+		->addComponent(AmbientLight::create(.2f));
+
+	ambientLight->component<AmbientLight>()->color(vec3(1.f, 1.f, 1.f));
+
+	root->addChild(ambientLight);
 	root->addChild(camera);
 	root->addChild(spotLight);
 
