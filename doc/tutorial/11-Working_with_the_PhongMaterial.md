@@ -65,12 +65,12 @@ int	main(int argc, char** argv)
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x00000000))
-		->addComponent(Transform::create(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f))))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
 	auto spotLight = scene::Node::create("spotLight")
 		->addComponent(SpotLight::create(.6f, .78f, 20.f))
-		->addComponent(Transform::create(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f))));
+		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f)))));
 	spotLight->component<SpotLight>()->diffuse();
 
 	root->addChild(spotLight);
@@ -239,12 +239,12 @@ int	main(int argc, char** argv)
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x00000000))
-		->addComponent(Transform::create(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f))))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
 	auto spotLight = scene::Node::create("spotLight")
 		->addComponent(SpotLight::create(.6f, .78f, 20.f))
-		->addComponent(Transform::create(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f))));
+		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f)))));
 	spotLight->component<SpotLight>()->diffuse(0.5f);
 
 	root->addChild(spotLight);

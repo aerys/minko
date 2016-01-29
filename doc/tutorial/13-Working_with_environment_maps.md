@@ -63,7 +63,7 @@ const std::string MYTEXTURE = "texture/diffuseMap.png";
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Working with normal maps", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Tutorial - Working with the PhongMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
@@ -78,27 +78,27 @@ int	main(int argc, char** argv)
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x00000000))
-		->addComponent(Transform::create(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f))))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
 	auto spotLight = scene::Node::create("spotLight")
 		->addComponent(SpotLight::create(.6f, .78f, 20.f))
-		->addComponent(Transform::create(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f))));
+		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f)))));
 	spotLight->component<SpotLight>()->diffuse(0.5f);
 
-	root->addChild(camera);
 	root->addChild(spotLight);
+	root->addChild(camera);
 
 	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
 		auto phongMaterial = material::PhongMaterial::create();
 
-		phongMaterial->diffuseColor(0xffffffff);
 		phongMaterial->diffuseMap(sceneManager->assets()->texture(MYTEXTURE));
-		phongMaterial->normalMap(sceneManager->assets()->texture(NORMALMAP));
+		phongMaterial->specularColor(vec4(.4f, .8f, 1.f, 1.f));
+		phongMaterial->shininess(2.f);
 
 		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create(scale(vec3(1.1f))))
+			->addComponent(Transform::create(mat4() * scale(vec3(1.1f))))
 			->addComponent(Surface::create(
 				geometry::SphereGeometry::create(sceneManager->assets()->context()),
 				phongMaterial,
