@@ -30,14 +30,16 @@ namespace minko
         class SurfaceOperator
         {
         public:
-            typedef std::shared_ptr<component::Surface>                 SurfacePtr;
-            typedef std::shared_ptr<scene::Node>                        NodePtr;
-
-            typedef std::function<void(const std::list<SurfacePtr>&,
-                                       const std::list<SurfacePtr>&)>   SubstitutionFunction;
+            using SurfacePtr = std::shared_ptr<component::Surface>;
+            using ForwardingFunction = std::function<void(SurfacePtr)>;
+            using SubstitutionFunction = std::function<void(
+                const std::list<SurfacePtr>&,
+                const std::list<SurfacePtr>&
+            )>;
 
         public:
-            SubstitutionFunction substitutionFunction;
+            ForwardingFunction      forwardingFunction;
+            SubstitutionFunction    substitutionFunction;
         };
     }
 }

@@ -373,16 +373,38 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
     _assetLibrary = assetLibrary;
 
-    _filteredNodes = NodeSet::create(node)
-        ->descendants(true)
-        ->where([this](Node::Ptr descendant) -> bool
+    const auto filterFunction = [this](Node::Ptr node) -> bool
         {
             return (_options.nodeFilterFunction
-                ? _options.nodeFilterFunction(descendant)
-                : defaultNodeFilterFunction(descendant)) &&
-                descendant->hasComponent<Surface>();
+                ? _options.nodeFilterFunction(node)
+                : defaultNodeFilterFunction(node)) &&
+                node->hasComponent<Surface>();
+        };
+
+    _filteredNodes = NodeSet::create(node)
+        ->descendants(true)
+        ->where([&filterFunction](Node::Ptr descendant) -> bool
+        {
+            return filterFunction(descendant);
         }
     );
+
+    auto excludedSurfaceNodes = NodeSet::create(node)
+        ->descendants(true)
+        ->where([&filterFunction](Node::Ptr descendant) -> bool
+        {
+            return !filterFunction(descendant);
+        }
+    );
+
+    const auto& surfaceFowardingFunction = _streamingOptions->surfaceOperator().forwardingFunction;
+
+    if (surfaceFowardingFunction)
+    {
+        for (auto excludedSurfaceNode : excludedSurfaceNodes->nodes())
+            for (auto surface : excludedSurfaceNode->components<Surface>())
+                surfaceFowardingFunction(surface);
+    }
 
     if (_filteredNodes->nodes().empty())
         return;
