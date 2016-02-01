@@ -15,7 +15,8 @@ By default, no texture file formats are supported. This kind of features are pro
 To enable one (or both) of those plugins, we will have to update our project configuration and regenerate our solution. To do this, open the `premake4.lua` file in the root folder of your project in your favorite text editor and uncomment the following lines:
 
 ```lua
-minko.plugin.enable("jpeg") minko.plugin.enable("png") 
+minko.plugin.enable("jpeg")
+minko.plugin.enable("png")
 ```
 
 
@@ -29,7 +30,7 @@ Step 1: Registering parsers
 Before we can load anything, we have to make sure Minko will know how to handle the loaded data. To do this, we must register some data parsers to some specific file extensions. The parsers are registered on the `AssetLibrary` directly using the `AssetLibrary::registerParser()` method:
 
 ```cpp
-sceneManager->assets()->registerParser<[file::JPEGParser>](file::JPEGParser>)("jpg"); 
+sceneManager->assets()->loader()->options()->registerParser<file::JPEGParser>("jpg");
 ```
 
 
@@ -41,23 +42,22 @@ Step 1: Loading a texture
 To load a texture, we call the `AssetLibrary::load()` method passing the file name of our texture as the single argument:
 
 ```cpp
-sceneManager->assets()->load("texture/my_texture.jpg"); 
+sceneManager->assets()->loader()->queue("texture/my_texture.jpg");
 ```
 
 
 Loading textures can be an asynchronous task depending on how the internal loader will actually work. To be notified when our loading operation is done, we listen to the `AssetLibrary::complete()` signal. The following code will output the loaded texture width and height in the console:
 
 ```cpp
-sceneManager->assets()->complete()->connect([&](file::AssetLibrary assets) {
+auto _= sceneManager->assets()->loader()->complete()->connect([&](file::AssetLibrary assets)
+{
+	auto texture = sceneManager->assets()->texture("texture/my_texture.jpg");
 
- auto texture = assets->texture("texture/my_texture.jpg");
-
- std::cout << "texture width: " << texture->width() << std::endl;
- std::cout << "texture height: " << texture->height() << std::endl;
-
+	std::cout << "texture width: " << texture->width() << std::endl;
+	std::cout << "texture height: " << texture->height() << std::endl;
 });
 
-sceneManager->assets()->load("texture/my_texture.jpg"); 
+sceneManager->assets()->loader()->load();
 ```
 
 
@@ -73,28 +73,23 @@ Step 2: Setting the texture
 To use our texture upon loading, we simply use the `BasicMaterial::diffuseMap()` method to set the right property:
 
 ```cpp
-sceneManager->assets()->complete()->connect([&](file::AssetLibrary assets) {
+auto _= sceneManager->assets()->loader()->complete()->connect([&](file::AssetLibrary assets)
+	auto cubeMaterial = material::BasicMaterial::create();
 
- auto basicMaterial = std::dynamic_pointer_cast<material::BasicMaterial>(cube->component<Surface>()->material());
-
- basicMaterial->diffuseMap(assets->texture("texture/my_texture.jpg"));
-
-}); 
+	cubeMaterial->diffuseMap(sceneManager->assets()->texture(MYTEXTURE));
+});
 ```
-
-
-You can also avoid the dynamic cast by using the `Material::set()` method:
+You can also use the `BasicMaterial::set()` method:
 
 ```cpp
-sceneManager->assets()->complete()->connect([&](file::AssetLibrary assets) {
+auto _= sceneManager->assets()->loader()->complete()->connect([&](file::AssetLibrary assets)
+	auto cubeMaterial = material::BasicMaterial::create();
 
- cube->component<Surface>()->material()->set("diffuseMap", assets->texture("texture/my_texture.jpg"));
-
-}); 
+	cubeMaterial->set({ {"diffuseMap", sceneManager->assets()->texture(MYTEXTURE)} });
+});
 ```
 
-
-Both methods have the exact same behavior since `Material::set()` is actually called by `BasicMaterial::diffuseMap()` internally. The second method is a bit harder to write because its dynamic and code-hinting won't work, but it should be a bit faster since it avoids a dynamic pointer cast at runtime. Working with `Material::set()` is also more generic since it will work on any `Material` no matter its actual type and it will have the desired effect as long as you use the right string property name. Therfore, you might want to use `Material::set()` if you are writting your own scenes parser or some complex assets dynamic loading code. To learn more on this subject, please read the [The difference between the Material_set() method and setter methods](../article/The_difference_between_the_Material_set()_method_and_setter_methods.md) article.
+Both methods have the exact same behavior since `Material::set()` is actually called by `BasicMaterial::diffuseMap()` internally. The second method is a bit harder to write because its dynamic and code-hinting won't work, but it should be a bit faster since it avoids a dynamic pointer cast at runtime. Working with `Material::set()` is also more generic since it will work on any `Material` no matter its actual type and it will have the desired effect as long as you use the right string property name. Therfore, you might want to use `Material::set()` if you are writting your own scenes parser or some complex assets dynamic loading code. To learn more on this subject, please read the [The difference between the Material_set() method and setter methods](../article/The_difference_between_the_Material_set%27%28_method_and_setter_methods.md) article.
 
 Of course, if you want to use your texture for something else that the diffuse map, you'll have to set the corresponding property. For example, if you want to set the normal map, you'll want to set the `normalMap` property instead. All the other operations are exactly the same.
 
@@ -102,55 +97,89 @@ Final code
 ----------
 
 ```cpp
-#include "minko/Minko.hpp" 
-#include "minko/MinkoJPEG.hpp" 
-#include "minko/MinkoSDL.hpp"
+/*
+Copyright (c) 2016 Aerys
 
-using namespace minko; 
-using namespace minko::math; 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
+#include "minko/MinkoSDL.hpp"
+#include "minko/MinkoPNG.hpp"
+
+using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv) {
+const std::string MYTEXTURE = "texture/box.PNG";
 
- auto canvas = Canvas::create("Minko Tutorial - Loading and using textures", WINDOW_WIDTH, WINDOW_HEIGHT);
- auto sceneManager = component::SceneManager::create(canvas);
- sceneManager->assets()
-   ->registerParser<[file::JPEGParser>](file::JPEGParser>)("jpg")
-   ->queue("effect/Basic.effect")
-   ->queue("texture/my_texture.jpg");
+int	main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Tutorial - Loading and using textures", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
 
- auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
- {
-   auto root = scene::Node::create("root")
-     ->addComponent(sceneManager);
-   auto camera = scene::Node::create("camera")
-     ->addComponent(Renderer::create(0x7f7f7fff))
-     ->addComponent(PerspectiveCamera::create(
-       (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
-     ));
-   root->addChild(camera);
-   auto cube = scene::Node::create("cube")
-     ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
-     ->addComponent(Surface::create(
-       geometry::CubeGeometry(assets->context()),
-       material::BasicMaterial::create()->diffuseMap(assets->texture("texture/my_texture.jpg")),
-       assets->effect("effect/Basic.effect")
-     );
-   root->addChild(cube);
-   auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-   {
-     cube->component<Transform>()->matrix()->prependRotationY(.01f);
-     sceneManager->nextFrame(t, dt);
-   });
-   canvas->run();
- });
- sceneManager->assets()->load();
- return 0;
+	sceneManager->assets()->loader()->options()
+		->registerParser<file::PNGParser>("png");
 
-} 
+	sceneManager->assets()->loader()
+		->queue("effect/Basic.effect")
+		->queue(MYTEXTURE);
+
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x00000000))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
+
+	root->addChild(camera);
+
+	auto cube = scene::Node::create("cube");
+
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto cubeMaterial = material::BasicMaterial::create();
+
+		cubeMaterial->diffuseMap(sceneManager->assets()->texture(MYTEXTURE));
+
+		cube->addComponent(Transform::create());
+		cube->addComponent(Surface::create(
+				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				cubeMaterial,
+				sceneManager->assets()->effect("effect/Basic.effect")
+				));
+		root->addChild(cube);
+	});
+
+	sceneManager->assets()->loader()->load();
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
+
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
+
+	return 0;
+}
 ```
-
-
