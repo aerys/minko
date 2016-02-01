@@ -8,20 +8,20 @@ Step 1: Loading a single effect
 To load a single effect, we will use the `AssetLibrary::load()` method:
 
 ```cpp
-sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets) {
+auto _= sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets) {
 
- std::cout << "all assets have been loaded!" << std::endl;
+	std::cout << "my effect has been loaded!" << std::endl;
 
 });
 
-sceneManager->assets()->load("MyEffect.effect"); 
+sceneManager->assets()->loader()->load("MyEffect.effect");
 ```
 
 
 This code snippet should output:
 
 ```
- all assets have been loaded! 
+my effect has been loaded!
 ```
 
 
@@ -33,26 +33,25 @@ Step 1 (alternative): Loading multiple effects/assets
 To load multiple effects - or if the `*.effect` file(s) you want to load is just one asset among others - we can use the `AssetLibrary::queue()` method. This method expects the same arguments as the `AssetLibrary::load()` method except it will enlist all the files to load. It will then eventually load then in a batch when `AssetLibrary::load()` is actually called:
 
 ```cpp
-sceneManager->assets()
+sceneManager->assets()->loader()
+	->queue("MyEffect1.effect")
+	->queue("MyEffect2.effect")
+	->queue("MyEffect3.effect");
 
- ->queue("MyEffect1.effect")
- ->queue("MyEffect2.effect")
- ->queue("MyEffect3.effect");
+auto _= sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets) {
 
-sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets) {
-
- std::cout << "all assets have been loaded!" << std::endl;
+	std::cout << "all assets have been loaded!" << std::endl;
 
 });
 
-sceneManager->assets()->load(); 
+sceneManager->assets()->loader()->load();
 ```
 
 
 This code snippet should output:
 
 ```
- all assets have been loaded! 
+ all assets have been loaded!
 ```
 
 
@@ -61,18 +60,17 @@ when all the assets listed by the successive calls to the `AssetLibrary::queue()
 Step 2: Fetching the Effect object
 ----------------------------------
 
-When our `*.effect` is loaded, it is automatically made available in the `AssetLibrary` and can be fetched using the `AssetLibrary::effect()` method. This method expects a single `
-const std::string&` argument that will point to the loaded `Effect` object using:
+When our `*.effect` is loaded, it is automatically made available in the `AssetLibrary` and can be fetched using the `AssetLibrary::effect()` method. This method expects a single `const std::string&` argument that will point to the loaded `Effect` object using:
 
 -   the value of the "name" field in the `*.effect` file, if any;
 -   or the actual file name used upon loading (the `std::string` passed to either `AssetLibrary::load()` or `AssetLibrary::queue()`).
 
 ```cpp
-sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets) {
+auto _= sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets) {
 
  auto fx = assets()->effect("MyEffect.effect");
 
-} 
+}
 ```
 
 
@@ -80,59 +78,84 @@ Final code
 ----------
 
 ```cpp
-#include "minko/Minko.hpp" 
-#include "minko/MinkoSDL.hpp"
+/*
+Copyright (c) 2016 Aerys
 
-using namespace minko; 
-using namespace minko::math; 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
+#include "minko/MinkoSDL.hpp"
+#include "minko/MinkoPNG.hpp"
+
+using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv) {
+int	main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Tutorial - Loading effects", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
 
-   auto canvas = Canvas::create("Minko Tutorial - Loading effects", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = component::SceneManager::create(canvas);
+	sceneManager->assets()->loader()->options()
+		->registerParser<file::PNGParser>("png");
 
-   sceneManager->assets()->queue("effect/VertexNormal.effect");
-   auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-   {
-       std::cout << "all assets have been loaded!" << std::endl;
+	sceneManager->assets()->loader()
+		->queue("effect/MyEffect.effect");
 
-       auto root = scene::Node::create("root")
-           ->addComponent(sceneManager);
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-       auto camera = scene::Node::create("camera")
-           ->addComponent(Renderer::create(0x7f7f7fff))
-           ->addComponent(PerspectiveCamera::create(
-           (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
-           );
-       root->addChild(camera);
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x00000000))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
-       auto cube = scene::Node::create("cube")
-       ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
-           ->addComponent(Surface::create(
-           geometry::CubeGeometry::create(assets->context()),
-           material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-           assets->effect("effect/VertexNormal.effect")
-           ));
-       root->addChild(cube);
+	root->addChild(camera);
 
-       auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-       {
-           cube->component<Transform>()->matrix()->prependRotationY(.01f);
-           sceneManager->nextFrame(t, dt);
-       });
+	auto cube = scene::Node::create("cube");
 
-       canvas->run();
-   });
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		cube->addComponent(Transform::create());
+		cube->addComponent(Surface::create(
+				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				material::BasicMaterial::create()->diffuseColor(vec4(1.f, 0.f, 0.f, 1.f)),
+				sceneManager->assets()->effect("effect/MyEffect.effect")
+				));
+		root->addChild(cube);
+	});
 
-   sceneManager->assets()->load();
+	sceneManager->assets()->loader()->load();
 
-   return 0;
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
 
-} 
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
+
+	return 0;
+}
 ```
 
 
@@ -143,4 +166,3 @@ Now that you know how to load effects, you should read one of the following tuto
 
 -   [Create your first custom effect](../tutorial/17-Creating_a_custom_effect.md)
 -   [Creating a simple post-processing effect](../tutorial/22-Creating_a_simple_post-processing_effect.md)
-
