@@ -158,7 +158,7 @@ int	main(int argc, char** argv)
 
 	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
-		auto cubeMaterial = material::BasicMaterial::create();
+		auto cubeMaterial = material::PhongMaterial::create();
 
 		cubeMaterial->diffuseMap(sceneManager->assets()->texture(MYTEXTURE));
 
