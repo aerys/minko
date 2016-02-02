@@ -118,7 +118,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoPNG.hpp"
+#include "minko/MinkoJPEG.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -127,15 +127,15 @@ using namespace minko::component;
 const math::uint WINDOW_WIDTH = 800;
 const math::uint WINDOW_HEIGHT = 600;
 
-const std::string MYTEXTURE = "texture/box.PNG";
+const std::string MYTEXTURE = "texture/my_texture.jpg";
 
-int	main(int argc, char** argv)
+int    main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Loading and using textures", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Loading and using textures", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
-		->registerParser<file::PNGParser>("png");
+		->registerParser<file::JPEGParser>("jpg");
 
 	sceneManager->assets()->loader()
 		->queue("effect/Basic.effect")
@@ -161,10 +161,10 @@ int	main(int argc, char** argv)
 
 		cube->addComponent(Transform::create());
 		cube->addComponent(Surface::create(
-				geometry::CubeGeometry::create(sceneManager->assets()->context()),
-				cubeMaterial,
-				sceneManager->assets()->effect("effect/Basic.effect")
-				));
+			geometry::CubeGeometry::create(sceneManager->assets()->context()),
+			cubeMaterial,
+			sceneManager->assets()->effect("effect/Basic.effect")
+			));
 		root->addChild(cube);
 	});
 

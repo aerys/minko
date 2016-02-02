@@ -99,7 +99,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoPNG.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -110,14 +109,11 @@ const math::uint WINDOW_HEIGHT = 600;
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Loading effects", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Loading effects", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
-	sceneManager->assets()->loader()->options()
-		->registerParser<file::PNGParser>("png");
-
 	sceneManager->assets()->loader()
-		->queue("effect/MyEffect.effect");
+		->queue("effect/VertexNormal.effect");
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
@@ -135,10 +131,10 @@ int	main(int argc, char** argv)
 	{
 		cube->addComponent(Transform::create());
 		cube->addComponent(Surface::create(
-				geometry::CubeGeometry::create(sceneManager->assets()->context()),
-				material::BasicMaterial::create()->diffuseColor(vec4(1.f, 0.f, 0.f, 1.f)),
-				sceneManager->assets()->effect("effect/MyEffect.effect")
-				));
+			geometry::CubeGeometry::create(sceneManager->assets()->context()),
+			material::BasicMaterial::create()->diffuseColor(vec4(1.f, 0.f, 0.f, 1.f)),
+			sceneManager->assets()->effect("effect/VertexNormal.effect")
+			));
 		root->addChild(cube);
 	});
 
