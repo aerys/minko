@@ -89,7 +89,7 @@ StreamedAssetParserScheduler::priority(float value)
 
     if (_priority <= 0.f)
         inactive()->execute(shared_from_this());
-    else if (previousValue <= 0.f)
+    else if (previousValue <= 0.f && !_activeEntries.empty())
         active()->execute(shared_from_this());
 }
 

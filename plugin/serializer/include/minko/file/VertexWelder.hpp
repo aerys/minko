@@ -62,8 +62,6 @@ namespace minko
 
             std::unordered_set<GeometryPtr>                 _weldedGeometrySet;
 
-            static const float                              _defaultEpsilon;
-
         public:
             ~VertexWelder() = default;
 

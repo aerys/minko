@@ -102,6 +102,9 @@ namespace minko
             surfaceAdded(SurfacePtr surface);
 
             void
+            surfaceRemoved(SurfacePtr surface);
+
+            void
             viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
                                 const math::mat4&   viewMatrix,
                                 const math::vec3&   eyePosition,

@@ -60,13 +60,15 @@ namespace minko
 
                 float                           weight;
 
+                explicit
                 SurfaceInfo(SurfacePtr surface) :
                     surface(surface),
                     box(),
                     layoutChangedSlot(),
                     layoutMaskChangedSlot(),
                     activeLod(-1),
-                    requiredPrecisionLevel(0)
+                    requiredPrecisionLevel(0),
+                    weight(0.f)
                 {
                 }
             };

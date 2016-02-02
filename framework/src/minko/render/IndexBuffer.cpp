@@ -87,11 +87,26 @@ IndexBuffer::dispose()
 
     disposeData();
 
-	_changed->execute(shared_from_this());
+	_changed->execute(nullptr);
 }
 
 void IndexBuffer::disposeData()
 {
-    data().clear();
-    data().shrink_to_fit();
+    auto u16Data = dataPointer<unsigned short>();
+
+    if (u16Data)
+    {
+        u16Data->clear();
+        u16Data->shrink_to_fit();
+
+        return;
+    }
+
+    auto u32Data = dataPointer<unsigned int>();
+
+    if (u32Data)
+    {
+        u32Data->clear();
+        u32Data->shrink_to_fit();
+    }
 }
