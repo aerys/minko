@@ -148,6 +148,7 @@ int	main(int argc, char** argv)
 		{
 			// We create a new transform component
 			auto transform = component::Transform::create();
+
 			// We add it to the cube
 			cube->addComponent(transform);
 

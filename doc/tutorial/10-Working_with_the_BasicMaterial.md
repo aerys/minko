@@ -109,8 +109,8 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
 const std::string TEXTURE_BOX = "texture/box.png";
 
@@ -133,11 +133,6 @@ int	main(int argc, char** argv)
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
-	auto material = material::BasicMaterial::create();
-
-	material->diffuseColor(vec4(1.f, 0.f, 0.f, 1.f));
-	material->set({{"diffuseColor", vec4(1.f, 0.f, 0.f, 1.f)}});
-
 	root->addChild(camera);
 
 	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
@@ -146,9 +141,9 @@ int	main(int argc, char** argv)
 			->addComponent(Transform::create(translate(vec3(-2.f, 0.f, -5.f))))
 			->addComponent(Surface::create(
 				geometry::CubeGeometry::create(sceneManager->assets()->context()),
-				material::Material::create()->set({ {"diffuseMap", sceneManager->assets()->texture(TEXTURE_BOX)} }),
+				material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_BOX)),
 				sceneManager->assets()->effect("effect/Basic.effect")
-			));
+				));
 
 		root->addChild(texturedCube);
 

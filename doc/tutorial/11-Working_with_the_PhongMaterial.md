@@ -217,14 +217,14 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
 const std::string MYTEXTURE = "texture/diffuseMap.jpg";
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Working with the PhongMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Working with the PhongMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
@@ -265,9 +265,9 @@ int	main(int argc, char** argv)
 		phongMaterial->shininess(2.f);
 
 		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create(mat4() * scale(vec3(1.1f))))
+			->addComponent(Transform::create(scale(vec3(1.1f))))
 			->addComponent(Surface::create(
-				geometry::SphereGeometry::create(sceneManager->assets()->context()),
+				geometry::SphereGeometry::create(sceneManager->assets()->context(), 20U),
 				phongMaterial,
 				sceneManager->assets()->effect("effect/Phong.effect")
 				));

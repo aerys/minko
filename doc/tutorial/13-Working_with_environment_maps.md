@@ -56,14 +56,14 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
 const std::string MYTEXTURE = "texture/diffuseMap.jpg";
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Working with the PhongMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Working with the PhongMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
@@ -104,9 +104,9 @@ int	main(int argc, char** argv)
 		phongMaterial->shininess(2.f);
 
 		auto mesh = scene::Node::create("mesh")
-			->addComponent(Transform::create(mat4() * scale(vec3(1.1f))))
+			->addComponent(Transform::create(scale(vec3(1.1f))))
 			->addComponent(Surface::create(
-				geometry::SphereGeometry::create(sceneManager->assets()->context()),
+				geometry::SphereGeometry::create(sceneManager->assets()->context(), 20U),
 				phongMaterial,
 				sceneManager->assets()->effect("effect/Phong.effect")
 				));
@@ -204,11 +204,9 @@ const math::uint WINDOW_HEIGHT = 600;
 
 const std::string MYTEXTURE = "texture/diffuseMap.jpg";
 const std::string ENVMAP = "texture/envMap.jpg";
-const std::string CUBEMAP = "texture/cubeMap.jpg";
-
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Working with environment maps", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Working with environment maps", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
@@ -222,19 +220,19 @@ int	main(int argc, char** argv)
 		->queue("effect/Phong.effect")
 		->queue(MYTEXTURE)
 		->queue(ENVMAP)
-		->queue(CUBEMAP, cubeTextureOptions);
+		;
 
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x00000000))
-		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 3.f, 3.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
 	auto spotLight = scene::Node::create("spotLight")
 		->addComponent(SpotLight::create(.6f, .78f, 20.f))
-		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f)))));
+		->addComponent(Transform::create(inverse(lookAt(vec3(4.f, 6.f, 2.5f), vec3(), vec3(0.f, 1.f, 0.f)))));
 	spotLight->component<SpotLight>()->diffuse(0.5f);
 
 	auto ambientLight = scene::Node::create("ambientLight")
@@ -250,11 +248,8 @@ int	main(int argc, char** argv)
 	{
 		auto phongMaterial = material::PhongMaterial::create();
 
-
-		phongMaterial->diffuseColor(0xffffffff);
 		phongMaterial->diffuseMap(sceneManager->assets()->texture(MYTEXTURE));
 		phongMaterial->environmentMap(sceneManager->assets()->texture(ENVMAP));
-		// phongMaterial->environmentMap(sceneManager->assets()->cubeTexture(CUBEMAP));
 		phongMaterial->environmentAlpha(.5f);
 
 		auto mesh = scene::Node::create("mesh")

@@ -77,53 +77,54 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSerializer.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
+using namespace minko::math;
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-const std::string SCENE_FILENAME = "model/myScene/myScene.scene";
+std::string SCENE_FILENAME = "model/myScene/myScene.scene";
 
-int	main(int argc, char** argv)
+int main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Loading .scene files", WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto sceneManager = component::SceneManager::create(canvas);
+    auto canvas = Canvas::create("Minko Tutorial - Loading .scene files", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto sceneManager = SceneManager::create(canvas);
 
-	sceneManager->assets()->loader()->options()
-		->registerParser<file::SceneParser>("scene");
+    sceneManager->assets()->loader()->options()
+		->registerParser<minko::file::SceneParser>("scene");
 
 	sceneManager->assets()->loader()
+		->queue("effect/Phong.effect")
 		->queue(SCENE_FILENAME)
-		->queue("effect/Basic.effect");
+		;
 
-	sceneManager->assets()->loader()->options()
-		->generateMipmaps(true)
-		->effect(sceneManager->assets()->effect("effect/Basic.effect"));
-
-	auto root = scene::Node::create("root")
+    auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x7f7f7fff))
+        ->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 3.f, -5.f), vec3(), vec3(0.f, 1.f, 0.f)))
+        ))
+        ->addComponent(PerspectiveCamera::create(
+        (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
+        );
 
 	root->addChild(camera);
 
-	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-	{
+    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+    {
 		root->addChild(sceneManager->assets()->symbol(SCENE_FILENAME));
-	});
+    });
 
-	sceneManager->assets()->loader()->load();
+    sceneManager->assets()->loader()->load();
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-	{
-		sceneManager->nextFrame(t, dt);
-	});
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+    {
+        sceneManager->nextFrame(t, dt);
+    });
 
-	canvas->run();
+    canvas->run();
 
-	return 0;
+    return 0;
 }
 ```
