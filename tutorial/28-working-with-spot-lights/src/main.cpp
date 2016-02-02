@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,76 +24,56 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int
-main(int argc, char** argv)
+int	main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Tutorial - Working with spot lights", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas);
+	auto canvas = Canvas::create("Minko Tutorial - Working with spot lights", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
 
-    // setup assets
-    sceneManager->assets()->loader()->options()->generateMipmaps(true);
-    sceneManager->assets()->loader()->queue("effect/Phong.effect");
+	sceneManager->assets()->loader()
+		->queue("effect/Phong.effect");
 
-    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-    {
-        auto root = scene::Node::create("root")->addComponent(sceneManager);
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-        auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 3.f, -5.f))
-            ))
-            ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
-            );
-        root->addChild(camera);
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 3.f, -5.f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
-        // create a ground
-        auto ground = scene::Node::create("sphere")
-            ->addComponent(Surface::create(
-				geometry::QuadGeometry::create(canvas->context()),
-				material::BasicMaterial::create(),
-				sceneManager->assets()->effect("effect/Phong.effect")
-            ))
-            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(3.f)->appendRotationX(-1.57f)));
-        root->addChild(ground);
+	root->addChild(camera);
 
-        // create the spot light node
-        auto spotLightNode = scene::Node::create("spotLight");
+	auto ground = scene::Node::create("ground");
 
-        // change the spot light position
-        spotLightNode->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.1f, 2.f, 0.f))));
+	auto spotLight = scene::Node::create("spotLight")
+		->addComponent(SpotLight::create(.15f, .4f))
+		->addComponent(Transform::create(inverse(lookAt(vec3(.1f, 2.f, 0.f), vec3(), vec3(0.f, 1.f, 0.f)))));
+	spotLight->component<SpotLight>()->diffuse(0.5f);
 
-        // create the point light component
-        auto spotLight = SpotLight::create(.15f, .4f);
+	root->addChild(spotLight);
 
-        // update the spot light component attributes
-        spotLight->diffuse(0.5f);
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		ground->addComponent(Surface::create(
+			geometry::QuadGeometry::create(sceneManager->assets()->context()),
+			material::BasicMaterial::create()->diffuseColor(vec4(1.f, .7f, .7f, 1.f)),
+			sceneManager->assets()->effect("effect/Phong.effect")
+			))
+			->addComponent(Transform::create(scale(vec3(4.f)) * rotate(static_cast<float>(-M_PI_2), vec3(1.f, 0.f, 0.f))));
 
-        // add the component to the spot light node
-        spotLightNode->addComponent(spotLight);
+		root->addChild(ground);
+	});
 
-		//sets a red color to our spot light
-		spotLightNode->component<SpotLight>()->color()->setTo(2.0f, 1.0f, 1.0f);
+	sceneManager->assets()->loader()->load();
 
-        // add the node to the root of the scene graph
-        root->addChild(spotLightNode);
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		sceneManager->nextFrame(t, dt);
+	});
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-        {
-            spotLightNode->component<Transform>()->matrix()->appendRotationX(0.002f * dt);
+	canvas->run();
 
-
-            sceneManager->nextFrame(t, dt);
-        });
-
-        canvas->run();
-    });
-
-    sceneManager->assets()->loader()->load();
-
-    return 0;
+	return 0;
 }

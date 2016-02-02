@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,69 +19,73 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
- 
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
- 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
- 
-int
-main(int argc, char** argv)
+
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
+
+int	main(int argc, char** argv)
 {
-  auto canvas = Canvas::create("Minko Tutorial - Working with directional lights", WINDOW_WIDTH, WINDOW_HEIGHT);
-  auto sceneManager = component::SceneManager::create(canvas);
- 
-  sceneManager->assets()->loader()
-	  ->queue("effect/Phong.effect");
-  
-  auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-  {
-    auto root = scene::Node::create("root")
-      ->addComponent(sceneManager);
- 
-    auto camera = scene::Node::create("camera")
-      ->addComponent(Renderer::create(0x7f7f7fff))
-      ->addComponent(PerspectiveCamera::create(
-		(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
-    root->addChild(camera);
- 
-	auto phongMaterial = material::PhongMaterial::create();
+	auto canvas = Canvas::create("Minko Tutorial - Working with directional light", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
 
-	phongMaterial->diffuseColor(0xFF0000FF);
-	phongMaterial->specularColor(0xFFFFFFFF);
-	phongMaterial->shininess(16.0f);
+	sceneManager->assets()->loader()
+		->queue("effect/Phong.effect");
 
-    auto sphere = scene::Node::create("sphere")
-      ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
-	  ->addComponent(Surface::create(
-        geometry::SphereGeometry::create(canvas->context()),
-		phongMaterial,
-		sceneManager->assets()->effect("effect/Phong.effect")
-      ));
-	sphere->component<Transform>()->matrix()->prependRotationY(float(M_PI) * 0.25f);
-	root->addChild(sphere);
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-	auto ambientLight = scene::Node::create("ambientLight")
-		->addComponent(AmbientLight::create(0.25f));
-	ambientLight->component<AmbientLight>()->color(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
-	root->addChild(ambientLight);
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x00000000))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 2.f, 2.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
 	auto directionalLight = scene::Node::create("directionalLight")
-		->addComponent(DirectionalLight::create()->diffuse(0.8f)->color(0xFFFFFFFF))
-		->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(3.0f, 2.0f, 3.0f))));
+		->addComponent(DirectionalLight::create())
+		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 2.f, 3.f), vec3(), vec3(0.f, 1.f, 0.f)))));
+	directionalLight->component<DirectionalLight>()
+		->diffuse(.8f)
+		->color(vec3(.7f, 1.f, 0.7f));
+
+	auto ambientLight = scene::Node::create("ambientLight")
+		->addComponent(AmbientLight::create(.25f));
+	ambientLight->component<AmbientLight>()->color(vec3(1.f, .7f, .7f));
+
 	root->addChild(directionalLight);
+	root->addChild(ambientLight);
+	root->addChild(camera);
+
+	auto sphere = scene::Node::create("sphere");
+
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto phongMaterial = material::PhongMaterial::create();
+
+		phongMaterial->diffuseColor(0xff0000ff);
+		phongMaterial->specularColor(0xffffffff);
+		phongMaterial->shininess(16.0f);
+
+		sphere->addComponent(Transform::create());
+		sphere->addComponent(Surface::create(
+			geometry::SphereGeometry::create(sceneManager->assets()->context(), 20U),
+			phongMaterial,
+			sceneManager->assets()->effect("effect/Phong.effect")
+			));
+		root->addChild(sphere);
+
+	});
+
+	sceneManager->assets()->loader()->load();
 
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
 	{
 		sceneManager->nextFrame(t, dt);
 	});
 
-    canvas->run();
-  });
- 
-  sceneManager->assets()->loader()->load();
- 
-  return 0;
+	canvas->run();
+
+	return 0;
 }

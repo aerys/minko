@@ -141,7 +141,7 @@ const math::uint WINDOW_HEIGHT = 600;
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Working with directional light", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Working with directional light", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()
@@ -152,20 +152,19 @@ int	main(int argc, char** argv)
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x00000000))
-		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 2.f, 2.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
 	auto directionalLight = scene::Node::create("directionalLight")
 		->addComponent(DirectionalLight::create())
-		->addComponent(Transform::create(inverse(lookAt(vec3(15.f, 20.f, 0.f), vec3(), vec3(0.f, 1.f, 0.f)))));
+		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 2.f, 3.f), vec3(), vec3(0.f, 1.f, 0.f)))));
 	directionalLight->component<DirectionalLight>()
-		->diffuse(.4f)
-		->color(vec3(0.f, 1.f, 0.f));
+		->diffuse(.8f)
+		->color(vec3(.7f, 1.f, 0.7f));
 
 	auto ambientLight = scene::Node::create("ambientLight")
-		->addComponent(AmbientLight::create(.2f));
-
-	ambientLight->component<AmbientLight>()->color(vec3(1.f, 0.f, 0.f));
+		->addComponent(AmbientLight::create(.25f));
+	ambientLight->component<AmbientLight>()->color(vec3(1.f, .7f, .7f));
 
 	root->addChild(directionalLight);
 	root->addChild(ambientLight);
@@ -183,7 +182,7 @@ int	main(int argc, char** argv)
 
 		sphere->addComponent(Transform::create());
 		sphere->addComponent(Surface::create(
-			geometry::SphereGeometry::create(sceneManager->assets()->context()),
+			geometry::SphereGeometry::create(sceneManager->assets()->context(), 20U),
 			phongMaterial,
 			sceneManager->assets()->effect("effect/Phong.effect")
 			));

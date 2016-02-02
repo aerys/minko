@@ -128,7 +128,7 @@ const std::string MYTEXTURE = "texture/box.png";
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Working with ambient light", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Working with ambient light", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->options()
@@ -143,13 +143,13 @@ int	main(int argc, char** argv)
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x00000000))
-		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.5f, 2.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
 	auto ambientLight = scene::Node::create("ambientLight")
-		->addComponent(AmbientLight::create(.2f));
+		->addComponent(AmbientLight::create(.5f));
 
-	ambientLight->component<AmbientLight>()->color(vec3(1.f, 0.f, 0.f));
+	ambientLight->component<AmbientLight>()->color(vec3(1.f, 0.7f, 0.7f));
 
 	root->addChild(ambientLight);
 	root->addChild(camera);
@@ -158,14 +158,10 @@ int	main(int argc, char** argv)
 
 	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
-		auto cubeMaterial = material::PhongMaterial::create();
-
-		cubeMaterial->diffuseMap(sceneManager->assets()->texture(MYTEXTURE));
-
 		cube->addComponent(Transform::create());
 		cube->addComponent(Surface::create(
 			geometry::CubeGeometry::create(sceneManager->assets()->context()),
-			cubeMaterial,
+			material::PhongMaterial::create()->diffuseMap(sceneManager->assets()->texture(MYTEXTURE)),
 			sceneManager->assets()->effect("effect/Phong.effect")
 			));
 		root->addChild(cube);

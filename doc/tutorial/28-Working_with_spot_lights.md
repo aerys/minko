@@ -143,7 +143,7 @@ const math::uint WINDOW_HEIGHT = 600;
 
 int	main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Tutorial - Working with spot lights", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto canvas = Canvas::create("Minko Tutorial - Working with spot lights", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()
@@ -154,7 +154,7 @@ int	main(int argc, char** argv)
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.5f, 2.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 3.f, -5.f), vec3(), vec3(0.f, 1.f, 0.f)))))
 		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
 	root->addChild(camera);
@@ -162,8 +162,8 @@ int	main(int argc, char** argv)
 	auto ground = scene::Node::create("ground");
 
 	auto spotLight = scene::Node::create("spotLight")
-		->addComponent(SpotLight::create(.6f, .78f, 20.f))
-		->addComponent(Transform::create(inverse(lookAt(vec3(3.f, 5.f, 1.5f), vec3(), vec3(0.f, 1.f, 0.f)))));
+		->addComponent(SpotLight::create(.15f, .4f))
+		->addComponent(Transform::create(inverse(lookAt(vec3(.1f, 2.f, 0.f), vec3(), vec3(0.f, 1.f, 0.f)))));
 	spotLight->component<SpotLight>()->diffuse(0.5f);
 
 	root->addChild(spotLight);
@@ -172,7 +172,7 @@ int	main(int argc, char** argv)
 	{
 		ground->addComponent(Surface::create(
 			geometry::QuadGeometry::create(sceneManager->assets()->context()),
-			material::BasicMaterial::create()->diffuseColor(vec4(1.f, .5f, .5f, 1.f)),
+			material::BasicMaterial::create()->diffuseColor(vec4(1.f, .7f, .7f, 1.f)),
 			sceneManager->assets()->effect("effect/Phong.effect")
 			))
 			->addComponent(Transform::create(scale(vec3(4.f)) * rotate(static_cast<float>(-M_PI_2), vec3(1.f, 0.f, 0.f))));
