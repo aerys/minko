@@ -19,57 +19,61 @@ Step 1: Updating our effect
 
 As is, our effect only declares per-effect `uniform`s that we have to set/update manually. To fix this, we will use `uniformBindings` in order to map each `uniform` name to a data binding property (in this case, available in the material):
 
-```javascript
-"uniformBindings" : {
-
- "uColor" : "material.color"
-
-} 
+```json
+"uniforms" : {
+	  "uModelToWorldMatrix"   : "modelToWorldMatrix",
+	  "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+	  "uColor"				: "material[${materialUuid}].color"
+},
 ```
 
 
 This `uniformBinding` field can be declared in the pass object or directly at the root of our effect. Here is the complete code for our updated `MyCustomEffect.effect` file:
 
-```javascript
+```json
 {
+  "name" : "MyCustomEffect",
+    "attributes" : {
+        "aPosition" : "geometry[${geometryUuid}].position"
+		},
+  "uniforms" : {
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		"uColor"				: "material[${materialUuid}].color"
+		},
+  "techniques" : [{
+	  "passes" : [{
+		"name" : "my-custom-pass",
+		"vertexShader" : "
+		  #ifdef GL_ES
+		  precision mediump float;
+		  #endif
 
- "name" : "MyCustomEffect",
- "attributeBindings" : {
-   "aPosition" : "geometry[${geometryId}].position"
- },
- "uniformBindings" : {
-   "uColor" : "material[${materialId}].color"
- },
- "passes" : [{
-   "vertexShader" : "
-     #ifdef GL_ES
-     precision mediump float;
-     #endif
-     attribute vec3 aPosition;
-    
-uniform mat4 uModelToWorldMatrix;
-    
-uniform mat4 uViewMatrix;
-    
-uniform mat4 uProjectionMatrix;
-     void main(void)
-     {
-       gl_Position = uProjectionMatrix * uViewMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
-     }
-   ",
-   "fragmentShader" : "
-     #ifdef GL_ES
-     precision mediump float;
-     #endif
-     uniform vec4 uColor;
-     void main(void)
-     {
-       gl_FragColor = uColor;
-     }
-   "
- }]
+		  attribute vec3 aPosition;
 
-} 
+		  uniform mat4 uModelToWorldMatrix;
+		  uniform mat4 uWorldToScreenMatrix;
+
+		  void main(void)
+		  {
+			gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
+		  }
+		",
+		"fragmentShader" : "
+		  #ifdef GL_ES
+		  precision mediump float;
+		  #endif
+
+		  uniform vec4 uColor;
+
+		  void main(void)
+		  {
+			gl_FragColor = uColor;
+		  }
+		"
+	  }]
+  }]
+}
 ```
 
 
@@ -85,19 +89,23 @@ You can learn more about the `*.effect` files format in the [Effect files format
 Step 2: Setting up our custom material
 --------------------------------------
 
-Now that we've updated our `Effect` bindings, it will expect to find a "material.color" property in the `[data::Container`](data::Container`) provided by the `scene::Node::data()` property where we added our `Surface`.
+Now that we've updated our `Effect` bindings, it will expect to find a "material.color" property in the `data::Container` provided by the `scene::Node::data()` property where we added our `Surface`.
 
 In the very case of our `material.color` uniform binding, the rendering pipeline will expect:
 
--   a call to `sceneNode->data()->hasProperty("material.color")` to return `true`;
--   and a call to `sceneNode->data()->get<Vector4::Ptr>("material.color")` to return the Vector4 object to set for the `uColor` uniform.
+-   a call to `material->data()->hasProperty("color")` to return `true`;
+-   and a call to `material->data()->get("color")` to return the Vector4 object to set for the `uColor` uniform.
 
 To make sure the rendering engine works as expected, we just have to make sure our `Material` object will indeed provide a `color` property:
 
 ```cpp
 auto myCustomMaterial = material::Material::create();
 
-// set "color" to red myCustomMaterial->set("color", Vector4::create(1.f, 0.f, 0.f, 1.f)); 
+if (myCustomMaterial->hasProperty("color"))
+{
+	// set "color" to red
+	myCustomMaterial->set("color", vec4(1.f, 0.f, 0.f, 1.f));
+}
 ```
 
 
@@ -111,37 +119,43 @@ Setting all the properties of a material can be quite difficult since developers
 In our very case, we will create a `MyCustomMaterial` class that extends `Material` and declares a `color` setter in a `MyCustomMaterial.hpp` file:
 
 ```cpp
-#include "minko/Common.hpp" 
+#include "minko/Common.hpp"
 #include "minko/material/Material.hpp"
 
-namespace minko {
+namespace minko
+{
+	namespace material
+	{
+		class MyCustomMaterial :
+			public Material
+		{
+		public:
+			typedef std::shared_ptr<MyCustomMaterial>	Ptr;
 
- namespace material
- {
-   class MyCustomMaterial :
-     public Material
-   {
-   public:
-     typedef std::shared_ptr<MyCustomMaterial>   Ptr;
+		public:
+			inline static
+			Ptr
+			create(const std::string& name = "MyCustomMaterial")
+			{
+				return Ptr(new MyCustomMaterial(name));
+			}
 
-   public:
-     inline static
-     Ptr
-     create()
-     {
-       return std::shared_ptr<BasicMaterial>(new BasicMaterial());
-     }
+			inline
+			void
+			color(math::vec4 rgba)
+			{
+				set({ {"color", rgba} });
+			}
 
-     inline
-     void
-     color(std::shared_ptr<math::Vector4> rgba)
-     {
-       set("color", rgba);
-     }
-   };
- }
+		private:
+			MyCustomMaterial(const std::string& name):
+				Material(name)
+			{
+			}
+		};
 
-} 
+	}
+}
 ```
 
 
@@ -150,116 +164,150 @@ Developers can now use your material as follow:
 ```cpp
 auto myCustomMaterial = material::MyCustomMaterial::create();
 
-myCustomMaterial->color(Vector4::create(1.f, 0.f, 0.f, 1.f));
+myCustomMaterial->color(vec4(0.f, 1.f, 0.f, 1.f));
 
 auto cube = scene::Node::create()->addComponent(Surface::create(
-
- geometry::CubeGeometry::create(),
- myCustomMaterial,
- myCustomEffect
-
-)); 
+	geometry::CubeGeometry::create(),
+	myCustomMaterial,
+	myCustomEffect
+	));
 ```
 
 
 Final code
 ----------
 
-asset/effect/MyCustomEffect.effect 
-```javascript
+asset/effect/MyCustomEffect.effect
+```json
 {
+  "name" : "MyCustomEffect",
+    "attributes" : {
+        "aPosition" : "geometry[${geometryUuid}].position"
+		},
+  "uniforms" : {
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		"uColor"				: "material[${materialUuid}].color"
+		},
+  "techniques" : [{
+	  "passes" : [{
+		"name" : "my-custom-pass",
+		"vertexShader" : "
+		  #ifdef GL_ES
+		  precision mediump float;
+		  #endif
 
- "name" : "MyCustomEffect",
- "attributeBindings" : {
-   "aPosition" : "geometry[${geometryId}].position"
- },
- "uniformBindings" : {
-   "uColor" : "material.color"
- },
- "passes" : [{
-   "vertexShader" : "
-     #ifdef GL_ES
-     precision mediump float;
-     #endif
-     attribute vec3 aPosition;
-    
-uniform mat4 uModelToWorldMatrix;
-    
-uniform mat4 uViewMatrix;
-    
-uniform mat4 uProjectionMatrix;
-     void main(void)
-     {
-       gl_Position = uProjectionMatrix * uViewMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
-     }
-   ",
-   "fragmentShader" : "
-     #ifdef GL_ES
-     precision mediump float;
-     #endif
-     uniform vec4 uColor;
-     void main(void)
-     {
-       gl_FragColor = uColor;
-     }
-   "
- }]
+		  attribute vec3 aPosition;
 
-} 
+		  uniform mat4 uModelToWorldMatrix;
+		  uniform mat4 uWorldToScreenMatrix;
+
+		  void main(void)
+		  {
+			gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
+		  }
+		",
+		"fragmentShader" : "
+		  #ifdef GL_ES
+		  precision mediump float;
+		  #endif
+
+		  uniform vec4 uColor;
+
+		  void main(void)
+		  {
+			gl_FragColor = uColor;
+		  }
+		"
+	  }]
+  }]
+}
 ```
 
 
-src/main.cpp 
+src/main.cpp
 ```cpp
-#include "minko/Minko.hpp" 
+/*
+Copyright (c) 2016 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 
 #include "MyCustomMaterial.hpp"
 
-using namespace minko; 
-using namespace minko::math; 
+using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Minko Tutorial - Create custom material", WINDOW_WIDTH, WINDOW_HEIGHT);
 
- auto canvas = Canvas::create("Minko Tutorial - Creating custom materials", WINDOW_WIDTH, WINDOW_HEIGHT);
- auto sceneManager = component::SceneManager::create(canvas);
- sceneManager->assets()->queue("effect/MyCustomMaterial.effect");
- auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
- { 
-   auto root = scene::Node::create("root")
-     ->addComponent(sceneManager)
-     ->addComponent(Renderer::create(0x7f7f7fff));
-   auto myCustomEffect = assets->effect("effect/MyCustomEffect.effect");
-   auto myCustomMaterial = material::MyCustomMaterial::create();
-   auto cube = scene::Node::create("cube")->addComponent(Surface::create(
-     geometry::CubeGeometry::create(assets->context()),
-     myCustomMaterial,
-     myCustomEffect
-   ));
-   root->addChild(cube);
+	auto sceneManager = component::SceneManager::create(canvas);
 
-   myCustomMaterial->color(Vector4::create(1.f, 0.f, 0.f, 1.f));
+	sceneManager->assets()->loader()
+		->queue("effect/MyCustomEffect.effect");
 
-   autoModelToWorldMatrix = Matrix4x4::create()->translation(0.f, 0.f, -5.f);
-   myCustomEffect->setUniform("uModelToWorldMatrix", modelToWorldMatrix);
-   myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create());
-   myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)PI * 0.25f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 1000.f));
-   auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-   {
-     modelToWorldMatrix->prependRotationY(0.01f);
-     myCustomEffect->setUniform("uModelToWorldMatrix", modelToWorldMatrix);
-     sceneManager->nextFrame(t, dt);
-   });
-   canvas->run();
- });
- sceneManager->assets()->load();
- return 0;
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-} 
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x00000000))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 2.f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
+	auto cube = scene::Node::create("cube")
+		->addComponent(Transform::create());
+
+	root->addChild(cube);
+	root->addChild(camera);
+
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto customMaterial = material::MyCustomMaterial::create();
+		customMaterial->color(vec4(0.f, 1.f, 0.f, 1.f));
+
+		auto myCustomEffect = sceneManager->assets()->effect("effect/MyCustomEffect.effect");
+
+		cube->addComponent(Surface::create(
+			geometry::CubeGeometry::create(canvas->context()),
+			customMaterial,
+			myCustomEffect
+			));
+	});
+
+	sceneManager->assets()->loader()->load();
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
+
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
+
+	return 0;
+}
 ```
-
-

@@ -13,18 +13,25 @@ namespace minko
 
 		public:
 			inline static
-				Ptr
-				create()
+			Ptr
+			create(const std::string& name = "MyCustomMaterial")
 			{
-					return std::shared_ptr<MyCustomMaterial>(new MyCustomMaterial());
-				}
+				return Ptr(new MyCustomMaterial(name));
+			}
 
 			inline
-				void
-				color(std::shared_ptr<math::Vector4> rgba)
+			void
+			color(math::vec4 rgba)
 			{
-					set("color", rgba);
-				}
+				set({ {"color", rgba} });
+			}
+		
+		private:
+			MyCustomMaterial(const std::string& name):
+				Material(name)
+			{
+			}
 		};
+
 	}
 }
