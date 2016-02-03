@@ -2,7 +2,7 @@
 	"name" : "MyCustomUberEffect",
 	"attributes" : {
 		"aPosition" : "geometry[${geometryUuid}].position",
-		"aUv" : "geometry[${geometryId}].uv"
+		"aUv" : "geometry[${geometryUuid}].uv"
 		},
 	"uniforms" : {
 		"uDiffuseColor" : "material[${materialUuid}].diffuseColor",
