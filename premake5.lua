@@ -136,6 +136,46 @@ solution "minko"
 		end
 	end
 
+	-- tutorials
+	if not _OPTIONS['no-tutorial'] then
+		local tutorials = {
+			['01-hello-cube']											= true,
+			['02-handle-canvas-resizing']								= true,
+			['03-rotating-the-camera-around-an-object-with-the-mouse']	= true,
+			['04-moving-objects']										= true,
+			['05-moving-objects-with-the-keyboard']						= true,
+			['06-load-3d-files']										= true,
+			['07-loading-scene-files']									= true,
+			['10-working-with-the-basic-material']						= true,
+			['11-working-with-the-phong-material']						= true,
+			['12-working-with-normal-maps']								= true,
+			['13-working-with-environment-maps']						= true,
+			['14-working-with-specular-maps']							= true,
+			['15-loading-and-using-textures']							= true,
+			['16-loading-effects']										= true,
+			['17-creating-a-custom-effect']								= true,
+			['18-creating-custom-materials']							= true,
+			['19-binding-the-model-to-world-transform']					= true,
+			['20-binding-the-camera']									= true,
+			['21-authoring-uber-shaders']								= true,
+			['22-creating-a-simple-post-processing-effect']				= true,
+			['23-using-external-glsl-code-in-effect-files']				= true,
+			['24-working-with-custom-vertex-attributes']				= true,
+			['25-working-with-ambient-lights']							= true,
+			['26-working-with-directional-lights']						= true,
+			['27-working-with-point-lights']							= true,
+			['28-working-with-spot-lights']								= true,
+			['29-hello-falling-cube']									= true,
+			['30-applying-anti-aliasing-effect']						= true,
+		}
+
+		for tutorial, enabled in pairs(tutorials) do
+			if enabled then
+				include('tutorial/' .. tutorial)
+			end
+		end
+	end
+
 	-- test
 	if not _OPTIONS['no-test'] then
 		include 'test'
