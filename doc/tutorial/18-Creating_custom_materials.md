@@ -32,47 +32,47 @@ This `uniformBinding` field can be declared in the pass object or directly at th
 
 ```json
 {
-  "name" : "MyCustomEffect",
-    "attributes" : {
-        "aPosition" : "geometry[${geometryUuid}].position"
+	"name" : "MyCustomEffect",
+	"attributes" : {
+		"aPosition" : "geometry[${geometryUuid}].position"
 		},
   "uniforms" : {
-        "uModelToWorldMatrix"   : "modelToWorldMatrix",
-        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		"uModelToWorldMatrix"   : "modelToWorldMatrix",
+		"uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 		"uColor"				: "material[${materialUuid}].color"
 		},
   "techniques" : [{
 	  "passes" : [{
 		"name" : "my-custom-pass",
 		"vertexShader" : "
-		  #ifdef GL_ES
-		  precision mediump float;
-		  #endif
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
 
-		  attribute vec3 aPosition;
+			attribute vec3 aPosition;
 
-		  uniform mat4 uModelToWorldMatrix;
-		  uniform mat4 uWorldToScreenMatrix;
+			uniform mat4 uModelToWorldMatrix;
+			uniform mat4 uWorldToScreenMatrix;
 
-		  void main(void)
-		  {
-			gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
-		  }
+			void main(void)
+			{
+				gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
+			}
 		",
 		"fragmentShader" : "
-		  #ifdef GL_ES
-		  precision mediump float;
-		  #endif
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
 
-		  uniform vec4 uColor;
+			uniform vec4 uColor;
 
-		  void main(void)
-		  {
-			gl_FragColor = uColor;
-		  }
+			void main(void)
+			{
+				gl_FragColor = uColor;
+			}
 		"
-	  }]
-  }]
+		}]
+		}]
 }
 ```
 

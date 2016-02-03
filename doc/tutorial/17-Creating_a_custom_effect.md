@@ -17,20 +17,20 @@ Here is a simple `*.effect` file skeleton that will help us getting started:
 
 ```json
 {
-
- "name" : "MyCustomEffect",
- "attributeBindings" : {
-   "aPosition" : "geometry[${geometryId}].position"
- },
- "passes" : [{
-   "vertexShader" : "
-     // my custom vertex shader GLSL code...
-   ",
-   "fragmentShader" : "
-     // my custom fragment shader GLSL code...
-   "
- }]
-
+	"name" : "MyCustomEffect",
+	"attributes" : {
+		"aPosition" : "geometry[${geometryId}].position"
+		},
+	"techniques" : [{
+		"passes" : [{
+			"vertexShader" : "
+				// my custom vertex shader GLSL code...
+			",
+			"fragmentShader" : "
+				// my custom fragment shader GLSL code...
+			"
+		}]
+	}]
 }
 ```
 ```json
@@ -44,19 +44,17 @@ Here is a simple `*.effect` file skeleton that will help us getting started:
         "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 		"uColor"				: "material[${materialUuid}].myColor"
 		},
-  "techniques" : [{
-	  "passes" : [{
-		"name" : "my-custom-pass",
-		"vertexShader" : "
-		  // my custom vertex shader GLSL code...
-		",
-		"fragmentShader" : "
-		  // my custom fragment shader GLSL code...
-		"
-	  }]
-  }]
+	"techniques" : [{
+		  "passes" : [{
+			  "vertexShader" : "
+				  // my custom vertex shader GLSL code...
+			  ",
+			  "fragmentShader" : "
+				  // my custom fragment shader GLSL code...
+			  "
+		  }]
+	}]
 }
-
 ```
 
 Save this in a `MyCustomEffect.effect` file in the `asset/effect` folder of your app.
