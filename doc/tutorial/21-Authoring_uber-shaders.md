@@ -96,7 +96,7 @@ and the `uniforms` to make sure our `uDiffuseMap` property is properly bound too
 "uniforms" : {
 	"uDiffuseColor" : "material[${materialUuid}].diffuseColor",
 	"uDiffuseMap" : "material[${materialUuid}].diffuseMap",
-	"uModelToWorldMatrix" : "transform.modelToWorldMatrix",
+	"uModelToWorldMatrix" : "modelToWorldMatrix",
 	"uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 
 }
@@ -163,17 +163,17 @@ asset/effect/MyCustomUberEffect.effect
 {
 	"name" : "MyCustomUberEffect",
 	"attributes" : {
-		"aPosition" : "geometry[${geometryId}].position",
+		"aPosition" : "geometry[${geometryUuid}].position",
 		"aUv" : "geometry[${geometryId}].uv"
 		},
 	"uniforms" : {
-		"uDiffuseColor" : "material[${materialId}].diffuseColor",
-		"uDiffuseMap" : "material[${materialId}].diffuseMap",
+		"uDiffuseColor" : "material[${materialUuid}].diffuseColor",
+		"uDiffuseMap" : "material[${materialUuid}].diffuseMap",
 		"uModelToWorldMatrix" : "modelToWorldMatrix",
 		"uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } }
 		},
 	"macros" : {
-		"DIFFUSE_MAP" : "material[${materialId}].diffuseMap"
+		"DIFFUSE_MAP" : "material[${materialUuid}].diffuseMap"
 		},
 	"techniques" : [{
 		"passes" : [{

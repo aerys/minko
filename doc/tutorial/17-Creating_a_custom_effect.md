@@ -19,7 +19,7 @@ Here is a simple `*.effect` file skeleton that will help us getting started:
 {
 	"name" : "MyCustomEffect",
 	"attributes" : {
-		"aPosition" : "geometry[${geometryId}].position"
+		"aPosition" : "geometry[${geometryUui}].position"
 		},
 	"techniques" : [{
 		"passes" : [{
