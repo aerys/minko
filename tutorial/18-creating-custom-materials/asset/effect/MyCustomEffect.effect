@@ -1,15 +1,15 @@
 {
-  "name" : "MyCustomEffect",
+	"name" : "MyCustomEffect",
     "attributes" : {
         "aPosition" : "geometry[${geometryUuid}].position"
 		},
-  "uniforms" : {
+	"uniforms" : {
         "uModelToWorldMatrix"   : "modelToWorldMatrix",
         "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 		"uColor"				: "material[${materialUuid}].color"
 		},
-  "techniques" : [{
-	  "passes" : [{
+	"techniques" : [{
+	 "passes" : [{
 		"name" : "my-custom-pass",
 		"vertexShader" : "
 		  #ifdef GL_ES
