@@ -39,11 +39,6 @@ Please make sure you also check the [developer reference](http://doc.v3.minko.io
 -   [06-Loading 3D files](../tutorial/06-Loading_3D_files.md)
 -   [07-Loading .scene files](../tutorial/07-Loading_.scene_files.md)
 
-### Lua Scripting
-
--   [08-My first script](../tutorial/08-My_first_script.md)
--   [09-Scripting mouse inputs](../tutorial/09-Scripting_mouse_inputs.md)
-
 ### Materials and effects
 
 -   [10-Working with the BasicMaterial](../tutorial/10-Working_with_the_BasicMaterial.md)
@@ -104,4 +99,3 @@ This section lists all the tutorials available for the Minko "Studio" edition, e
 -   [Adding physics](../tutorial/Adding_physics.md)
 -   [Using lights](../tutorial/Using_lights.md)
 -   [Exporting .scene files](../tutorial/Exporting_.scene_files.md)
-
