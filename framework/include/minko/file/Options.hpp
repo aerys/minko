@@ -96,6 +96,7 @@ namespace minko
             bool                                                        _disposeTextureAfterLoading;
             bool                                                        _storeDataIfNotParsed;
             bool                                                        _preserveMaterials;
+            bool                                                        _trackAssetLocation;
 			unsigned int								                _skinningFramerate;
 			component::SkinningMethod					                _skinningMethod;
 			std::shared_ptr<render::Effect>                             _effect;
@@ -446,6 +447,22 @@ namespace minko
             preserveMaterials(bool value)
             {
                 _preserveMaterials = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            trackAssetLocation() const
+            {
+                return _trackAssetLocation;
+            }
+
+            inline
+            Ptr
+            trackAssetLocation(bool value)
+            {
+                _trackAssetLocation = value;
 
                 return shared_from_this();
             }

@@ -80,6 +80,9 @@ AssetLibrary::create(AssetLibrary::Ptr original)
     for (auto it = original->_layouts.begin(); it != original->_layouts.end(); ++it)
         al->_layouts[it->first] = it->second;
 
+    for (const auto& assetLocation : original->_assetLocations)
+        al->_assetLocations.emplace(assetLocation.first, assetLocation.second);
+
     return al;
 }
 
@@ -393,6 +396,20 @@ AssetLibrary::Ptr
 AssetLibrary::sound(const std::string& name, audio::Sound::Ptr sound)
 {
     _sounds[name] = sound;
+
+    return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
+}
+
+const AssetLibrary::AssetLocation&
+AssetLibrary::assetLocation(const std::string& name) const
+{
+    return _assetLocations.at(name);
+}
+
+AssetLibrary::Ptr
+AssetLibrary::assetLocation(const std::string& name, const AssetLocation& assetLocation)
+{
+    _assetLocations[name] = assetLocation;
 
     return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }

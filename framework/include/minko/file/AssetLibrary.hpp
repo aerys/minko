@@ -38,6 +38,13 @@ namespace minko
         public:
             typedef std::shared_ptr<AssetLibrary>                           Ptr;
 
+            struct AssetLocation
+            {
+                Flyweight<std::string>  filename;
+                int                     offset;
+                int                     length;
+            };
+
         private:
             typedef std::shared_ptr<render::AbstractContext>                AbsContextPtr;
             typedef std::shared_ptr<render::Effect>                         EffectPtr;
@@ -68,6 +75,7 @@ namespace minko
             std::unordered_map<std::string, AbsScriptPtr>                   _scripts;
             std::unordered_map<std::string, scene::Layout>				    _layouts;
             std::unordered_map<std::string, SoundPtr>                       _sounds;
+            std::unordered_map<std::string, AssetLocation>                  _assetLocations;
 
             Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr               _parserError;
             Signal<Ptr>::Ptr                                                _ready;
@@ -219,6 +227,12 @@ namespace minko
 
             AssetLibrary::Ptr
             sound(const std::string& name, audio::Sound::Ptr sound);
+
+            const AssetLocation&
+            assetLocation(const std::string& name) const;
+
+            AssetLibrary::Ptr
+            assetLocation(const std::string& name, const AssetLocation& assetLocation);
 
         private:
             AssetLibrary(AbsContextPtr context);
