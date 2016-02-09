@@ -106,7 +106,7 @@ void
 Cardboard::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    auto rotationMatrix = math::transpose(_attitude->rotationMatrix());
+    auto rotationMatrix = _attitude->rotationMatrix();
 
     target->component<Transform>()->matrix(rotationMatrix);
 #endif

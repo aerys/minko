@@ -143,7 +143,7 @@ AndroidAttitude::rotationMatrix()
 
     auto worldRotationMatrix = _deviceToDisplay * worldToDevice;
 
-    return worldRotationMatrix;
+    return math::transpose(worldRotationMatrix);
 }
 
 const math::quat&

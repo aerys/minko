@@ -73,7 +73,7 @@ IOSAttitude::rotationMatrix()
 
     _rotationMatrix = inertialReferenceFrameToDevice * _worldToInertialReferenceFrame;
     
-    return _rotationMatrix;
+    return math::transpose(_rotationMatrix);
 }
 
 const math::quat&
