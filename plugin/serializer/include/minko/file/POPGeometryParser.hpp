@@ -98,11 +98,9 @@ namespace minko
             inline
             static
             Ptr
-            create(std::shared_ptr<data::Provider> data)
+            create()
             {
-                auto instance = Ptr(new POPGeometryParser(data));
-
-                return instance;
+                return Ptr(new POPGeometryParser());
             }
 
         protected:
@@ -112,13 +110,6 @@ namespace minko
                    std::shared_ptr<Options>          options,
                    const std::vector<unsigned char>& data,
                    std::shared_ptr<AssetLibrary>     assetLibrary);
-
-            void
-            nextLod(int     previousLod,
-                    int     requiredLod,
-                    int&    nextLod,
-                    int&    nextLodOffset,
-                    int&    nextLodSize);
 
             void
             headerParsed(const std::vector<unsigned char>&   data,
@@ -133,20 +124,26 @@ namespace minko
 
             bool
             complete(int currentLod);
-
+            
             void
             completed();
 
+            void
+            lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const override;
+
+            int
+            lodLowerBound(int lod) const override;
+
+            int
+            maxLod() const override;
+
         private:
-            POPGeometryParser(std::shared_ptr<data::Provider> data);
+            POPGeometryParser();
 
             std::shared_ptr<geometry::Geometry>
             createPOPGeometry(std::shared_ptr<AssetLibrary> assetLibrary,
                               std::shared_ptr<Options>      options,
                               const std::string&            fileName);
-
-            int
-            lodRangeRequestSize(int lowerLod, int upperLod) const;
         };
     }
 }

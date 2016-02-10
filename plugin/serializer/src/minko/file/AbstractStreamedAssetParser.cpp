@@ -39,7 +39,7 @@ using namespace minko::file;
 using namespace minko::geometry;
 using namespace minko::render;
 
-AbstractStreamedAssetParser::AbstractStreamedAssetParser(Provider::Ptr data) :
+AbstractStreamedAssetParser::AbstractStreamedAssetParser() :
     AbstractSerializerParser(),
     _linkedAsset(),
     _filename(),
@@ -53,7 +53,7 @@ AbstractStreamedAssetParser::AbstractStreamedAssetParser(Provider::Ptr data) :
     _loaderErrorSlot(),
     _loaderCompleteSlot(),
     _complete(false),
-    _data(data),
+    _data(),
     _dataPropertyChangedSlot(),
     _requiredLod(0),
     _priority(0.f),
@@ -72,20 +72,23 @@ AbstractStreamedAssetParser::parse(const std::string&                 filename,
                                    const std::vector<unsigned char>&  data,
                                    AssetLibrary::Ptr                  assetLibrary)
 {
-    _dataPropertyChangedSlot = this->data()->propertyChanged().connect(
-        [this](Provider::Ptr        provider,
-               const Provider::PropertyName& propertyName)
-        {
-            if (*propertyName == "requiredLod")
+    if (this->data())
+    {
+        _dataPropertyChangedSlot = this->data()->propertyChanged().connect(
+            [this](Provider::Ptr                    provider,
+                   const Provider::PropertyName&    propertyName)
             {
-                requiredLod(provider->get<int>(propertyName));
+                if (*propertyName == "requiredLod")
+                {
+                    requiredLod(provider->get<int>(propertyName));
+                }
+                else if (*propertyName == "priority")
+                {
+                    priority(provider->get<float>(propertyName));
+                }
             }
-            else if (*propertyName == "priority")
-            {
-                priority(provider->get<float>(propertyName));
-            }
-        }
-    );
+        );
+    }
 
     _assetLibrary = assetLibrary;
     _options = options;
@@ -198,6 +201,15 @@ AbstractStreamedAssetParser::parseHeader(const std::vector<unsigned char>&   dat
     {
         _linkedAsset = _dependency->getLinkedAssetReference(linkedAssetId);
     }
+
+    if (_options->trackAssetLocation())
+    {
+        _assetLibrary->assetLocation(_filename, AssetLibrary::AssetLocation{
+            _linkedAsset->filename(),
+            _linkedAsset->offset(),
+            _linkedAsset->length()
+        });
+    }
 }
 
 void
@@ -250,4 +262,82 @@ AbstractStreamedAssetParser::priority(float priority)
         std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()),
         priority
     );
+}
+
+void
+AbstractStreamedAssetParser::nextLod(int      previousLod,
+                                     int      requiredLod,
+                                     int&     nextLod,
+                                     int&     nextLodOffset,
+                                     int&     nextLodSize)
+{
+    auto lodRangeMinSize = 1;
+    auto lodRangeMaxSize = 0;
+    auto lodRangeRequestMinSize = 0;
+    auto lodRangeRequestMaxSize = 0;
+
+    if (data() && streamingOptions()->popGeometryLodRangeFetchingBoundFunction())
+    {
+        streamingOptions()->popGeometryLodRangeFetchingBoundFunction()(
+            previousLod,
+            requiredLod,
+            lodRangeMinSize,
+            lodRangeMaxSize,
+            lodRangeRequestMinSize,
+            lodRangeRequestMaxSize
+        );
+    }
+    else
+    {
+        lodRangeMinSize = StreamingOptions::MAX_LOD_RANGE;
+    }
+
+    auto lowerLod = previousLod + 1;
+    auto upperLod = lowerLod;
+
+    auto requirementIsFulfilled = false;
+
+    do
+    {
+        if (upperLod >= maxLod())
+            break;
+
+        const auto lodRangeSize = upperLod - lowerLod;
+
+        if (lodRangeMinSize > 0 &&
+            lodRangeSize < lodRangeMinSize)
+        {
+            ++upperLod;
+
+            continue;
+        }
+
+        if (lodRangeMaxSize > 0 &&
+            lodRangeSize >= lodRangeMaxSize)
+            break;
+
+        auto lodRangeRequestOffset = 0;
+        auto lodRangeRequestSize = 0;
+
+        lodRangeRequestByteRange(lowerLod, upperLod, lodRangeRequestOffset, lodRangeRequestSize);
+
+        if (lodRangeRequestMaxSize > 0 &&
+            lodRangeRequestSize >= lodRangeRequestMaxSize)
+            break;
+
+        if (lodRangeRequestMinSize == 0 || lodRangeRequestSize >= lodRangeRequestMinSize)
+        {
+            requirementIsFulfilled = true;
+        }
+        else
+        {
+            ++upperLod;
+        }
+    } while (!requirementIsFulfilled);
+
+    lowerLod = std::min(maxLod(), lowerLod);
+    upperLod = std::min(maxLod(), upperLod);
+
+    nextLod = lodLowerBound(upperLod);
+    lodRangeRequestByteRange(lowerLod, upperLod, nextLodOffset, nextLodSize);
 }

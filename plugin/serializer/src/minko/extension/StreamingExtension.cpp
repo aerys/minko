@@ -358,8 +358,9 @@ StreamingExtension::deserializePOPGeometry(unsigned short					metaData,
 
     auto geometryData = Provider::create();
 
-    auto parser = POPGeometryParser::create(geometryData);
+    auto parser = POPGeometryParser::create();
 
+    parser->data(geometryData);
     parser->streamingOptions(_streamingOptions);
     parser->dependency(dependencies);
 
@@ -566,8 +567,9 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
 
     auto textureData = Provider::create();
 
-    auto parser = StreamedTextureParser::create(textureData);
+    auto parser = StreamedTextureParser::create();
 
+    parser->data(textureData);
     parser->streamingOptions(_streamingOptions);
     parser->dependency(dependencies);
 

@@ -36,8 +36,8 @@ using namespace minko::file;
 using namespace minko::geometry;
 using namespace minko::render;
 
-POPGeometryParser::POPGeometryParser(Provider::Ptr data) :
-    AbstractStreamedAssetParser(data),
+POPGeometryParser::POPGeometryParser() :
+    AbstractStreamedAssetParser(),
     _lodCount(0),
     _minLod(0),
     _maxLod(0),
@@ -77,10 +77,17 @@ POPGeometryParser::createPOPGeometry(AssetLibrary::Ptr      assetLibrary,
                                      Options::Ptr           options,
                                      const std::string&     fileName)
 {
+    auto existingGeometry = assetLibrary->geometry(fileName);
+
+    if (existingGeometry != nullptr)
+        return existingGeometry;
+
     if (_lodCount <= 0)
         return Geometry::create(fileName);
 
     auto popGeometry = Geometry::create(fileName);
+
+    popGeometry->data()->set<std::string>("type", "pop");
 
     auto indexCount = 0;
     auto vertexCount = 0;
@@ -179,9 +186,11 @@ POPGeometryParser::createPOPGeometry(AssetLibrary::Ptr      assetLibrary,
         );
     }
 
-    data()->set("availableLods", availableLods);
-
-    data()->set("maxAvailableLod", 0);
+    if (data())
+    {
+        data()->set("availableLods", availableLods);
+        data()->set("maxAvailableLod", 0);
+    }
 
     popGeometry->data()->set("popFullPrecisionLod", float(_fullPrecisionLod));
 
@@ -196,87 +205,6 @@ POPGeometryParser::createPOPGeometry(AssetLibrary::Ptr      assetLibrary,
     assetLibrary->geometry(fileName, popGeometry);
 
     return popGeometry;
-}
-
-void
-POPGeometryParser::nextLod(int      previousLod,
-                           int      requiredLod,
-                           int&     nextLod,
-                           int&     nextLodOffset,
-                           int&     nextLodSize)
-{
-    auto lodRangeMinSize = 1;
-    auto lodRangeMaxSize = 0;
-    auto lodRangeRequestMinSize = 0;
-    auto lodRangeRequestMaxSize = 0;
-
-    if (streamingOptions()->popGeometryLodRangeFetchingBoundFunction())
-    {
-        streamingOptions()->popGeometryLodRangeFetchingBoundFunction()(
-            previousLod,
-            requiredLod,
-            lodRangeMinSize,
-            lodRangeMaxSize,
-            lodRangeRequestMinSize,
-            lodRangeRequestMaxSize
-        );
-    }
-
-    auto lowerLod = previousLod + 1;
-    auto upperLod = lowerLod;
-
-    auto requirementIsFulfilled = false;
-
-    do
-    {
-        if (upperLod >= _maxLod)
-            break;
-
-        const auto lodRangeSize = upperLod - lowerLod;
-
-        if (lodRangeMinSize > 0 &&
-            lodRangeSize < lodRangeMinSize)
-        {
-            ++upperLod;
-
-            continue;
-        }
-
-        if (lodRangeMaxSize > 0 &&
-            lodRangeSize >= lodRangeMaxSize)
-            break;
-
-        const auto lodRangeRequestSize = this->lodRangeRequestSize(lowerLod, upperLod);
-
-        if (lodRangeRequestMaxSize > 0 &&
-            lodRangeRequestSize >= lodRangeRequestMaxSize)
-            break;
-
-        if (lodRangeRequestMinSize == 0 || lodRangeRequestSize >= lodRangeRequestMinSize)
-        {
-            requirementIsFulfilled = true;
-        }
-        else
-        {
-            ++upperLod;
-        }
-    } while (!requirementIsFulfilled);
-
-    auto nextLodLowerIt = _lods.lower_bound(lowerLod);
-    auto nextLodUpperIt = _lods.lower_bound(upperLod);
-
-    const auto& nextLodLowerBoundInfo = nextLodLowerIt->second;
-    const LodInfo* nextLodUpperBoundInfo = nullptr;
-
-    if (nextLodUpperIt != _lods.end())
-        nextLodUpperBoundInfo = &nextLodUpperIt->second;
-    else
-        nextLodUpperBoundInfo = &_lods.rbegin()->second;
-
-    nextLod = nextLodUpperBoundInfo->level;
-
-    nextLodOffset = nextLodLowerBoundInfo.blobOffset;
-    nextLodSize = (nextLodUpperBoundInfo->blobOffset + nextLodUpperBoundInfo->blobSize) - nextLodOffset;
 }
 
 void
@@ -357,7 +285,9 @@ POPGeometryParser::lodParsed(int                                 previousLod,
     const auto lodInfoRangeEndIt = _lods.lower_bound(currentLod);
     const auto lodInfoRangeUpperBoundIt = _lods.upper_bound(currentLod);
 
-    auto availableLods = this->data()->get<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
+    auto availableLods = this->data()
+        ? this->data()->get<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods")
+        : std::map<int, ProgressiveOrderedMeshLodInfo>();
 
     auto dataOffset = 0u;
 
@@ -431,8 +361,11 @@ POPGeometryParser::lodParsed(int                                 previousLod,
         );
     }
 
-    this->data()->set("availableLods", availableLods);
-    this->data()->set("maxAvailableLod", lodInfoRangeEndIt->second.level);
+    if (this->data())
+    {
+        this->data()->set("availableLods", availableLods);
+        this->data()->set("maxAvailableLod", lodInfoRangeEndIt->second.level);
+    }
 }
 
 bool
@@ -464,8 +397,8 @@ POPGeometryParser::completed()
     }
 }
 
-int
-POPGeometryParser::lodRangeRequestSize(int lowerLod, int upperLod) const
+void
+POPGeometryParser::lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const
 {
     auto lowerLodIt = _lods.lower_bound(lowerLod);
     auto upperLodIt = _lods.lower_bound(upperLod);
@@ -478,8 +411,27 @@ POPGeometryParser::lodRangeRequestSize(int lowerLod, int upperLod) const
     else
         upperLodInfo = &_lods.rbegin()->second;
 
-    const auto lodRangeOffset = lowerLodInfo.blobOffset;
-    const auto lodRangeSize = (upperLodInfo->blobOffset + upperLodInfo->blobSize) - lodRangeOffset;
+    offset = lowerLodInfo.blobOffset;
+    size = (upperLodInfo->blobOffset + upperLodInfo->blobSize) - size;
+}
 
-    return lodRangeSize;
+int
+POPGeometryParser::lodLowerBound(int lod) const
+{
+    auto lodLowerIt = _lods.lower_bound(lod);
+
+    const LodInfo* lodInfo = nullptr;
+
+    if (lodLowerIt != _lods.end())
+        lodInfo = &lodLowerIt->second;
+    else
+        lodInfo = &_lods.rbegin()->second;
+
+    return lodInfo->level;
+}
+
+int
+POPGeometryParser::maxLod() const
+{
+    return _maxLod;
 }
