@@ -603,30 +603,14 @@ void
 StreamingExtension::registerPOPGeometryParser(POPGeometryParser::Ptr    parser,
                                               Geometry::Ptr             geometry)
 {
-    auto& parserEntry = registerParser(parser);
-
-    parserEntry.completeSlots.push_back(parser->AbstractParser::complete()->connect(
-        [=](AbstractParser::Ptr parserThis) -> void
-        {
-            _streamingOptions->masterLodScheduler()->unregisterGeometry(geometry);
-        },
-        1.f
-    ));
+    registerParser(parser);
 }
 
 void
 StreamingExtension::registerStreamedTextureParser(StreamedTextureParser::Ptr    parser,
                                                   AbstractTexture::Ptr          texture)
 {
-    auto& parserEntry = registerParser(parser);
-
-    parserEntry.completeSlots.push_back(parser->AbstractParser::complete()->connect(
-        [=](AbstractParser::Ptr parserThis) -> void
-        {
-            _streamingOptions->masterLodScheduler()->unregisterTexture(texture);
-        },
-        1.f
-    ));
+    registerParser(parser);
 }
 
 StreamingExtension::ParserEntry&

@@ -30,8 +30,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Transform.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 
-#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5 && MINKO_PLATFORM != MINKO_PLATFORM_ANDROID
 # include "minko/file/FileProtocolWorker.hpp"
+#endif
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+# include "minko/file/APKProtocolWorker.hpp"
 #endif
 
 #include "SDL.h"
@@ -125,8 +129,12 @@ Canvas::initialize()
     initializeContext();
     initializeInputs();
 
-#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5 && MINKO_PLATFORM != MINKO_PLATFORM_ANDROID
     registerWorker<file::FileProtocolWorker>("file-protocol");
+#endif
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    registerWorker<file::APKProtocolWorker>("apk-protocol");
 #endif
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS

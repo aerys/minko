@@ -106,6 +106,9 @@ namespace minko
             ProviderPtr
             textureData(AbstractTexturePtr texture);
 
+            void
+            layoutMask(scene::Layout value) override;
+
         protected:
             void
             targetAdded(NodePtr target) override;
@@ -118,6 +121,12 @@ namespace minko
 
             void
             initialize();
+
+            void
+            addLodScheduler(AbstractLodSchedulerPtr lodScheduler);
+
+            void
+            removeLodScheduler(AbstractLodSchedulerPtr lodScheduler);
         };
     }
 }
