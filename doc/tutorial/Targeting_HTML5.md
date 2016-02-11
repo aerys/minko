@@ -41,16 +41,16 @@ The procedure for Ubuntu 12.10 is detailled [here](https://github.com/kripken/em
 Under Ubuntu 13.04+, the procedure is easier:
 
 ```bash
-sudo apt-get install clang-3.2 sudo apt-get install nodejs export EMSCRIPTEN=/opt/emscripten sudo mkdir -m 777 ${EMSCRIPTEN} git clone <https://github.com/kripken/emscripten> ${EMSCRIPTEN} cd ${EMSCRIPTEN} && git checkout 1.13.0 # Above versions are broken. echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile 
+sudo apt-get install clang-3.2 sudo apt-get install nodejs export EMSCRIPTEN=/opt/emscripten sudo mkdir -m 777 ${EMSCRIPTEN} git clone <https://github.com/kripken/emscripten> ${EMSCRIPTEN} cd ${EMSCRIPTEN} && git checkout 1.13.0 # Above versions are broken. echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile
 ```
 
 
 ```bash
-sudo apt-get update sudo apt-get install -y python-software-properties python g++ make sudo add-apt-repository ppa:chris-lea/node.js sudo apt-get update 
+sudo apt-get update sudo apt-get install -y python-software-properties python g++ make sudo add-apt-repository ppa:chris-lea/node.js sudo apt-get update
 ```
 
 
-Then you need to **install the latest Emscripten compiler backend based on LLVM aka "fastcomp"**. Just follow the instructions available on this [github account](https://github.com/kripken/emscripten/wiki/LLVM-Backend#getting-fastcomp Getting Fastcomp page of the Emscripten wiki). 
+Then you need to **install the latest Emscripten compiler backend based on LLVM aka "fastcomp"**. Just follow the instructions available on this [github account](https://github.com/kripken/emscripten/wiki/LLVM-Backend#getting-fastcomp Getting Fastcomp page of the Emscripten wiki).
 
 Note: Currently, Minko supports **Emscripten 1.25.0**.
 
@@ -62,14 +62,16 @@ Building an HTML5 version of your application requires to open a terminal emulat
 ### Linux
 
 ```bash
-script/solution_gmake_gcc.sh make config=html5_release 
+script/solution_gmake_gcc.sh
+make config=html5_release
 ```
 
 
 ### OS X
 
 ```bash
-script/solution_gmake_gcc.sh make config=html5_release 
+script/solution_gmake_gcc.sh
+make config=html5_release
 ```
 
 
@@ -78,7 +80,7 @@ script/solution_gmake_gcc.sh make config=html5_release
 On Windows, you will need to have a few programs provided by the Emscripten SDK in your path. We've embed a script, which will set up the Emscripten environment and run the build with the above commands.
 
 ```bash
-script\build_html5.bat 
+script/build_html5.bat 
 ```
 
 
@@ -92,4 +94,3 @@ Go to `bin/html5/release`, and open the generated HTML page with [Firefox](http:
 In some cases, you will need to access the page through a web server running on your computer. Use your favorite ([Apache](http://httpd.apache.org/), [nginx](http://wiki.nginx.org/Main), [pow](http://pow.cx/), [IIS](http://www.iis.net/)) and set up your document root to point to `bin/html5/release`. You can now reach your application though you local domain as seamlessly as you would on the Internet.
 
 At this point, you should be interested in debugging your application. Have a look at [Debugging HTML5 applications](../tutorial/Debugging_HTML5_applications.md).
-
