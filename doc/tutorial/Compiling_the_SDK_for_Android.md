@@ -40,7 +40,7 @@ When it is back, you will see that **Default** changes to **Install** for the **
 
 ### Installing Ant
 
--   Windows: decompress the [Ant binary archive](https://www.apache.org/dist/ant/binaries/) in the `${ANDROID_HOME}/ant` directory and add `${ANDROID}/ant/bin` to your `Path` environment variable.
+-   Windows: decompress the [Ant binary archive](https://www.apache.org/dist/ant/binaries/) in the `${ANDROID_HOME}/ant` directory and add `${ANDROID_HOME}/ant/bin` to your `Path` environment variable.
 -   OS X: use the `brew` package manager using the `brew install ant` command
 -   Linux: `apt-get install ant`
 
@@ -48,7 +48,7 @@ The final folder hierarchy should be as follow:
 
 
 ```
- ${ANDROID}/
+ ${ANDROID_HOME}/
 
  ant
  build-tools
@@ -71,8 +71,9 @@ Minko's SDK uses premake5, which is embed in the SDK, for its build system. The 
 
 To do this, open a command line prompt in the root directory of the SDK and run:
 
--   Windows (you can double-click): `script/solution_gmake_*.bat`
--   Linux and OS X: `script/solution_gmake_*.sh`
+```bash
+script/solution_gmake_*.sh
+```
 
 Note: `*` can be `min` to compile only the Minko SDK or `full` to compile SDK and all examples and tutorials.
 
@@ -117,7 +118,7 @@ If you want to leverage multicore processors, you can use the following command 
 
 
 ```bash
-$ make -j 4 config=android_release
+$ make -j4 config=android_release
 ```
 
 
