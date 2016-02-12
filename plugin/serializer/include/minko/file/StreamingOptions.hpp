@@ -93,8 +93,6 @@ namespace minko
 
             int                                                     _popGeometryErrorToleranceThreshold;
 
-            bool                                                    _storeLodData;
-
             LodFunction                                             _popGeometryLodFunction;
             LodFunction                                             _streamedTextureLodFunction;
 
@@ -230,22 +228,6 @@ namespace minko
             popGeometryErrorToleranceThreshold(int value)
             {
                 _popGeometryErrorToleranceThreshold = value;
-
-                return shared_from_this();
-            }
-
-            inline
-            bool
-            storeLodData() const
-            {
-                return _storeLodData;
-            }
-
-            inline
-            Ptr
-            storeLodData(bool value)
-            {
-                _storeLodData = value;
 
                 return shared_from_this();
             }

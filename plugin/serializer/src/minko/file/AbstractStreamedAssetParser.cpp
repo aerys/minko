@@ -96,6 +96,13 @@ AbstractStreamedAssetParser::parse(const std::string&                 filename,
     _filename = filename;
     _resolvedFilename = resolvedFilename;
 
+    if (useDescriptor(filename, options, data, assetLibrary))
+    {
+        terminate();
+
+        return;
+    }
+
     if (!_headerIsRead)
     {
         _headerIsRead = true;
@@ -200,15 +207,6 @@ AbstractStreamedAssetParser::parseHeader(const std::vector<unsigned char>&   dat
     if (_linkedAsset == nullptr)
     {
         _linkedAsset = _dependency->getLinkedAssetReference(linkedAssetId);
-    }
-
-    if (_options->trackAssetLocation())
-    {
-        _assetLibrary->assetLocation(_filename, AssetLibrary::AssetLocation{
-            _linkedAsset->filename(),
-            _linkedAsset->offset(),
-            _linkedAsset->length()
-        });
     }
 }
 

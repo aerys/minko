@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/Material.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/file/AbstractAssetDescriptor.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/render/Texture.hpp"
@@ -80,8 +81,8 @@ AssetLibrary::create(AssetLibrary::Ptr original)
     for (auto it = original->_layouts.begin(); it != original->_layouts.end(); ++it)
         al->_layouts[it->first] = it->second;
 
-    for (const auto& assetLocation : original->_assetLocations)
-        al->_assetLocations.emplace(assetLocation.first, assetLocation.second);
+    for (const auto& assetDescriptor : original->_assetDescriptors)
+        al->_assetDescriptors.emplace(assetDescriptor.first, assetDescriptor.second);
 
     return al;
 }
@@ -400,16 +401,10 @@ AssetLibrary::sound(const std::string& name, audio::Sound::Ptr sound)
     return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
 
-const AssetLibrary::AssetLocation&
-AssetLibrary::assetLocation(const std::string& name) const
-{
-    return _assetLocations.at(name);
-}
-
 AssetLibrary::Ptr
-AssetLibrary::assetLocation(const std::string& name, const AssetLocation& assetLocation)
+AssetLibrary::assetDescriptor(const std::string& name, AbstractAssetDescriptor::Ptr assetDescriptor)
 {
-    _assetLocations[name] = assetLocation;
+    _assetDescriptors[name] = assetDescriptor;
 
     return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }

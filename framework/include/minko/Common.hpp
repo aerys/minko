@@ -293,6 +293,8 @@ namespace minko
 		class AbstractParser;
 		class EffectParser;
         class AssetLibrary;
+        class AssetLocation;
+        class AbstractAssetDescriptor;
 
         class Error : public std::runtime_error
         {

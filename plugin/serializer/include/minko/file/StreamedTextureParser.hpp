@@ -68,6 +68,12 @@ namespace minko
             }
 
         protected:
+            bool
+            useDescriptor(const std::string&                filename,
+                          std::shared_ptr<Options>          options,
+                          const std::vector<unsigned char>& data,
+                          std::shared_ptr<AssetLibrary>     assetLibrary);
+
             void
             parsed(const std::string&                filename,
                    const std::string&                resolvedFilename,

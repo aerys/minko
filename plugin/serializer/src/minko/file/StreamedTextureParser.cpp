@@ -51,6 +51,15 @@ StreamedTextureParser::StreamedTextureParser() :
     assetExtension(0x00000055);
 }
 
+bool
+StreamedTextureParser::useDescriptor(const std::string&                 filename,
+                                     Options::Ptr                       options,
+                                     const std::vector<unsigned char>&  data,
+                                     AssetLibrary::Ptr                  assetLibrary)
+{
+    return false;
+}
+
 void
 StreamedTextureParser::parsed(const std::string&                 filename,
                               const std::string&                 resolvedFilename,

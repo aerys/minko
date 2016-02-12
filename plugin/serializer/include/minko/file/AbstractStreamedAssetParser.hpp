@@ -260,6 +260,13 @@ namespace minko
             }
 
             virtual
+            bool
+            useDescriptor(const std::string&                filename,
+                          std::shared_ptr<Options>          options,
+                          const std::vector<unsigned char>& data,
+                          std::shared_ptr<AssetLibrary>     assetLibrary) = 0;
+
+            virtual
             void
             parsed(const std::string&                filename,
                    const std::string&                resolvedFilename,

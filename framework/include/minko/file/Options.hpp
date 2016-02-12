@@ -96,7 +96,7 @@ namespace minko
             bool                                                        _disposeTextureAfterLoading;
             bool                                                        _storeDataIfNotParsed;
             bool                                                        _preserveMaterials;
-            bool                                                        _trackAssetLocation;
+            bool                                                        _trackAssetDescriptor;
 			unsigned int								                _skinningFramerate;
 			component::SkinningMethod					                _skinningMethod;
 			std::shared_ptr<render::Effect>                             _effect;
@@ -453,16 +453,16 @@ namespace minko
 
             inline
             bool
-            trackAssetLocation() const
+            trackAssetDescriptor() const
             {
-                return _trackAssetLocation;
+                return _trackAssetDescriptor;
             }
 
             inline
             Ptr
-            trackAssetLocation(bool value)
+            trackAssetDescriptor(bool value)
             {
-                _trackAssetLocation = value;
+                _trackAssetDescriptor = value;
 
                 return shared_from_this();
             }

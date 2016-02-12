@@ -104,6 +104,12 @@ namespace minko
             }
 
         protected:
+            bool
+            useDescriptor(const std::string&                filename,
+                          std::shared_ptr<Options>          options,
+                          const std::vector<unsigned char>& data,
+                          std::shared_ptr<AssetLibrary>     assetLibrary);
+
             void
             parsed(const std::string&                filename,
                    const std::string&                resolvedFilename,
@@ -127,6 +133,14 @@ namespace minko
             
             void
             completed();
+
+            void
+            lodParsed(int                                previousLod,
+                      int                                currentLod,
+                      const std::vector<unsigned char>&  data,
+                      std::shared_ptr<Options>           options,
+                      bool                               disposeIndexBuffer,
+                      bool                               disposeVertexBuffer);
 
             void
             lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const override;

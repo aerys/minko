@@ -20,7 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/AssetLocation.hpp"
+#include "minko/file/LinkedAsset.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/file/POPGeometryAssetDescriptor.hpp"
 #include "minko/file/POPGeometryParser.hpp"
 #include "minko/file/StreamingOptions.hpp"
 #include "minko/geometry/Geometry.hpp"
@@ -52,6 +55,53 @@ POPGeometryParser::POPGeometryParser() :
     assetExtension(0x00000056);
 }
 
+bool
+POPGeometryParser::useDescriptor(const std::string&                 filename,
+                                 Options::Ptr                       options,
+                                 const std::vector<unsigned char>&  data,
+                                 AssetLibrary::Ptr                  assetLibrary)
+{
+    auto descriptor = assetLibrary->assetDescriptor<POPGeometryAssetDescriptor>(filename);
+
+    if (!descriptor)
+        return false;
+
+    _geometry = assetLibrary->geometry(filename);
+
+    auto lowerLod = StreamingOptions::MAX_LOD;
+    auto upperLod = 0;
+
+    for (auto i = 0u; i < descriptor->numLodDescriptors(); ++i)
+    {
+        const auto& lodDescriptor = descriptor->lodDescriptor(i);
+
+        lowerLod = math::min(lodDescriptor.level, lowerLod);
+        upperLod = math::max(lodDescriptor.level, upperLod);
+
+        auto lodInfo = LodInfo(
+            lodDescriptor.level,
+            lodDescriptor.level,
+            lodDescriptor.numIndices,
+            lodDescriptor.numVertices,
+            lodDescriptor.dataOffset,
+            lodDescriptor.dataLength
+        );
+
+        _lods.emplace(lodInfo.level, lodInfo);
+    }
+
+    lodParsed(
+        lowerLod,
+        upperLod,
+        data,
+        options,
+        options->disposeIndexBufferAfterLoading(),
+        options->disposeVertexBufferAfterLoading()
+    );
+
+    return true;
+}
+
 void
 POPGeometryParser::parsed(const std::string&                 filename,
                           const std::string&                 resolvedFilename,
@@ -69,6 +119,33 @@ POPGeometryParser::parsed(const std::string&                 filename,
             shared_from_this(),
             Error("POPGeometryParsingError", "geometry parsing error")
         );
+    }
+
+    if (!options->trackAssetDescriptor())
+        return;
+
+    auto assetDescriptor = assetLibrary->assetDescriptor<POPGeometryAssetDescriptor>(filename);
+
+    if (!assetDescriptor)
+    {
+        assetDescriptor = POPGeometryAssetDescriptor::create()->location(AssetLocation(
+            linkedAsset()->filename(),
+            linkedAsset()->offset(),
+            linkedAsset()->length()
+        ));
+
+        for (const auto& lod : _lods)
+        {
+            assetDescriptor->addLodDescriptor(POPGeometryAssetDescriptor::LodDescriptor {
+                lod.first,
+                lod.second.indexCount,
+                lod.second.vertexCount,
+                lod.second.blobOffset,
+                lod.second.blobSize
+            });
+        }
+
+        assetLibrary->assetDescriptor(filename, assetDescriptor);
     }
 }
 
@@ -100,7 +177,7 @@ POPGeometryParser::createPOPGeometry(AssetLibrary::Ptr      assetLibrary,
 
     auto indexBuffer = IndexBuffer::create(options->context());
 
-    if (options->disposeIndexBufferAfterLoading() || !streamingOptions()->storeLodData())
+    if (options->disposeIndexBufferAfterLoading())
     {
         indexBuffer->upload(0u, indexCount, std::vector<unsigned short>(indexCount, 0u));
 
@@ -139,7 +216,7 @@ POPGeometryParser::createPOPGeometry(AssetLibrary::Ptr      assetLibrary,
 
     for (auto vertexBuffer : vertexBuffers)
     {
-        if (options->disposeVertexBufferAfterLoading() || !streamingOptions()->storeLodData())
+        if (options->disposeVertexBufferAfterLoading())
         {
             vertexBuffer->upload(0u, vertexCount, std::vector<float>(vertexCount * vertexBuffer->vertexSize(), 0.f));
 
@@ -281,6 +358,57 @@ POPGeometryParser::lodParsed(int                                 previousLod,
                              const std::vector<unsigned char>&   data,
                              Options::Ptr                        options)
 {
+    lodParsed(
+        previousLod,
+        currentLod,
+        data,
+        options,
+        options->disposeIndexBufferAfterLoading(),
+        options->disposeVertexBufferAfterLoading()
+    );
+}
+
+bool
+POPGeometryParser::complete(int currentLod)
+{
+    return currentLod == _maxLod;
+}
+
+void
+POPGeometryParser::completed()
+{
+    if (!data())
+        return;
+
+    auto availableLods = data()->get<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
+
+    auto& fullPrecisionLodInfo = availableLods.find(_fullPrecisionLod)->second;
+
+    if (!fullPrecisionLodInfo.isValid())
+    {
+        const auto& maxLodInfo = availableLods.at(_maxLod);
+
+        fullPrecisionLodInfo = ProgressiveOrderedMeshLodInfo(
+            fullPrecisionLodInfo._level,
+            fullPrecisionLodInfo._precisionLevel,
+            maxLodInfo._indexOffset + maxLodInfo._indexCount,
+            0
+        );
+
+        data()->set("availableLods", availableLods);
+        data()->set("maxAvailableLod", fullPrecisionLodInfo._level);
+    }
+}
+
+
+void
+POPGeometryParser::lodParsed(int                                 previousLod,
+                             int                                 currentLod,
+                             const std::vector<unsigned char>&   data,
+                             Options::Ptr                        options,
+                             bool                                disposeIndexBuffer,
+                             bool                                disposeVertexBuffer)
+{
     const auto lodInfoRangeBeginIt = _lods.lower_bound(previousLod + 1);
     const auto lodInfoRangeEndIt = _lods.lower_bound(currentLod);
     const auto lodInfoRangeUpperBoundIt = _lods.upper_bound(currentLod);
@@ -310,7 +438,7 @@ POPGeometryParser::lodParsed(int                                 previousLod,
         const auto geometryIndexOffset = _geometryIndexOffset;
         _geometryIndexOffset += lodInfo.indexCount;
 
-        if (options->disposeIndexBufferAfterLoading() || !streamingOptions()->storeLodData())
+        if (disposeIndexBuffer)
         {
             indexBuffer->upload(geometryIndexOffset, lodInfo.indexCount, indices);
         }
@@ -334,7 +462,7 @@ POPGeometryParser::lodParsed(int                                 previousLod,
             {
                 const auto localVertexOffset = geometryVertexOffset * vertexBuffer->vertexSize();
 
-                if (options->disposeVertexBufferAfterLoading() || !streamingOptions()->storeLodData())
+                if (disposeVertexBuffer)
                 {
                     vertexBuffer->upload(geometryVertexOffset, lodInfo.vertexCount, vertices);
                 }
@@ -365,35 +493,6 @@ POPGeometryParser::lodParsed(int                                 previousLod,
     {
         this->data()->set("availableLods", availableLods);
         this->data()->set("maxAvailableLod", lodInfoRangeEndIt->second.level);
-    }
-}
-
-bool
-POPGeometryParser::complete(int currentLod)
-{
-    return currentLod == _maxLod;
-}
-
-void
-POPGeometryParser::completed()
-{
-    auto availableLods = this->data()->get<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
-
-    auto& fullPrecisionLodInfo = availableLods.find(_fullPrecisionLod)->second;
-
-    if (!fullPrecisionLodInfo.isValid())
-    {
-        const auto& maxLodInfo = availableLods.at(_maxLod);
-
-        fullPrecisionLodInfo = ProgressiveOrderedMeshLodInfo(
-            fullPrecisionLodInfo._level,
-            fullPrecisionLodInfo._precisionLevel,
-            maxLodInfo._indexOffset + maxLodInfo._indexCount,
-            0
-        );
-
-        this->data()->set("availableLods", availableLods);
-        this->data()->set("maxAvailableLod", fullPrecisionLodInfo._level);
     }
 }
 
@@ -435,3 +534,4 @@ POPGeometryParser::maxLod() const
 {
     return _maxLod;
 }
+
