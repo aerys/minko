@@ -169,7 +169,7 @@ minko.action.exclude = function(filepath)
 end
 
 minko.action.optimize = function(file)
-	local binary = 'minko-scene-converter'
+	local binary = 'minko-converter'
 
 	local supported = {
 		dae = 'scene',
