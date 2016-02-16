@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -18,66 +18,70 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
- 
+#include "minko/MinkoPNG.hpp"
+
 using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
- 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
- 
-int
-main(int argc, char** argv)
+
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
+
+const std::string TEXTURE_BOX = "texture/box.png";
+
+int	main(int argc, char** argv)
 {
-  auto canvas = Canvas::create("Minko Tutorial - Working with the BasicMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
-  auto sceneManager = component::SceneManager::create(canvas);
- 
-  sceneManager->assets()->loader()	
-    ->queue("effect/Basic.effect")
-    ->queue("texture/box.png")
-	->options()->registerParser<file::PNGParser>("png");
-  
-  auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-  {
-    auto root = scene::Node::create("root")
-      ->addComponent(sceneManager);
- 
-    auto camera = scene::Node::create("camera")
-      ->addComponent(Renderer::create(0x7f7f7fff))
-      ->addComponent(PerspectiveCamera::create(
-        (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
-      );
-    root->addChild(camera);
- 
-    auto texturedCube = scene::Node::create("texturedCube")
-      ->addComponent(Transform::create(Matrix4x4::create()->translation(-2.f, 0.f, -5.f)))
-	  ->addComponent(Surface::create(
-	  geometry::CubeGeometry::create(canvas->context()),
-	  material::Material::create()->set("diffuseMap", sceneManager->assets()->texture("texture/box.png")),
-			sceneManager->assets()->effect("effect/Basic.effect")
-      ));
-    root->addChild(texturedCube);
- 
-    auto coloredCube = scene::Node::create("coloredCube")
-      ->addComponent(Transform::create(Matrix4x4::create()->translation(2.f, 0.f, -5.f)))
-      ->addComponent(Surface::create(
-	  geometry::CubeGeometry::create(canvas->context()),
-		material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-		sceneManager->assets()->effect("effect/Basic.effect")
-      ));
-    root->addChild(coloredCube);
- 
+	auto canvas = Canvas::create("Minko Tutorial - Working with the BasicMaterial", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
+
+	sceneManager->assets()->loader()->options()
+		->registerParser<file::PNGParser>("png");
+
+	sceneManager->assets()->loader()
+		->queue("effect/Basic.effect")
+		->queue(TEXTURE_BOX);
+
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
+
+	root->addChild(camera);
+
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto texturedCube = scene::Node::create("texturedCube")
+			->addComponent(Transform::create(translate(vec3(-2.f, 0.f, -5.f))))
+			->addComponent(Surface::create(
+				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_BOX)),
+				sceneManager->assets()->effect("effect/Basic.effect")
+				));
+
+		root->addChild(texturedCube);
+
+		auto coloredCube = scene::Node::create("coloredCube")
+			->addComponent(Transform::create(translate(vec3(2.f, 0.f, -5.f))))
+			->addComponent(Surface::create(
+				geometry::CubeGeometry::create(sceneManager->assets()->context()),
+				material::BasicMaterial::create()->diffuseColor(vec4(0.f, 0.f, 1.f, 1.f)),
+				sceneManager->assets()->effect("effect/Basic.effect")
+				));
+
+		root->addChild(coloredCube);
+	});
+
+	sceneManager->assets()->loader()->load();
+
 	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
 	{
 		sceneManager->nextFrame(t, dt);
 	});
 
-    canvas->run();
-  });
- 
-  sceneManager->assets()->loader()->load();
- 
-  return 0;
+	canvas->run();
+
+	return 0;
 }

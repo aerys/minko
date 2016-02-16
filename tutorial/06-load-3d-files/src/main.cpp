@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,74 +23,84 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoJPEG.hpp"
 
 using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
 const std::string OBJ_MODEL_FILENAME = "model/pirate.obj";
 const std::string DAE_MODEL_FILENAME = "model/pirate.dae";
 
-int
-main(int argc, char** argv)
+int	main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Tutorial - Load 3D files", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = SceneManager::create(canvas);
+	auto canvas = Canvas::create("Minko Tutorial - Loading 3D files", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
 
-    // setup assets
+	canvas->context()->errorsEnabled(true);
+
 	sceneManager->assets()->loader()->options()
-        ->registerParser<file::OBJParser>("obj")
-        ->registerParser<file::ColladaParser>("dae")
-        ->registerParser<file::JPEGParser>("jpg");
+		->registerParser<file::OBJParser>("obj")
+		->registerParser<file::ColladaParser>("dae")
+		->registerParser<file::JPEGParser>("jpg");
 
 	sceneManager->assets()->loader()
 		->queue("effect/Basic.effect")
-		->queue("effect/Phong.effect");
+		->queue("effect/Phong.effect")
+		->queue(DAE_MODEL_FILENAME)
+//		->queue(OBJ_MODEL_FILENAME)
+		;
 
-    // add the model to the asset list
-	sceneManager->assets()->loader()->queue(OBJ_MODEL_FILENAME);
-	sceneManager->assets()->loader()->queue(DAE_MODEL_FILENAME);
+	sceneManager->assets()->loader()->options()
+		->generateMipmaps(true);
 
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 0.f, 5.f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
+
+	root->addChild(camera);
+		sceneManager->assets()->loader()->options()
+			->effect(sceneManager->assets()->effect("effect/Basic.effect"));
 
 	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-    {
-        auto root = scene::Node::create("root")->addComponent(sceneManager);
-
-        auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(Transform::create(
-            math::inverse(math::lookAt(math::vec3(0.f, 0.f, 5.f), math::vec3(), math::vec3(0, 1, 0)))
-            ))
-            ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
-            );
-        root->addChild(camera);
-
-		auto objModel = sceneManager->assets()->symbol(OBJ_MODEL_FILENAME);
+	{
+		// DAE model
 		auto daeModel = sceneManager->assets()->symbol(DAE_MODEL_FILENAME);
 
-        // change scale for the obj file
-        objModel->component<Transform>()->matrix(objModel->component<Transform>()->matrix() * math::scale(math::vec3(0.01f)));
+		auto daeMove = daeModel->component<Transform>();
+		daeMove->matrix(translate(vec3(1.f, -1.f, 0.f)) * daeMove->matrix());
 
-        // change position
-        objModel->component<Transform>()->matrix(objModel->component<Transform>()->matrix() * math::translate(math::vec3(-1.f, -1.f, 0.f)));
-        daeModel->component<Transform>()->matrix(objModel->component<Transform>()->matrix() * math::translate(math::vec3(1.f, -1.f, 0.f)));
+		// add the scene
+		root->addChild(daeModel);
+		
+	/*	// OBJ Model
+		auto objModel = sceneManager->assets()->symbol(OBJ_MODEL_FILENAME);
+	
+		// change scale for the object file
+		auto objScale = objModel->component<Transform>();
+		objScale->matrix(scale(vec3(.01f)) * objScale->matrix());
 
-        // add to the scene
-        root->addChild(objModel);
-        root->addChild(daeModel);
+		// change position for the object file
+		auto objMove = objModel->component<Transform>();
+		objMove->matrix(translate(vec3(-1.f, -1.f, 0.f)) * objMove->matrix());
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-        {
-            sceneManager->nextFrame(t, dt);
-        });
+		// add the scene
+		root->addChild(objModel);
+	*/
+	});
 
-        canvas->run();
-    });
+	sceneManager->assets()->loader()->load();
 
-    sceneManager->assets()->loader()->load();
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		sceneManager->nextFrame(t, dt);
+	});
 
-    return 0;
+	canvas->run();
+
+	return 0;
 }

@@ -76,6 +76,20 @@ PhongMaterial::environmentMap(AbstractTexture::Ptr value)
 	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
 }
 
+PhongMaterial::Ptr
+PhongMaterial::environmentAlpha(float value)
+{
+	data()->set("environmentAlpha", value);
+
+	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
+}
+
+float
+PhongMaterial::environmentAlpha() const
+{
+	return data()->get<float>("environmentAlpha");
+}
+
 render::ResourceId
 PhongMaterial::environmentCubemap() const
 {
@@ -91,6 +105,8 @@ PhongMaterial::environmentMap2d() const
 		? data()->get<render::ResourceId>("environmentMap2d")
 		: -1;
 }
+
+
 
 PhongMaterial::Ptr
 PhongMaterial::normalMap(AbstractTexture::Ptr value)

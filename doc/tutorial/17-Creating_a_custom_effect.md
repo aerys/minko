@@ -15,25 +15,47 @@ In Minko, rendering effects are stored in separate `*.effect` files. Indeed, Min
 
 Here is a simple `*.effect` file skeleton that will help us getting started:
 
-```javascript
+```json
 {
-
- "name" : "MyCustomEffect",
- "attributeBindings" : {
-   "aPosition" : "geometry[${geometryId}].position"
- },
- "passes" : [{
-   "vertexShader" : "
-     // my custom vertex shader GLSL code...
-   ",
-   "fragmentShader" : "
-     // my custom fragment shader GLSL code...
-   "
- }]
-
-} 
+	"name" : "MyCustomEffect",
+	"attributes" : {
+		"aPosition" : "geometry[${geometryUui}].position"
+		},
+	"techniques" : [{
+		"passes" : [{
+			"vertexShader" : "
+				// my custom vertex shader GLSL code...
+			",
+			"fragmentShader" : "
+				// my custom fragment shader GLSL code...
+			"
+		}]
+	}]
+}
 ```
-
+```json
+{
+  "name" : "MyCustomEffect",
+    "attributes" : {
+        "aPosition" : "geometry[${geometryUuid}].position"
+		},
+  "uniforms" : {
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		"uColor"				: "material[${materialUuid}].myColor"
+		},
+	"techniques" : [{
+		  "passes" : [{
+			  "vertexShader" : "
+				  // my custom vertex shader GLSL code...
+			  ",
+			  "fragmentShader" : "
+				  // my custom fragment shader GLSL code...
+			  "
+		  }]
+	}]
+}
+```
 
 Save this in a `MyCustomEffect.effect` file in the `asset/effect` folder of your app.
 
@@ -41,29 +63,29 @@ As you can see, `*.effect` files are declared using the JSON format. Here are a 
 
 -   the `name` field declares the name of our effect; when loaded our effect will be referenced in the `AssetLibrary` by 1) the actual file name used for loading 2) the value of this "name" field
 -   the `attributeBindings` field declares an object that will map our effect's shaders (vertex) attribute declarations to actual engine data properties
--   the `passes` field declares an array of objects where each object is a rendering pass made mainly of a (the ["vertexShader" field](https://en.wikipedia.org/wiki/Shader#Vertex_shaders vertex shader)  and a  [the "fragmentShader" field](https://en.wikipedia.org/wiki/Shader#Pixel_shaders fragment shader).
+-   the `passes` field declares an array of objects where each object is a rendering pass made mainly of a (the ["vertexShader" field](https://en.wikipedia.org/wiki/Shader#Vertex_shaders vertex shader)  and a the ["fragmentShader" field](https://en.wikipedia.org/wiki/Shader#Pixel_shaders fragment shader).
 
 You can learn more about the `*.effect` files format in the [Effect files format reference](../article/Effect_file_format_reference.md) article.
 
 Step 2 : The vertex shader
 --------------------------
 
-We can now define our vertex shader for the single and only pass of our effect. Our vertex shader will simply: # take the local 3D model-space position of vertex by declaring the `aPosition` atribute, # transform it to be in the global world-space by multiplying `aPosition` by `uModelToWorldMatrix`, # transform it again to be in the camera-relative view-space by multiplying the previous result by `uViewMatrix`, # project it on the 2D screen by multiplying the previous result by `uProjectionMatrix`.
+We can now define our vertex shader for the single and only pass of our effect. Our vertex shader will simply: # take the local 3D model-space position of vertex by declaring the `aPosition` attribute, # transform it to be in the global world-space by multiplying `aPosition` by `uModelToWorldMatrix`, # transform it again to be in the camera-relative view-space by multiplying the previous result by `uViewMatrix`, # project it on the 2D screen by multiplying the previous result by `uProjectionMatrix`.
 
 ```c
-#ifdef GL_ES precision mediump float; #endif
+#ifdef GL_ES
+precision mediump float;
+#endif
 
 attribute vec3 aPosition;
 
 uniform mat4 uModelToWorldMatrix;
-uniform mat4 uViewMatrix;
-uniform mat4 uProjectionMatrix;
+uniform mat4 uWorldToScreenMatrix;
 
-void main(void) {
-
- gl_Position = uProjectionMatrix * uViewMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
-
-} 
+void main(void)
+{
+	gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
+}
 ```
 
 
@@ -80,15 +102,16 @@ Our fragment shader will be even simpler:
 -   we set this color to be the final color of our pixel by assigning it to `gl_FragColor`.
 
 ```c
-#ifdef GL_ES precision mediump float; #endif
+#ifdef GL_ES
+precision mediump float;
+#endif
 
 uniform vec4 uColor;
 
-void main(void) {
-
- gl_FragColor = uColor;
-
-} 
+void main(void)
+{
+	gl_FragColor = uColor;
+}
 ```
 
 
@@ -102,129 +125,168 @@ We can now load our `MyCustomEffect.effect` effect in our application and use it
 -   use this very `Effect` object to initialize our `Surface`
 
 ```cpp
-sceneManager->assets()->queue("effect/MyCustomEffect.effect");
+sceneManager->assets()->loader()->queue("effect/MyCustomEffect.effect");
 
-sceneManager->assets()->complete()->connect([&](file::AssetLibrary:Ptr assets) {
+auto cube = scene::Node::create("cube");
 
- auto myCustomEffect = assets->effect("effect/MyCustomEffect.effect");
+auto _= sceneManager->assets()->loader()->complete()->connect([&](file::AssetLibrary:Ptr assets)
+{
+	auto myCustomEffect = sceneManager->assets()->effect("effect/MyCustomEffect.effect");
 
- auto cube = scene::Node::create()->addComponent(Surface::create(
-   geometry::CubeGeometry::create(assets->context()),
-   material::Material::create(),
-   myCustomEffect
- ));
-
-}); 
+	cube->addComponent(Surface::create(
+		geometry::CubeGeometry::create(sceneManager->assets()->context()),
+		material::Material::create(),
+		myCustomEffect
+	));
+	root->addChild(cube);
+});
 ```
 
 
-But for our custom `Effect` to work, we need to fill properly all the `uniform` values it expects. To do this, we will use the `Effect::setUniform()` method:
+But for our custom `Effect` to work, we need to fill properly all the `uniform` values it expects.
 
 ```cpp
-myCustomEffect->setUniform("uModelToWorldMatrix", Matrix4x4::create()->translation(0.f, 0.f, -5.f)); myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create()); myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)PI * 0.25f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 1000.f)); myCustomEffect->setUniform("uColor", Vector4::create(0.f, 0.f, 1.f, 1.f)); 
+material->data()->set("myColor", vec4(1.f, 0.f, 0.f, 1.f));
 ```
-
 
 Final code
 ----------
 
-asset/effect/MyCustomEffect.effect 
-```javascript
+asset/effect/MyCustomEffect.effect
+```json
 {
+  "name" : "MyCustomEffect",
+    "attributes" : {
+        "aPosition" : "geometry[${geometryUuid}].position"
+		},
+  "uniforms" : {
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		"uColor"				: "material[${materialUuid}].myColor"
+		},
+  "techniques" : [{
+	  "passes" : [{
+		"name" : "my-custom-pass",
+		"vertexShader" : "
+		  #ifdef GL_ES
+		  precision mediump float;
+		  #endif
 
- "name" : "MyCustomEffect",
- "attributeBindings" : {
-   "aPosition" : "geometry[${geometryId}].position"
- },
- "passes" : [{
-   "vertexShader" : "
-     #ifdef GL_ES
-     precision mediump float;
-     #endif
+		  attribute vec3 aPosition;
 
-     attribute vec3 aPosition;
+		  uniform mat4 uModelToWorldMatrix;
+		  uniform mat4 uWorldToScreenMatrix;
 
-    
-uniform mat4 uModelToWorldMatrix;
-    
-uniform mat4 uViewMatrix;
-    
-uniform mat4 uProjectionMatrix;
+		  void main(void)
+		  {
+			gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
+		  }
+		",
+		"fragmentShader" : "
+		  #ifdef GL_ES
+		  precision mediump float;
+		  #endif
 
-     void main(void)
-     {
-       gl_Position = uProjectionMatrix * uViewMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
-     }
-   ",
-   "fragmentShader" : "
-     #ifdef GL_ES
-     precision mediump float;
-     #endif
+		  uniform vec4 uColor;
 
-     uniform vec4 uColor;
-
-     void main(void)
-     {
-       gl_FragColor = uColor;
-     }
-   "
- }]
-
-} 
+		  void main(void)
+		  {
+			gl_FragColor = uColor;
+		  }
+		"
+	  }]
+  }]
+}
 ```
 
 
-src/main.cpp 
+src/main.cpp
 ```cpp
-#include "minko/Minko.hpp" 
+/*
+Copyright (c) 2016 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 
-using namespace minko; 
-using namespace minko::math; 
+using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Minko Tutorial - Create your first custom effect", WINDOW_WIDTH, WINDOW_HEIGHT);
 
- auto canvas = Canvas::create("Minko Tutorial - Create your first custom effect", WINDOW_WIDTH, WINDOW_HEIGHT);
- auto sceneManager = component::SceneManager::create(canvas);
- sceneManager->assets()->queue("effect/Basic.effect");
- auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
- {
-   auto myCustomEffect = assets->effect("effect/MyCustomEffect.effect");
+	auto sceneManager = component::SceneManager::create(canvas);
 
-   auto root = scene::Node::create("root")
-     ->addComponent(sceneManager)
-     ->addComponent(Renderer::create(0x7f7f7fff));
-   auto cube = scene::Node::create("cube")
-     ->addComponent(Surface::create(
-       geometry::CubeGeometry::create(assets->context()),
-       material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-       myCustomEffect
-     ));
-   root->addChild(cube);
+	sceneManager->assets()->loader()
+		->queue("effect/MyCustomEffect.effect");
 
-   autoModelToWorldMatrix = Matrix4x4::create()->translation(0.f, 0.f, -5.f);
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-   myCustomEffect->setUniform("uModelToWorldMatrix", modelToWorldMatrix);
-   myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create());
-   myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)PI * 0.25f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 1000.f));
-   myCustomEffect->setUniform("uColor", Vector4::create(0.f, 0.f, 1.f, 1.f));
-   auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-   {
-     modelToWorldMatrix->prependRotationY(0.01f);
-     myCustomEffect->setUniform("uModelToWorldMatrix", modelToWorldMatrix);
-     
-     sceneManager->nextFrame(t, dt);
-   });
-   canvas->run();
- });
- sceneManager->assets()->load();
- return 0;
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x00000000))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 2.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
-} 
+	auto cube = scene::Node::create("cube")
+		->addComponent(Transform::create());
+
+	root->addChild(cube);
+	root->addChild(camera);
+
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto material = material::BasicMaterial::create()
+			->diffuseColor(vec4(1.f));
+		auto myCustomEffect = sceneManager->assets()->effect("effect/MyCustomEffect.effect");
+		material->data()->set("myColor", vec4(1.f, 0.f, 0.f, 1.f));
+
+		cube->addComponent(Surface::create(
+			geometry::CubeGeometry::create(canvas->context()),
+			material,
+			myCustomEffect
+			));
+	});
+
+	sceneManager->assets()->loader()->load();
+
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, math::uint w, math::uint h)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+	});
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
+
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
+
+	return 0;
+}
 ```
 
 
@@ -236,4 +298,3 @@ As you might have noticed, our `Effect` is not really easy to work with:
 -   setting uniforms will affect all the objects rendered with that `Effect`; to solve this you can read the [Creating custom materials](../tutorial/18-Creating_custom_materials.md) tutorial;
 -   we have to deal with our model to world transform manually; to solve this you can read the [Binding the model to world transform](../tutorial/19-Binding_the_model_to_world_transform.md) tutorial;
 -   we are setting/updating the camera manually with a view and a project matrix; to solve this you can read the [Binding the camera](../tutorial/20-Binding_the_camera.md) tutorial
-

@@ -4,7 +4,7 @@ Creating the material
 To create a `phongMaterial`, we simply call `material::PhongMaterial::create` method that returns a `material::PhongMaterial::Ptr`.
 
 ```cpp
-auto phongMaterial = material::PhongMaterial::create(); 
+auto phongMaterial = material::PhongMaterial::create();
 ```
 
 
@@ -33,7 +33,7 @@ The `phongMaterial` has access to a `diffuseColor` and a `diffuseMap`. Those pro
 Specular color is the color of the light specular reflection. The default value is white.
 
 ```cpp
-phongMaterial->specularColor(0xFF0000FF); 
+phongMaterial->specularColor(0xFF0000FF);
 ```
 
 
@@ -49,7 +49,7 @@ To have more information about specular color : [Working with the PhongMaterial]
 Empirically, the shininess parameter controls how sharp specular reflections will look across the surface of the object. The default value is 8.
 
 ```cpp
-phongMaterial->shininess(32.f); 
+phongMaterial->shininess(32.f);
 ```
 
 
@@ -72,7 +72,7 @@ sceneManager->assets()->queue("texture/envmap.jpg");
 
 // when all assets are loaded
 
-phongMaterial->environmentMap(assets->texture("texture/envmap.jpg"), render::EnvironmentMap2dType::BlinnNewell); phongMaterial->environmentAlpha(0.2f); 
+phongMaterial->environmentMap(assets->texture("texture/envmap.jpg"), render::EnvironmentMap2dType::BlinnNewell); phongMaterial->environmentAlpha(0.2f);
 ```
 
 
@@ -91,21 +91,21 @@ sceneManager->assets()->queue("texture/normalmap.jpg");
 
 // when all assets are loaded in the handler function of assets->complete()
 
-phongMaterial->normalMap(assets->texture("texture/normalmap.jpg")); 
+phongMaterial->normalMap(assets->texture("texture/normalmap.jpg"));
 ```
 
 | DiffuseMap / NormalMap | Right           | Left           | Front          |
 |------------------------|-----------------|----------------|----------------|
-| ![ link=](../../doc/image/TextureNormal1.jpg " link=")  | ![](../../doc/image/Normal1_1.jpg "../../doc/image/Normal1_1.jpg") | ![](../../doc/image/Normal1_2.jpg "../../doc/image/Normal1_2.jpg") | ![](../../doc/image/Normal1_3.jpg "../../doc/image/Normal1_3.jpg") | ![](../../doc/image/Normal1_3.jpg "../../doc/image/Normal1_3.jpg") | 
-![ link=](../../doc/image/TextureNormal2.jpg " link=")  | ![](../../doc/image/Normal2_1.jpg "../../doc/image/Normal2_1.jpg") | ![](../../doc/image/Normal2_2.jpg "../../doc/image/Normal2_2.jpg") | ![](../../doc/image/Normal2_3.jpg "../../doc/image/Normal2_3.jpg") | ![](../../doc/image/Normal3_3.jpg "../../doc/image/Normal3_3.jpg") | 
-![ link=](../../doc/image/TextureNormal3.jpg " link=")  | ![](../../doc/image/Normal3_1.jpg "../../doc/image/Normal3_1.jpg") | ![](../../doc/image/Normal3_2.jpg "../../doc/image/Normal3_2.jpg") | ![](../../doc/image/Normal3_3.jpg "../../doc/image/Normal3_3.jpg") | ![](../../doc/image/Normal3_3.jpg "../../doc/image/Normal3_3.jpg") | 
+| ![ link=](../../doc/image/TextureNormal1.jpg " link=")  | ![](../../doc/image/Normal1_1.jpg "../../doc/image/Normal1_1.jpg") | ![](../../doc/image/Normal1_2.jpg "../../doc/image/Normal1_2.jpg") | ![](../../doc/image/Normal1_3.jpg "../../doc/image/Normal1_3.jpg") | ![](../../doc/image/Normal1_3.jpg "../../doc/image/Normal1_3.jpg") |
+![ link=](../../doc/image/TextureNormal2.jpg " link=")  | ![](../../doc/image/Normal2_1.jpg "../../doc/image/Normal2_1.jpg") | ![](../../doc/image/Normal2_2.jpg "../../doc/image/Normal2_2.jpg") | ![](../../doc/image/Normal2_3.jpg "../../doc/image/Normal2_3.jpg") | ![](../../doc/image/Normal3_3.jpg "../../doc/image/Normal3_3.jpg") |
+![ link=](../../doc/image/TextureNormal3.jpg " link=")  | ![](../../doc/image/Normal3_1.jpg "../../doc/image/Normal3_1.jpg") | ![](../../doc/image/Normal3_2.jpg "../../doc/image/Normal3_2.jpg") | ![](../../doc/image/Normal3_3.jpg "../../doc/image/Normal3_3.jpg") | ![](../../doc/image/Normal3_3.jpg "../../doc/image/Normal3_3.jpg") |
 
 If you need more information about normal mapping : [Working with normal maps](../tutorial/12-Working_with_normal_maps.md)
 
 ### Specular Map
 
 ```cpp
-phongMaterial->shininess(2); phongMaterial->specularMap(assets->texture("texture/specularmap.jpg")); 
+phongMaterial->shininess(2); phongMaterial->specularMap(assets->texture("texture/specularmap.jpg"));
 ```
 | DiffuseMap / SpecularMap | Right           | Left           | Front          |
 |------------------------|-----------------|----------------|----------------|
@@ -115,89 +115,3 @@ phongMaterial->shininess(2); phongMaterial->specularMap(assets->texture("texture
 ||
 
 If you need more information about specular maps : [Working with specular maps](../tutorial/14-Working_with_specular_maps.md)
-
-Full Example
-------------
-
-```cpp
-#include "minko/Minko.hpp" 
-#include "minko/MinkoPNG.hpp" 
-#include "minko/MinkoSDL.hpp"
-
-using namespace minko; 
-using namespace minko::component; 
-using namespace minko::math;
-
-int main(int argc, char** argv) {
-
-   auto canvas = Canvas::create("My title", 800, 600);
-
-   auto sceneManager = SceneManager::create(canvas);
-
-   // setup assets
-   sceneManager->assets()->defaultOptions()->resizeSmoothly(true);
-   sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-   sceneManager->assets()
-   ->registerParser<[file::PNGParser>](file::PNGParser>)("png")
-   ->queue("texture/diffuse.jpg")
-   ->queue("texture/envmap.jpg")
-   ->queue("texture/normal.jpg")
-   ->queue("texture/specular.jpg")
-   ->queue("effect/Phong.effect");
-
-   auto _ = sceneManager->assets()->complete()->connect([=](file::AssetLibrary::Ptr assets)
-   {
-   auto phongMaterial = material::PhongMaterial::create()->diffuseColor(math::Vector4::create(1., 1., 1., 1.));
-   auto root = scene::Node::create("root")->addComponent(sceneManager);
-
-   phongMaterial->shininess(2);
-   phongMaterial->diffuseMap(assets->texture("texture/diffuse.jpg"));
-   phongMaterial->normalMap(assets->texture("texture/normal.jpg"));
-   phongMaterial->specularMap(assets->texture("texture/specular.jpg"));
-   phongMaterial->specularColor(0xC0FFC0FF);
-   phongMaterial->environmentMap(assets->texture("texture/envmap.jpg"), render::EnvironmentMap2dType::BlinnNewell);
-   phongMaterial->environmentAlpha(0.15);
-       
-   auto camera = scene::Node::create("camera")
-       ->addComponent(Renderer::create(0x00000000))
-       ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(0.0f, 0.f, 0.f), Vector3::create(0.0f, 1.f, 1.3f))
-           ))
-       ->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
-   
-       root->addChild(camera);
-
-   auto mesh = scene::Node::create("mesh")
-       ->addComponent(Transform::create(Matrix4x4::create()))
-       ->addComponent(
-                   Surface::create(geometry::SphereGeometry::create(sceneManager->assets()->context(), 30, 30, true),
-           phongMaterial,
-           assets->effect("effect/Phong.effect")
-   ));
-
-   root->addChild(mesh);
-
-   auto spotLight = scene::Node::create("SpotLight")
-       ->addComponent(SpotLight::create(0.6f, 0.78f, 20.f))
-       ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(3.f, 5.f, 1.5f))));
-
-   spotLight->component<SpotLight>()->diffuse(1.4f);
-   spotLight->component<SpotLight>()->specular(2);
-
-   auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, uint time, uint deltaTime)
-   {
-       sceneManager->nextFrame();
-   });
-
-   canvas->run();
-   });
-
-   sceneManager->assets()->load();
-
-   return 0;
-
-} 
-```
-
-| Final Result 1                                                                                   | Final Result 2                                                                        | Final Result 3                                                                        |
-|------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|------------------------------------------------------------------------------|
-| ![](../../doc/image/FinalResult11.jpg "../../doc/image/FinalResult11.jpg") | ![](../../doc/image/FinalResult2.jpg "../../doc/image/FinalResult2.jpg") | ![](../../doc/image/FinalResult3.jpg "../../doc/image/FinalResult3.jpg") |
