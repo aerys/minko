@@ -511,7 +511,7 @@ POPGeometryParser::lodRangeRequestByteRange(int lowerLod, int upperLod, int& off
         upperLodInfo = &_lods.rbegin()->second;
 
     offset = lowerLodInfo.blobOffset;
-    size = (upperLodInfo->blobOffset + upperLodInfo->blobSize) - size;
+    size = (upperLodInfo->blobOffset + upperLodInfo->blobSize) - offset;
 }
 
 int
