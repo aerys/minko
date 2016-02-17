@@ -1,14 +1,13 @@
 #ifdef GL_ES
- precision mediump float;
+	precision mediump float;
 #endif
 
 attribute vec3 aPosition;
 
 uniform mat4 uModelToWorldMatrix;
-uniform mat4 uViewMatrix;
-uniform mat4 uProjectionMatrix;
+uniform mat4 uWorldToScreenMatrix;
 
 void main(void)
 {
-  gl_Position = uProjectionMatrix * uViewMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
+	gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
 }

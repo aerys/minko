@@ -22,14 +22,14 @@ Step 2: Enable plugins (optional)
 It's more than likely that your application will actually require some Minko plugins to work properly. To do this, simply open the `premake5.lua` file located in your application folder and uncomment the line for the plugin you want to use. For example, if you want to use a JPEG image file parser, uncomment the following line:
 
 ```lua
-minko.plugin.enable("jpeg") 
+minko.plugin.enable("jpeg")
 ```
 
 
 If the plugin you want to use is not listed (see [Plugin compatibility matrix](../article/Plugin_compatibility_matrix.md) ), just add it yourself:
 
 ```lua
-minko.plugin.enable("my-plugin") 
+minko.plugin.enable("my-plugin")
 ```
 
 
@@ -55,7 +55,7 @@ To learn more about this step, take some time to read the tutorials for each pla
 -   [Targeting OS X](../tutorial/Targeting_OS_X.md)
 -   [Targeting Linux](../tutorial/Targeting_Linux.md)
 -   [Targeting iOS](../tutorial/Targeting_iOS.md)
--   Targeting Android (coming with the beta 2...)
+-   [Targeting Android](../tutorial/Targeting_Android.md)
 -   [Targeting HTML5](../tutorial/Targeting_HTML5.md)
 -   Targeting Flash (coming when Adobe [updates its compiler](https://github.com/adobe-flash/crossbridge/issues/28)...)
 
@@ -65,4 +65,3 @@ Step 4: Go further! (optional)
 ------------------------------
 
 Check out our application examples. It's a great way to discover and learn the cool new features we've implemented!
-

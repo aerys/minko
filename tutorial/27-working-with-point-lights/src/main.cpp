@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -18,127 +18,90 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int
-main(int argc, char** argv)
+int	main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Tutorial - Working with point lights", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas);
+	auto canvas = Canvas::create("Minko Tutorial - Working with point light", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
 
-    // setup assets
-    sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()->registerParser<file::PNGParser>("png");
 	sceneManager->assets()->loader()
-        ->queue("effect/Sprite.effect")
-        ->queue("effect/Phong.effect")
-        ->queue("texture/sprite-pointlight.png");
+		->queue("effect/Phong.effect");
 
-    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-    {
-        auto root = scene::Node::create("root")->addComponent(sceneManager);
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-        auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::create(0.f, 1.f, 0.f), Vector3::create(0.f, 1.f, -3.f))
-            ))
-            ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
-            );
-        root->addChild(camera);
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.5f, 2.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
-        // create a ground
-        auto ground = scene::Node::create("ground")
-            ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(canvas->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
+	root->addChild(camera);
+
+	auto ground = scene::Node::create("ground");
+	auto leftWall = scene::Node::create("leftWall");
+	auto rightWall = scene::Node::create("rightWall");
+	auto backWall = scene::Node::create("backWall");
+	auto pointLight = scene::Node::create("pointLight");
+
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		ground->addComponent(Surface::create(
+			geometry::QuadGeometry::create(sceneManager->assets()->context()),
+			material::BasicMaterial::create()->diffuseColor(vec4(1.f, .5f, .5f, 1.f)),
 			sceneManager->assets()->effect("effect/Phong.effect")
-            ))
-            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(4.f)->appendRotationX(-(float(M_PI) /2))));
-        root->addChild(ground);
+			))
+			->addComponent(Transform::create(scale(vec3(4.f)) * rotate(static_cast<float>(-M_PI_2), vec3(1.f, 0.f, 0.f))));
 
-        // create a left wall
-        auto leftWall = scene::Node::create("leftWall")
-            ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(canvas->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
+		leftWall->addComponent(Surface::create(
+			geometry::QuadGeometry::create(sceneManager->assets()->context()),
+			material::BasicMaterial::create()->diffuseColor(vec4(.5f, .5f, .5f, 1.f)),
 			sceneManager->assets()->effect("effect/Phong.effect")
-            ))
-            ->addComponent(Transform::create(Matrix4x4::create()
-            ->appendScale(4.f)
-            ->appendRotationY(-(float(M_PI) / 2))
-            ->appendTranslation(1.f, 1.f, 0.f)));
-        root->addChild(leftWall);
+			))
+			->addComponent(Transform::create(translate(vec3(-1.f, 0.f, 0.f)) * (scale(vec3(4.f)) * rotate(static_cast<float>(M_PI_2), vec3(0.f, 1.f, 0.f)))));
 
-        // create a right wall
-        auto rightWall = scene::Node::create("rightWall")
-            ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(canvas->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
+		rightWall->addComponent(Surface::create(
+			geometry::QuadGeometry::create(sceneManager->assets()->context()),
+			material::BasicMaterial::create()->diffuseColor(vec4(.5f, .5f, .5f, 1.f)),
 			sceneManager->assets()->effect("effect/Phong.effect")
-            ))
-            ->addComponent(Transform::create(Matrix4x4::create()
-            ->appendScale(4.f)
-            ->appendRotationY((float(M_PI) / 2))
-            ->appendTranslation(-1.f, 1.f, 0.f)));
-        root->addChild(rightWall);
+			))
+			->addComponent(Transform::create(translate(vec3(1.f, 0.f, 0.f)) * (scale(vec3(4.f)) * rotate(static_cast<float>(-M_PI_2), vec3(0.f, 1.f, 0.f)))));
 
-        // create a back wall
-        auto backWall = scene::Node::create("backWall")
-            ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(canvas->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.5f, 0.5f, 0.5f, 1.f)),
+		backWall->addComponent(Surface::create(
+			geometry::QuadGeometry::create(sceneManager->assets()->context()),
+			material::BasicMaterial::create()->diffuseColor(vec4(.5f, .5f, .5f, 1.f)),
 			sceneManager->assets()->effect("effect/Phong.effect")
-            ))
-            ->addComponent(Transform::create(Matrix4x4::create()
-            ->appendScale(4.f)
-            ->appendRotationX(float(M_PI))
-            ->appendTranslation(0.f, 1.f, 1.f)));
-        root->addChild(backWall);
+			))
+			->addComponent(Transform::create(translate(vec3(0.f, 0.f, -1.f)) * scale(vec3(4.f))));
 
-        // create the point light node
-        auto pointLightNode = scene::Node::create("pointLight")
-            ->addComponent(Transform::create(Matrix4x4::create()->translation(0, 1.f, 0)));
+		pointLight->addComponent(Transform::create(translate(vec3(-.5f, 0.3f, 0.f))));
+		pointLight->addComponent(PointLight::create()
+			->diffuse(0.8f)
+			->color(vec3(0.5f, 0.5f, 1.f)));
 
-        // add a sprite to have a light representation
-        pointLightNode->addComponent(Surface::create(
-            geometry::QuadGeometry::create(canvas->context()),
-            material::Material::create()
-			->set("diffuseMap", sceneManager->assets()->texture("texture/sprite-pointlight.png"))
-            ->set("diffuseTint", Vector4::create(1.f, 1.f, 1.f, 1.f)),
-			sceneManager->assets()->effect("effect/Sprite.effect")
-            ));
+		root->addChild(ground);
+		root->addChild(leftWall);
+		root->addChild(rightWall);
+		root->addChild(backWall);
 
-        // create the point light component
-        auto pointLight = PointLight::create();
+		root->addChild(pointLight);
+	});
 
-        // update the point light component attributes
-        pointLight->diffuse(0.5f);
+	sceneManager->assets()->loader()->load();
 
-        // add the component to the point light node
-        pointLightNode->addComponent(pointLight);
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		sceneManager->nextFrame(t, dt);
+	});
 
-        // add the Node to the root of the scene graph
-        root->addChild(pointLightNode);
+	canvas->run();
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-        {
-            sceneManager->nextFrame(t, dt);
-        });
-
-        canvas->run();
-    });
-
-    sceneManager->assets()->loader()->load();
-
-    return 0;
+	return 0;
 }

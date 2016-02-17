@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,51 +26,59 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
 int
 main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Tutorial - Binding the model to world transform", WINDOW_WIDTH, WINDOW_HEIGHT);
+	
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->queue("effect/MyCustomEffect.effect");
-	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager)
-			->addComponent(Renderer::create(0x7f7f7fff));
+	
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-		auto myCustomEffect = sceneManager->assets()->effect("effect/MyCustomEffect.effect");
-		auto myCustomMaterial = material::MyCustomMaterial::create();
-		auto cube = scene::Node::create("cube")
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x00000000))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 2.f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
+	auto cube = scene::Node::create("cube")
 		->addComponent(Transform::create(
-		Matrix4x4::create()->translation(0.f, 0.f, -10.f)
-			))
-			->addComponent(Surface::create(
+				translate(vec3(0.f, 0.f, 0.f))
+			));
+
+	root->addChild(camera);
+
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{	
+		auto myCustomMaterial = material::MyCustomMaterial::create();
+
+		cube->addComponent(Surface::create(
 			geometry::CubeGeometry::create(canvas->context()),
 			myCustomMaterial,
-			myCustomEffect
+			sceneManager->assets()->effect("effect/MyCustomEffect.effect")
 			));
-		root->addChild(cube);
+	
+		myCustomMaterial->color(vec4(1.f, 0.f, 0.f, 1.f));
+		
+		root->addChild(cube);	
+	});
 
-		myCustomMaterial->color(Vector4::create(1.f, 0.f, 0.f, 1.f));
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
 
-		myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create());
-		myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective(float(M_PI) * 0.25f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 1000.f));
-
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-		{
-			cube->component<Transform>()->matrix()->prependRotationY(0.01f);
-
-			sceneManager->nextFrame(t, dt);
-		});
-
-		canvas->run();
+		sceneManager->nextFrame(t, dt);
 	});
 
 	sceneManager->assets()->loader()->load();
+
+	canvas->run();
 
 	return 0;
 }

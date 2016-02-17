@@ -82,7 +82,13 @@ namespace minko
 			Ptr
 			environmentMap(AbsTexturePtr texture);
 
-            render::ResourceId
+			PhongMaterial::Ptr
+			environmentAlpha(float value);
+
+			float
+			environmentAlpha() const;
+
+			render::ResourceId
 			environmentCubemap() const;
 
             render::ResourceId

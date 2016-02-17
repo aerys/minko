@@ -17,7 +17,7 @@ Step 0: Invoke the 'bullet' Minko plugin
 But first things first, you must before anything else [enable the 'bullet' plugin](../tutorial/How_to_enable_a_plugin.md) and then include the 'bullet' plugin's main header file into your project source code:
 
 ```cpp
-#include "minko/MinkoBullet.hpp" 
+#include "minko/MinkoBullet.hpp"
 ```
 
 
@@ -79,7 +79,7 @@ Step 3: Run your simulation
 Simply adding your collider-bearing node to the scene:
 
 ```cpp
-root->addChild(boxNode); 
+root->addChild(boxNode);
 ```
 
 
@@ -97,74 +97,101 @@ Final code
 ----------
 
 ```cpp
-#include "minko/Minko.hpp" 
-#include "minko/MinkoPNG.hpp" 
-#include "minko/MinkoSDL.hpp" // STEP 0 
+/*
+Copyright (c) 2016 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
+#include "minko/MinkoPNG.hpp"
+#include "minko/MinkoSDL.hpp"
+// STEP 0
 #include "minko/MinkoBullet.hpp"
 
-using namespace minko; 
-using namespace minko::scene; 
-using namespace minko::component; 
+using namespace minko;
+using namespace minko::scene;
+using namespace minko::component;
 using namespace minko::math;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600; 
-const std::string TEXTURE_FILENAME = "texture/box.jpg";
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv) {
+const std::string TEXTURE_FILENAME = "texture/box.png";
 
-   auto canvas = Canvas::create("Minko Tutorial - Hello falling cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = SceneManager::create(canvas);
+int main(int argc, char** argv)
+{
+    auto canvas = Canvas::create("Minko Tutorial - Hello falling cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
 
-   sceneManager->assets()
-       ->registerParser<[file::PNGParser>](file::PNGParser>)("png")
-       ->queue(TEXTURE_FILENAME)
-       ->queue("effect/Basic.effect");
+	auto sceneManager = SceneManager::create(canvas);
 
-   auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-   {
-       auto camera = scene::Node::create("camera")
-           ->addComponent(Renderer::create(0x7f7f7fff))
-           ->addComponent(Transform::create(
-           Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.5f, 2.0f, 2.0f))
-           ))
-           ->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f));
+	sceneManager->assets()->loader()
+        ->queue(TEXTURE_FILENAME)
+		->queue("effect/Basic.effect")
+		->options()->registerParser<file::PNGParser>("png");
 
-       // STEP 1: create and add your physics world to the scene
-       auto root = scene::Node::create("root")
-           ->addComponent(sceneManager)
-           ->addComponent(bullet::PhysicsWorld::create());
+    // STEP 1: create and add your physics world to the scene
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager)
+        ->addComponent(bullet::PhysicsWorld::create());
 
-       // STEP 2: create a box-shaped rigid body
-       auto boxColliderData = bullet::ColliderData::create(
-           5.0f, // strictly positive mass
-           bullet::BoxShape::create(0.5f, 0.5f, 0.5f) // shape strictly matches the CubeGeometry
-           );
-       auto boxNode = scene::Node::create("boxNode")
-           ->addComponent(bullet::Collider::create(boxColliderData))
-           ->addComponent(Surface::create(
-           geometry::CubeGeometry::create(assets->context()),
-           material::BasicMaterial::create()->diffuseMap(assets->texture(TEXTURE_FILENAME)),
-           assets->effect("effect/Basic.effect")
-           ));
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+			inverse(lookAt(vec3(0.5f, 2.0f, 2.0f), vec3(), vec3(0.f, 1.f, 0.f)))
+			))
+		->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
 
-       root->addChild(camera);
-       // STEP 3: trigger the simulation by adding the physics object to the scene
-       root->addChild(boxNode);
+	auto boxNode = scene::Node::create("boxNode");
 
-       auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-       {
-           sceneManager->nextFrame(t, dt);
-       });
+	root->addChild(camera);
 
-       canvas->run();
-   });
+    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+    {
 
-   sceneManager->assets()->load();
+        // STEP 2: create a box-shaped rigid body
+        auto boxColliderData = bullet::ColliderData::create(
+            5.0f, // strictly positive mass
+            bullet::BoxShape::create(0.5f, 0.5f, 0.5f) // shape strictly matches the CubeGeometry
+            );
 
-   return 0;
+		boxNode
+            ->addComponent(bullet::Collider::create(boxColliderData))
+            ->addComponent(Surface::create(
+            geometry::CubeGeometry::create(canvas->context()),
+			material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+			sceneManager->assets()->effect("effect/Basic.effect")
+            ));
 
-} 
+        // STEP 3: trigger the simulation by adding the physics object to the scene
+        root->addChild(boxNode);
+
+    });
+
+    sceneManager->assets()->loader()->load();
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
+
+    return 0;
+}
 ```
 
 
@@ -173,7 +200,7 @@ About the transforms' scaling components
 
 This may not come as an important matter at first, but it is something you may want to keep in mind in the future. Only the *position* and *orientation* are exchanged between the Bullet simulation and the Minko rendering.
 
-If the objects you want to include to your simulation are prealably scaled (via the `prependAppend`/`appendScale` of the `minko::component::Transform` component), you must take these scaling factors into account when defining the collider shapes (as these will not currently be transferred to the simulation otherwise).
+If the objects you want to include to your simulation are prealably scaled, you must take these scaling factors into account when defining the collider shapes (as these will not currently be transferred to the simulation otherwise).
 
 Where to go from there
 ----------------------
@@ -188,4 +215,3 @@ Closing comments
 ----------------
 
 As most of Bullet's features remain unaltered, in-depth information concerning the specifics of its computations and detailed meanings behind its set of attributes can be found at the following address: <http://www.continuousphysics.com/Bullet/BulletFull/index.html>.
-

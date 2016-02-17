@@ -36,13 +36,11 @@ When it is back, you will see that **Default** changes to **Install** for the **
 
 -   Download the latest [Android NDK](https://developer.android.com/tools/sdk/ndk/index.html) package
 -   Extract the archive to `${ANDROID_HOME}/ndk`
--   Run the following script:
-    -   Windows and Linux: `tool/lin/script/install_jni.sh`
-    -   OS X: `tool/mac/script/install_jni.sh`
+-   Run the following script: `script/install_jni.sh`
 
 ### Installing Ant
 
--   Windows: decompress the [Ant binary archive](https://www.apache.org/dist/ant/binaries/) in the `${ANDROID_HOME}/ant` directory and add `${ANDROID}/ant/bin` to your `Path` environment variable.
+-   Windows: decompress the [Ant binary archive](https://www.apache.org/dist/ant/binaries/) in the `${ANDROID_HOME}/ant` directory and add `${ANDROID_HOME}/ant/bin` to your `Path` environment variable.
 -   OS X: use the `brew` package manager using the `brew install ant` command
 -   Linux: `apt-get install ant`
 
@@ -50,7 +48,7 @@ The final folder hierarchy should be as follow:
 
 
 ```
- ${ANDROID}/
+ ${ANDROID_HOME}/
 
  ant
  build-tools
@@ -73,8 +71,11 @@ Minko's SDK uses premake5, which is embed in the SDK, for its build system. The 
 
 To do this, open a command line prompt in the root directory of the SDK and run:
 
--   Windows and Linux: `tool/lin/script/solution_gmake_android.sh`
--   OS X: `tool/mac/script/solution_gmake.sh`
+```bash
+script/solution_gmake_*.sh
+```
+
+Note: `*` can be `min` to compile only the Minko SDK or `full` to compile SDK and all examples and tutorials.
 
 Step 4: Generate a keystore for release builds
 ----------------------------------------------
@@ -83,7 +84,7 @@ If you don't have any keystore yet, you can generate it using this command line:
 
 
 ```bash
-$ keytool -genkey -v -keystore my-release-key.keystore -alias [ALIAS NAME] -keyalg RSA -keysize 2048 -validity 10000 
+$ keytool -genkey -v -keystore my-release-key.keystore -alias [ALIAS NAME] -keyalg RSA -keysize 2048 -validity 10000
 ```
 
 
@@ -109,7 +110,7 @@ Now, you should have a bunch of Makefiles. You can build the solution using the 
 
 
 ```bash
-$ make config=android_release 
+$ make config=android_release
 ```
 
 
@@ -117,7 +118,7 @@ If you want to leverage multicore processors, you can use the following command 
 
 
 ```bash
-$ make -j 4 config=android_release 
+$ make -j4 config=android_release
 ```
 
 
@@ -130,8 +131,9 @@ If you get undefined reference errors for SDL2 functions at linkage when buildin
 
 To do this, regenerate the solution with the `--rebuild-sdl` option:
 
--   Windows and Linux: `tool/lin/script/premake5.sh gmake --rebuild-sdl`
--   OS X: `tool/mac/script/premake5.sh gmake --rebuild-sdl`
+```bash
+script/premake5.sh gmake --rebuild-sdl
+```
 
 Then try the step 4 again. Your solution should contain a new SDL2 project that will be built using your version of the Android NDK and you should not get any linkage error.
 
@@ -139,4 +141,3 @@ Step 7: Enjoy!
 --------------
 
 Now use your SDK to [Create a new application](../tutorial/Create_a_new_application.md).
-

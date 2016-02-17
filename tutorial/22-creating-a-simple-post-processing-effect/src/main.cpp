@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,8 +24,8 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
 int
 main(int argc, char** argv)
@@ -37,68 +37,72 @@ main(int argc, char** argv)
 		->queue("effect/Basic.effect")
 		->queue("effect/Desaturate.effect");
 
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 0.f, 3.f), vec3(), vec3(0.f, 1.f, 0.f)))));
+
+	root->addChild(camera);
+
+	auto cube = scene::Node::create("cube");
+
+	render::Effect::Ptr ppFx;
+	auto ppRenderer = Renderer::create();
+	auto ppTarget = render::Texture::create(sceneManager->assets()->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
+	ppTarget->upload();
+
 	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(PerspectiveCamera::create(
-			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
-			);
-		root->addChild(camera);
-
-		auto cube = scene::Node::create("cube")
-		->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
+		cube
+			->addComponent(Transform::create())
 			->addComponent(Surface::create(
                         geometry::CubeGeometry::create(sceneManager->assets()->context()),
-			material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-			sceneManager->assets()->effect("effect/Basic.effect")
-			));
+						material::BasicMaterial::create()->diffuseColor(vec4(0.f, 0.f, 1.f, 1.f)),
+						sceneManager->assets()->effect("effect/Basic.effect")
+					));
+		
 		root->addChild(cube);
 
-		auto ppTarget = render::Texture::create(sceneManager->assets()->context(), 1024, 1024, false, true);
-
-		ppTarget->upload();
-
-		auto ppFx = sceneManager->assets()->effect("effect/Desaturate.effect");
+		ppFx = sceneManager->assets()->effect("effect/Desaturate.effect");
 
 		if (!ppFx)
 			throw std::logic_error("The post-processing effect has not been loaded.");
 
-		ppFx->setUniform("uBackbuffer", ppTarget);
+		ppFx->data()->set("backBuffer", ppTarget->sampler());
 
-		auto ppRenderer = Renderer::create();
 		auto ppScene = scene::Node::create()
 			->addComponent(ppRenderer)
 			->addComponent(Surface::create(
-			geometry::QuadGeometry::create(sceneManager->assets()->context()),
-			material::Material::create(),
-			ppFx
-			));
+						geometry::QuadGeometry::create(sceneManager->assets()->context()),
+						material::Material::create(),
+						ppFx
+					));
+	});
 
-		auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
-		{
-			camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, math::uint width, math::uint height)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 
-			ppTarget = render::Texture::create(sceneManager->assets()->context(), clp2(width), clp2(height), false, true);
-			ppTarget->upload();
-			ppFx->setUniform("uBackbuffer", ppTarget);
-		});
+		ppTarget = render::Texture::create(sceneManager->assets()->context(), clp2(width), clp2(height), false, true);
+		ppTarget->upload();
+		ppFx->data()->set("backBuffer", ppTarget->sampler());
+	});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-		{
-			cube->component<Transform>()->matrix()->prependRotationY(.01f);
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
 
-			sceneManager->nextFrame(t, dt, ppTarget);
-			ppRenderer->render(sceneManager->assets()->context());
-		});
-
-		canvas->run();
+		sceneManager->nextFrame(t, dt, ppTarget);
+		ppRenderer->render(sceneManager->assets()->context());
 	});
 
 	sceneManager->assets()->loader()->load();
+	
+	canvas->run();
 
 	return 0;
 }

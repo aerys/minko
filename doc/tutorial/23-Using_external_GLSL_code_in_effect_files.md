@@ -12,16 +12,16 @@ Step 1: Referencing the external GLSL files
 
 To reference our external `MyCustomEffect.vertex.glsl` and `MyCustomEffect.fragment.glsl` files, we will use the `#pragma include` directive within the respective shader fields:
 
-```javascript
+```json
 {
-
- "name" : "MyCustomEffect",
- "passes" : [{
-   "vertexShader" : "#pragma include('MyCustomEffect.vertex.glsl')",
-   "fragmentShader" : "#pragma include('MyCustomEffect.fragment.glsl')"
- }]
-
-} 
+	"name" : "MyCustomEffect",
+	"techniques" : [{
+		"passes" : [{
+			"vertexShader" : "#pragma include \"MyCustomEffect.vertex.glsl\"",
+			"fragmentShader" : "#pragma include \"MyCustomEffect.fragment.glsl\""
+		}]
+	}]
+}
 ```
 
 
@@ -34,7 +34,7 @@ Step 2 (optional): Binding the uniforms
 
 As you can imagine, every GLSL code is different... so you'll want to adapt this part of the tutorial to the actual uniforms declared by the GLSL code/shader you're including in your effect.
 
-You also have to remember that you can always choose between declaring some `uniformBindings` in your `*.effect` files or manually calling `Effect::setUniform()` in your application code.
+You also have to remember that you can always declaring some `uniformBindings` in your `*.effect` files.
 
 To learn how to setup `uniformBindings`, you can read the following tutorials:
 
@@ -45,122 +45,142 @@ To learn how to setup `uniformBindings`, you can read the following tutorials:
 Final code
 ----------
 
-asset/effect/MyCustomEffect.effect 
-```javascript
+asset/effect/MyCustomEffect.effect
+```json
 {
-
- "name" : "MyCustomEffect",
- "attributeBindings" : {
-   "aPosition" : "geometry[${geometryId}].position"
- },
- "passes" : [{
-   "vertexShader" : "#pragma include('MyCustomEffect.vertex.glsl')",
-   "fragmentShader" : "#pragma include('MyCustomEffect.fragment.glsl')"
- }]
-
-} 
+  "name" : "MyCustomEffect",
+    "attributes" : {
+        "aPosition" : "geometry[${geometryUuid}].position"
+		},
+    "uniforms" : {
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		"uColor"				: "material[${materialUuid}].myColor"
+		},
+    "techniques" : [{
+	    "passes" : [{
+        	"vertexShader" : "#pragma include \"MyCustomEffect.vertex.glsl\"",
+        	"fragmentShader" : "#pragma include \"MyCustomEffect.fragment.glsl\""
+	    }]
+    }]
+}
 ```
 
 
-asset/effect/MyCustomEffect.vertex.glsl 
+asset/effect/MyCustomEffect.vertex.glsl
 ```c
 #ifdef GL_ES
-
-precision mediump float;
-
+	precision mediump float;
 #endif
 
 attribute vec3 aPosition;
 
 uniform mat4 uModelToWorldMatrix;
-uniform mat4 uViewMatrix;
-uniform mat4 uProjectionMatrix;
+uniform mat4 uWorldToScreenMatrix;
 
-void main(void) {
-
- gl_Position = uProjectionMatrix * uViewMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
-
-} 
+void main(void)
+{
+	gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
+}
 ```
 
 
-asset/effect/MyCustomEffect.fragment.glsl 
+asset/effect/MyCustomEffect.fragment.glsl
 ```c
 #ifdef GL_ES
-
-precision mediump float;
-
+	precision mediump float;
 #endif
 
 uniform vec4 uColor;
 
-void main(void) {
-
- gl_FragColor = uColor;
-
-} 
+void main(void)
+{
+	gl_FragColor = uColor;
+}
 ```
 
 
-src/main.cpp 
+src/main.cpp
 ```cpp
-#include "minko/Minko.hpp" 
+/*
+Copyright (c) 2016 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 
-using namespace minko; 
-using namespace minko::math; 
+using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Minko Tutorial - Using external GLSL code in effect files", WINDOW_WIDTH, WINDOW_HEIGHT);
 
-   auto canvas = Canvas::create("Minko Tutorial - Using external GLSL code in effect files", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = component::SceneManager::create(canvas);
+	auto sceneManager = component::SceneManager::create(canvas);
 
-   sceneManager->assets()
-       ->queue("effect/MyCustomEffect.effect");
-   auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-   {
-       auto myCustomEffect = assets->effect("effect/MyCustomEffect.effect");
+	sceneManager->assets()->loader()
+		->queue("effect/MyCustomEffect.effect");
 
-       auto root = scene::Node::create("root")
-           ->addComponent(sceneManager)
-           ->addComponent(Renderer::create(0x7f7f7fff));
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-       auto cube = scene::Node::create("cube")
-           ->addComponent(Surface::create(
-           geometry::CubeGeometry::create(assets->context()),
-           material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-           myCustomEffect
-           ));
-       root->addChild(cube);
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x00000000))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 2.f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
-       auto modelToWorldMatrix = Matrix4x4::create()->translation(0.f, 0.f, -5.f);
+	auto cube = scene::Node::create("cube")
+		->addComponent(Transform::create());
 
-       myCustomEffect->setUniform("uModelToWorldMatrix", modelToWorldMatrix);
-       myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create());
-       myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)PI * 0.25f, (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, .1f, 1000.f));
+	root->addChild(cube);
+	root->addChild(camera);
 
-       myCustomEffect->setUniform("uColor", Vector4::create(0.f, 0.f, 1.f, 1.f));
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto material = material::BasicMaterial::create();
 
-       auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-       {
-           modelToWorldMatrix->prependRotationY(0.01f);
-           myCustomEffect->setUniform("uModelToWorldMatrix", modelToWorldMatrix);
+		auto myCustomEffect = sceneManager->assets()->effect("effect/MyCustomEffect.effect");
+		material->data()->set("myColor", vec4(1.f, 0.f, 0.f, 1.f));
 
-           sceneManager->nextFrame(t, dt);
-       });
+		cube->addComponent(Surface::create(
+			geometry::CubeGeometry::create(canvas->context()),
+			material,
+			myCustomEffect
+			));
+	});
 
-       canvas->run();
-   });
+	sceneManager->assets()->loader()->load();
 
-   sceneManager->assets()->load();
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
 
-   return 0;
+		sceneManager->nextFrame(t, dt);
+	});
 
-} 
+	canvas->run();
+
+	return 0;
+}
 ```
-
-

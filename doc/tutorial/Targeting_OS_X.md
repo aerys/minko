@@ -19,7 +19,7 @@ The Unix-based toolchain provided by the Command Line Tools includes Clang 3.2, 
 ```bash
 # Clang sudo port install clang-3.4 sudo port select --set clang mp-clang-3.4
 
-# GCC sudo port install gcc48 sudo port select --set gcc mp-gcc48 
+# GCC sudo port install gcc48 sudo port select --set gcc mp-gcc48
 ```
 
 
@@ -29,28 +29,28 @@ Step 2: Generate the solution
 While Xcode project support is part of the short-term roadmap (it's already available for [iOS](../tutorial/Targetting_iOS.md)), only \Makefile\s are supported at the moment. A script is provided to generate a GNU Make-compatible solution with default options:
 
 ```bash
-script/solution_gmake_gcc.sh 
+script/solution_gmake_gcc.sh
 ```
 
 
 Or, if we prefer Clang":
 
 ```bash
-script/solution_gmake_clang.sh 
+script/solution_gmake_clang.sh
 ```
 
 
 If we want to customise our solution, we can call `premake` directly. For instance, when selecting the compiler, the `cc` option is passed (supported values are `gcc` and `clang`):
 
 ```bash
-${MINKO_HOME}/tool/mac/script/premake5.sh --cc=clang gmake 
+${MINKO_HOME}/script/premake5.sh --cc=clang gmake 
 ```
 
 
 To learn more about premake commands, run:
 
 ```bash
-${MINKO_HOME}/tool/mac/script/premake5.sh help 
+${MINKO_HOME}/script/premake5.sh help
 ```
 
 
@@ -77,21 +77,21 @@ Step 3: Build the solution
 For a while now, Macs have only been 64-bit stations, so Minko does not support any old generation Mac (PPC or 32-bit Intel). To target native command line applications, run:
 
 ```bash
-make config=osx64_release 
+make config=osx64_release
 ```
 
 
 or
 
 ```bash
-make config=osx64_debug 
+make config=osx64_debug
 ```
 
 
 We can get more information about the building process by setting the `verbose` variable:
 
 ```bash
-make config=osx64_release verbose=1 
+make config=osx64_release verbose=1
 ```
 
 
@@ -101,7 +101,7 @@ Step 4: Run the application
 Let's run the application. Open a terminal in the application directory and type:
 
 ```bash
-cd bin/osx64/release ./my-project 
+cd bin/osx64/release ./my-project
 ```
 
 
@@ -113,7 +113,7 @@ Step 5: Clean the solution (optional)
 To clean the build, run:
 
 ```bash
-make config=osx64_release clean 
+make config=osx64_release clean
 ```
 
 
@@ -122,7 +122,7 @@ This will basically remove any target file (`bin` and `obj` folders).
 If you also want to erase generated solution files (`Makefile`s), you can use a stronger command which will erase any ignored file (files matched by a pattern in `.gitignore`:
 
 ```bash
-script/clean.sh 
+script/clean.sh
 ```
 
 
@@ -130,4 +130,3 @@ Step 6: Support more targets (optional)
 ---------------------------------------
 
 Your application should now target OS X in one click. You can also [turn your native application into an HTML5 one](../tutorial/Targeting_HTML5.md)!
-

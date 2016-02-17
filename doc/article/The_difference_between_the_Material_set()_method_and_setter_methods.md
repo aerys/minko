@@ -10,7 +10,7 @@ The "static" approach, using a class derived from Material and an actuall `diffu
 ```cpp
 auto basicMaterial = BasicMaterial::create();
 
-basicMaterial->diffuseColor(Vector4::create(1.f, 0.f, 0.f, 1.f)); // red 
+basicMaterial->diffuseColor(Vector4::create(1.f, 0.f, 0.f, 1.f)); // red
 ```
 
 
@@ -19,7 +19,7 @@ The "dynamic" approach, using the `Material` generic base class and the `set()` 
 ```cpp
 auto material = Material::create();
 
-material->set("diffuseColor", Vector4::create(1.f, 0.f, 0.f, 1.f)); // red 
+material->set("diffuseColor", Vector4::create(1.f, 0.f, 0.f, 1.f)); // red
 ```
 
 
@@ -28,7 +28,7 @@ The dynamic approach
 
 The `Material::set()` method is more dynamic for two reasons:
 
--   We don't have to know the exact type of our material object to set the property since the `set()` method is defined in the `Material` base class (this method is actually inherited from `[data::Provider`](data::Provider`)).
+-   We don't have to know the exact type of our material object to set the property since the `set()` method is defined in the `Material` base class (this method is actually inherited from `data::Provider`).
 -   We don't have to make long list of if/else to call the right setter method since `set()` is generic and only expects the property name as a string.
 
 It makes `Material::set()` de facto more suitable for dynamic code such as complex/dynamic assets loading operations.
@@ -69,7 +69,7 @@ class BasicMaterial :
    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
  }
 
-} 
+}
 ```
 
 
@@ -88,7 +88,7 @@ const uint rgba) {
    (rgba & 0xff) / 255.f
  ));
 
-} 
+}
 ```
 
 
@@ -115,4 +115,3 @@ You should use `Material`-derived class and call their setter methods when:
 Both approaches should be equivalent CPU/memory wise, `Material`-derived classes setter methods are just better for code-hinting.
 
 If you create new effects, you should try to provide the corresponding `Material`-derived class, declare as many setter methods and overloads as possible and document them to ease up the work of the developers.
-

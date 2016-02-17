@@ -1,6 +1,6 @@
 # Effect File Format
 
-Effect files (.effect) are JSON formated text files used to describe rendering effects. Minko comes with an extensive set of effects and the following documentation defines how *.effect files are written.
+Effect files (.effect) are JSON formated text files used to describe rendering effects. Minko comes with an extensive set of effects and the following documentation defines how \*.effect files are written.
 
 More about creating custom effects:
 * [Creating a custom effect](../tutorials/17-Creating_a_custom_effect.md)
@@ -11,7 +11,7 @@ More about creating custom effects:
 Each effect has one or more techniques. Each technique is (supposed to be) a different implementation of the same rendering effect.
 For example, the same effect can provide different techniques for desktop or mobile targets. Multiple techniques can also be defined to provide different quality settings.
 
-```javascript
+```json
 {
     "techniques" : [
         {
@@ -42,7 +42,7 @@ Each technique has one or more passes. Each pass declaration defines an actual r
 * a fragment shader,
 * a set of uniform, attribute, state and macro bindings.
 
-```javascript
+```json
 "techniques" : [
     {
         "name" : "default",
@@ -60,7 +60,7 @@ The rendering passes order is the same as their declaration order.
 
 The vertex and fragment shaders are the most important components of a pass since they define the actual rendering code that will be executed on the GPU.
 
-```javascript
+```json
 "techniques" : [
     {
         "name" : "default",
@@ -76,7 +76,7 @@ The vertex and fragment shaders are the most important components of a pass sinc
 
 Those shaders are implemented as GLSL programs. The following example declares a fragment shader that simply outputs white pixels:
 
-```javascript
+```json
 "fragmentShader" : "
     void main()
     {
@@ -111,7 +111,7 @@ void main()
 
 The `#pragma include` directive can also be used to implement the GLSL shader code outside of the effect file:
 
-```javascript
+```json
 // Basic.effect
 {
     "name" : "basic",
@@ -142,7 +142,7 @@ effects. In order to share and extend a common base definition, passes can be ex
 In order to re-use the same base pass declaration among multiple techniques, "free" passes can
 be declared aside from actual techniques:
 
-```javascript
+```json
 {
     "techniques" : [
         {
@@ -171,7 +171,7 @@ Only passes properly defined in techniques are actually kept and stored in the f
 
 A pass can also extend a pass from another technique of the same effect:
 
-```javascript
+```json
 {
     "techniques" : [
         {
@@ -198,7 +198,7 @@ A pass can also extend a pass from another technique of the same effect:
 
 A pass can also extend a base pass from a specific technique of another effect:
 
-```javascript
+```json
 {
     "techniques" : [
         {
@@ -218,9 +218,9 @@ A pass can also extend a base pass from a specific technique of another effect:
 }
 ```
 
-*Note*: It's important to notice that if you define the same property in your 2 
-effect files, the value that will stay is the one defined into the effect file 
-in which you extend the pass, not the one from the effect file of the extended 
+*Note*: It's important to notice that if you define the same property in your 2
+effect files, the value that will stay is the one defined into the effect file
+in which you extend the pass, not the one from the effect file of the extended
 pass, regardless of the scope.
 
 ## Bindings
@@ -250,7 +250,7 @@ A binding declaration has 2 components:
 
 Example:
 
-```javascript
+```json
 "binding" : {
     "property" : "boundPropertyName",
     "source" : "surface"
@@ -259,7 +259,7 @@ Example:
 
 By default, the `source` is assumed to be "surface" and the binding declaration can be shortened:
 
-```javascript
+```json
 "binding" : "boundPropertyName"
 ```
 
@@ -274,7 +274,7 @@ Effect variables can be used in binding property names in order to make them
 more dynamic. For example, let's consider the following (non-working and
 educational only) binding example :
 
-```javascript
+```json
 {
     "property" : "material.diffuseColor", // wrong: material is a collection, so which material?
     "source" : "surface"
@@ -290,7 +290,7 @@ refers to.
 In order to make sure we will bind a property from the actual material set for
 the `Surface` being rendered, we will use the "materialUuid" effect variable:
 
-```javascript
+```json
 {
     "property" : "material[${materialUuid}].diffuseColor", // right: we target a specific item of the material collection
     "source" : "surface"
@@ -307,7 +307,7 @@ Available variables are:
 The `attributes` directive is used to bind the (vertex) attributes declared in the shaders with actual data properties
 provided by the application.
 
-```javascript
+```json
 "attributes" : {
     "aPosition" : { "binding" : "geometry[${geometryUuid}].position" }
 }
@@ -323,7 +323,7 @@ More about vertex attributes:
 The `uniforms` directive is used to bind the uniforms declared in the shaders with actual data properties provided
 by the application:
 
-```javascript
+```json
 "uniforms" : {
     "uDiffuseColor" : {
         "binding" : "geometry[${materialUuid}].diffuseColor"
@@ -332,7 +332,7 @@ by the application:
 }
 ```
 
-```javascript
+```json
 "uniforms" : {
     "uDiffuseColor" : "geometry[${materialUuid}].diffuseColor"
 }
@@ -347,7 +347,7 @@ More about uniform bindings:
 
 ### Binding states
 
-```javascript
+```json
 "uniforms" : {
     "blendingMode" : {
         "binding" : "material[${materialUuid}].blendingMode",
@@ -356,7 +356,7 @@ More about uniform bindings:
 }
 ```
 
-```javascript
+```json
 "states" : {
     "blendingMode" : "opaque"
 }
@@ -436,7 +436,7 @@ If a macro is expected to have an actual value, the type of that value must be s
 
 The following example will bnd the `NUM_LIGHTS` macro to the "directionalLight.length" data property:
 
-```javascript
+```json
 "uniforms" : {
     "NUM_LIGHTS" : {
         "binding" : "directionalLight.length",
@@ -448,7 +448,7 @@ The following example will bnd the `NUM_LIGHTS` macro to the "directionalLight.l
 
 The following example can be used to have a shader that behaves differently when per-vertex normals are available:
 
-```javascript
+```json
 "uniforms" : {
     "HAS_NORMALS" : "geometry[${geometryUuid}].position"
 }
@@ -473,7 +473,7 @@ For example, the attributes declared globally in the effect will be inherited by
 below, the "aPosition" attribute is declared and bound in the root scope because all passes of all techniques
 will need it:
 
-```javascript
+```json
 {
     "attributes" : {
         "aPosition" : "geometry[${geometryUuid}].position"
@@ -486,7 +486,7 @@ will need it:
 Inheritance also works at the technique scope level. In the following example, all passes of the "default"
 technique will inherit the "aPosition" attribute binding:
 
-```javascript
+```json
 {
     "techniques" : [
         {
@@ -551,7 +551,7 @@ The following extra default values can be used for states:
 
 By default attributes, uniforms and macros will interprete literal values as bindings but states will interpret them as default values:
 
-```javascript
+```json
 "attributes" : {
     "aPosition" : "geometry[${geometryUuid}].position" // binding
 },
@@ -562,7 +562,7 @@ By default attributes, uniforms and macros will interprete literal values as bin
 
 #### Examples
 
-```javascript
+```json
 "uniforms" : {
     "uDiffuseColor" : {
         "binding" : "material[${materialUuid}].diffuseColor",
@@ -584,7 +584,7 @@ Material::Ptr m = fx->initializeMaterial(Material::create());
 `Effect::initializeMaterial()` will make sure that any default value set for a binding referring to the `materialUuid`
 effect variable will actually be set on the specified material object.
 
-```javascript
+```json
 "uniforms" : {
     "uDiffuseColor" : {
         "binding" : "material[${materialUuid}].diffuseColor",

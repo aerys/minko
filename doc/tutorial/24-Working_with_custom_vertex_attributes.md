@@ -43,7 +43,7 @@ geometry::Geometry::Ptr createGeometryWithAttribute(render::AbstractContext::Ptr
    float dx = 0.0f; // components of the normal displacement
    float dy = 0.0f;
    float dz = 0.0f;
-   
+
    switch (vertexId / 6) // faceId
    {
    case 0:
@@ -65,7 +65,7 @@ geometry::Geometry::Ptr createGeometryWithAttribute(render::AbstractContext::Ptr
      dx += 0.1f;
      break;
    }
-   
+
    offsetData[i++] = dx;
    offsetData[i++] = dy;
    offsetData[i++] = dz;
@@ -78,7 +78,7 @@ geometry::Geometry::Ptr createGeometryWithAttribute(render::AbstractContext::Ptr
 
  return cubeGeometry;
 
-} 
+}
 ```
 
 
@@ -90,11 +90,9 @@ int main(int argc, char** argv) {
  ...
  auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
  {
-   ... 
+   ...
    auto cube = scene::Node::create("cube")
-     ->addComponent(Transform::create(
-       Matrix4x4::create()->translation(0.f, 0.0f, -5.f)
-     ))
+     ->addComponent(Transform::create(translate(vec3(0.f, 0.f, -5.f))))
      ->addComponent(Surface::create(
        createGeometryWithAttribute(assets->context()), // geometry with add. vertex attribute
        myCustomMaterial,
@@ -105,7 +103,7 @@ int main(int argc, char** argv) {
  sceneManager->assets()->load();
  return 0;
 
-} 
+}
 ```
 
 
@@ -116,19 +114,19 @@ Step 2: Add your binding in your effect file
 
 Pretty similarly to what we did for the uniform inputs for our effect (in order to specify the [model's transform](../tutorial/19-Binding_the_model_to_world_transform.md) and [viewing settings of our scene](../tutorial/20-Binding_the_camera.md)), we just have to *bind* the data stored in our Minko geometry to some actual `attribute` on the GLSL side. The per-vertex values taken by our `positionOffset` attribute are currently stored in the data provider of our geometry, and we will actually use them via a GLSL attribute input we will call `aPositionOffset`.
 
-The vertex attribute binding between the geometry's data provider and our GLSL attribute is straightforwardly done by simply adding a single line in the effect file's `attributeBindings` dictionary, where the key corresponds to the name of the GLSL attribute and the value to the matching property name manipulated by the Minko engine's data providers.
+The vertex attribute binding between the geometry's data provider and our GLSL attribute is straightforwardly done by simply adding a single line in the effect file's `attributes` dictionary, where the key corresponds to the name of the GLSL attribute and the value to the matching property name manipulated by the Minko engine's data providers.
 
-```javascript
+```json
 {
 
  "name" : "MyCustomEffect",
- "attributeBindings" : {
+ "attributes" : {
    ...
    "aPositionOffset" : "geometry[${geometryId}].positionOffset"
  },
  ...
 
-} 
+}
 ```
 
 
@@ -139,33 +137,33 @@ Step 3: Use your vertex attributes in GLSL
 
 Because a meaningful vertex attribute is only one that is actually used in computations of the shader program, we now update the source code of our custom effect's vertex shader in order to use our additional `aOffsetPosition` attribute and move the position of our vertices in local space according to its values.
 
-```javascript
+```json
 {
+	"name" : "MyCustomEffect",
+	...
+	"techniques" : [{
+		"passes" : [{
+			"vertexShader" : "
+				#ifdef GL_ES
+				precision mediump float;
+				#endif
+				attribute vec3 aPosition;
+				attribute vec3 aPositionOffset;
 
- "name" : "MyCustomEffect",
- ...
- "passes" : [{
-   "vertexShader" : "
-     #ifdef GL_ES
-     precision mediump float;
-     #endif
-     attribute vec3 aPosition;
-     attribute vec3 aPositionOffset;
-    
-uniform mat4 uModelToWorldMatrix;
-    
-uniform mat4 uWorldToScreenMatrix;
-     void main(void)
-     {
-       gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition + aPositionOffset, 1.0);
-     }
-   ",
-   "fragmentShader" : "
-      ...
-   "
- }]
+				uniform mat4 uModelToWorldMatrix;
 
-} 
+				uniform mat4 uWorldToScreenMatrix;
+				void main(void)
+				{
+				gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition + aPositionOffset, 1.0);
+				}
+			",
+			"fragmentShader" : "
+				...
+			"
+		}]
+	}]
+}
 ```
 
 
@@ -173,316 +171,254 @@ If everything went smooth, you should obtain something like this (the vantage po
 
 ![Cube with displaced vertex positions.](../../doc/image/CubePositionOffsets.jpeg "Cube with displaced vertex positions.")
 
-Step 4: Add your attributes to your effect in Minko (for the lazy and the reckless)
--------------------------------------------------------------------------------------
-
-While it is currently strongly advised to embed your vertex attribute into an instance of `geometry::Geometry`, it is still possible to bypass this mechanism and directly specify vertex attributes via an `render::Effect`. It is done by calling the `render::Effect::setVertexAttribute()` method. This approach has the marginal advantage to spare you extra code, but on the other hand forces you to precisely know the unfolding of the geometry the rendered `component::Surface` has been created with (namely how its index buffer access its associated vertex data).
-
-Here, we will ditch our old `uColor` uniform variable and replace it with per vertex color sent to the GPU as the `aVertexColor` attribute. It will be output as the final fragment's color after hardware bilinear interpolation (via the `vVertexColor` varying fragment shader input).
-
-But this time, we will not bind our new `aVertexColor` vertex attribute via the `attributeBindings` section of the effect file. Instead, we will directly pass over our vertex color data (stored in the `colorData` container in the following) to our custom effect instance.
-
-```cpp
-render::Effect::Ptr getEffectWithAttribute(file::AssetLibrary::Ptr assets)
-{
-    const uint  numVertices = 36;
-    auto        colorData   = std::vector<float>(4 * numVertices, 0.0f); // vec4 per vertex
-   
-   ... // initialize the 'colorData' float array
-
-   auto myCustomEffect = assets->effect("effect/MyCustomEffect.effect");
-   myCustomEffect->setVertexAttribute("aVertexColor", 4, colorData);
-
-   return myCustomEffect;
-}
-
-int main(int argc, char** argv)
-{
-    ...
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-    {
-        ...
-        auto cube = scene::Node::create("cube")
-            ->addComponent(Transform::create(
-                Matrix4x4::create()->translation(0.f, 0.0f, -5.f)
-            ))
-            ->addComponent(Surface::create(
-                createGeometryWithAttribute(assets->context()), // geometry with add. vertex attribute
-                myCustomMaterial,
-                getEffectWithAttribute(assets)
-            ));
-        ...
-    });
-
-    sceneManager->assets()->load();
-    canvas->run();
-    return 0;
-} 
-```
-
-
-As highlighted in the complete code listed below, the pitfall here is to carefully initialize the vertex attribute data in such a way that the manually specified attribute values match vertices in a relevant manner.
-
-Follows the code of the updated GLSL vertex and fragment shaders stoed in the custom effect file.
-
-```javascript
-{
-
- "name" : "MyCustomEffect",
- ...
- "passes" : [{
-   "vertexShader" : "
-     ...
-     attribute vec4 aVertexColor;
-
-     varying vec4 vVertexColor;
-
-     ...
-     void main(void)
-     {
-       vVertexColor = aVertexColor;
-       ...
-     }
-   ",
-   "fragmentShader" : "
-     ...
-     varying vec4 vVertexColor; // interpolated across triangular face
-
-     void main(void)
-     {
-       gl_FragColor = vVertexColor;
-     }
-   "
- }]
-
-} 
-```
-
-
-![The vertex colors are directly fed to the GPU via the custom effect.](../../doc/image/CubeVertexColors.jpeg "The vertex colors are directly fed to the GPU via the custom effect.")
-
 Final code
 ----------
 
 asset/effect/MyCustomEffect.effect
 
-```javascript
+```json
 {
+  "name" : "MyCustomEffect",
+  "attributes" : {
+    "aPosition" : "geometry[${geometryId}].position",
+    "aPositionOffset" : "geometry[${geometryId}].positionOffset",
+	"aVertexColor" : "geometry[${geometryId}].color"
+  },
+  "uniforms" : {
+    "uModelToWorldMatrix" : "modelToWorldMatrix",
+    "uWorldToScreenMatrix" :  { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } }
+  },
+  "techniques" : [{
+	  "passes" : [{
+		"vertexShader" : "
+		  #ifdef GL_ES
+		  precision mediump float;
+		  #endif
 
- "name" : "MyCustomEffect",
- "attributeBindings" : {
-   "aPosition" : "geometry[${geometryId}].position",
-   "aPositionOffset" : "geometry[${geometryId}].positionOffset"
- },
- "uniformBindings" : {
-   "uModelToWorldMatrix" : "transform.modelToWorldMatrix",
-   "uWorldToScreenMatrix" : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
- },
- "passes" : [{
-   "vertexShader" : "
-     #ifdef GL_ES
-     precision mediump float;
-     #endif
-     attribute vec3 aPosition;
-     attribute vec3 aPositionOffset;
-     attribute vec4 aVertexColor;
+		  attribute vec3 aPosition;
+		  attribute vec3 aPositionOffset;
+		  attribute vec4 aVertexColor;
 
-     varying vec4 vVertexColor;
+		  varying vec4 vVertexColor;
 
-    
-uniform mat4 uModelToWorldMatrix;
-    
-uniform mat4 uWorldToScreenMatrix;
+		  uniform mat4 uModelToWorldMatrix;
+		  uniform mat4 uWorldToScreenMatrix;
 
-     void main(void)
-     {
-       vVertexColor = aVertexColor;
+		  void main(void)
+		  {
+			vVertexColor = aVertexColor;
 
-       gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition + aPositionOffset, 1.0);
-     }
-   ",
-   "fragmentShader" : "
-     #ifdef GL_ES
-     precision mediump float;
-     #endif
- 
-     varying vec4 vVertexColor; // interpolated across triangular face
+			gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition + aPositionOffset, 1.0);
+		  }
+		",
+		"fragmentShader" : "
+		  #ifdef GL_ES
+		  precision mediump float;
+		  #endif
 
-     void main(void)
-     {
-       gl_FragColor = vVertexColor;
-     }
-   "
- }]
+		  varying vec4 vVertexColor; // interpolated across triangular face
 
-} 
+		  void main(void)
+		  {
+			gl_FragColor = vVertexColor;
+		  }
+		"
+	  }]
+	}]
+}
 ```
 
 
 src/main.cpp
 
 ```cpp
-#include "minko/Minko.hpp" 
+/*
+Copyright (c) 2016 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 
 #include "MyCustomMaterial.hpp"
 
-using namespace minko; 
-using namespace minko::math; 
+using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-geometry::Geometry::Ptr createGeometryWithAttribute(render::AbstractContext::Ptr);
+geometry::Geometry::Ptr
+createGeometryWithAttribute(render::AbstractContext::Ptr);
 
-render::Effect::Ptr getEffectWithAttribute(file::AssetLibrary::Ptr);
+void
+addCustomAttribute(render::AbstractContext::Ptr context, geometry::Geometry::Ptr geometry);
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Minko Tutorial - Working with custom vertex attributes", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
 
- auto canvas = Canvas::create("Minko Tutorial - Working with custom vertex attributes", WINDOW_WIDTH, WINDOW_HEIGHT);
- auto sceneManager = component::SceneManager::create(canvas);
- sceneManager->assets()->queue("effect/MyCustomEffect.effect");
- auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
- {
-   auto root = scene::Node::create("root")
-     ->addComponent(sceneManager);
-   auto camera = scene::Node::create()
-     ->addComponent(Renderer::create(0x7f7f7fff))
-     ->addComponent(Transform::create(
-           Matrix4x4::create()->lookAt(Vector4::create(0.0f, 0.0f, -5.0f), Vector4::create(0.0f, 1.0f, 0.0f))
-       ))
-     ->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
-   root->addChild(camera);
-   auto myCustomMaterial   = material::MyCustomMaterial::create();
-   auto cube = scene::Node::create("cube")
-     ->addComponent(Transform::create(
-       Matrix4x4::create()->translation(0.f, 0.0f, -5.f)
-     ))
-     ->addComponent(Surface::create(
-       createGeometryWithAttribute(assets->context()), // geometry with add. vertex attribute
-       myCustomMaterial,
-       getEffectWithAttribute(assets)
-     ));
-   root->addChild(cube);
-   auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-   {
-     cube->component<Transform>()->matrix()->prependRotationY(0.01f);
-     sceneManager->nextFrame(t, dt);
-   });
-   canvas->run();
- });
- sceneManager->assets()->load();
- return 0;
+	sceneManager->assets()->loader()->queue("effect/MyCustomEffect.effect");
 
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create()
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, -5.f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+	root->addChild(camera);
+
+	auto cube = scene::Node::create("cube");
+
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto myCustomMaterial = material::MyCustomMaterial::create();
+		cube
+			->addComponent(Transform::create())
+			->addComponent(Surface::create(
+				createGeometryWithAttribute(canvas->context()), // geometry with add. vertex attribute
+				myCustomMaterial,
+				sceneManager->assets()->effect("effect/MyCustomEffect.effect")
+			));
+		root->addChild(cube);
+	});
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
+
+		sceneManager->nextFrame(t, dt);
+	});
+
+	sceneManager->assets()->loader()->load();
+
+	canvas->run();
+
+	return 0;
 }
 
-geometry::Geometry::Ptr createGeometryWithAttribute(render::AbstractContext::Ptr context) {
+geometry::Geometry::Ptr
+createGeometryWithAttribute(render::AbstractContext::Ptr context)
+{
+	auto cubeGeometry = geometry::CubeGeometry::create(context); // original cube geometry
 
-   auto cubeGeometry   = geometry::CubeGeometry::create(context); // original cube geometry
+	auto numVertices = cubeGeometry->numVertices(); // 36 vertices (6 vertices per face)
+	auto offsetData = std::vector<float>(3 * numVertices, 0.0f); // vec3 per vertex
 
-   auto numVertices    = cubeGeometry->numVertices(); // 36 vertices (6 vertices per face)
-   auto offsetData     = std::vector<float>(3 * numVertices, 0.0f); // vec3 per vertex
+	math::uint i = 0;
+	for (math::uint vertexId = 0; vertexId < numVertices; ++vertexId)
+	{
+		float dx = 0.0f; // components of the normal displacement
+		float dy = 0.0f;
+		float dz = 0.0f;
 
-   uint i = 0;
-   for (uint vertexId = 0; vertexId < numVertices; ++vertexId)
-   {
-       float dx = 0.0f; // components of the normal displacement
-       float dy = 0.0f;
-       float dz = 0.0f;
-       
-       switch (vertexId / 6) // faceId
-       {
-       case 0:
-           dy += 0.1f;
-           break;
-       case 1:
-           dy -= 0.1f;
-           break;
-       case 2:
-           dz -= 0.1f;
-           break;
-       case 3:
-           dz += 0.1f;
-           break;
-       case 4:
-           dx -= 0.1f;
-           break;
-       case 5:
-           dx += 0.1f;
-           break;
-       }
-       
-       offsetData[i++] = dx;
-       offsetData[i++] = dy;
-       offsetData[i++] = dz;
-   }
+		switch (vertexId / 6) // faceId
+		{
+		case 0:
+			dy += 0.1f;
+			break;
+		case 1:
+			dy -= 0.1f;
+			break;
+		case 2:
+			dz -= 0.1f;
+			break;
+		case 3:
+			dz += 0.1f;
+			break;
+		case 4:
+			dx -= 0.1f;
+			break;
+		case 5:
+			dx += 0.1f;
+			break;
+		}
 
-   auto offsetBuffer = render::VertexBuffer::create(context, offsetData);
-   offsetBuffer->addAttribute("positionOffset", 3, 0);
+		offsetData[i++] = dx;
+		offsetData[i++] = dy;
+		offsetData[i++] = dz;
+	}
 
-   cubeGeometry->addVertexBuffer(offsetBuffer);
+	auto offsetBuffer = render::VertexBuffer::create(context, offsetData);
+	offsetBuffer->addAttribute("positionOffset", 3, 0);
 
-   return cubeGeometry;
+	cubeGeometry->addVertexBuffer(offsetBuffer);
 
+	addCustomAttribute(context, cubeGeometry);
+
+	return cubeGeometry;
 }
 
-render::Effect::Ptr getEffectWithAttribute(file::AssetLibrary::Ptr assets) {
+void
+addCustomAttribute(render::AbstractContext::Ptr context, geometry::Geometry::Ptr geometry)
+{
+	const math::uint	numVertices = 36;
+	auto		colorData = std::vector<float>(4 * numVertices, 0.0f); // vec4 per vertex
 
-   
-const uint  numVertices = 36;
-   auto        colorData   = std::vector<float>(4 * numVertices, 0.0f); // vec4 per vertex
-   
-   uint i = 0;
-   for (uint vId = 0; vId < numVertices; ++vId)
-   {
-       float r = 0.0f;
-       float g = 0.0f;
-       float b = 0.0f;
-       float a = 1.0f;
+	math::uint i = 0;
+	for (math::uint vId = 0; vId < numVertices; ++vId)
+	{
+		float r = 0.0f;
+		float g = 0.0f;
+		float b = 0.0f;
+		float a = 1.0f;
 
-       if (vId == 7 || vId == 10 || vId == 12 || vId == 16 || vId == 30 || vId == 35)
-       {
-           r = 1.0f;
-       }
-       else if (vId == 4 || vId == 13 || vId == 15 || vId == 25 || vId == 27)
-       {
-           g = 1.0f;
-       }
-       else if (vId == 6 || vId == 11 || vId == 19 || vId == 21 || vId == 24 || vId == 28)
-       {
-           b = 1.0f;
-       }
-       else if (vId == 0 || vId == 3 || vId == 14 || vId == 31)
-       {
-           r = 1.0f; g = 1.0f;
-       }
-       else if (vId == 8 || vId == 22 || vId == 34)
-       {
-           r = 1.0f; b = 1.0f;
-       }
-       else if (vId == 1 || vId == 5 || vId == 18 || vId == 29)
-       {
-           g = 1.0f; b = 1.0f;
-       }
-       else if (vId == 2 || vId == 20 || vId == 23 || vId == 32 || vId == 33)
-       {
-           r = 1.0f; g = 1.0f; b = 1.0f;
-       }
+		if (vId == 7 || vId == 10 || vId == 12 || vId == 16 || vId == 30 || vId == 35)
+		{
+			r = 1.0f;
+		}
+		else if (vId == 4 || vId == 13 || vId == 15 || vId == 25 || vId == 27)
+		{
+			g = 1.0f;
+		}
+		else if (vId == 6 || vId == 11 || vId == 19 || vId == 21 || vId == 24 || vId == 28)
+		{
+			b = 1.0f;
+		}
+		else if (vId == 0 || vId == 3 || vId == 14 || vId == 31)
+		{
+			r = 1.0f; g = 1.0f;
+		}
+		else if (vId == 8 || vId == 22 || vId == 34)
+		{
+			r = 1.0f; b = 1.0f;
+		}
+		else if (vId == 1 || vId == 5 || vId == 18 || vId == 29)
+		{
+			g = 1.0f; b = 1.0f;
+		}
+		else if (vId == 2 || vId == 20 || vId == 23 || vId == 32 || vId == 33)
+		{
+			r = 1.0f; g = 1.0f; b = 1.0f;
+		}
+		colorData[i++] = r;
+		colorData[i++] = g;
+		colorData[i++] = b;
+		colorData[i++] = a;
+	}
 
-       colorData[i++] = r;
-       colorData[i++] = g;
-       colorData[i++] = b;
-       colorData[i++] = a;
-   }
+	auto colorBuffer = render::VertexBuffer::create(context, colorData);
+	colorBuffer->addAttribute("color", 4, 0);
 
-   auto myCustomEffect = assets->effect("effect/MyCustomEffect.effect");
-
-   myCustomEffect->setVertexAttribute("aVertexColor", 4, colorData);
-
-   return myCustomEffect;
-
-} 
+	geometry->addVertexBuffer(colorBuffer);
+}
 ```
-
-
