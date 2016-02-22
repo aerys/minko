@@ -262,11 +262,24 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
 
         for (auto vertexBuffer : geometry->vertexBuffers())
         {
-            auto& weldedVertices = std::find_if(vertexBufferToWeldedVertices.begin(), vertexBufferToWeldedVertices.end(),
+            std::vector<float>* weldedVerticesPtr = nullptr;
+            auto iterator = std::find_if(vertexBufferToWeldedVertices.begin(), vertexBufferToWeldedVertices.end(),
                 [&](const std::pair<render::VertexBuffer::Ptr, std::vector<float>>& pair)
             {
                 return pair.first == vertexBuffer;
-            })->second;
+            });
+
+            if (iterator == vertexBufferToWeldedVertices.end())
+            {
+                vertexBufferToWeldedVertices.emplace_back(vertexBuffer, std::vector<float>());
+                weldedVerticesPtr = &vertexBufferToWeldedVertices.back().second;
+            }
+            else
+            {
+                weldedVerticesPtr = &iterator->second;
+            }
+
+            auto& weldedVertices = *weldedVerticesPtr;
 
             weldedVertices.resize(
                 weldedVertices.size() + vertexBuffer->vertexSize(),
