@@ -108,39 +108,31 @@ namespace minko
             useDescriptor(const std::string&                filename,
                           std::shared_ptr<Options>          options,
                           const std::vector<unsigned char>& data,
-                          std::shared_ptr<AssetLibrary>     assetLibrary);
+                          std::shared_ptr<AssetLibrary>     assetLibrary) override;
 
             void
             parsed(const std::string&                filename,
                    const std::string&                resolvedFilename,
                    std::shared_ptr<Options>          options,
                    const std::vector<unsigned char>& data,
-                   std::shared_ptr<AssetLibrary>     assetLibrary);
+                   std::shared_ptr<AssetLibrary>     assetLibrary) override;
 
             void
             headerParsed(const std::vector<unsigned char>&   data,
                          std::shared_ptr<Options>            options,
-                         unsigned int&                       linkedAssetId);
+                         unsigned int&                       linkedAssetId) override;
 
             void
             lodParsed(int                                previousLod,
                       int                                currentLod,
                       const std::vector<unsigned char>&  data,
-                      std::shared_ptr<Options>           options);
+                      std::shared_ptr<Options>           options) override;
 
             bool
-            complete(int currentLod);
+            complete(int currentLod) override;
             
             void
-            completed();
-
-            void
-            lodParsed(int                                previousLod,
-                      int                                currentLod,
-                      const std::vector<unsigned char>&  data,
-                      std::shared_ptr<Options>           options,
-                      bool                               disposeIndexBuffer,
-                      bool                               disposeVertexBuffer);
+            completed() override;
 
             void
             lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const override;
@@ -150,6 +142,14 @@ namespace minko
 
             int
             maxLod() const override;
+
+            void
+            lodParsed(int                                previousLod,
+                      int                                currentLod,
+                      const std::vector<unsigned char>&  data,
+                      std::shared_ptr<Options>           options,
+                      bool                               disposeIndexBuffer,
+                      bool                               disposeVertexBuffer);
 
         private:
             POPGeometryParser();

@@ -91,7 +91,7 @@ POPGeometryParser::useDescriptor(const std::string&                 filename,
     }
 
     lodParsed(
-        lowerLod,
+        lowerLod - 1,
         upperLod,
         data,
         options,
@@ -400,7 +400,6 @@ POPGeometryParser::completed()
     }
 }
 
-
 void
 POPGeometryParser::lodParsed(int                                 previousLod,
                              int                                 currentLod,
@@ -444,7 +443,12 @@ POPGeometryParser::lodParsed(int                                 previousLod,
         }
         else
         {
-            std::copy(indices.begin(), indices.end(), indexBuffer->data().begin() + geometryIndexOffset);
+            auto& indexData = indexBuffer->data();
+
+            if (indexData.size() < geometryIndexOffset + indices.size())
+                indexData.resize(geometryIndexOffset + indices.size());
+
+            std::copy(indices.begin(), indices.end(), indexData.begin() + geometryIndexOffset);
 
             indexBuffer->upload(geometryIndexOffset, lodInfo.indexCount);
         }
@@ -468,10 +472,15 @@ POPGeometryParser::lodParsed(int                                 previousLod,
                 }
                 else
                 {
+                    auto& vertexData = vertexBuffer->data();
+
+                    if (vertexData.size() < localVertexOffset + vertices.size())
+                        vertexData.resize(localVertexOffset + vertices.size());
+
                     std::copy(
                         vertices.begin(),
                         vertices.end(),
-                        vertexBuffer->data().begin() + localVertexOffset
+                        vertexData.begin() + localVertexOffset
                     );
 
                     vertexBuffer->upload(geometryVertexOffset, lodInfo.vertexCount);
