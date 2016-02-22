@@ -98,55 +98,66 @@ namespace minko
             inline
             static
             Ptr
-            create(std::shared_ptr<data::Provider> data)
+            create()
             {
-                auto instance = Ptr(new POPGeometryParser(data));
-
-                return instance;
+                return Ptr(new POPGeometryParser());
             }
 
         protected:
+            bool
+            useDescriptor(const std::string&                filename,
+                          std::shared_ptr<Options>          options,
+                          const std::vector<unsigned char>& data,
+                          std::shared_ptr<AssetLibrary>     assetLibrary) override;
+
             void
             parsed(const std::string&                filename,
                    const std::string&                resolvedFilename,
                    std::shared_ptr<Options>          options,
                    const std::vector<unsigned char>& data,
-                   std::shared_ptr<AssetLibrary>     assetLibrary);
-
-            void
-            nextLod(int     previousLod,
-                    int     requiredLod,
-                    int&    nextLod,
-                    int&    nextLodOffset,
-                    int&    nextLodSize);
+                   std::shared_ptr<AssetLibrary>     assetLibrary) override;
 
             void
             headerParsed(const std::vector<unsigned char>&   data,
                          std::shared_ptr<Options>            options,
-                         unsigned int&                       linkedAssetId);
+                         unsigned int&                       linkedAssetId) override;
 
             void
             lodParsed(int                                previousLod,
                       int                                currentLod,
                       const std::vector<unsigned char>&  data,
-                      std::shared_ptr<Options>           options);
+                      std::shared_ptr<Options>           options) override;
 
             bool
-            complete(int currentLod);
+            complete(int currentLod) override;
+            
+            void
+            completed() override;
 
             void
-            completed();
+            lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const override;
+
+            int
+            lodLowerBound(int lod) const override;
+
+            int
+            maxLod() const override;
+
+            void
+            lodParsed(int                                previousLod,
+                      int                                currentLod,
+                      const std::vector<unsigned char>&  data,
+                      std::shared_ptr<Options>           options,
+                      bool                               disposeIndexBuffer,
+                      bool                               disposeVertexBuffer);
 
         private:
-            POPGeometryParser(std::shared_ptr<data::Provider> data);
+            POPGeometryParser();
 
             std::shared_ptr<geometry::Geometry>
             createPOPGeometry(std::shared_ptr<AssetLibrary> assetLibrary,
                               std::shared_ptr<Options>      options,
                               const std::string&            fileName);
-
-            int
-            lodRangeRequestSize(int lowerLod, int upperLod) const;
         };
     }
 }

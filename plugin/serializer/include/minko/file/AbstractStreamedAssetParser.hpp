@@ -153,6 +153,15 @@ namespace minko
 
         public:
             inline
+            Ptr
+            data(std::shared_ptr<data::Provider> data)
+            {
+                _data = data;
+
+                return std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this());
+            }
+
+            inline
             void
             streamingOptions(std::shared_ptr<StreamingOptions> streamingOptions)
             {
@@ -241,7 +250,7 @@ namespace minko
             lodRequestFetchingComplete(const std::vector<unsigned char>& data);
 
         protected:
-            AbstractStreamedAssetParser(std::shared_ptr<data::Provider> data);
+            AbstractStreamedAssetParser();
 
             inline
             std::shared_ptr<data::Provider>
@@ -251,20 +260,19 @@ namespace minko
             }
 
             virtual
+            bool
+            useDescriptor(const std::string&                filename,
+                          std::shared_ptr<Options>          options,
+                          const std::vector<unsigned char>& data,
+                          std::shared_ptr<AssetLibrary>     assetLibrary) = 0;
+
+            virtual
             void
             parsed(const std::string&                filename,
                    const std::string&                resolvedFilename,
                    std::shared_ptr<Options>          options,
                    const std::vector<unsigned char>& data,
                    std::shared_ptr<AssetLibrary>     assetLibrary) = 0;
-
-            virtual
-            void
-            nextLod(int     previousLod,
-                    int     requiredLod,
-                    int&    nextLod,
-                    int&    nextLodOffset,
-                    int&    nextLodSize) = 0;
 
             virtual
             void
@@ -286,6 +294,26 @@ namespace minko
             virtual
             void
             completed() = 0;
+
+            virtual
+            void
+            lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const = 0;
+
+            virtual
+            int
+            lodLowerBound(int lod) const = 0;
+
+            virtual
+            int
+            maxLod() const = 0;
+
+            virtual
+            void
+            nextLod(int     previousLod,
+                    int     requiredLod,
+                    int&    nextLod,
+                    int&    nextLodOffset,
+                    int&    nextLodSize);
 
             inline
             void

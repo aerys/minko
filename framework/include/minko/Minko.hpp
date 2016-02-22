@@ -101,6 +101,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/AssetLocation.hpp"
+#include "minko/file/AbstractAssetDescriptor.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/material/BasicMaterial.hpp"
 #include "minko/material/PhongMaterial.hpp"
