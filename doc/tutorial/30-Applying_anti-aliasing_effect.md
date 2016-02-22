@@ -6,7 +6,7 @@ Step 0: Invoke the 'fx' Minko plugin
 The first thing you have to do is anything else than [enable the 'fx' plugin](../tutorial/How_to_enable_a_plugin.md) adding this line at the end of your project's premake file:
 
 ```lua
-minko.plugin.enable("fx") 
+minko.plugin.enable("fx")
 ```
 
 
@@ -20,7 +20,7 @@ The next step is to load the effect that we want to use. For us, it's the FXAA o
 ```cpp
 auto sceneManager = SceneManager::create(canvas);
 
-sceneManager->assets()->queue("effect/FXAA/FXAA.effect"); 
+sceneManager->assets()->queue("effect/FXAA/FXAA.effect");
 ```
 
 
@@ -47,14 +47,14 @@ Step 2: Create a render target
 The anti-aliasing effect is a post processing effect, so we need to create a render target to render the scene into it. I would strongly advise you to read the [tutorial that explains how to create a simple post-processing effect](../tutorial/22-Creating_a_simple_post-processing_effect.md).
 
 ```cpp
-auto renderTarget = render::Texture::create(assets->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true); 
+auto renderTarget = render::Texture::create(assets->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
 ```
 
 
 Don't forget to call the *upload()* method to really allocate GPU memory for the render target:
 
 ```cpp
-renderTarget->upload(); 
+renderTarget->upload();
 ```
 
 
@@ -63,12 +63,14 @@ Step 3 : Set anti-aliasing effect mandatory parameters
 
 Most effects needs some properties to be set to work properly. For the anti-aliasing, we need to set:
 
--   **textureSampler**: that represent the texture into the render target
--   **texcoordOffset**: that is the inverse of the texture dimensions along X and Y of the render target.
+-   **textureSampler**: that represent the texture into the render target.
+-   **invertedDiffuseMapSize**: that is the inverse of the texture dimensions along X and Y of the render target.
+-	**resolution** : that is the resolution of the canvas.
 
 ```cpp
-effect->setUniform("textureSampler", renderTarget);
-effect->setUniform("texcoordOffset", Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height())); 
+effect->data()->set("textureSampler", renderTarget->sampler());
+effect->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTarget->width()), 1.f / float(renderTarget->height())));
+effect->data()->set("resolution", vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
 ```
 
 
@@ -85,9 +87,9 @@ auto postProcessingScene = scene::Node::create() ->addComponent(renderer) ->addC
        geometry::QuadGeometry::create(sceneManager->assets()->context()),
        material::Material::create(),
        effect
-   )
+   );
 
-); 
+);
 ```
 
 
@@ -104,7 +106,7 @@ auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t,
  sceneManager->nextFrame(t, dt, renderTarget);
  renderer->render(assets->context());
 
-} 
+}
 ```
 
 
@@ -123,11 +125,10 @@ auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w
    renderTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
    renderTarget->upload();
 
-   effect->setUniform("textureSampler", renderTarget);
-   effect->setUniform("texcoordOffset",
-       Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
-
-}); 
+   effect->data()->set("textureSampler", renderTarget->sampler());
+   effect->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTarget->width()), 1.f / float(renderTarget->height())));
+   effect->data()->set("resolution", vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+});
 ```
 
 
@@ -137,126 +138,149 @@ Final code
 ----------
 
 ```cpp
-#include "minko/Minko.hpp" 
+/*
+Copyright (c) 2016 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 
-using namespace minko; 
-using namespace minko::math; 
+using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Minko Tutorial - Applying antialiasing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = SceneManager::create(canvas);
 
-   auto canvas = Canvas::create("Minko Tutorial - Applying anti-aliasing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = SceneManager::create(canvas);
+	sceneManager->assets()->loader()
+		->queue("effect/Basic.effect")
+		->queue("effect/FXAA/FXAA.effect");
 
-   sceneManager->assets()
-       ->queue("effect/Basic.effect")
-       ->queue("effect/FXAA/FXAA.effect")
-       ;
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-   auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-   {
-       auto root = scene::Node::create("root")
-           ->addComponent(sceneManager);
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x00000000))
+		->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 0.f, -5.f), vec3(), vec3(0.f, 1.f, 0.f)))));
+	root->addChild(camera);
 
-       auto camera = scene::Node::create("camera")
-           ->addComponent(Renderer::create(0x00000000))
-           ->addComponent(PerspectiveCamera::create(
-               (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f))
-           ->addComponent(Transform::create(Matrix4x4::create()
-               ->lookAt(Vector3::create(), Vector3::create(0.f, 0.f, -5.f)))
-           );
-       root->addChild(camera);
+	auto renderTarget = render::Texture::create(canvas->context(), math::clp2(WINDOW_WIDTH), math::clp2(WINDOW_HEIGHT), false, true);
+	renderTarget->upload();
 
-       auto cube = scene::Node::create("cube")
-           ->addComponent(Transform::create())
-           ->addComponent(Surface::create(
-           geometry::CubeGeometry::create(assets->context()),
-           material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-           assets->effect("effect/Basic.effect")
-           ));
-       root->addChild(cube);
+	auto ppMaterial = material::BasicMaterial::create();
+	ppMaterial->diffuseMap(renderTarget);
 
-       auto effect = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
+	render::Effect::Ptr effect;
 
-       // Check that the FXAA effect has been properly loaded
-       if (!effect)
-           throw std::logic_error("The FXAA effect has not been loaded.");
+	auto enableFXAA = true;
 
-       auto renderTarget = render::Texture::create(
-           assets->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
-       renderTarget->upload();
+	auto cube = scene::Node::create("cube");
 
-       effect->setUniform("textureSampler", renderTarget);
-       effect->setUniform("texcoordOffset",
-           Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
+	auto renderer = Renderer::create();
 
-       auto renderer = Renderer::create();
-       // Create a scene just to display the post processing render target texture
-       auto postProcessingScene = scene::Node::create()
-           ->addComponent(renderer)
-           ->addComponent(
-               Surface::create(
-                   geometry::QuadGeometry::create(sceneManager->assets()->context()),
-                   material::Material::create(),
-                   effect
-               )
-           );
+	auto postProcessingScene = scene::Node::create();
 
-       auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
-       {
-           camera->component<PerspectiveCamera>()->aspectRatio((float) width / (float) height);
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto material = material::BasicMaterial::create();
+		material->diffuseColor(math::vec4(0.f, 0.f, 1.f, 1.f));
 
-           renderTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
-           renderTarget->upload();
+		cube->addComponent(Transform::create());
+		cube->addComponent(Surface::create(
+			geometry::CubeGeometry::create(canvas->context()),
+			material,
+			sceneManager->assets()->effect("effect/Basic.effect")
+			));
 
-           effect->setUniform("textureSampler", renderTarget);
-           effect->setUniform("texcoordOffset",
-               Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
-       });
+		root->addChild(cube);
 
-       // Enable/Disable FXAA pressing space key
-       auto enableFXAA = true;
-       auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
-       {
-           if (k->keyIsDown(input::Keyboard::ScanCode::SPACE))
-           {
-               enableFXAA = !enableFXAA;
+		effect = sceneManager->assets()->effect("effect/FXAA/FXAA.effect");
 
-               if (enableFXAA)
-                   std::cout << "Enable FXAA" << std::endl;
-               else
-                   std::cout << "Disable FXAA" << std::endl;
-           }
+		if (!effect)
+			throw std::logic_error("The FXAA effect has not been loaded.");
 
-       });
+		effect->data()->set("textureSampler", renderTarget->sampler());
+		effect->data()->set("resolution", vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+		effect->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTarget->width()), 1.f / float(renderTarget->height())));
 
-       auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-       {
-           cube->component<Transform>()->matrix()->prependRotationY(.01f);
+		postProcessingScene->addComponent(renderer);
+		postProcessingScene->addComponent(
+			Surface::create(
+					geometry::QuadGeometry::create(sceneManager->assets()->context()),
+					ppMaterial,
+					effect
+				)
+			);   
+    });
 
-           if (enableFXAA)
-           {
-               sceneManager->nextFrame(t, dt, renderTarget);
-               renderer->render(assets->context());
-           }
-           else
-           {
-               sceneManager->nextFrame(t, dt);
-           }
-       });
+	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+	{
+		if (k->keyIsDown(input::Keyboard::SPACE))
+		{
+			enableFXAA = !enableFXAA;
 
-       canvas->run();
-   });
+			if (enableFXAA)
+				std::cout << "Enable FXAA" << std::endl;
+			else
+				std::cout << "Disable FXAA" << std::endl;
+		}
+	});
 
-   sceneManager->assets()->load();
+	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, math::uint width, math::uint height)
+	{
+		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 
-   return 0;
+		renderTarget = render::Texture::create(sceneManager->assets()->context(), math::clp2(width), math::clp2(height), false, true);
+		renderTarget->upload();
 
-} 
+		ppMaterial->diffuseMap(renderTarget);
+		effect->data()->set("textureSampler", renderTarget->sampler());
+		effect->data()->set("resolution", vec2(WINDOW_WIDTH, WINDOW_HEIGHT));
+		effect->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTarget->width()), 1.f / float(renderTarget->height())));
+
+	});
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		cube->component<Transform>()->matrix(cube->component<Transform>()->matrix() * math::rotate(.01f, math::vec3(0.f, 1.f, 0.f)));
+
+		if (enableFXAA)
+		{
+			sceneManager->nextFrame(t, dt, renderTarget);
+			renderer->render(sceneManager->assets()->context());
+		}
+		else
+		{
+			sceneManager->nextFrame(t, dt);
+		}
+	});
+
+	sceneManager->assets()->loader()->load();
+
+	canvas->run();
+
+    return 0;
+}
 ```
-
-

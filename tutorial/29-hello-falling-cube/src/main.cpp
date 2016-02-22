@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,40 +28,48 @@ using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
+
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
 int main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Hello falling cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = SceneManager::create(canvas);
+
+	auto sceneManager = SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()
         ->queue(TEXTURE_FILENAME)
 		->queue("effect/Basic.effect")
 		->options()->registerParser<file::PNGParser>("png");
 
+    // STEP 1: create and add your physics world to the scene
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager)
+        ->addComponent(bullet::PhysicsWorld::create());
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+			inverse(lookAt(vec3(0.5f, 2.0f, 2.0f), vec3(), vec3(0.f, 1.f, 0.f)))
+			))
+		->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
+
+	auto boxNode = scene::Node::create("boxNode");
+
+	root->addChild(camera);
+
     auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
-        auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.5f, 2.0f, 2.0f))
-            ))
-            ->addComponent(PerspectiveCamera::create(WINDOW_WIDTH / WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f));
-
-        // STEP 1: create and add your physics world to the scene
-        auto root = scene::Node::create("root")
-            ->addComponent(sceneManager)
-            ->addComponent(bullet::PhysicsWorld::create());
-
+        
         // STEP 2: create a box-shaped rigid body
         auto boxColliderData = bullet::ColliderData::create(
             5.0f, // strictly positive mass
             bullet::BoxShape::create(0.5f, 0.5f, 0.5f) // shape strictly matches the CubeGeometry
             );
-        auto boxNode = scene::Node::create("boxNode")
+
+		boxNode
             ->addComponent(bullet::Collider::create(boxColliderData))
             ->addComponent(Surface::create(
             geometry::CubeGeometry::create(canvas->context()),
@@ -69,19 +77,19 @@ int main(int argc, char** argv)
 			sceneManager->assets()->effect("effect/Basic.effect")
             ));
 
-        root->addChild(camera);
         // STEP 3: trigger the simulation by adding the physics object to the scene
         root->addChild(boxNode);
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-        {
-            sceneManager->nextFrame(t, dt);
-        });
-
-        canvas->run();
     });
 
     sceneManager->assets()->loader()->load();
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
 
     return 0;
 }

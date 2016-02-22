@@ -24,6 +24,7 @@ Makefile
 *.vspx
 *.rsp
 *.etl
+*.opendb
 .clang_complete
 .atom-build.json
 doc/html

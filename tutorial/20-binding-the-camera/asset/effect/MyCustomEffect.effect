@@ -1,40 +1,43 @@
 {
-  "name" : "MyCustomEffect",
-  "attributeBindings" : {
-    "aPosition" : "geometry[${geometryId}].position"
-  },
-  "uniformBindings" : {
-    "uColor" : "material[${materialId}].color",
-    "uModelToWorldMatrix" : "transform.modelToWorldMatrix",
-    "uWorldToScreenMatrix" : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" }
-  },
-  "passes" : [{
-    "vertexShader" : "
-      #ifdef GL_ES
-      precision mediump float;
-      #endif
- 
-      attribute vec3 aPosition;
- 
-      uniform mat4 uModelToWorldMatrix;
-      uniform mat4 uWorldToScreenMatrix;
- 
-      void main(void)
-      {
-        gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
-      }
-    ",
-    "fragmentShader" : "
-      #ifdef GL_ES
-      precision mediump float;
-      #endif
- 
-      uniform vec4 uColor;
- 
-      void main(void)
-      {
-        gl_FragColor = uColor;
-      }
-    "
+	"name" : "MyCustomEffect",
+    "attributes" : {
+        "aPosition" : "geometry[${geometryUuid}].position"
+		},
+	"uniforms" : {
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		"uColor"				: "material[${materialUuid}].color"
+		},
+	"techniques" : [{
+	 "passes" : [{
+		"name" : "my-custom-pass",
+		"vertexShader" : "
+		  #ifdef GL_ES
+		  precision mediump float;
+		  #endif
+
+		  attribute vec3 aPosition;
+
+		  uniform mat4 uModelToWorldMatrix;
+		  uniform mat4 uWorldToScreenMatrix;
+
+		  void main(void)
+		  {
+			gl_Position = uWorldToScreenMatrix * uModelToWorldMatrix * vec4(aPosition, 1.0);
+		  }
+		",
+		"fragmentShader" : "
+		  #ifdef GL_ES
+		  precision mediump float;
+		  #endif
+
+		  uniform vec4 uColor;
+
+		  void main(void)
+		  {
+			gl_FragColor = uColor;
+		  }
+		"
+	  }]
   }]
 }

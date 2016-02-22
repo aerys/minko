@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,8 +25,9 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
+
 std::string SCENE_FILENAME = "model/myScene/myScene.scene";
 
 int main(int argc, char** argv)
@@ -34,35 +35,40 @@ int main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Tutorial - Loading .scene files", WINDOW_WIDTH, WINDOW_HEIGHT);
     auto sceneManager = SceneManager::create(canvas);
 
-    sceneManager->assets()->loader()->options()->registerParser<minko::file::SceneParser>("scene");
-    sceneManager->assets()->loader()->queue("effect/Phong.effect");
-    sceneManager->assets()->loader()->queue(SCENE_FILENAME);
+    sceneManager->assets()->loader()->options()
+		->registerParser<minko::file::SceneParser>("scene");
+    
+	sceneManager->assets()->loader()
+		->queue("effect/Phong.effect")
+		->queue(SCENE_FILENAME)
+		;
 
-    auto root = scene::Node::create("root")->addComponent(sceneManager);
+    auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
-        ->addComponent(Transform::create(
-        Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0., 3., -5.f))
+        ->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 3.f, -5.f), vec3(), vec3(0.f, 1.f, 0.f)))
         ))
         ->addComponent(PerspectiveCamera::create(
         (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
         );
-    root->addChild(camera);
+    
+	root->addChild(camera);
 
     auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
 		root->addChild(sceneManager->assets()->symbol(SCENE_FILENAME));
-
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-        {
-            sceneManager->nextFrame(t, dt);
-        });
-
-        canvas->run();
     });
 
     sceneManager->assets()->loader()->load();
+
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+    {
+        sceneManager->nextFrame(t, dt);
+    });
+
+    canvas->run();
 
     return 0;
 }

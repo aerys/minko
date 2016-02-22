@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,14 +26,14 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
 geometry::Geometry::Ptr
 createGeometryWithAttribute(render::AbstractContext::Ptr);
 
-render::Effect::Ptr
-getEffectWithAttribute(file::AssetLibrary::Ptr);
+void
+addCustomAttribute(render::AbstractContext::Ptr context, geometry::Geometry::Ptr geometry);
 
 int
 main(int argc, char** argv)
@@ -42,42 +42,42 @@ main(int argc, char** argv)
 	auto sceneManager = component::SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()->queue("effect/MyCustomEffect.effect");
+
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create()
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, -5.f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
+	root->addChild(camera);
+
+	auto cube = scene::Node::create("cube");
+
 	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
-		auto camera = scene::Node::create()
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector4::create(0.0f, 0.0f, -5.0f), Vector4::create(0.0f, 1.0f, 0.0f))
-			))
-			->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT));
-		root->addChild(camera);
-
 		auto myCustomMaterial = material::MyCustomMaterial::create();
-		auto cube = scene::Node::create("cube")
-			->addComponent(Transform::create(
-			Matrix4x4::create()->translation(0.f, 0.0f, -5.f)
-			))
+		cube
+			->addComponent(Transform::create())
 			->addComponent(Surface::create(
-			createGeometryWithAttribute(canvas->context()), // geometry with add. vertex attribute
-			myCustomMaterial,
-			getEffectWithAttribute(sceneManager->assets())
+				createGeometryWithAttribute(canvas->context()), // geometry with add. vertex attribute
+				myCustomMaterial,
+				sceneManager->assets()->effect("effect/MyCustomEffect.effect")
 			));
 		root->addChild(cube);
+	});
 
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-		{
-			cube->component<Transform>()->matrix()->prependRotationY(0.01f);
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
 
-			sceneManager->nextFrame(t, dt);
-		});
-
-		canvas->run();
+		sceneManager->nextFrame(t, dt);
 	});
 
 	sceneManager->assets()->loader()->load();
+
+	canvas->run();
 
 	return 0;
 }
@@ -90,8 +90,8 @@ createGeometryWithAttribute(render::AbstractContext::Ptr context)
 	auto numVertices = cubeGeometry->numVertices(); // 36 vertices (6 vertices per face)
 	auto offsetData = std::vector<float>(3 * numVertices, 0.0f); // vec3 per vertex
 
-	uint i = 0;
-	for (uint vertexId = 0; vertexId < numVertices; ++vertexId)
+	math::uint i = 0;
+	for (math::uint vertexId = 0; vertexId < numVertices; ++vertexId)
 	{
 		float dx = 0.0f; // components of the normal displacement
 		float dy = 0.0f;
@@ -129,17 +129,19 @@ createGeometryWithAttribute(render::AbstractContext::Ptr context)
 
 	cubeGeometry->addVertexBuffer(offsetBuffer);
 
+	addCustomAttribute(context, cubeGeometry);
+
 	return cubeGeometry;
 }
 
-render::Effect::Ptr
-getEffectWithAttribute(file::AssetLibrary::Ptr assets)
+void
+addCustomAttribute(render::AbstractContext::Ptr context, geometry::Geometry::Ptr geometry)
 {
-	const uint	numVertices = 36;
+	const math::uint	numVertices = 36;
 	auto		colorData = std::vector<float>(4 * numVertices, 0.0f); // vec4 per vertex
 
-	uint i = 0;
-	for (uint vId = 0; vId < numVertices; ++vId)
+	math::uint i = 0;
+	for (math::uint vId = 0; vId < numVertices; ++vId)
 	{
 		float r = 0.0f;
 		float g = 0.0f;
@@ -174,16 +176,14 @@ getEffectWithAttribute(file::AssetLibrary::Ptr assets)
 		{
 			r = 1.0f; g = 1.0f; b = 1.0f;
 		}
-
 		colorData[i++] = r;
 		colorData[i++] = g;
 		colorData[i++] = b;
 		colorData[i++] = a;
 	}
 
-	auto myCustomEffect = assets->effect("effect/MyCustomEffect.effect");
+	auto colorBuffer = render::VertexBuffer::create(context, colorData);
+	colorBuffer->addAttribute("color", 4, 0);
 
-	myCustomEffect->setVertexAttribute("aVertexColor", 4, colorData);
-
-	return myCustomEffect;
+	geometry->addVertexBuffer(colorBuffer);
 }

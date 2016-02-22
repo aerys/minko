@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,49 +24,51 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int
-main(int argc, char** argv)
+int	main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Tutorial - Loading effects", WINDOW_WIDTH, WINDOW_HEIGHT);
 	auto sceneManager = component::SceneManager::create(canvas);
 
-	sceneManager->assets()->loader()->queue("effect/VertexNormal.effect");
+	sceneManager->assets()->loader()
+		->queue("effect/VertexNormal.effect");
+
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
+
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x00000000))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 1.f, 1.3f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
+
+	root->addChild(camera);
+
+	auto cube = scene::Node::create("cube");
+
 	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
 	{
-		std::cout << "all assets have been loaded!" << std::endl;
-
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
-
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(PerspectiveCamera::create(
-			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
-			);
-		root->addChild(camera);
-
-		auto cube = scene::Node::create("cube")
-		->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
-			->addComponent(Surface::create(
-			geometry::CubeGeometry::create(canvas->context()),
-			material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
+		cube->addComponent(Transform::create());
+		cube->addComponent(Surface::create(
+			geometry::CubeGeometry::create(sceneManager->assets()->context()),
+			material::BasicMaterial::create()->diffuseColor(vec4(1.f, 0.f, 0.f, 1.f)),
 			sceneManager->assets()->effect("effect/VertexNormal.effect")
 			));
 		root->addChild(cube);
-
-		auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-		{
-			cube->component<Transform>()->matrix()->prependRotationY(.01f);
-			sceneManager->nextFrame(t, dt);
-		});
-
-		canvas->run();
 	});
 
 	sceneManager->assets()->loader()->load();
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
+
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
 
 	return 0;
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -21,88 +21,73 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int
-main(int argc, char** argv)
+int	main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Tutorial - Rotating the camera around an object with the mouse", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas);
+	auto canvas = Canvas::create("Minko Tutorial - Rotating the camera around an object with the mouse", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
+	sceneManager->assets()->loader()->queue("effect/Basic.effect");
 
-    // We replace the basic effect by the Phong effect to have light effects
-    sceneManager->assets()->loader()->queue("effect/Phong.effect");
-    auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-    {
-        auto root = scene::Node::create("root")
-            ->addComponent(sceneManager);
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-        auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(Transform::create(
-            math::inverse(math::lookAt(math::vec3(0., 0., -5.f), math::vec3(), math::vec3(0, 1, 0)))
-            ))
-            ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
-            );
-        root->addChild(camera);
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(lookAt(vec3(0.f, 0.f, -5.f), vec3(), vec3(0.f, 1.f, 0.f))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
-        // Add a simple directional light to really see the camera rotation
-        auto directionalLight = scene::Node::create("directionalLight")
-            ->addComponent(DirectionalLight::create())
-            ->addComponent(Transform::create(
-                math::inverse(
-                    math::lookAt(
-                       math::vec3(), math::vec3(-0.33f, -0.33f, 0.33f), math::vec3(0, 1, 0))
-                    )
-                )
-            );
-        root->addChild(directionalLight);
+	root->addChild(camera);
 
-        // Replace the cube by a sphere to inscrease light visibility
-        auto sphereMaterial = material::BasicMaterial::create();
-        sphereMaterial->diffuseColor(math::vec4(0.f, 0.f, 1.f, 1.f));
+	auto cube = scene::Node::create("cube");
 
-        auto sphere = scene::Node::create("sphere")
-            ->addComponent(Surface::create(
-                geometry::SphereGeometry::create(canvas->context()),
-                sphereMaterial,
-			    sceneManager->assets()->effect("effect/Phong.effect")
-                )
-            );
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto cubeEffect = sceneManager->assets()->effect("effect/Basic.effect");
+		auto cubeMaterial = material::BasicMaterial::create();
+		cubeMaterial->diffuseColor(vec4(0.f, 0.f, 1.f, 1.f));
+		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
 
-        root->addChild(sphere);
+		cube->addComponent(Surface::create(cubeGeometry, cubeMaterial, cubeEffect));
+		cube->addComponent(Transform::create());
 
-        Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
-        float cameraRotationSpeed = 0.f;
+		root->addChild(cube);
+	});
 
-        auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse)
-        {
-            mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
-            {
-                cameraRotationSpeed = (float) -dx * .01f;
-            });
-        });
+	sceneManager->assets()->loader()->load();
 
-        auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr mouse)
-        {
-            mouseMove = nullptr;
-        });
+	Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-        {
-            camera->component<Transform>()->matrix(math::rotate(cameraRotationSpeed, math::vec3(0, 1, 0)) * camera->component<Transform>()->matrix());
-            cameraRotationSpeed *= .99f;
+	float cameraRotationSpeed = 0.f;
 
-            sceneManager->nextFrame(t, dt);
-        });
+	auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse)
+	{
+		mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
+		{
+			cameraRotationSpeed = (float)dx * .01f;
+		});
+	});
 
-        canvas->run();
-    });
+	auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr mouse)
+	{
+		mouseMove = nullptr;
+	});
 
-    sceneManager->assets()->loader()->load();
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto rotation = camera->component<Transform>();
 
-    return 0;
+		rotation->matrix(rotate(cameraRotationSpeed, vec3(0.f, 1.f, 0.f)) * rotation->matrix());
+		cameraRotationSpeed *= .99f;
+
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
+
+	return 0;
 }

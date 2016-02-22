@@ -9,14 +9,14 @@ Step 1: Initialize the window
 We will use the SDL plugin to initialize a window. The following code is a simple C++ main function that initialize such window:
 
 ```cpp
-#include "minko/Minko.hpp" 
+#include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 
-using namespace minko; 
-using namespace minko::math; 
+using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
+const uint WINDOW_WIDTH = 800;
 const uint WINDOW_HEIGHT = 600;
 
 int main(int argc, char** argv) {
@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
 
  return 0;
 
-} 
+}
 ```
 
 
@@ -47,13 +47,13 @@ The following piece of code will create a `SceneManager` and use it's `SceneMana
 ```cpp
 auto sceneManager = component::SceneManager::create(canvas);
 
-sceneManager->assets()->queue("effect/Basic.effect"); auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader) {
+sceneManager->assets()->loader()->queue("effect/Basic.effect"); auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader) {
 
  // assets are loaded and ready
 
 });
 
-sceneManager->assets()->loader()->load(); 
+sceneManager->assets()->loader()->load();
 ```
 
 
@@ -93,7 +93,7 @@ auto camera = scene::Node::create("camera")
    (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f)
  );
 
-root->addChild(camera); 
+root->addChild(camera);
 ```
 
 
@@ -123,10 +123,10 @@ The following code will do those 4 steps:
 ```cpp
 auto cube = scene::Node::create("cube");
 auto cubeMaterial = material::BasicMaterial::create();
-auto cubeGeometry = geometry::CubeGeometry(assets->context());
-auto cubeEffect = assets->effect("effect/Basic.effect");
+auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
+auto cubeEffect = sceneManager->assets()->effect("effect/Basic.effect");
 
-cube->addComponent(Surface::create(cubeGeometry, cubeMaterial, cubeEffect); 
+cube->addComponent(Surface::create(cubeGeometry, cubeMaterial, cubeEffect);
 ```
 
 
@@ -135,7 +135,7 @@ cube->addComponent(Surface::create(cubeGeometry, cubeMaterial, cubeEffect);
 The `Basic.effect` expects the `diffuseColor` material value to be set to an RGBA `Vector4`. The following code will set the color of our cube to blue (R: 0, G: 0, B: 1, A: 1):
 
 ```cpp
-cubeMaterial->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)); 
+cubeMaterial->diffuseColor(vec4(0.f, 0.f, 1.f, 1.f));
 ```
 
 
@@ -146,18 +146,18 @@ You can learn more about the `BasicMaterial` in the [Working with the BasicMater
 By default, our `PerspectiveCamera` will be in (0, 0, 0) looking down the -Z axis. To make sure our cube is visible, we must translate it down the the -Z axis to make sure our camera is not inside the cube. To do this, we simply add a `Transform` component to our cube scene node:
 
 ```cpp
-cube->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f))); 
+cube->addComponent(Transform::create(translate(vec3(0.f, 0.f, -5.f))));
 ```
 
 
-Note that we initialize the `Transform` with a `Matrix4x4` holding a (0, 0, -5) translation. You can learn more about the `Transform` component in the [Moving objects](../tutorial/04-Moving_objects.md) tutorial
+Note that we initialize the `Transform` with a translation matrix holding a `vec3(0.f, 0.f, -5.f)`. You can learn more about the `Transform` component in the [Moving objects](../tutorial/04-Moving_objects.md) tutorial.
 
 ### Add the cube to the scene
 
 We can then add our cube directly to the scene root using the `Node::addChild()` method:
 
 ```cpp
-root->addChild(cube); 
+root->addChild(cube);
 ```
 
 
@@ -171,19 +171,20 @@ auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t,
 
  sceneManager->nextFrame(t, dt);
 
-}); 
+});
 ```
 
 
 Step 6: Make the cube rotate
 ----------------------------
 
-To rotate our cube, we just have to access its `Transform` component and apply the rotation we want. Here, we will use `Matrix4x4::prependRotation()` because we want our rotation to be done "before" the translation applied in step 4:
+To rotate our cube, we just have to access its `Transform` component and apply the rotation we want. Here, we will use `math::rotate()` because we want our rotation to be done "before" the translation applied in step 4:
 
 ```cpp
 
 
- cube->component<Transform>()->matrix()->prependRotationY(.01f);
+auto transform = cube->component<Transform>();
+transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
 
 ```
 
@@ -193,10 +194,11 @@ To make our cube rotate a bit more at each frame, we simply add this line to our
 ```cpp
 auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt) {
 
- cube->component<Transform>()->matrix()->prependRotationY(.01f);
- sceneManager->nextFrame(t, dt);
+	auto transform = cube->component<Transform>();
+	transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
+	sceneManager->nextFrame(t, dt);
 
-}); 
+});
 ```
 
 
@@ -205,7 +207,7 @@ Final code
 
 ```cpp
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
 including without limitation the rights to use, copy, modify, merge, publish, distribute,
@@ -227,49 +229,53 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800;
-const uint WINDOW_HEIGHT = 600;
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
 
-int
-main(int argc, char** argv)
+int	main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas);
+	auto canvas = Canvas::create("Minko Tutorial - Hello Cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
+		sceneManager->assets()->loader()->queue("effect/Basic.effect");
 
-    sceneManager->assets()->queue("effect/Basic.effect");
-    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-    {
-        auto root = scene::Node::create("root")
-            ->addComponent(sceneManager);
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-        auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(PerspectiveCamera::create(
-            (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
-            );
-        root->addChild(camera);
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
-        auto cube = scene::Node::create("cube")
-            ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
-            ->addComponent(Surface::create(
-            geometry::CubeGeometry::create(assets->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-            assets->effect("effect/Basic.effect")
-            ));
-        root->addChild(cube);
+	root->addChild(camera);
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-        {
-            cube->component<Transform>()->matrix()->prependRotationY(.01f);
-            sceneManager->nextFrame(t, dt);
-        });
+	auto cube = scene::Node::create("cube");
 
-        canvas->run();
-    });
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto cubeEffect = sceneManager->assets()->effect("effect/Basic.effect");
+		auto cubeMaterial = material::BasicMaterial::create();
+		cubeMaterial->diffuseColor(vec4(0.f, 0.f, 1.f, 1.f));
+		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
 
-    sceneManager->assets()->load();
+		cube->addComponent(Surface::create(cubeGeometry, cubeMaterial, cubeEffect));
+		cube->addComponent(Transform::create(translate(vec3(0.f, 0.f, -5.f))));
 
-    return 0;
+		root->addChild(cube);
+
+	});
+
+	sceneManager->assets()->loader()->load();
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto transform = cube->component<Transform>();
+		transform->matrix(transform->matrix() * rotate(.01f, vec3(0.f, 1.f, 0.f)));
+
+		sceneManager->nextFrame(t, dt);
+
+	});
+
+	canvas->run();
+
+	return 0;
 }
 ```
-

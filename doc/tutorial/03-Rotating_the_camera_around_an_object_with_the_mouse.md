@@ -12,7 +12,7 @@ auto mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, i
 
    std::cout << "dx: " << dx << ", dy: " << dy << std::endl;
 
-}); 
+});
 ```
 
 
@@ -34,7 +34,7 @@ auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr mo
 
    mouseMove = nullptr;
 
-}); 
+});
 ```
 
 
@@ -47,14 +47,13 @@ To be able to rotate our camera, we have to make sure it actually has a `Transfo
 
 ```cpp
 auto camera = scene::Node::create("camera")
-
- ->addComponent(Renderer::create(0x7f7f7fff))
- ->addComponent(Transform::create(
-   Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0., 0., -5.f))
- ))
- ->addComponent(PerspectiveCamera::create(
-   (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
- );
+	->addComponent(Renderer::create(0x7f7f7fff))
+	->addComponent(Transform::create(
+		lookAt(vec3(0.f, 0.f, -5.f), vec3(), vec3(0.f, 1.f, 0.f))
+	))
+	->addComponent(PerspectiveCamera::create(
+ 		(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
+	);
 
 ```
 
@@ -64,12 +63,14 @@ Now that our camera has a `Transform`, we can use this very component to alter i
 ```cpp
 auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse) {
 
- mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
- {
-   camera->component<Transform>()->matrix()->appendRotationY((float)dx * .1f);
- });
+	mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
+	{
+		auto rotation = camera->component<Transform>();
 
-}); 
+		rotation->matrix(rotate((float)-dx * .1f, vec3(0.f, 1.f, 0.f)) * rotation->matrix());
+	});
+
+});
 ```
 
 
@@ -81,30 +82,30 @@ Step 3: Adding inertia
 To get a smoother feeling for our camera rotation, we will add a bit of inertia. To do this, we must introduce a `cameraRotationSpeed` floatting point value:
 
 ```cpp
-float camerationRotationSpeed = 0.f;
+float cameraRotationSpeed = 0.f;
 
-auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse) {
-
- mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
- {
-   cameraRotationSpeed = (float)dx * .01f;
- });
-
-}); 
+auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse)
+{
+	mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
+	{
+		cameraRotationSpeed = (float)-dx * .01f;
+	});
+});
 ```
 
 
 We will then use this value at each frame to rotate our camera:
 
 ```cpp
-auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt) {
+auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+{
+	auto rotation = camera->component<Transform>();
 
- camera->component<Transform>()->matrix()->appendRotationY(camerationRotationSpeed);
- camerationRotationSpeed *= .99f;
+	rotation->matrix(rotate(cameraRotationSpeed, vec3(0.f, 1.f, 0.f)) * rotation->matrix());
+	cameraRotationSpeed *= .99f;
 
- sceneManager->nextFrame(t, dt);
-
-}); 
+	sceneManager->nextFrame(t, dt);
+});
 ```
 
 
@@ -114,86 +115,97 @@ Final code
 ----------
 
 ```cpp
-#include "minko/Minko.hpp" 
+/*
+Copyright (c) 2016 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 
-using namespace minko; 
-using namespace minko::math; 
+using namespace minko;
+using namespace minko::math;
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv) {
+int	main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Minko Tutorial - Rotating the camera around an object with the mouse", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
+	sceneManager->assets()->loader()->queue("effect/Basic.effect");
 
-   auto canvas = Canvas::create("Tutorial - Rotating the camera around an object with the mouse", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = component::SceneManager::create(canvas);
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-   // We replace the basic effect by the Phong effect to have light effects
-   sceneManager->assets()->queue("effect/Phong.effect");
-   auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-   {
-       auto root = scene::Node::create("root")
-           ->addComponent(sceneManager);
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(lookAt(vec3(0.f, 0.f, -5.f), vec3(), vec3(0.f, 1.f, 0.f))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
-       auto camera = scene::Node::create("camera")
-           ->addComponent(Renderer::create(0x7f7f7fff))
-           ->addComponent(Transform::create(
-           Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0., 0., -5.f))
-           ))
-           ->addComponent(PerspectiveCamera::create(
-           (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
-           );
-       root->addChild(camera);
+	root->addChild(camera);
 
-       // Add a simple directional light to really see the camera rotation
-       auto directionalLight = scene::Node::create("directionalLight")
-           ->addComponent(DirectionalLight::create())
-           ->addComponent(Transform::create(Matrix4x4::create()->lookAt(
-               Vector3::create(-0.33f, -0.33f, 0.33f), Vector3::create())));
-       root->addChild(directionalLight);
+	auto cube = scene::Node::create("cube");
 
-       // Replace the cube by a sphere to inscrease light visibility
-       auto sphere = scene::Node::create("sphere")
-           ->addComponent(Surface::create(
-           geometry::SphereGeometry::create(assets->context()),
-           material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-           assets->effect("effect/Phong.effect")
-           ));
-       root->addChild(sphere);
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto cubeEffect = sceneManager->assets()->effect("effect/Basic.effect");
+		auto cubeMaterial = material::BasicMaterial::create();
+		cubeMaterial->diffuseColor(vec4(0.f, 0.f, 1.f, 1.f));
+		auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
 
-       Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
-       float cameraRotationSpeed = 0.f;
+		cube->addComponent(Surface::create(cubeGeometry, cubeMaterial, cubeEffect));
+		cube->addComponent(Transform::create());
 
-       auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse)
-       {
-           mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
-           {
-               cameraRotationSpeed = (float) -dx * .01f;
-           });
-       });
+		root->addChild(cube);
+	});
 
-       auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr mouse)
-       {
-           mouseMove = nullptr;
-       });
+	sceneManager->assets()->loader()->load();
 
-       auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-       {
-           camera->component<Transform>()->matrix()->appendRotationY(cameraRotationSpeed);
-           cameraRotationSpeed *= .99f;
+	Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
 
-           sceneManager->nextFrame(t, dt);
-       });
+	float cameraRotationSpeed = 0.f;
 
-       canvas->run();
-   });
+	auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr mouse)
+	{
+		mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr mouse, int dx, int dy)
+		{
+			cameraRotationSpeed = (float)-dx * .01f;
+		});
+	});
 
-   sceneManager->assets()->load();
+	auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr mouse)
+	{
+		mouseMove = nullptr;
+	});
 
-   return 0;
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		auto rotation = camera->component<Transform>();
 
-} 
+		rotation->matrix(rotate(cameraRotationSpeed, vec3(0.f, 1.f, 0.f)) * rotation->matrix());
+		cameraRotationSpeed *= .99f;
+
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
+
+	return 0;
+}
 ```
-
-

@@ -8,15 +8,17 @@ Enable ASSIMP
 Assimp is the asset import library used by Minko to load asset files, we have to enable it into the `premake5.lua` with these lines:
 
 ```lua
-minko.plugin.enable("assimp") -- this plugin can be useful for assets that need to load jpeg files minko.plugin.enable("jpeg") 
+--the following plugin can be useful for assets that need to load jpeg files
+minko.plugin.enable("assimp")
+minko.plugin.enable("jpeg")
 ```
 
 
 The next step is to include the correct header into your C++ application source code.
 
 ```cpp
-#include "minko/MinkoASSIMP.hpp" 
-#include "minko/MinkoJPEG.hpp" 
+#include "minko/MinkoASSIMP.hpp"
+#include "minko/MinkoJPEG.hpp"
 ```
 
 
@@ -28,11 +30,10 @@ Every supported file format is available through a plugin. Each parser must be r
 In order to enable a data parser, you have to tell Minko it exists using the `AssetLibrary::registerParse` method.
 
 ```cpp
-sceneManager->assets()
-
-   ->registerParser<[file::ASSIMPParser>](file::ASSIMPParser>)("obj")
-   ->registerParser<[file::ASSIMPParser>](file::ASSIMPParser>)("dae")
-       ->registerParser<[file::JPEGParser>](file::JPEGParser>)("jpg")
+sceneManager->assets()->loader()->options()
+		->registerParser<file::OBJParser>("obj")
+		->registerParser<file::ColladaParser>("dae")
+		->registerParser<file::JPEGParser>("jpg");
 
 ```
 
@@ -47,8 +48,8 @@ Access loaded files
 Once the loaded complete signal of the assetLibrary is triggered you can access the different model with the `AssetLibrary::symbol(name)` method
 
 ```cpp
-auto objModel = assets->symbol("model/model.obj");
-auto daeModel = assets->symbol("model/model.dae");
+auto objModel = sceneManager->assets()->symbol("model/model.obj");
+auto daeModel = sceneManager->assets()->symbol("model/model.dae");
 ```
 
 
@@ -60,14 +61,14 @@ Use default Effect
 Most of the time, your model does not know the effect that its surfaces are supposed to be linked with. In order to indicate an effect, you must use the defaultOptions of the `AssetLibrary`.
 
 ```cpp
-sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect(DEFAULT_EFFECT)); 
+sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect(DEFAULT_EFFECT));
 ```
 
 
 You can also choose a default material
 
 ```cpp
-sceneManager->assets()->defaultOptions()->material()->set("diffuseColor", Vector4::create(0.8f, 0.1f, 0.1f, 1.0f)); 
+sceneManager->assets()->loader()->options()->material()->set({{ "diffuseColor", vec4(.8f, .1f, .1f, 1.f) }});
 ```
 
 
@@ -75,84 +76,110 @@ Final Code
 ----------
 
 ```cpp
-#include "minko/Minko.hpp" 
-#include "minko/MinkoSDL.hpp" 
-#include "minko/MinkoASSIMP.hpp" 
+/*
+Copyright (c) 2016 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/Minko.hpp"
+#include "minko/MinkoSDL.hpp"
+#include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoJPEG.hpp"
 
-using namespace minko; 
-using namespace minko::component; 
+using namespace minko;
 using namespace minko::math;
+using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
-const uint WINDOW_HEIGHT = 600;
+const math::uint WINDOW_WIDTH = 800;
+const math::uint WINDOW_HEIGHT = 600;
 
-const std::string OBJ_MODEL_FILENAME = "model/pirate.obj"; 
+const std::string OBJ_MODEL_FILENAME = "model/pirate.obj";
 const std::string DAE_MODEL_FILENAME = "model/pirate.dae";
 
-int main(int argc, char** argv) {
+int	main(int argc, char** argv)
+{
+	auto canvas = Canvas::create("Minko Tutorial - Loading 3D files", WINDOW_WIDTH, WINDOW_HEIGHT);
+	auto sceneManager = component::SceneManager::create(canvas);
 
-   auto canvas = Canvas::create("Minko Tutorial - Load 3D files", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = SceneManager::create(canvas);
+	canvas->context()->errorsEnabled(true);
 
-   // setup assets
-   sceneManager->assets()
-       ->registerParser<[file::ASSIMPParser>](file::ASSIMPParser>)("obj")
-       ->registerParser<[file::ASSIMPParser>](file::ASSIMPParser>)("dae")
-       ->registerParser<[file::JPEGParser>](file::JPEGParser>)("jpg");
+	sceneManager->assets()->loader()->options()
+		->registerParser<file::OBJParser>("obj")
+		->registerParser<file::ColladaParser>("dae")
+		->registerParser<file::JPEGParser>("jpg");
 
-   sceneManager->assets()->load("effect/Basic.effect");
-   
-   // add the model to the asset list
-   sceneManager->assets()->queue(OBJ_MODEL_FILENAME);
-   sceneManager->assets()->queue(DAE_MODEL_FILENAME);
+	sceneManager->assets()->loader()
+		->queue("effect/Basic.effect")
+		->queue("effect/Phong.effect")
+		->queue(DAE_MODEL_FILENAME)
+//		->queue(OBJ_MODEL_FILENAME)
+		;
 
-   sceneManager->assets()->defaultOptions()->generateMipmaps(true);
-   sceneManager->assets()->defaultOptions()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
+	sceneManager->assets()->loader()->options()
+		->generateMipmaps(true);
 
-   auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
-   {
-       auto root = scene::Node::create("root")->addComponent(sceneManager);
+	auto root = scene::Node::create("root")
+		->addComponent(sceneManager);
 
-       auto camera = scene::Node::create("camera")
-           ->addComponent(Renderer::create(0x7f7f7fff))
-           ->addComponent(Transform::create(
-           Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, 0.f, 5.f))
-           ))
-           ->addComponent(PerspectiveCamera::create(
-           (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, (float) PI * 0.25f, .1f, 1000.f)
-           );
-       root->addChild(camera);
+	auto camera = scene::Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(inverse(lookAt(vec3(0.f, 0.f, 5.f), vec3(), vec3(0.f, 1.f, 0.f)))))
+		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)M_PI * 0.25f, .1f, 1000.f));
 
-       auto objModel = assets->symbol(OBJ_MODEL_FILENAME);
-       auto daeModel = assets->symbol(DAE_MODEL_FILENAME);
+	root->addChild(camera);
+		sceneManager->assets()->loader()->options()
+			->effect(sceneManager->assets()->effect("effect/Basic.effect"));
 
-       // change scale for the obj file
-       objModel->component<Transform>()->matrix()->appendScale(0.01f);
+	auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		// DAE model
+		auto daeModel = sceneManager->assets()->symbol(DAE_MODEL_FILENAME);
 
-       // change position
-       objModel->component<Transform>()->matrix()->translation(-1.f, -1.f, 0.f);
-       daeModel->component<Transform>()->matrix()->translation(1.f, -1.f, 0.f);
+		auto daeMove = daeModel->component<Transform>();
+		daeMove->matrix(translate(vec3(1.f, -1.f, 0.f)) * daeMove->matrix());
 
-       // add to the scene
-       root->addChild(objModel);
-       root->addChild(daeModel);
+		// add the scene
+		root->addChild(daeModel);
 
-       auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-       {
-           sceneManager->nextFrame(t, dt);
-       });
+	/*	// OBJ Model
+		auto objModel = sceneManager->assets()->symbol(OBJ_MODEL_FILENAME);
 
-       canvas->run();
-   });
+		// change scale for the object file
+		auto objScale = objModel->component<Transform>();
+		objScale->matrix(scale(vec3(.01f)) * objScale->matrix());
 
-   sceneManager->assets()->load();
+		// change position for the object file
+		auto objMove = objModel->component<Transform>();
+		objMove->matrix(translate(vec3(-1.f, -1.f, 0.f)) * objMove->matrix());
 
-   return 0;
+		// add the scene
+		root->addChild(objModel);
+	*/
+	});
 
-} 
+	sceneManager->assets()->loader()->load();
+
+	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+	{
+		sceneManager->nextFrame(t, dt);
+	});
+
+	canvas->run();
+
+	return 0;
+}
 ```
-
-
-<Category:Tutorials>
-

@@ -1,10 +1,17 @@
 {
   "name" : "MyCustomEffect",
-  "attributeBindings" : {
-    "aPosition" : "geometry[${geometryId}].position"
-  },
-  "passes" : [{
-    "vertexShader" : "#pragma include('MyCustomEffect.vertex.glsl')",
-    "fragmentShader" : "#pragma include('MyCustomEffect.fragment.glsl')"
-  }]
+    "attributes" : {
+        "aPosition" : "geometry[${geometryUuid}].position"
+		},
+    "uniforms" : {
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		    "uColor"				: "material[${materialUuid}].myColor"
+		},
+    "techniques" : [{
+	      "passes" : [{
+          "vertexShader" : "#pragma include \"MyCustomEffect.vertex.glsl\"",
+          "fragmentShader" : "#pragma include \"MyCustomEffect.fragment.glsl\""
+	        }]
+    }]
 }
