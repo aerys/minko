@@ -52,16 +52,18 @@ Culling::targetAdded(NodePtr target)
 
     if (_octTree == nullptr)
         _octTree = math::OctTree::create(worldSize(), maxDepth(), math::vec3(0.f));
-
+    
     if (target->root()->hasComponent<SceneManager>())
         targetAddedToSceneHandler(nullptr, target, nullptr);
     else
+    {
         _addedToSceneSlot = target->added().connect(
             [this](NodePtr node, NodePtr target, NodePtr ancestor)
             {
                 targetAddedToSceneHandler(node, target, ancestor);
             }
         );
+    }
 
     _viewMatrixChangedSlot = target->data().propertyChanged(_bindProperty).connect(
         [this](data::Store& d, data::Provider::Ptr p, const String& n)
@@ -74,9 +76,14 @@ Culling::targetAdded(NodePtr target)
 void
 Culling::targetRemoved(NodePtr target)
 {
-    _addedSlot          = nullptr;
-    _layoutChangedSlot  = nullptr;
-    _renderingBeginSlot = nullptr;
+    _addedSlot              = nullptr;
+    _removedSlot            = nullptr;
+    _layoutChangedSlot      = nullptr;
+    _renderingBeginSlot     = nullptr;
+    _octTree                = nullptr;
+    _addedToSceneSlot       = nullptr;
+    _viewMatrixChangedSlot  = nullptr;
+    _renderingBeginSlot     = nullptr;
 }
 
 void
