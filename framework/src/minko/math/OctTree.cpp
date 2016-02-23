@@ -63,7 +63,7 @@ math::OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 	{
         auto matrix =
             math::translate(_center) *
-            math::scale(math::vec3(edgeLength() * 2.f - 0.1f));
+            math::scale(math::vec3(edgeLength()));
 
         auto material = material::BasicMaterial::create();
 
