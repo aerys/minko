@@ -137,7 +137,7 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
     const auto& positionAttribute = positionVertexBuffer->attribute("position");
     const auto& positionData = positionVertexBuffer->data();
 
-    auto vertexBufferToWeldedVertices = std::map<render::VertexBuffer::Ptr, std::vector<float>>();
+    auto vertexBufferToWeldedVertices = std::vector<std::pair<render::VertexBuffer::Ptr, std::vector<float>>>();
 
     auto currentNewIndex = 0u;
     auto indexMap = std::vector<int>(geometry->numVertices(), -1);
@@ -166,7 +166,24 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
 
                 for (auto vertexBuffer : geometry->vertexBuffers())
                 {
-                    auto& weldedVertices = vertexBufferToWeldedVertices[vertexBuffer];
+                    std::vector<float>* weldedVerticesPtr = nullptr;
+                    auto iterator = std::find_if(vertexBufferToWeldedVertices.begin(), vertexBufferToWeldedVertices.end(),
+                        [&](const std::pair<render::VertexBuffer::Ptr, std::vector<float>>& pair)
+                    {
+                        return pair.first == vertexBuffer;
+                    });
+
+                    if (iterator == vertexBufferToWeldedVertices.end())
+                    {
+                        vertexBufferToWeldedVertices.emplace_back(vertexBuffer, std::vector<float>());
+                        weldedVerticesPtr = &vertexBufferToWeldedVertices.back().second;
+                    }
+                    else
+                    {
+                        weldedVerticesPtr = &iterator->second;
+                    }
+
+                    auto& weldedVertices = *weldedVerticesPtr;
 
                     weldedVertices.resize(
                         weldedVertices.size() + vertexBuffer->vertexSize(),
@@ -245,7 +262,24 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
 
         for (auto vertexBuffer : geometry->vertexBuffers())
         {
-            auto& weldedVertices = vertexBufferToWeldedVertices[vertexBuffer];
+            std::vector<float>* weldedVerticesPtr = nullptr;
+            auto iterator = std::find_if(vertexBufferToWeldedVertices.begin(), vertexBufferToWeldedVertices.end(),
+                [&](const std::pair<render::VertexBuffer::Ptr, std::vector<float>>& pair)
+            {
+                return pair.first == vertexBuffer;
+            });
+
+            if (iterator == vertexBufferToWeldedVertices.end())
+            {
+                vertexBufferToWeldedVertices.emplace_back(vertexBuffer, std::vector<float>());
+                weldedVerticesPtr = &vertexBufferToWeldedVertices.back().second;
+            }
+            else
+            {
+                weldedVerticesPtr = &iterator->second;
+            }
+
+            auto& weldedVertices = *weldedVerticesPtr;
 
             weldedVertices.resize(
                 weldedVertices.size() + vertexBuffer->vertexSize(),

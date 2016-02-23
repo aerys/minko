@@ -62,27 +62,24 @@ namespace minko
             inline
             static
             Ptr
-            create(std::shared_ptr<data::Provider> data)
+            create()
             {
-                auto instance = Ptr(new StreamedTextureParser(data));
-
-                return instance;
+                return Ptr(new StreamedTextureParser());
             }
 
         protected:
+            bool
+            useDescriptor(const std::string&                filename,
+                          std::shared_ptr<Options>          options,
+                          const std::vector<unsigned char>& data,
+                          std::shared_ptr<AssetLibrary>     assetLibrary);
+
             void
             parsed(const std::string&                filename,
                    const std::string&                resolvedFilename,
                    std::shared_ptr<Options>          options,
                    const std::vector<unsigned char>& data,
                    std::shared_ptr<AssetLibrary>     assetLibrary);
-
-            void
-            nextLod(int     previousLod,
-                    int     requiredLod,
-                    int&    nextLod,
-                    int&    nextLodOffset,
-                    int&    nextLodSize);
 
             void
             headerParsed(const std::vector<unsigned char>&   data,
@@ -101,8 +98,17 @@ namespace minko
             void
             completed();
 
+            void
+            lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const override;
+
+            int
+            lodLowerBound(int lod) const override;
+
+            int
+            maxLod() const override;
+
         private:
-            StreamedTextureParser(std::shared_ptr<data::Provider> data);
+            StreamedTextureParser();
 
             std::shared_ptr<render::AbstractTexture>
             createTexture(std::shared_ptr<AssetLibrary> assetLibrary,
@@ -112,9 +118,6 @@ namespace minko
             render::TextureFormat
             matchingTextureFormat(std::shared_ptr<Options>                  options,
                                   const std::list<render::TextureFormat>&   availableFormats);
-
-            int
-            maxLod() const;
 
             int
             lodToMipLevel(int lod) const;

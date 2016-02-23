@@ -52,6 +52,7 @@ namespace minko
             typedef std::shared_ptr<component::AbstractScript>              AbsScriptPtr;
 			typedef std::shared_ptr<material::Material>		                MaterialPtr;
             typedef std::shared_ptr<audio::Sound>                           SoundPtr;
+            typedef std::shared_ptr<file::AbstractAssetDescriptor>          AbstractAssetDescriptorPtr;
 
         private:
             AbsContextPtr                                                   _context;
@@ -68,6 +69,7 @@ namespace minko
             std::unordered_map<std::string, AbsScriptPtr>                   _scripts;
             std::unordered_map<std::string, scene::Layout>				    _layouts;
             std::unordered_map<std::string, SoundPtr>                       _sounds;
+            std::unordered_map<std::string, AbstractAssetDescriptorPtr>     _assetDescriptors;
 
             Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr               _parserError;
             Signal<Ptr>::Ptr                                                _ready;
@@ -219,6 +221,21 @@ namespace minko
 
             AssetLibrary::Ptr
             sound(const std::string& name, audio::Sound::Ptr sound);
+
+            template <typename T>
+            typename std::enable_if<std::is_base_of<AbstractAssetDescriptor, T>::value, std::shared_ptr<T>>::type
+            assetDescriptor(const std::string& name)
+            {
+                auto assetDescriptorIt = _assetDescriptors.find(name);
+
+                if (assetDescriptorIt == _assetDescriptors.end())
+                    return nullptr;
+
+                return std::static_pointer_cast<T>(assetDescriptorIt->second);
+            }
+
+            Ptr
+            assetDescriptor(const std::string& name, AbstractAssetDescriptorPtr assetDescriptor);
 
         private:
             AssetLibrary(AbsContextPtr context);

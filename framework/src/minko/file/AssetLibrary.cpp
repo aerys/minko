@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/Material.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/file/AbstractAssetDescriptor.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/render/Texture.hpp"
@@ -79,6 +80,9 @@ AssetLibrary::create(AssetLibrary::Ptr original)
 
     for (auto it = original->_layouts.begin(); it != original->_layouts.end(); ++it)
         al->_layouts[it->first] = it->second;
+
+    for (const auto& assetDescriptor : original->_assetDescriptors)
+        al->_assetDescriptors.emplace(assetDescriptor.first, assetDescriptor.second);
 
     return al;
 }
@@ -393,6 +397,14 @@ AssetLibrary::Ptr
 AssetLibrary::sound(const std::string& name, audio::Sound::Ptr sound)
 {
     _sounds[name] = sound;
+
+    return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
+}
+
+AssetLibrary::Ptr
+AssetLibrary::assetDescriptor(const std::string& name, AbstractAssetDescriptor::Ptr assetDescriptor)
+{
+    _assetDescriptors[name] = assetDescriptor;
 
     return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }

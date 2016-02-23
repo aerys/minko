@@ -37,8 +37,8 @@ using namespace minko::deserialize;
 using namespace minko::file;
 using namespace minko::render;
 
-StreamedTextureParser::StreamedTextureParser(Provider::Ptr data) :
-    AbstractStreamedAssetParser(data),
+StreamedTextureParser::StreamedTextureParser() :
+    AbstractStreamedAssetParser(),
     _texture(),
     _textureType(TextureType::Texture2D),
     _textureFormat(TextureFormat::RGBA),
@@ -49,6 +49,15 @@ StreamedTextureParser::StreamedTextureParser(Provider::Ptr data) :
     _mipLevelsInfo()
 {
     assetExtension(0x00000055);
+}
+
+bool
+StreamedTextureParser::useDescriptor(const std::string&                 filename,
+                                     Options::Ptr                       options,
+                                     const std::vector<unsigned char>&  data,
+                                     AssetLibrary::Ptr                  assetLibrary)
+{
+    return false;
 }
 
 void
@@ -120,82 +129,6 @@ StreamedTextureParser::createTexture(AssetLibrary::Ptr     assetLibrary,
     }
 
     return _texture;
-}
-
-void
-StreamedTextureParser::nextLod(int     previousLod,
-                               int     requiredLod,
-                               int&    nextLod,
-                               int&    nextLodOffset,
-                               int&    nextLodSize)
-{
-    auto lodRangeMinSize = 1;
-    auto lodRangeMaxSize = 0;
-    auto lodRangeRequestMinSize = 0;
-    auto lodRangeRequestMaxSize = 0;
-
-    if (streamingOptions()->streamedTextureLodRangeFetchingBoundFunction())
-    {
-        streamingOptions()->streamedTextureLodRangeFetchingBoundFunction()(
-            previousLod,
-            requiredLod,
-            lodRangeMinSize,
-            lodRangeMaxSize,
-            lodRangeRequestMinSize,
-            lodRangeRequestMaxSize
-        );
-    }
-
-    auto lowerLod = previousLod + 1;
-    auto upperLod = lowerLod;
-
-    auto requirementIsFulfilled = false;
-
-    do
-    {
-        if (upperLod >= maxLod())
-            break;
-
-        const auto lodRangeSize = upperLod - lowerLod;
-
-        if (lodRangeMinSize > 0 &&
-            lodRangeSize < lodRangeMinSize)
-        {
-            ++upperLod;
-
-            continue;
-        }
-
-        if (lodRangeMaxSize > 0 &&
-            lodRangeSize >= lodRangeMaxSize)
-            break;
-
-        const auto lodRangeRequestSize = this->lodRangeRequestSize(lowerLod, upperLod);
-
-        if (lodRangeRequestMaxSize > 0 &&
-            lodRangeRequestSize >= lodRangeRequestMaxSize)
-            break;
-
-        if (lodRangeRequestMinSize == 0 || lodRangeRequestSize >= lodRangeRequestMinSize)
-        {
-            requirementIsFulfilled = true;
-        }
-        else
-        {
-            ++upperLod;
-        }
-    } while (!requirementIsFulfilled);
-
-    lowerLod = std::min(maxLod(), lowerLod);
-    upperLod = std::min(maxLod(), upperLod);
-
-    const auto& nextLodLowerBoundInfo = _mipLevelsInfo.at(lodToMipLevel(lowerLod));
-    const auto& nextLodUpperBoundInfo = _mipLevelsInfo.at(lodToMipLevel(upperLod));
-
-    nextLod = upperLod;
-
-    nextLodOffset = std::get<0>(nextLodUpperBoundInfo);
-    nextLodSize = std::get<0>(nextLodLowerBoundInfo) + std::get<1>(nextLodLowerBoundInfo) - nextLodOffset;
 }
 
 void
@@ -344,12 +277,6 @@ StreamedTextureParser::completed()
 }
 
 int
-StreamedTextureParser::maxLod() const
-{
-    return _textureNumMipmaps - 1;
-}
-
-int
 StreamedTextureParser::lodToMipLevel(int lod) const
 {
     return (_textureNumMipmaps - 1) - lod;
@@ -400,14 +327,24 @@ StreamedTextureParser::extractLodData(TextureFormat                        forma
     return true;
 }
 
-int
-StreamedTextureParser::lodRangeRequestSize(int lowerLod, int upperLod) const
+void
+StreamedTextureParser::lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const
 {
     const auto& nextLodLowerBoundInfo = _mipLevelsInfo.at(lodToMipLevel(lowerLod));
     const auto& nextLodUpperBoundInfo = _mipLevelsInfo.at(lodToMipLevel(upperLod));
 
-    const auto nextLodOffset = std::get<0>(nextLodUpperBoundInfo);
-    const auto nextLodSize = std::get<0>(nextLodLowerBoundInfo) + std::get<1>(nextLodLowerBoundInfo) - nextLodOffset;
+    offset = std::get<0>(nextLodUpperBoundInfo);
+    size = std::get<0>(nextLodLowerBoundInfo) + std::get<1>(nextLodLowerBoundInfo) - offset;
+}
 
-    return nextLodSize;
+int
+StreamedTextureParser::lodLowerBound(int lod) const
+{
+    return lod;
+}
+
+int
+StreamedTextureParser::maxLod() const
+{
+    return _textureNumMipmaps - 1;
 }
