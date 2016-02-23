@@ -272,7 +272,8 @@ Minko.redispatchBlurEvent = function(event) //EMSCRIPTEN
 	for(var k in copiedProperties)
 		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
 
-	window.dispatchEvent(eventCopy);
+	//workaround while waiting for emscripten fix https://github.com/kripken/emscripten/pull/4123
+	//Minko.window.dispatchEvent(eventCopy);
 }
 
 Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
@@ -506,7 +507,7 @@ Minko.bindRedispatchEvents = function() //EMSCRIPTEN
 	var touchEventsSupported = 'ontouchstart' in window;
 	var pointerEventsSupported = 'PointerEvent' in window;
 
-	if (!touchEventsSupported && !pointerEventsSupported)
+	if (!pointerEventsSupported)
 	{
 		var a = ['mousemove', 'mouseup', 'mousedown', 'click'];
 
