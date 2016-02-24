@@ -273,7 +273,7 @@ Minko.redispatchBlurEvent = function(event) //EMSCRIPTEN
 		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
 
 	//workaround while waiting for emscripten fix https://github.com/kripken/emscripten/pull/4123
-	//Minko.window.dispatchEvent(eventCopy);
+	Minko.window.dispatchEvent(eventCopy);
 }
 
 Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
