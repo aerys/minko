@@ -91,6 +91,8 @@ ChromiumDOM::init(CefRefPtr<CefV8Context> context, CefRefPtr<CefFrame> frame)
 
 	_global = _v8Context->GetGlobal();
 	_minkoObject = CefV8Value::CreateObject(nullptr);
+    _minkoObject->SetValue("ready", CefV8Value::CreateBool(false), V8_PROPERTY_ATTRIBUTE_NONE);
+
 	_document = _global->GetValue("document");
 	window()->SetValue("Minko", _minkoObject, V8_PROPERTY_ATTRIBUTE_NONE);
 
@@ -339,6 +341,16 @@ ChromiumDOM::update()
 		_onload->execute(shared_from_this(), fullUrl());
 		_engine->onload()->execute(shared_from_this(), fullUrl());
 		_executeOnLoad = false;
+
+        std::string code = "";
+
+        code += "Minko.ready = true;";
+        code += "var ev = document.createEvent('Event');\n";
+        code += "ev.initEvent('minkoReady', true, true);\n";
+        code += "window.dispatchEvent(ev);";
+
+        eval(code);
+
 		return true;
 	}
 	
