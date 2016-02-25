@@ -68,6 +68,9 @@ TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
     render::EffectVariables variables = { { "geometryUuid", geom->uuid() } };
 
+    auto uDiffuseColorDefaultValue = pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor");
+    ASSERT_EQ(uDiffuseColorDefaultValue, math::vec4(0.1f, 0.2f, 0.3f, 0.4f));
+
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
@@ -105,6 +108,9 @@ TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
     data::Store targetData;
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
     render::EffectVariables variables = { { "geometryUuid", geom->uuid() } };
+
+    auto uDiffuseColorDefaultValue = pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor");
+    ASSERT_EQ(uDiffuseColorDefaultValue, math::vec4(0.1f, 0.2f, 0.3f, 0.4f));
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     auto p = data::Provider::create();
