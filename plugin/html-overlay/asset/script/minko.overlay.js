@@ -7,6 +7,7 @@ window.Minko = Minko;
 
 Minko.bridge = null;
 Minko.loaded = 0;
+Minko.ready = false;
 
 Minko.bindJsErrors = function()
 {
@@ -93,8 +94,11 @@ Minko.loadedHandler = function(event)
 
 	Minko.bindJsErrors();
 
+	Minko.ready = true;
+
 	var ev = document.createEvent("Event");
 	ev.initEvent("minkoReady", true, true);
+
 	Minko.window.dispatchEvent(ev);
 }
 
@@ -272,7 +276,6 @@ Minko.redispatchBlurEvent = function(event) //EMSCRIPTEN
 	for(var k in copiedProperties)
 		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
 
-	//workaround while waiting for emscripten fix https://github.com/kripken/emscripten/pull/4123
 	window.dispatchEvent(eventCopy);
 }
 
