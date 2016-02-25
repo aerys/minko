@@ -755,47 +755,51 @@ Canvas::step()
 
         case SDL_FINGERMOTION:
         {
-            auto id = (int)(event.tfinger.fingerId);
-            auto x = event.tfinger.x * _width;
-            auto y = event.tfinger.y * _height;
-            auto dx = event.tfinger.dx * _width;
-            auto dy = event.tfinger.dy * _height;
+            auto id = static_cast<int>(event.tfinger.fingerId);
+            
+            auto normalizedX = event.tfinger.x;
+            auto normalizedY = event.tfinger.y;
+            auto normalizedDX = event.tfinger.dx;
+            auto normalizedDY = event.tfinger.dy;
 
-            if (std::abs(_touch->lastTouchDownX() - x) > input::SDLTouch::TAP_MOVE_THRESHOLD || std::abs(_touch->lastTouchDownY() - y) > input::SDLTouch::TAP_MOVE_THRESHOLD)
+            auto x = normalizedX * _width;
+            auto y = normalizedY * _height;
+            auto dx = normalizedDX * _width;
+            auto dy = normalizedDY * _height;
+
+            if (std::abs(_touch->lastTouchDownX() - x) > input::SDLTouch::TAP_MOVE_THRESHOLD ||
+                std::abs(_touch->lastTouchDownY() - y) > input::SDLTouch::TAP_MOVE_THRESHOLD)
+            {
                 _touch->lastTouchDownTime(-1.0f);
+            }
 
             _touch->updateTouch(id, x, y, dx, dy);
 
-            _mouse->x((int)_touch->averageX());
-            _mouse->y((int)_touch->averageY());
+            _mouse->x(static_cast<int>(_touch->averageX()));
+            _mouse->y(static_cast<int>(_touch->averageY()));
 
-            _mouse->dX((int)_touch->averageDX());
-            _mouse->dY((int)_touch->averageDY());
+            _mouse->dX(static_cast<int>(_touch->averageDX()));
+            _mouse->dY(static_cast<int>(_touch->averageDY()));
 
-            _touch->touchMove()->execute(
-                _touch,
-                id,
-                dx,
-                dy
-            );
+            _touch->touchMove()->execute(_touch, id, dx, dy);
 
             // Gestures
-				if (event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
+			if (event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
             {
                 _touch->swipeRight()->execute(_touch);
             }
 
-                if (-event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
+            if (-event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
             {
                 _touch->swipeLeft()->execute(_touch);
             }
 
-                if (event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
+            if (event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
             {
                 _touch->swipeDown()->execute(_touch);
             }
 
-                if (-event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
+            if (-event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
             {
                 _touch->swipeUp()->execute(_touch);
             }
@@ -811,25 +815,31 @@ Canvas::step()
                     {
                         hasTouch2 = true;
                         touch2 = _touch->touch(_touch->identifiers()[i]);
-                }
+                    }
                 }
 
                 if (hasTouch2)
                 {
-                    auto dX1 = (x - dx) - touch2.x;
-                    auto dY1 = (y - dy) - touch2.y;
+                    auto touch2NormalizedX = touch2.x / static_cast<float>(_width);
+                    auto touch2NormalizedY = touch2.y / static_cast<float>(_height);
 
-                    auto dX2 = x - touch2.x;
-                    auto dY2 = y - touch2.y;
+                    auto dX1 = (normalizedX - normalizedDX) - touch2NormalizedX;
+                    auto dY1 = (normalizedY - normalizedDY) - touch2NormalizedY;
+
+                    auto dX2 = normalizedX - touch2NormalizedX;
+                    auto dY2 = normalizedY - touch2NormalizedY;
 
                     auto dist1 = std::sqrt(std::pow(dX1, 2) + std::pow(dY1, 2));
                     auto dist2 = std::sqrt(std::pow(dX2, 2) + std::pow(dY2, 2));
 
-                    auto deltaDist = dist2 - dist1;
+                    auto normalizedDeltaDistance = dist2 - dist1;
 
-                    if (deltaDist != 0.f)
+                    if (normalizedDeltaDistance != 0.f)
                     {
-                        _touch->pinchZoom()->execute(_touch, deltaDist / (float)(width()));
+                        // normalizedDeltaDistance is a percentage of the screen
+                        auto deltaDistance = normalizedDeltaDistance * 100.f;
+
+                        _touch->pinchZoom()->execute(_touch, deltaDistance);
                     }
                 }
             }

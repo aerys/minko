@@ -104,6 +104,12 @@ namespace minko
                 return std::static_pointer_cast<Culling>(shared_from_this());
             }
 
+            std::shared_ptr<minko::math::OctTree>
+            octTree() const
+			{
+                return _octTree;
+			}
+
         protected:
 			void
             targetAdded(NodePtr target);

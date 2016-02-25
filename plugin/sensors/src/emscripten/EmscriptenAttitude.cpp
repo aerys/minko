@@ -105,7 +105,7 @@ EmscriptenAttitude::rotationMatrix()
     auto worldToDevice = rotationMatrixValue * _worldToInertialReferenceFrame;
     auto worldRotationMatrix = _deviceToDisplay * worldToDevice;
 
-    return worldRotationMatrix;
+    return math::transpose(worldRotationMatrix);
 }
 
 float
