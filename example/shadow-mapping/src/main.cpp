@@ -37,7 +37,7 @@ std::array<FrustumDisplay::Ptr, 5> frustums;
 void
 initializeShadowMapping(scene::Node::Ptr root, file::AssetLibrary::Ptr assets)
 {
-    directionalLight->enableShadowMapping(256);
+    directionalLight->enableShadowMapping(512);
     directionalLight2->enableShadowMapping(256);
 
     lightNode = scene::Node::create("light")
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 
     auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
-        auto cube = scene::Node::create("cube", scene::BuiltinLayout::DEFAULT | 256)
+        auto cube = scene::Node::create("cube", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
             ->addComponent(Surface::create(
                 geometry::CubeGeometry::create(sceneManager->assets()->context()),
                 material::BasicMaterial::create()
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
             ->addComponent(Transform::create(math::translate(math::vec3(-1.5f, .5f, 0.f))));
         root->addChild(cube);
 
-        auto sphere = scene::Node::create("sphere", scene::BuiltinLayout::DEFAULT | 256)
+        auto sphere = scene::Node::create("sphere", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
             ->addComponent(Surface::create(
                 geometry::SphereGeometry::create(sceneManager->assets()->context(), 40),
                 material::BasicMaterial::create()
@@ -127,7 +127,7 @@ int main(int argc, char** argv)
             ->addComponent(Transform::create(math::translate(math::vec3(1.5f, .5f, 0.f))));
         root->addChild(sphere);
 
-        teapot = scene::Node::create("teapot", scene::BuiltinLayout::DEFAULT | 256)
+        teapot = scene::Node::create("teapot", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
             ->addComponent(Surface::create(
                 geometry::TeapotGeometry::create(sceneManager->assets()->context())->computeNormals(),
                 material::BasicMaterial::create()
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
             ->addComponent(Transform::create(math::scale(math::vec3(.3f))));
         root->addChild(teapot);
 
-        auto ground = scene::Node::create("ground", scene::BuiltinLayout::DEFAULT | 256)
+        auto ground = scene::Node::create("ground")
             ->addComponent(Surface::create(
                 geometry::QuadGeometry::create(sceneManager->assets()->context()),
                 material::BasicMaterial::create()
