@@ -234,11 +234,13 @@ TEST_F(PointLightTest, TranslateXYZ)
     lights->addComponent(Transform::create(math::translate(t)));
     lights->component<Transform>()->updateModelToWorldMatrix();
 
+    float epsilon = 1e-5;
+
     ASSERT_EQ(
         math::epsilonEqual(
             root->data().get<math::vec3>("pointLight[0].position"),
             t,
-            math::epsilon<float>()
+            epsilon
         ),
         math::bvec3(true)
     );

@@ -381,11 +381,13 @@ TEST_F(SpotLightTest, TranslateXYZ)
     lights->addComponent(Transform::create(math::translate(t)));
     lights->component<Transform>()->updateModelToWorldMatrix();
 
+    float epsilon = 1e-5;
+
     ASSERT_EQ(
         math::epsilonEqual(
             root->data().get<math::vec3>("spotLight[0].direction"),
             math::vec3(0.f, 0.f, -1.f),
-            math::epsilon<float>()
+            epsilon
         ),
         math::bvec3(true)
     );
@@ -393,7 +395,7 @@ TEST_F(SpotLightTest, TranslateXYZ)
         math::epsilonEqual(
             root->data().get<math::vec3>("spotLight[0].position"),
             t,
-            math::epsilon<float>()
+            epsilon
         ),
         math::bvec3(true)
     );
