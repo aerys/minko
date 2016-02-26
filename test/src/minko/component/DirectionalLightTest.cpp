@@ -416,7 +416,7 @@ TEST_F(DirectionalLightTest, OneCascadeNumDeferredPasses)
 {
     auto fx = MinkoTests::loadEffect("effect/Basic.effect");
     auto renderer = Renderer::create();
-    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | 256)
+    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
         ->addComponent(PerspectiveCamera::create(1.f))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
         ->addComponent(renderer);
@@ -467,7 +467,7 @@ TEST_F(DirectionalLightTest, TwoCascadesNumDeferredPasses)
 {
     auto fx = MinkoTests::loadEffect("effect/Basic.effect");
     auto renderer = Renderer::create();
-    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | 256)
+    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
         ->addComponent(PerspectiveCamera::create(1.f))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
         ->addComponent(renderer);
@@ -523,7 +523,7 @@ TEST_F(DirectionalLightTest, ThreeCascadesNumDeferredPasses)
 {
     auto fx = MinkoTests::loadEffect("effect/Basic.effect");
     auto renderer = Renderer::create();
-    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | 256)
+    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
         ->addComponent(PerspectiveCamera::create(1.f))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
         ->addComponent(renderer);
@@ -584,7 +584,7 @@ TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
 {
     auto fx = MinkoTests::loadEffect("effect/Basic.effect");
     auto renderer = Renderer::create();
-    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | 256)
+    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
         ->addComponent(PerspectiveCamera::create(1.f))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
         ->addComponent(renderer);
@@ -675,7 +675,7 @@ TEST_F(DirectionalLightTest, RenderersAndDrawCalls)
 {
     auto fx = MinkoTests::loadEffect("effect/Phong.effect");
     auto renderer = Renderer::create();
-    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | 256)
+    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
         ->addComponent(PerspectiveCamera::create(1.f))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
         ->addComponent(renderer);

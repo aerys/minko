@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Renderer.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/scene/Layout.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -123,7 +124,7 @@ DirectionalLight::initializeShadowMapping()
 		renderer->viewport(viewports[i]);
 		renderer->effectVariables().push_back({ "lightUuid", data()->uuid() });
 		// renderer->effectVariables()["shadowProjectionId"] = std::to_string(i);
-		renderer->layoutMask(256);
+		renderer->layoutMask(scene::BuiltinLayout::CAST_SHADOW);
 		target()->addComponent(renderer);
 
 		_shadowRenderers[i] = renderer;

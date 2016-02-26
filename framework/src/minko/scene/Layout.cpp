@@ -32,6 +32,7 @@ const Layout BuiltinLayout::PICKING             = 1 << 6;
 const Layout BuiltinLayout::INSIDE_FRUSTUM      = 1 << 7;
 const Layout BuiltinLayout::MINOR_OBJECT        = 1 << 8;
 const Layout BuiltinLayout::PICKING_DEPTH       = 1 << 9;
+const Layout BuiltinLayout::CAST_SHADOW         = 1 << 10;
 
 const Layout LayoutMask::NOTHING                    = 0;
 const Layout LayoutMask::COLLISIONS_DYNAMIC_DEFAULT = EVERYTHING & ~BuiltinLayout::STATIC;
