@@ -157,6 +157,20 @@ namespace minko
 				return _effect;
 			}
 
+            inline
+            void
+            effect(EffectPtr effect)
+            {
+                changeEffectOrTechnique(effect, _effectTechnique);
+            }
+
+            inline
+            void
+            effect(EffectPtr effect, const std::string& technique)
+            {
+                changeEffectOrTechnique(effect, technique);
+            }
+
 			inline
 			unsigned int
 			numDrawCalls()
@@ -213,13 +227,15 @@ namespace minko
 			}
 
             inline
-			void viewport(const math::ivec4& viewport)
+			void
+                viewport(const math::ivec4& viewport)
             {
 				_viewportBox = viewport;
             }
 
 			inline
-			void scissorBox(const int x, const int y, const int w, const int h)
+			void
+                scissorBox(const int x, const int y, const int w, const int h)
 			{
 				_scissorBox.x = x;
 				_scissorBox.y = y;
@@ -262,12 +278,12 @@ namespace minko
 				return _effectTechnique;
 			}
 
-			inline
-			void
-			effectTechnique(std::string value)
-			{
-				_effectTechnique = value;
-			}
+            inline
+            void
+            effectTechnique(const std::string& technique)
+            {
+                changeEffectOrTechnique(_effect, technique);
+            }
 
             inline
             void
@@ -365,6 +381,8 @@ namespace minko
 				return _filterChanged;
 			}*/
 
+            
+
         protected:
 			Renderer(const Renderer& renderer, const CloneOption& option);
 
@@ -455,8 +473,8 @@ namespace minko
 					    : _rootDataFilterChangedSlots;
 			}*/
 
-			void
-			filterChangedHandler(AbsFilterPtr, data::Binding::Source, SurfacePtr);
+			/*void
+			filterChangedHandler(AbsFilterPtr, data::Binding::Source, SurfacePtr);*/
 
 			void
 			surfaceLayoutMaskChangedHandler(SurfacePtr surface);
@@ -472,6 +490,9 @@ namespace minko
 
             void
             enableDrawCalls(SurfacePtr surface, bool enabled);
+
+            void
+            changeEffectOrTechnique(EffectPtr effect, const std::string& technique = "default");
 		};
 	}
 }
