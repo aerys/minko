@@ -100,8 +100,9 @@ DirectionalLight::initializeShadowMapping()
 	_shadowMap->upload();
 	data()
 		->set("shadowMap", _shadowMap->sampler())
-		->set("shadowSpread", 1.f)
-		->set("shadowBias", 0.01f)
+        ->set("shadowMaxDistance", 0.9f)
+        ->set("shadowSpread", 1.f)
+		->set("shadowBias", -0.001f)
 		->set("shadowMapSize", static_cast<float>(_shadowMapSize));
 
 	std::array<math::ivec4, 4> viewports = {
@@ -205,7 +206,8 @@ DirectionalLight::computeBoundingSphere(const math::mat4& view, const math::mat4
 void
 DirectionalLight::computeShadowProjection(const math::mat4& view,
 										  const math::mat4& projection,
-										  float 			zFar)
+										  float 			zFar,
+                                          bool              fitToCascade)
 {
     if (!_shadowMappingEnabled)
         return;
@@ -232,7 +234,7 @@ DirectionalLight::computeShadowProjection(const math::mat4& view,
 	// page 7
     auto splitFar = std::vector<float> { zFar, zFar, zFar, zFar };
     auto splitNear = std::vector<float> { zNear, zNear, zNear, zNear };
-	float lambda = .8f;
+	float lambda = .5f;
 	float j = 1.f;
 	for (auto i = 0u; i < _numShadowCascades - 1; ++i, j+= 1.f)
 	{
@@ -248,31 +250,15 @@ DirectionalLight::computeShadowProjection(const math::mat4& view,
 	{
 		math::mat4 cameraViewProjection = math::perspective(fov, ratio, zNear, splitFar[i]) * view;
 		auto box = computeBox(cameraViewProjection);
-		auto projection = math::ortho<float>(
-	        box.first.x, box.second.x,
-	        box.first.y, box.second.y,
-	        -box.second.z, -box.first.z
-	    );
 
-		// auto center = (box.second + box.first) / 2.f;
-		// auto radius = math::length(box.second - center);
-		// auto projection = math::ortho<float>(
-		// 	center.x - radius, center.x + radius,
-		// 	center.y - radius, center.y + radius,
-		// 	-center.z - radius, -center.z + radius
-		// );
+		_shadowProjections[i] = math::ortho<float>(
+            box.first.x, box.second.x,
+            box.first.y, box.second.y,
+            -box.second.z, -box.first.z
+        );
 
-		// auto projCenter = projection * math::vec4(1.f);// / 2.f;
-		// auto q = 1.f / (float)_shadowMapSize;
-		// auto rounded = math::round(projCenter / q) * q;
-		// auto offset = math::vec3(projCenter.x - rounded.x, projCenter.y - rounded.y, 0.f);
-		//
-		// projection = math::translate(projection, -offset);
-
-		// _shadowProjections[i] = cameraViewProjection;
-		_shadowProjections[i] = projection;
-
-		zNear = splitFar[i];
+        if (fitToCascade)
+		    zNear = splitFar[i];
 	}
 
 	for (auto i = _numShadowCascades; i < MAX_NUM_SHADOW_CASCADES; ++i)
@@ -305,23 +291,6 @@ DirectionalLight::updateWorldToScreenMatrix()
 		auto istr = std::to_string(i);
 		auto farMinusNear = 2.f / projection[2][2];
 	    auto farPlusNear = projection[3][2] * farMinusNear;
-
-		// auto center = viewProjection * math::vec4(0.f, 0.f, 0.f, 1.f) / 2.f;
-		// auto q = 1.f / (float)_shadowMapSize;
-		// auto rounded = math::round(center / q) * q;
-		// auto offset = math::vec3(center.x - rounded.x, center.y - rounded.y, 0.f);
-
-		// std::cout << math::to_string(offset) << std::endl;
-		// viewProjection = math::translate(viewProjection, offset);
-
-		// auto t = viewProjection * math::vec4(3.f, 0.f, 1.f, 1.f) / 2.f;
-		// std::cout << math::to_string(t) << std::endl;
-		// std::cout << math::to_string(math::round(t / q) * q) << std::endl;
-
-    	// data()
-		// 	->set("viewProjection" + istr, 	viewProjection)
-		// 	->set("zNear" + istr, 			zNear)
-		// 	->set("zFar" + istr, 			zFar);
 
 		zNear[i] = (farMinusNear + farPlusNear) / 2.f;
 		zFar[i] = farPlusNear - zNear[i];
