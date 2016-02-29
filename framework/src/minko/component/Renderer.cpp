@@ -343,33 +343,37 @@ Renderer::addSurface(Surface::Ptr surface)
 	if (_surfaceToDrawCallIterator.count(surface) != 0)
 		throw std::invalid_argument("surface");
 
-	if (!checkSurfaceLayout(surface))
-		return;
+    if (_effect || surface->effect())
+    {
+	    if (!checkSurfaceLayout(surface))
+		    return;
 
-    render::EffectVariables variables = _variables;
+        render::EffectVariables variables = _variables;
 
-	variables.push_back({ "surfaceUuid", surface->uuid() });
-	variables.push_back({ "geometryUuid", surface->geometry()->uuid() });
-	variables.push_back({ "materialUuid", surface->material()->uuid() });
-	variables.push_back({ "effectUuid", _effect ? _effect->uuid() : surface->effect()->uuid() });
+	    variables.push_back({ "surfaceUuid", surface->uuid() });
+	    variables.push_back({ "geometryUuid", surface->geometry()->uuid() });
+	    variables.push_back({ "materialUuid", surface->material()->uuid() });
+	    variables.push_back({ "effectUuid", _effect ? _effect->uuid() : surface->effect()->uuid() });
 
-    _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
-        _effect ? _effect : surface->effect(),
-        _effect ? _effectTechnique : surface->technique(),
-        variables,
-        surface->target()->root()->data(),
-        target()->data(),
-        surface->target()->data()
-    );
+        _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
+            _effect ? _effect : surface->effect(),
+            _effect ? _effectTechnique : surface->technique(),
+            variables,
+            surface->target()->root()->data(),
+            target()->data(),
+            surface->target()->data()
+        );
 
-    auto callback = std::bind(
-        &Renderer::surfaceGeometryOrMaterialChangedHandler,
-        std::static_pointer_cast<Renderer>(shared_from_this()),
-        surface
-    );
+        auto callback = std::bind(
+            &Renderer::surfaceGeometryOrMaterialChangedHandler,
+            std::static_pointer_cast<Renderer>(shared_from_this()),
+            surface
+        );
 
-    _surfaceChangedSlots[surface].push_back(surface->geometryChanged().connect(callback));
-    _surfaceChangedSlots[surface].push_back(surface->materialChanged().connect(callback));
+        _surfaceChangedSlots[surface].push_back(surface->geometryChanged().connect(callback));
+        _surfaceChangedSlots[surface].push_back(surface->materialChanged().connect(callback));
+    }
+
     _surfaceChangedSlots[surface].push_back(surface->effectChanged().connect(std::bind(
         &Renderer::surfaceEffectChangedHandler,
         std::static_pointer_cast<Renderer>(shared_from_this()),
@@ -627,18 +631,18 @@ Renderer::removeFilter(data::AbstractFilter::Ptr	filter,
 //	return std::static_pointer_cast<Renderer>(shared_from_this());
 //}
 
-void
-Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
-							   data::Binding::Source			source,
-							   SurfacePtr					surface)
-{
-	_filterChanged->execute(
-		std::static_pointer_cast<Renderer>(shared_from_this()),
-		filter,
-		source,
-		surface
-	);
-}
+//void
+//Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
+//							   data::Binding::Source			source,
+//							   SurfacePtr					surface)
+//{
+//	_filterChanged->execute(
+//		std::static_pointer_cast<Renderer>(shared_from_this()),
+//		filter,
+//		source,
+//		surface
+//	);
+//}
 
 void
 Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
@@ -746,4 +750,18 @@ Renderer::enableDrawCalls(SurfacePtr surface, bool enabled)
                 if (drawCall->batchIDs().front() == drawCallId)
                     drawCall->enabled(enabled);
             }
+}
+
+void
+Renderer::changeEffectOrTechnique(EffectPtr effect, const std::string& technique)
+{
+    if (effect != _effect || technique != _effectTechnique)
+    {
+        _effect = effect;
+        _effectTechnique = technique;
+
+        reset();
+
+        rootDescendantAddedHandler(target()->root(), target()->root(), target()->parent());
+    }
 }

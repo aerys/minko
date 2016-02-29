@@ -273,3 +273,50 @@ TEST_F(RendererTest, Priority)
 
     ASSERT_EQ(i, 3);
 }
+
+TEST_F(RendererTest, SetEffect)
+{
+    auto basic = MinkoTests::loadEffect("effect/Basic.effect");
+    auto phong = MinkoTests::loadEffect("effect/Phong.effect");
+    auto renderer = Renderer::create(0, nullptr, basic);
+    auto sceneManager = SceneManager::create(MinkoTests::canvas());
+    auto root = scene::Node::create()
+        ->addComponent(sceneManager)
+        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(renderer);
+
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
+    auto s = Surface::create(
+        geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
+        material
+    );
+
+    root->addComponent(s);
+
+    sceneManager->nextFrame(0.f, 0.f);
+    for (const auto& sortPropertiesToDrawCalls : renderer->drawCallPool().drawCalls())
+    {
+        for (const auto& drawCalls : sortPropertiesToDrawCalls.second)
+        {
+            for (auto drawCall : drawCalls)
+            {
+                ASSERT_EQ(drawCall->pass(), basic->technique("default")[0]);
+            }
+        }
+    }
+
+    renderer->effect(phong);
+    sceneManager->nextFrame(0.f, 0.f);
+    for (const auto& sortPropertiesToDrawCalls : renderer->drawCallPool().drawCalls())
+    {
+        for (const auto& drawCalls : sortPropertiesToDrawCalls.second)
+        {
+            for (auto drawCall : drawCalls)
+            {
+                ASSERT_EQ(drawCall->pass(), phong->technique("default")[0]);
+            }
+        }
+    }
+}

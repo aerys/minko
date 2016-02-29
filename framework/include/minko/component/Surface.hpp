@@ -72,10 +72,10 @@ namespace minko
 			Ptr
 			create(std::shared_ptr<geometry::Geometry> 		geometry,
 				   std::shared_ptr<material::Material>		material,
-				   std::shared_ptr<render::Effect>			effect,
-				   const std::string&						technique = "")
+				   std::shared_ptr<render::Effect>			effect      = nullptr,
+				   const std::string&						technique   = "default")
 			{
-				return create("", geometry, material, effect, technique.size() ? technique : "default");
+				return create("", geometry, material, effect, technique);
 			}
 
 			static
@@ -83,8 +83,8 @@ namespace minko
 			create(const std::string&					    name,
 				   std::shared_ptr<geometry::Geometry> 		geometry,
 				   std::shared_ptr<material::Material>      material,
-				   std::shared_ptr<render::Effect>			effect,
-				   const std::string&						technique)
+				   std::shared_ptr<render::Effect>			effect      = nullptr,
+				   const std::string&						technique   = "default")
 			{
                 return std::shared_ptr<Surface>(new Surface(name, geometry, material, effect, technique));
 			}
@@ -95,8 +95,8 @@ namespace minko
                    const std::string&					    name,
 				   std::shared_ptr<geometry::Geometry> 		geometry,
 				   std::shared_ptr<material::Material>      material,
-				   std::shared_ptr<render::Effect>			effect,
-				   const std::string&						technique)
+				   std::shared_ptr<render::Effect>			effect      = nullptr,
+				   const std::string&						technique   = "default")
 			{
                 return std::shared_ptr<Surface>(new Surface(uuid, name, geometry, material, effect, technique));
 			}
