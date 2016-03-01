@@ -37,6 +37,8 @@ std::array<FrustumDisplay::Ptr, 5> frustums;
 void
 initializeShadowMapping(scene::Node::Ptr root, file::AssetLibrary::Ptr assets)
 {
+    root->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
+
     directionalLight->enableShadowMapping(512);
     directionalLight2->enableShadowMapping(256);
 
@@ -129,7 +131,7 @@ int main(int argc, char** argv)
             ->addComponent(Transform::create(math::scale(math::vec3(.3f))));
         root->addChild(teapot);
 
-        auto ground = scene::Node::create("ground")
+        auto ground = scene::Node::create("ground", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
             ->addComponent(Surface::create(
                 geometry::QuadGeometry::create(sceneManager->assets()->context()),
                 material::BasicMaterial::create()
@@ -358,8 +360,8 @@ int main(int argc, char** argv)
             {
                 auto p = camera->component<PerspectiveCamera>();
 
-                directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 20.f);
-                directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 20.f);
+                directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
+                directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
             }
             cameraMoved = false;
         }

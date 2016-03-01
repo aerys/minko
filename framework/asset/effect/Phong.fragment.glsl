@@ -17,9 +17,9 @@
 #pragma include "Fog.function.glsl"
 #pragma include "LightMapping.function.glsl"
 
-#ifdef GAMMA_CORRECTION
+//#ifdef GAMMA_CORRECTION
 uniform float uGammaCorrection;
-#endif
+//#endif
 
 #ifdef UV_SCALE
 uniform vec2 uUVScale;
@@ -688,9 +688,9 @@ void main(void)
 		phong = fog_sampleFog(phong, vVertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
 	#endif
 
-    #ifdef GAMMA_CORRECTION
+    //#ifdef GAMMA_CORRECTION
         phong.rgb = pow(phong.rgb, vec3(1.0 / uGammaCorrection));
-    #endif
+    //#endif
 
 	gl_FragColor = vec4(phong.rgb, diffuse.a);
 }

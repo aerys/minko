@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/scene/Layout.hpp"
+#include "minko/component/ShadowMappingTechnique.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -77,14 +78,22 @@ DirectionalLight::initializeShadowMapping()
 	auto effectName = "effect/ShadowMap.effect";
 	auto fx = assets->effect(effectName);
 
+    auto smTechnique = target()->root()->hasComponent<ShadowMappingTechnique>()
+        ? target()->root()->data()
+            .get<ShadowMappingTechnique::Technique>("shadowMappingTechnique")
+        : ShadowMappingTechnique::Technique::DEFAULT;
+
 	if (!fx)
 	{
 		auto texture = assets->texture("shadow-map-tmp");
 
 		if (!texture)
 		{
+            // This texture is used only for ESM, but loading ShadowMap.effect will throw if the asset does not exist.
+            // Thus, we create a dummy texture that we simply don't upload on the GPU.
 			texture = render::Texture::create(assets->context(), _shadowMapSize, _shadowMapSize, false, true);
-			texture->upload();
+            if (smTechnique == ShadowMappingTechnique::Technique::ESM)
+    			texture->upload();
 			assets->texture("shadow-map-tmp", texture);
 		}
 
@@ -98,12 +107,12 @@ DirectionalLight::initializeShadowMapping()
 
 	_shadowMap = render::Texture::create(assets->context(), _shadowMapSize * 2, _shadowMapSize * 2, false, true);
 	_shadowMap->upload();
-	data()
-		->set("shadowMap", _shadowMap->sampler())
+    data()
+        ->set("shadowMap", _shadowMap->sampler())
         ->set("shadowMaxDistance", 0.9f)
         ->set("shadowSpread", 1.f)
-		->set("shadowBias", -0.001f)
-		->set("shadowMapSize", static_cast<float>(_shadowMapSize));
+        ->set("shadowBias", -0.001f)
+        ->set("shadowMapSize", static_cast<float>(_shadowMapSize));
 
 	std::array<math::ivec4, 4> viewports = {
 		math::ivec4(0, _shadowMapSize, _shadowMapSize, _shadowMapSize),
@@ -113,11 +122,15 @@ DirectionalLight::initializeShadowMapping()
 	};
 	for (auto i = 0u; i < _numShadowCascades; ++i)
 	{
+        auto techniqueName = "shadow-map-cascade" + std::to_string(i);
+        if (smTechnique == ShadowMappingTechnique::Technique::ESM)
+            techniqueName += "-esm";
+
 		auto renderer = component::Renderer::create(
 			0xffffffff,
 			_shadowMap,
 			fx,
-			"shadow-map-cascade" + std::to_string(i),
+			techniqueName,
 			render::Priority::FIRST - i
 		);
 

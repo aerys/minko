@@ -168,6 +168,7 @@ namespace minko
         class DirectionalLight;
 		class SpotLight;
 		class PointLight;
+        class ShadowMappingTechnique;
 
 		class BoundingBox;
 

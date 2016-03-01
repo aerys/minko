@@ -183,7 +183,8 @@
                     "uSpotLight3_attenuationCoeffs"     : { "binding" : { "property" : "spotLight[3].attenuationCoeffs", "source" : "root" } },
                     "uSpotLight3_specular"              : { "binding" : { "property" : "spotLight[3].specular", "source" : "root" } },
                     "uFogColor"                         : "material[${materialUuid}].fogColor",
-                    "uFogBounds"                        : "material[${materialUuid}].fogBounds"
+                    "uFogBounds"                        : "material[${materialUuid}].fogBounds",
+                    "uGammaCorrection"                  : { "binding" : { "property" : "gammaCorrection", "source" : "renderer" }, "default" : 2.2 }
                 },
 
                 "macros" : {
@@ -206,7 +207,8 @@
                     "DIRECTIONAL_0_SHADOW_MAP"  : { "binding" : { "property" : "directionalLight[0].shadowMap", "source" : "root" } },
                     "DIRECTIONAL_1_SHADOW_MAP"  : { "binding" : { "property" : "directionalLight[1].shadowMap", "source" : "root" } },
                     "DIRECTIONAL_2_SHADOW_MAP"  : { "binding" : { "property" : "directionalLight[2].shadowMap", "source" : "root" } },
-                    "DIRECTIONAL_3_SHADOW_MAP"  : { "binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" } }
+                    "DIRECTIONAL_3_SHADOW_MAP"  : { "binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" } },
+                    "SHADOW_MAPPING_TECHNIQUE"  : { "binding" : { "property" : "shadowMappingTechnique", "source" : "root" }, "type" : "int" }
                 },
                 "vertexShader"      : "#pragma include \"Phong.vertex.glsl\"",
                 "fragmentShader"    : "#pragma include \"Phong.fragment.glsl\""

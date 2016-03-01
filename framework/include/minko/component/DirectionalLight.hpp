@@ -111,8 +111,8 @@ namespace minko
                                     bool                fitToCascade    = false);
 
             void
-            enableShadowMapping(uint shadowMapSize  = DEFAULT_SHADOWMAP_SIZE,
-                                uint numCascades    = DEFAULT_NUM_SHADOW_CASCADES);
+            enableShadowMapping(uint shadowMapSize = DEFAULT_SHADOWMAP_SIZE,
+                                uint numCascades = DEFAULT_NUM_SHADOW_CASCADES);
 
             void
             disableShadowMapping(bool disposeResources = false);
