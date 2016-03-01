@@ -656,7 +656,7 @@ TEST_F(DirectionalLightTest, ShadowMappingEffect)
     auto fx = MinkoTests::loadEffect("effect/ShadowMap.effect", assets);
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().size(), 4);
+    ASSERT_EQ(fx->techniques().size(), 8);
 
     for (int i = 0; i < 4; ++i)
     {
