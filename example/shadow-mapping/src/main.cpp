@@ -139,7 +139,7 @@ int main(int argc, char** argv)
             ))
             ->addComponent(Transform::create(
                 math::rotate(-math::half_pi<float>(), math::vec3(1.f, 0.f, 0.f))
-                * math::scale(math::vec3(10.f))
+                * math::scale(math::vec3(100.f))
             ));
         root->addChild(ground);
 
