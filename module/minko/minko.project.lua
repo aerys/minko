@@ -51,7 +51,11 @@ minko.project.library = function(name)
 		buildoptions {
 			"/wd4503",				-- remove warnings about too long type names
 			--"/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
-			"/MT"					-- Used to statically link runtime libraries
+		}
+
+	configuration { "vs*", "release" }
+		flags {
+			"StaticRuntime"
 		}
 
 	configuration { "html5", "debug" }

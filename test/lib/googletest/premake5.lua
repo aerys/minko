@@ -20,7 +20,7 @@ project "googletest"
 	configuration { "release" }
 		defines { "NDEBUG" }
 		optimize "On"
-        
+
     configuration { "html5", "release" }
 		buildoptions { "--llvm-lto 1" }
 
@@ -29,3 +29,8 @@ project "googletest"
 
 	configuration { "html5" }
 		includedirs { '"${EMSCRIPTEN}/system/lib/libcxxabi/include"' }
+
+	configuration { "vs*", "release" }
+		flags {
+			"StaticRuntime"
+		}

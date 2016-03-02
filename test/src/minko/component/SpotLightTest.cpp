@@ -381,7 +381,7 @@ TEST_F(SpotLightTest, TranslateXYZ)
     lights->addComponent(Transform::create(math::translate(t)));
     lights->component<Transform>()->updateModelToWorldMatrix();
 
-    float epsilon = 1e-5;
+    float epsilon = 0.00001f;
 
     ASSERT_EQ(
         math::epsilonEqual(

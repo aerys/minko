@@ -163,7 +163,7 @@ EmscriptenDOMEngine::enterFrame()
 
 	for(auto element : EmscriptenDOMElement::domElements)
 	{
-		//element->update();
+		element->update();
 	}
 
 	if (_currentDOM->initialized())
