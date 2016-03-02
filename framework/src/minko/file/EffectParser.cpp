@@ -1653,6 +1653,12 @@ EffectParser::loadTexture(const std::string&	textureFilename,
                           const std::string&    uniformName,
 						  data::Provider::Ptr   defaultValues)
 {
+    if (_options->assetLibrary()->texture(textureFilename))
+    {
+        defaultValues->set(uniformName, _assetLibrary->texture(textureFilename)->sampler());
+        return;
+    }
+
     auto loader = Loader::create(_options);
 
 	_numDependencies++;
