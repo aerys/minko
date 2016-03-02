@@ -353,7 +353,7 @@ float getShadow(sampler2D 	shadowMap,
 
 		depthUV = vec2(depthUV.xy * viewport.zw + viewport.xy);
 
-		#if SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_HARD
+		#if SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_DEFAULT
 			shadow = shadowMapping_texture2DCompare(shadowMap, depthUV, shadowDepth, near, far);
 		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF
 			shadow = shadowMapping_PCF(shadowMap, vec2(size), depthUV, shadowDepth, near, far);
