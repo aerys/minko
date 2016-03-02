@@ -97,6 +97,15 @@ DirectionalLight::initializeShadowMapping()
 			assets->texture("shadow-map-tmp", texture);
 		}
 
+        texture = assets->texture("shadow-map-tmp-2");
+        if (!texture)
+        {
+            texture = render::Texture::create(assets->context(), _shadowMapSize, _shadowMapSize, false, true);
+            if (smTechnique == ShadowMappingTechnique::Technique::ESM)
+                texture->upload();
+            assets->texture("shadow-map-tmp-2", texture);
+        }
+
 		auto loader = file::Loader::create(assets->loader());
 		// FIXME: support async loading of the ShadowMapping.effect file
 		loader->options()->loadAsynchronously(false);
@@ -112,7 +121,7 @@ DirectionalLight::initializeShadowMapping()
         ->set("shadowMaxDistance", 0.9f)
         ->set("shadowSpread", 1.f)
         ->set("shadowBias", -0.001f)
-        ->set("shadowMapSize", static_cast<float>(_shadowMapSize));
+        ->set("shadowMapSize", static_cast<float>(_shadowMapSize) * 2.f);
 
 	std::array<math::ivec4, 4> viewports = {
 		math::ivec4(0, _shadowMapSize, _shadowMapSize, _shadowMapSize),
