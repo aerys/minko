@@ -69,7 +69,8 @@ initializeShadowMapping(scene::Node::Ptr root, file::AssetLibrary::Ptr assets)
 int main(int argc, char** argv)
 {
     std::cout << "Press [C]\tto show the camera frustum\n"
-        << "Press [L]\tto show the shadow cascade frustums"
+        << "Press [L]\tto show the shadow cascade frustums\n"
+        << "Press [R]\tto toggle the shadow cascade splits debug rendering"
         << std::endl;
 
     auto canvas = Canvas::create("Minko Application", 900, 600);
@@ -178,13 +179,6 @@ int main(int argc, char** argv)
                 renderer->effect(sceneManager->assets()->effect("effect/debug/ShadowMappingDebug.effect"));
             else
                 renderer->effect(sceneManager->assets()->effect("effect/Phong.effect"));
-        }
-        if (k->keyIsDown(input::Keyboard::Key::Q))
-        {
-            camera->component<Transform>()->matrix(
-                camera->component<Transform>()->matrix() * math::translate(math::vec3(-.1f, 0.f, 0.f))
-            );
-            cameraMoved = true;
         }
         if (k->keyIsDown(input::Keyboard::Key::D))
         {
