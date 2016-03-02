@@ -459,7 +459,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
                     passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, true);
 
                 for (auto provider : pass->attributeBindings().defaultValues.providers())
-                    passScope.attributeBlock.bindingMap.defaultValues.providers().front()->merge(provider);
+                    passScope.attributeBlock.bindingMap.defaultValues.providers().front()->copyFrom(provider);
             }
 
             if (pass->uniformBindings().defaultValues.providers().size() > 0)
@@ -468,7 +468,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
                     passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, true);
 
                 for (auto provider : pass->uniformBindings().defaultValues.providers())
-                    passScope.uniformBlock.bindingMap.defaultValues.providers().front()->merge(provider);
+                    passScope.uniformBlock.bindingMap.defaultValues.providers().front()->copyFrom(provider);
             }
 
             if (pass->macroBindings().defaultValues.providers().size() > 0)
@@ -477,10 +477,12 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
                     passScope.macroBlock.bindingMap.defaultValues = data::Store(pass->macroBindings().defaultValues, true);
 
                 for (auto provider : pass->macroBindings().defaultValues.providers())
-                    passScope.macroBlock.bindingMap.defaultValues.providers().front()->merge(provider);
+                    passScope.macroBlock.bindingMap.defaultValues.providers().front()->copyFrom(provider);
             }
 
-            passScope.stateBlock.bindingMap.defaultValues.providers().front()->merge(pass->stateBindings().defaultValues.providers().front());
+            passScope.stateBlock.bindingMap.defaultValues.providers().front()->copyFrom(
+                pass->stateBindings().defaultValues.providers().front()
+            );
 
             vertexShader = pass->program()->vertexShader();
             fragmentShader = pass->program()->fragmentShader();
@@ -1354,8 +1356,8 @@ EffectParser::parseTarget(const Json::Value&    node,
                 _error->execute(
                     shared_from_this(),
                     file::Error(
-                    _resolvedFilename
-                    + ": render target definition requires both \"width\" and \"height\" properties."
+                        _resolvedFilename
+                        + ": render target definition requires both \"width\" and \"height\" properties."
                     )
                 );
             }
