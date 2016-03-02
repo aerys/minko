@@ -393,6 +393,9 @@ EffectParser::getPassToExtend(const Json::Value& extendNode)
         auto techniqueName = extendNode["technique"].asString();
         auto effectFilename = extendNode["effect"].asString();
 
+        if (techniqueName == "")
+            techniqueName = "default";
+
         if (!_assetLibrary->effect(effectFilename))
         {
             auto options = _options->clone();
