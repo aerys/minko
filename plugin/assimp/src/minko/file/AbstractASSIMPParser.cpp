@@ -270,13 +270,7 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
         removeComponentFlags |= aiComponent_TANGENTS_AND_BITANGENTS;
     }
 
-    if (options->generateSmoothNormals())
-    {
-        removeComponentFlags |= aiComponent_NORMALS | aiComponent_TANGENTS_AND_BITANGENTS;
-
-        _importer->SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, options->normalMaxSmoothingAngle());
-    }
-
+    _importer->SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, options->normalMaxSmoothingAngle());
     _importer->SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, removeComponentFlags);
 
     if (!options->preserveMaterials())
