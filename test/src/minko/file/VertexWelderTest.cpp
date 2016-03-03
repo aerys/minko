@@ -55,12 +55,12 @@ VertexWelderTest::createScene()
     return root;
 }
 
-TEST_F(VertexWelderTest, Constructor)
+TEST_F(VertexWelderTest, Create)
 {
     auto vertexWelder = VertexWelder::create();
 }
 
-TEST_F(VertexWelderTest, RunProcess)
+TEST_F(VertexWelderTest, Process)
 {
     auto scene = createScene();
 
