@@ -35,10 +35,10 @@ if not "%STATIC_LIBS%" == "" set EMPTY=0
 if not "%SHARED_LIBS%" == "" set EMPTY=0
 
 if %EMPTY% == 1 (
-	@if %verbose% == 1 echo on
+	@if "%verbose%" == "1" echo on
 	%BIN% %ARGS%
 ) else (
-	@if %verbose% == 1 echo on
+	@if "%verbose%" == "1" echo on
 	%BIN% %ARGS% %START_GROUP% %STATIC_LIBS% %STATIC_LIBS% %SHARED_LIBS% %SHARED_LIBS% %END_GROUP%
 )
 
