@@ -70,10 +70,12 @@ int main(int argc, char** argv)
 {
     std::cout << "Press [C]\tto show the camera frustum\n"
         << "Press [L]\tto show the shadow cascade frustums\n"
-        << "Press [R]\tto toggle the shadow cascade splits debug rendering"
+        << "Press [R]\tto toggle the shadow cascade splits debug rendering\n"
+        << "Press [A]\tto toggle the first light shadows\n"
+        << "Press [Z]\tto toggle the second light shadows"
         << std::endl;
 
-    auto canvas = Canvas::create("Minko Application", 900, 600);
+    auto canvas = Canvas::create("Minko - Shadow Mapping Example", 900, 600);
     auto sceneManager = SceneManager::create(canvas);
     auto debugDisplay = false;
 
@@ -159,47 +161,12 @@ int main(int argc, char** argv)
 
     auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
     {
-        if (k->keyIsDown(input::Keyboard::Key::UP))
-        {
-            camera->component<Transform>()->matrix(
-                camera->component<Transform>()->matrix() * math::translate(math::vec3(0.f, 0.f, -.1f))
-            );
-            cameraMoved = true;
-        }
-        if (k->keyIsDown(input::Keyboard::Key::DOWN))
-        {
-            camera->component<Transform>()->matrix(
-                camera->component<Transform>()->matrix() * math::translate(math::vec3(0.f, 0.f, .1f))
-            );
-            cameraMoved = true;
-        }
         if (k->keyIsDown(input::Keyboard::Key::R))
         {
             if (renderer->effect() == sceneManager->assets()->effect("effect/Phong.effect"))
                 renderer->effect(sceneManager->assets()->effect("effect/debug/ShadowMappingDebug.effect"));
             else
                 renderer->effect(sceneManager->assets()->effect("effect/Phong.effect"));
-        }
-        if (k->keyIsDown(input::Keyboard::Key::D))
-        {
-            camera->component<Transform>()->matrix(
-                camera->component<Transform>()->matrix() * math::translate(math::vec3(.1f, 0.f, 0.f))
-            );
-            cameraMoved = true;
-        }
-        if (k->keyIsDown(input::Keyboard::Key::LEFT))
-        {
-            camera->component<Transform>()->matrix(
-                math::rotate(-.03f, math::vec3(0.f, 1.f, .0f)) * camera->component<Transform>()->matrix()
-            );
-            cameraMoved = true;
-        }
-        if (k->keyIsDown(input::Keyboard::Key::RIGHT))
-        {
-            camera->component<Transform>()->matrix(
-                math::rotate(.03f, math::vec3(0.f, 1.f, .0f)) * camera->component<Transform>()->matrix()
-            );
-            cameraMoved = true;
         }
         if (k->keyIsDown(input::Keyboard::Key::C))
         {
@@ -338,6 +305,10 @@ int main(int argc, char** argv)
                 pitch = minPitch;
         }
 
+        auto p = camera->component<PerspectiveCamera>();
+        directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
+        directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
+
         if (cameraMoved)
         {
             camera->component<Transform>()->matrix(math::inverse(math::lookAt(
@@ -349,15 +320,6 @@ int main(int argc, char** argv)
                 lookAt,
                 math::vec3(0.f, 1.f, 0.f)
             )));
-
-            if (!debugDisplay)
-            {
-                auto p = camera->component<PerspectiveCamera>();
-
-                directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
-                directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
-            }
-            cameraMoved = false;
         }
 
         teapot->component<Transform>()->matrix(
