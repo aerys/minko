@@ -108,7 +108,7 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         compressorParameters.set_flag(cCRNCompFlagDXT1AForTransparency, outFormat == TextureFormat::RGBA_DXT1);
         compressorParameters.set_flag(cCRNCompFlagHierarchical, false);
-        compressorParameters.set_flag(cCRNCompFlagPerceptual, useSRGBSpace);
+        compressorParameters.set_flag(cCRNCompFlagPerceptual, false);
 
         compressorParameters.m_file_type = cCRNFileTypeDDS;
         compressorParameters.m_format = textureFormatToCRNTextureFomat.at(outFormat);

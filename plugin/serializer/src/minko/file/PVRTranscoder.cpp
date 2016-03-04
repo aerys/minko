@@ -123,7 +123,9 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
         pvrtexture::CPVRTextureHeader pvrHeader(
             textureFormatToPvrTextureFomat.at(texture->format()),
             texture->height(),
-            texture->width()
+            texture->width(),
+            1, 1, 1, 1,
+            EPVRTColourSpace::ePVRTCSpacesRGB
         );
 
         pvrTexture = std::unique_ptr<pvrtexture::CPVRTexture>(new pvrtexture::CPVRTexture(pvrHeader, texture2d->data().data()));

@@ -51,9 +51,9 @@ WriterOptions::WriterOptions() :
     _textureFunction([](const std::string& filename, AbstractTexture::Ptr texture) -> AbstractTexture::Ptr { return texture; }),
     _imageFormat(ImageFormat::PNG),
     _textureFormats(),
-    _textureOptions{ 
-        { "",           { true, 0.f, true, true, true, math::vec2(1.f), math::ivec2(2048), MipFilter::LINEAR } },
-        { "lightMap",   { true, 0.f, true, true, true, math::vec2(1.f), math::ivec2(2048), MipFilter::LINEAR } }
+    _textureOptions{
+        { "",           { true, 0.f, true, false, true, math::vec2(1.f), math::ivec2(2048), MipFilter::LINEAR } },
+        { "lightMap",   { true, 0.f, true, false, true, math::vec2(1.f), math::ivec2(2048), MipFilter::LINEAR } }
     },
     _writeAnimations(false),
     _nullAssetUuids()
