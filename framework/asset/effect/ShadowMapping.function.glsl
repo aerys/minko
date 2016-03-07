@@ -1,20 +1,19 @@
 #pragma include "Pack.function.glsl"
 
-#define SHADOW_MAPPING_TECHNIQUE_HARD			0
+#define SHADOW_MAPPING_TECHNIQUE_DEFAULT		0
 #define SHADOW_MAPPING_TECHNIQUE_ESM			1
 #define SHADOW_MAPPING_TECHNIQUE_PCF			2
 #define SHADOW_MAPPING_TECHNIQUE_PCF_POISSON	3
 
 #ifndef SHADOW_MAPPING_TECHNIQUE
-# define SHADOW_MAPPING_TECHNIQUE   SHADOW_MAPPING_TECHNIQUE_PCF_POISSON
+# define SHADOW_MAPPING_TECHNIQUE   SHADOW_MAPPING_TECHNIQUE_DEFAULT
 #endif
 
 #ifndef SHADOW_MAPPING_PCF_POISSON_NUM_SAMPLES
 # define SHADOW_MAPPING_PCF_POISSON_NUM_SAMPLES  12
 #endif
 
-#define SHADOW_MAPPING_NEAR_ONE                 0.999
-#define SHADOW_MAPPING_MAX_NUM_CASCADES         4
+#define SHADOW_MAPPING_MAX_NUM_CASCADES 4
 
 float shadowMapping_random(vec4 seed)
 {
@@ -25,8 +24,8 @@ float shadowMapping_random(vec4 seed)
 
 bool shadowMapping_vertexIsInShadowMap(vec3 vertexLightPosition)
 {
-    return all(bvec3(step(vertexLightPosition, vec3(SHADOW_MAPPING_NEAR_ONE))))
-        && all(bvec3(step(vec3(-SHADOW_MAPPING_NEAR_ONE), vertexLightPosition)));
+    return all(lessThanEqual(vertexLightPosition, vec3(1.0)))
+       && all(greaterThanEqual(vertexLightPosition, vec3(-1.0)));
 }
 
 float shadowMapping_texture2DDepth(sampler2D depths, vec2 uv, float zNear, float zFar)
@@ -121,7 +120,7 @@ float shadowMapping_ESM(sampler2D depths, vec2 uv, float compare, float zNear, f
 vec4 shadowMapping_getCascadeWeights(float depth, vec4 splitNear, vec4 splitFar)
 {
 	vec4 near = step(splitNear, vec4(depth));
-	vec4 far = step(depth, splitFar);
+	vec4 far = step(vec4(depth), splitFar);
 
 	return near * far;
 }
@@ -144,4 +143,11 @@ mat4 shadowMapping_getCascadeViewProjection(vec4 weights, mat4 viewProj[SHADOW_M
 float shadowMapping_getCascadeZ(vec4 weights, float z[SHADOW_MAPPING_MAX_NUM_CASCADES])
 {
 	return z[0] * weights.x + z[1] * weights.y + z[2] * weights.z + z[3] * weights.w;
+}
+
+float shadowMapping_applyDistanceFade(float depth, float zFar, float shadow, float maxDistance)
+{
+    float minDistance = zFar * maxDistance;
+
+    return min(1.0, shadow + max(0.0, (depth - minDistance) / (zFar - minDistance)));
 }

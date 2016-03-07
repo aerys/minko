@@ -419,7 +419,8 @@ TEST_F(DirectionalLightTest, OneCascadeNumDeferredPasses)
     auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
         ->addComponent(PerspectiveCamera::create(1.f))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(renderer);
+        ->addComponent(renderer)
+        ->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
 
     auto light = scene::Node::create()->addComponent(
         DirectionalLight::create()
@@ -445,17 +446,17 @@ TEST_F(DirectionalLightTest, OneCascadeNumDeferredPasses)
     auto shadowRenderer = light->component<Renderer>();
 
     ASSERT_EQ(renderer->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer->numDrawCalls(), 5);
 
     root->removeComponent(s1);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer->numDrawCalls(), 4);
 
     root->removeComponent(s2);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer->numDrawCalls(), 3);
 
     root->removeComponent(s3);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
@@ -470,7 +471,8 @@ TEST_F(DirectionalLightTest, TwoCascadesNumDeferredPasses)
     auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
         ->addComponent(PerspectiveCamera::create(1.f))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(renderer);
+        ->addComponent(renderer)
+        ->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
 
     auto light = scene::Node::create()->addComponent(
         DirectionalLight::create()
@@ -497,20 +499,20 @@ TEST_F(DirectionalLightTest, TwoCascadesNumDeferredPasses)
     auto shadowRenderer1 = light->component<Renderer>(1);
 
     ASSERT_EQ(renderer->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 5);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 5);
 
     root->removeComponent(s1);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 4);
 
     root->removeComponent(s2);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
 
     root->removeComponent(s3);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
@@ -526,7 +528,8 @@ TEST_F(DirectionalLightTest, ThreeCascadesNumDeferredPasses)
     auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
         ->addComponent(PerspectiveCamera::create(1.f))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(renderer);
+        ->addComponent(renderer)
+        ->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
 
     auto light = scene::Node::create()->addComponent(
         DirectionalLight::create()
@@ -554,23 +557,23 @@ TEST_F(DirectionalLightTest, ThreeCascadesNumDeferredPasses)
     auto shadowRenderer2 = light->component<Renderer>(2);
 
     ASSERT_EQ(renderer->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 5);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 5);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 5);
 
     root->removeComponent(s1);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 4);
 
     root->removeComponent(s2);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 3);
 
     root->removeComponent(s3);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
@@ -587,7 +590,8 @@ TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
     auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
         ->addComponent(PerspectiveCamera::create(1.f))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(renderer);
+        ->addComponent(renderer)
+        ->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
 
     auto light = scene::Node::create()->addComponent(
         DirectionalLight::create()
@@ -616,26 +620,26 @@ TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
     auto shadowRenderer3 = light->component<Renderer>(3);
 
     ASSERT_EQ(renderer->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 3);
-    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 5);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 5);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 5);
+    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 5);
 
     root->removeComponent(s1);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 2);
-    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 4);
 
     root->removeComponent(s2);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
     ASSERT_EQ(renderer->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 1);
-    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 3);
 
     root->removeComponent(s3);
     root->component<SceneManager>()->nextFrame(0.f, 0.f);
@@ -649,14 +653,15 @@ TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
 TEST_F(DirectionalLightTest, ShadowMappingEffect)
 {
     auto assets = file::AssetLibrary::create(MinkoTests::canvas()->context());
-    auto texture = render::Texture::create(assets->context(), 128, 128, false, true);
+    auto texture = render::Texture::create(assets->context(), 1, 1, false, true);
     texture->upload();
     assets->texture("shadow-map-tmp", texture);
+    assets->texture("shadow-map-tmp-2", texture);
 
     auto fx = MinkoTests::loadEffect("effect/ShadowMap.effect", assets);
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().size(), 4);
+    ASSERT_EQ(fx->techniques().size(), 8);
 
     for (int i = 0; i < 4; ++i)
     {

@@ -37,6 +37,82 @@
                     "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 3 } }
                 }
             ]
+        },
+        {
+            "name" : "shadow-map-cascade0-esm",
+            "passes" : [
+                {
+                    "extends" : "shadow-mapping-depth",
+                    "states" : {
+                        "target" : "shadow-map-tmp",
+                        "triangleCulling" : "none"
+                    },
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 0 } }
+                },
+                {
+                    "extends" : "gaussian-blur-h"
+                },
+                {
+                    "extends" : "gaussian-blur-v"
+                }
+            ]
+        },
+        {
+            "name" : "shadow-map-cascade1-esm",
+            "passes" : [
+                {
+                    "extends" : "shadow-mapping-depth",
+                    "states" : {
+                        "target" : "shadow-map-tmp",
+                        "triangleCulling" : "none"
+                    },
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 1 } }
+                },
+                {
+                    "extends" : "gaussian-blur-h"
+                },
+                {
+                    "extends" : "gaussian-blur-v"
+                }
+            ]
+        },
+        {
+            "name" : "shadow-map-cascade2-esm",
+            "passes" : [
+                {
+                    "extends" : "shadow-mapping-depth",
+                    "states" : {
+                        "target" : "shadow-map-tmp",
+                        "triangleCulling" : "none"
+                    },
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 2 } }
+                },
+                {
+                    "extends" : "gaussian-blur-h"
+                },
+                {
+                    "extends" : "gaussian-blur-v"
+                }
+            ]
+        },
+        {
+            "name" : "shadow-map-cascade3-esm",
+            "passes" : [
+                {
+                    "extends" : "shadow-mapping-depth",
+                    "states" : {
+                        "target" : "shadow-map-tmp",
+                        "triangleCulling" : "none"
+                    },
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 3 } }
+                },
+                {
+                    "extends" : "gaussian-blur-h"
+                },
+                {
+                    "extends" : "gaussian-blur-v"
+                }
+            ]
         }
     ],
 
@@ -71,6 +147,112 @@
 
             "vertexShader" : "#pragma include \"ShadowMap.glsl\"",
             "fragmentShader" : "#pragma include \"ShadowMap.glsl\""
+        },
+        {
+            "name" : "gaussian-blur",
+            "forward" : false,
+            "attributes" : {
+                "aPosition" : { "binding" : { "property" : "postProcessingPosition", "source" : "renderer" } },
+                "aUV" : { "binding" : { "property" : "postProcessingUV", "source" : "renderer" } }
+            },
+            "states" : {
+                "triangleCulling" : "none"
+            },
+            "uniforms" : {
+                "uRadius" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowSpread", "source" : "root" } },
+                "uTextureSize" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowMapSize", "source" : "root" } }
+            },
+            "vertexShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+                attribute vec2 aPosition;
+                attribute vec2 aUV;
+
+                varying vec2 vTexcoord;
+
+                void main()
+                {
+                    gl_Position = vec4(aPosition, 0, 1);
+                    vTexcoord = aUV;
+                }
+            ",
+            "fragmentShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+                varying vec2 vTexcoord;
+
+                uniform sampler2D uTexture;
+                uniform float uTextureSize;
+                uniform float uRadius;
+                uniform vec2 uDirection;
+
+                #pragma include \"Pack.function.glsl\"
+
+                void main(void)
+                {
+                    float sum = 0.0;
+
+                    //our original texcoord for this fragment
+                    vec2 tc = vTexcoord;
+
+                    //the amount to blur, i.e. how far off center to sample from
+                    //1.0 -> blur by one pixel
+                    //2.0 -> blur by two pixels, etc.
+                    float blur = uRadius / uTextureSize;
+
+                    //the direction of our blur
+                    //(1.0, 0.0) -> x-axis blur
+                    //(0.0, 1.0) -> y-axis blur
+                    float hstep = uDirection.x;
+                    float vstep = uDirection.y;
+
+                    sum += unpackFloat8bitRGBA(texture2D(uTexture, vec2(tc.x - 4.0 * blur * hstep, tc.y - 4.0 * blur * vstep))) * 0.0162162162;
+                    sum += unpackFloat8bitRGBA(texture2D(uTexture, vec2(tc.x - 3.0 * blur * hstep, tc.y - 3.0 * blur * vstep))) * 0.0540540541;
+                    sum += unpackFloat8bitRGBA(texture2D(uTexture, vec2(tc.x - 2.0 * blur * hstep, tc.y - 2.0 * blur * vstep))) * 0.1216216216;
+                    sum += unpackFloat8bitRGBA(texture2D(uTexture, vec2(tc.x - 1.0 * blur * hstep, tc.y - 1.0 * blur * vstep))) * 0.1945945946;
+
+                    sum += unpackFloat8bitRGBA(texture2D(uTexture, vec2(tc.x, tc.y))) * 0.2270270270;
+
+                    sum += unpackFloat8bitRGBA(texture2D(uTexture, vec2(tc.x + 1.0 * blur * hstep, tc.y + 1.0 * blur * vstep))) * 0.1945945946;
+                    sum += unpackFloat8bitRGBA(texture2D(uTexture, vec2(tc.x + 2.0 * blur * hstep, tc.y + 2.0 * blur * vstep))) * 0.1216216216;
+                    sum += unpackFloat8bitRGBA(texture2D(uTexture, vec2(tc.x + 3.0 * blur * hstep, tc.y + 3.0 * blur * vstep))) * 0.0540540541;
+                    sum += unpackFloat8bitRGBA(texture2D(uTexture, vec2(tc.x + 4.0 * blur * hstep, tc.y + 4.0 * blur * vstep))) * 0.0162162162;
+
+                    gl_FragColor = packFloat8bitRGBA(sum);
+                }
+            "
+        },
+        {
+            "name" : "gaussian-blur-h",
+            "extends" : "gaussian-blur",
+            "uniforms" : {
+                "uDirection" : { "default" : [[ 1.0, 0.0 ]] },
+                "uTexture" : { "binding" : { "property" : "effect[${effectUuid}].shadow-map-tmp", "source" : "renderer" } }
+
+            },
+            "states" : {
+                "target" : "shadow-map-tmp-2"
+            }
+        },
+        {
+            "name" : "gaussian-blur-v",
+            "extends" : "gaussian-blur",
+            "uniforms" : {
+                "uDirection" : { "default" : [[ 0.0, 1.0 ]] },
+                "uTexture" : { "binding" : { "property" : "effect[${effectUuid}].shadow-map-tmp-2", "source" : "renderer" } }
+            }
         }
     ]
 }

@@ -24,4 +24,11 @@ function minko.plugin.debug:enable()
 	minko.plugin.links { "debug" }
 	includedirs { minko.plugin.path("debug") .. "/include" }
 	defines { "MINKO_PLUGIN_DEBUG" }
+
+	prelinkcommands {
+		minko.action.copy(path.join(minko.plugin.path("debug"), "asset"))
+	}
+	minko.package.assetdirs {
+	  path.join(minko.plugin.path("debug"), "asset")
+	}
 end

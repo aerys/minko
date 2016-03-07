@@ -39,7 +39,7 @@ Geometry::Geometry(const std::string& name) :
 }
 
 Geometry::Geometry(const Geometry& geometry) :
-	_data(geometry._data->clone()),
+	_data(data::Provider::create(geometry._data)),
 	_vertexSize(geometry._vertexSize),
 	_numVertices(geometry._numVertices),
 	_vertexBuffers(geometry._vertexBuffers),

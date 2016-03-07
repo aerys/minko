@@ -49,9 +49,6 @@ void main(void)
 
 #pragma include "Pack.function.glsl"
 
-uniform float uZNear;
-uniform float uZFar;
-
 varying vec4 vPosition;
 
 void main(void)
