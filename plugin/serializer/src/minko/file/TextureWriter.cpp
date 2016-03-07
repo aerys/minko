@@ -60,12 +60,46 @@ std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction, Hash<Text
     { TextureFormat::RGBA_ATITC, std::bind(writeQCompressedTexture, TextureFormat::RGBA_ATITC, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
 };
 
+const float TextureWriter::_defaultGamma = 2.2f;
+
 TextureWriter::TextureWriter() :
     AbstractWriter<AbstractTexture::Ptr>(),
     _textureType(),
     _headerSize(0)
 {
     _magicNumber = 0x00000054 | MINKO_SCENE_MAGIC_NUMBER;
+}
+
+void
+TextureWriter::gammaEncode(const std::vector<unsigned char>&    src,
+                           std::vector<unsigned char>&          dst,
+                           float                                gamma)
+{
+    dst.resize(src.size(), 0);
+
+    for (auto i = 0u; i < src.size(); ++i)
+    {
+        dst[i] = static_cast<unsigned char>(math::pow(
+            static_cast<float>(src[i]) / 255.f,
+            1.f / gamma
+        ) * 255.f);
+    }
+}
+
+void
+TextureWriter::gammaDecode(const std::vector<unsigned char>&    src,
+                           std::vector<unsigned char>&          dst,
+                           float                                gamma)
+{
+    dst.resize(src.size(), 0);
+
+    for (auto i = 0u; i < src.size(); ++i)
+    {
+        dst[i] = static_cast<unsigned char>(math::pow(
+            static_cast<float>(src[i]) / 255.f,
+            gamma
+        ) * 255.f);
+    }
 }
 
 std::string
@@ -78,6 +112,13 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
     auto texture = _data;
 
     ensureTextureSizeIsValid(texture, writerOptions);
+
+    if (texture->type() == TextureType::Texture2D && !writerOptions->useTextureSRGBSpace(_textureType))
+    {
+        auto texture2D = std::static_pointer_cast<Texture>(texture);
+
+        gammaDecode(texture2D->data(), texture2D->data(), defaultGamma());
+    }
 
     const auto generateMipmaps = writerOptions->generateMipmaps(_textureType);
 

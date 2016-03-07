@@ -52,6 +52,8 @@ namespace minko
         private:
             static std::unordered_map<render::TextureFormat, FormatWriterFunction, Hash<render::TextureFormat>> _formatWriterFunctions;
 
+            static const float _defaultGamma;
+
             std::string _textureType;
 
             int _headerSize;
@@ -59,12 +61,31 @@ namespace minko
         public:
             ~TextureWriter() = default;
 
-            inline static
+            static
             Ptr
             create()
             {
                 return std::shared_ptr<TextureWriter>(new TextureWriter());
             }
+
+            static
+            float
+            defaultGamma()
+            {
+                return _defaultGamma;
+            }
+
+            static
+            void
+            gammaEncode(const std::vector<unsigned char>&    src,
+                        std::vector<unsigned char>&          dst,
+                        float                                gamma);
+
+            static
+            void
+            gammaDecode(const std::vector<unsigned char>&    src,
+                        std::vector<unsigned char>&          dst,
+                        float                                gamma);
 
             inline
             void

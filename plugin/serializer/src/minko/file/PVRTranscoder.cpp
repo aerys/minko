@@ -120,12 +120,16 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
     {
         auto texture2d = std::static_pointer_cast<Texture>(texture);
 
+        const auto colourSpace = writerOptions->useTextureSRGBSpace(textureType)
+            ? EPVRTColourSpace::ePVRTCSpacesRGB
+            : EPVRTColourSpace::ePVRTCSpacelRGB;
+
         pvrtexture::CPVRTextureHeader pvrHeader(
             textureFormatToPvrTextureFomat.at(texture->format()),
             texture->height(),
             texture->width(),
             1, 1, 1, 1,
-            EPVRTColourSpace::ePVRTCSpacesRGB
+            colourSpace
         );
 
         pvrTexture = std::unique_ptr<pvrtexture::CPVRTexture>(new pvrtexture::CPVRTexture(pvrHeader, texture2d->data().data()));
@@ -136,7 +140,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
                 *pvrTexture,
                 textureFormatToPvrTextureFomat.at(TextureFormat::RGBA),
                 ePVRTVarTypeUnsignedByteNorm,
-                ePVRTCSpacelRGB))
+                colourSpace))
             {
                 return false;
             }
@@ -162,10 +166,6 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
         }
 
         const auto compressorQuality = qualityFromQualityFactor(outFormat, writerOptions->compressedTextureQualityFactor(textureType));
-
-        const auto colourSpace = writerOptions->useTextureSRGBSpace(textureType)
-            ? EPVRTColourSpace::ePVRTCSpacesRGB
-            : EPVRTColourSpace::ePVRTCSpacelRGB;
 
         if (!pvrtexture::Transcode(
             *pvrTexture,
