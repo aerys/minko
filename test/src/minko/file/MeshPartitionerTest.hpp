@@ -27,12 +27,16 @@ namespace minko
 {
     namespace file
     {
-        class VertexWelderTest :
+        class MeshPartitionerTest :
             public ::testing::Test
         {
         protected:
-            std::shared_ptr<scene::Node>
+            scene::Node::Ptr
             createScene();
+
+            void
+            getWorldPositions(const std::vector<component::Surface::Ptr>&   surfaces,
+                              std::vector<math::vec3>&                      positions);
         };
     }
 }
