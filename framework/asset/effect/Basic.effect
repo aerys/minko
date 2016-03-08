@@ -1,15 +1,17 @@
 {
     "name" : "basic",
     "uniforms" : {
-        "uFogColor"     : "material[${materialUuid}].fogColor",
-        "uFogBounds"    : "material[${materialUuid}].fogBounds"
+        "uGammaCorrection"  : { "binding" : { "property" : "gammaCorrection", "source" : "renderer" }, "default" : 2.2 },
+        "uFogColor"         : "material[${materialUuid}].fogColor",
+        "uFogBounds"        : "material[${materialUuid}].fogBounds"
     },
     "macros" : {
-        "FOG_ENABLED"   : "material[${materialUuid}].fogEnabled",
-        "FOG_LIN"       : "material[${materialUuid}].fogLinear",
-        "FOG_EXP"       : "material[${materialUuid}].fogExponential",
-        "FOG_EXP2"      : "material[${materialUuid}].fogExponential2",
-        "FOG_TECHNIQUE" : { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" }
+        "GAMMA_CORRECTION"  : { "binding" : { "property" : "gammaCorrection", "source" : "renderer" } },
+        "FOG_ENABLED"       : "material[${materialUuid}].fogEnabled",
+        "FOG_LIN"           : "material[${materialUuid}].fogLinear",
+        "FOG_EXP"           : "material[${materialUuid}].fogExponential",
+        "FOG_EXP2"          : "material[${materialUuid}].fogExponential2",
+        "FOG_TECHNIQUE"     : { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" }
     },
     "techniques" : [
         {
