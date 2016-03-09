@@ -220,7 +220,7 @@ AbstractLodScheduler::viewportChanged(const math::vec4& viewport)
 }
 
 void
-AbstractLodScheduler::update()
+AbstractLodScheduler::collectSurfaces()
 {
     while (!_removedSurfaces.empty())
     {
@@ -452,6 +452,8 @@ AbstractLodScheduler::frameBeginHandler(SceneManager::Ptr sceneManager, float ti
 void
 AbstractLodScheduler::updated(float time)
 {
+    collectSurfaces();
+
     for (auto& uuidToResourcePair : _resources)
     {
         auto& resource = uuidToResourcePair.second;
@@ -472,8 +474,6 @@ AbstractLodScheduler::updated(float time)
             lodInfoChanged(resource, previousLodInfo, lodInfo);
         }
     }
-
-    update();
 }
 
 void

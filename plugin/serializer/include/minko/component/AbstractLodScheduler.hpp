@@ -282,10 +282,6 @@ namespace minko
 
             virtual
             void
-            update();
-
-            virtual
-            void
             maxAvailableLodChanged(ResourceInfo&    resource,
                                    int              maxAvailableLod);
 
@@ -337,6 +333,9 @@ namespace minko
             rendererNodePropertyChangedHandler(data::Store&								store,
                                                ProviderPtr								provider,
 											   const data::Provider::PropertyName&		propertyName);
+
+            void
+            collectSurfaces();
 
             bool
             checkSurfaceLayout(SurfacePtr surface);
