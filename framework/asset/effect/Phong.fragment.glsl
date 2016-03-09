@@ -399,6 +399,10 @@ void main(void)
 		#else
 			diffuse = texture2D(uDiffuseMap, uv);
 		#endif
+
+        #ifdef GAMMA_CORRECTION
+            diffuse.rgb = pow(diffuse.rgb, vec3(uGammaCorrection));
+        #endif // GAMMA_CORRECTION
 	#endif // DIFFUSE_MAP
 
 	#if defined(ALPHA_MAP) && defined(VERTEX_UV)

@@ -77,6 +77,10 @@ void main(void)
 				diffuse = texture2D(uDiffuseMap, vVertexUV);
 			#endif
 		#endif
+
+        #ifdef GAMMA_CORRECTION
+            diffuse.rgb = pow(diffuse.rgb, vec3(uGammaCorrection));
+        #endif // GAMMA_CORRECTION
 	#endif // VERTEX_UV
 
 	#if defined(VERTEX_UV) && defined(ALPHA_MAP)
