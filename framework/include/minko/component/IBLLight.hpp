@@ -43,6 +43,34 @@ namespace minko
                 return Ptr(new IBLLight());
             }
 
+            float
+            diffuse() const
+            {
+                return provider()->get<float>("diffuse");
+            }
+
+            Ptr
+            diffuse(float value)
+            {
+                provider()->set("diffuse", minko::math::clamp(value, 0.f, 1.f));
+
+                return std::static_pointer_cast<IBLLight>(shared_from_this());
+            }
+
+            float
+            specular() const
+            {
+                return provider()->get<float>("specular");
+            }
+
+            Ptr
+            specular(float value)
+            {
+                provider()->set("specular", minko::math::clamp(value, 0.f, 1.f));
+
+                return std::static_pointer_cast<IBLLight>(shared_from_this());
+            }
+
             render::TextureSampler
             irradianceMap() const
             {
@@ -53,6 +81,20 @@ namespace minko
             irradianceMap(const render::TextureSampler& value)
             {
                 provider()->set("irradianceMap", value);
+
+                return std::static_pointer_cast<IBLLight>(shared_from_this());
+            }
+
+            render::TextureSampler
+            radianceMap() const
+            {
+                return provider()->get<render::TextureSampler>("radianceMap");
+            }
+
+            Ptr
+            radianceMap(const render::TextureSampler& value)
+            {
+                provider()->set("radianceMap", value);
 
                 return std::static_pointer_cast<IBLLight>(shared_from_this());
             }
