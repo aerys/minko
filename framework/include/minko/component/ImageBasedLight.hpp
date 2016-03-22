@@ -29,18 +29,18 @@ namespace minko
 {
     namespace component
     {
-        class IBLLight :
+        class ImageBasedLight :
             public AbstractLight
         {
         public:
-            typedef std::shared_ptr<IBLLight> Ptr;
+            typedef std::shared_ptr<ImageBasedLight> Ptr;
 
         public:
             static
             Ptr
             create()
             {
-                return Ptr(new IBLLight());
+                return Ptr(new ImageBasedLight());
             }
 
             float
@@ -54,7 +54,7 @@ namespace minko
             {
                 provider()->set("diffuse", minko::math::clamp(value, 0.f, 1.f));
 
-                return std::static_pointer_cast<IBLLight>(shared_from_this());
+                return std::static_pointer_cast<ImageBasedLight>(shared_from_this());
             }
 
             float
@@ -68,7 +68,7 @@ namespace minko
             {
                 provider()->set("specular", minko::math::clamp(value, 0.f, 1.f));
 
-                return std::static_pointer_cast<IBLLight>(shared_from_this());
+                return std::static_pointer_cast<ImageBasedLight>(shared_from_this());
             }
 
             render::TextureSampler
@@ -82,7 +82,7 @@ namespace minko
             {
                 provider()->set("irradianceMap", value);
 
-                return std::static_pointer_cast<IBLLight>(shared_from_this());
+                return std::static_pointer_cast<ImageBasedLight>(shared_from_this());
             }
 
             render::TextureSampler
@@ -96,12 +96,12 @@ namespace minko
             {
                 provider()->set("radianceMap", value);
 
-                return std::static_pointer_cast<IBLLight>(shared_from_this());
+                return std::static_pointer_cast<ImageBasedLight>(shared_from_this());
             }
 
         private:
-            IBLLight() :
-                AbstractLight("IBLLight")
+            ImageBasedLight() :
+                AbstractLight("imageBasedLight")
             {
             }
         };
