@@ -37,6 +37,8 @@ std::array<FrustumDisplay::Ptr, 5> frustums;
 void
 initializeShadowMapping(scene::Node::Ptr root, file::AssetLibrary::Ptr assets)
 {
+    root->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
+
     directionalLight->enableShadowMapping(512);
     directionalLight2->enableShadowMapping(256);
 
@@ -66,37 +68,33 @@ initializeShadowMapping(scene::Node::Ptr root, file::AssetLibrary::Ptr assets)
 
 int main(int argc, char** argv)
 {
-    std::cout << "Press [UP]\tto move camera forward\n"
-        << "Press [DOWN]\tto move camera backward\n"
-        << "Press [LEFT]\tto rotate camera left\n"
-        << "Press [RIGHT]\tto rotate camera right\n"
-        << "Press [Q]\tto move camera left\n"
-        << "Press [D]\tto move camera right\n"
-        << "Press [C]\tto show the camera frustum\n"
-        << "Press [L]\tto show the shadow cascade frustums"
+    std::cout << "Press [C]\tto show the camera frustum\n"
+        << "Press [L]\tto show the shadow cascade frustums\n"
+        << "Press [R]\tto toggle the shadow cascade splits debug rendering\n"
+        << "Press [A]\tto toggle the first light shadows\n"
+        << "Press [Z]\tto toggle the second light shadows"
         << std::endl;
 
-    auto effectName = "effect/Phong.effect";
-    // auto effectName = "effect/debug/ShadowMappingDebug.effect";
-    auto canvas = Canvas::create("Minko Application", 900, 600);
+    auto canvas = Canvas::create("Minko - Shadow Mapping Example", 900, 600);
     auto sceneManager = SceneManager::create(canvas);
     auto debugDisplay = false;
 
     auto loader = sceneManager->assets()->loader();
-    loader->queue(effectName);
-    // loader->queue("effect/Basic.effect");
+    loader->queue("effect/Phong.effect");
+    loader->queue("effect/debug/ShadowMappingDebug.effect");
 
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager);
 
+    auto debugRenderer = Renderer::create();
+    debugRenderer->layoutMask(scene::BuiltinLayout::DEBUG_ONLY);
+    debugRenderer->clearBeforeRender(false);
     auto renderer = Renderer::create(0x1f1f1fff);
-
-    renderer->layoutMask(renderer->layoutMask() | scene::BuiltinLayout::DEBUG_ONLY);
-
     auto camera = scene::Node::create("camera")
         ->addComponent(renderer)
+        ->addComponent(debugRenderer)
         ->addComponent(Transform::create(
-            math::inverse(math::lookAt(math::vec3(0.f, 2.f, 5.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
+            math::inverse(math::lookAt(math::vec3(0.f, 8.f, 8.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
         )))
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio(), .785f, .1f, 100.f));
 
@@ -107,12 +105,13 @@ int main(int argc, char** argv)
 
     auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
+        renderer->effect(sceneManager->assets()->effect("effect/Phong.effect"));
+
         auto cube = scene::Node::create("cube", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
             ->addComponent(Surface::create(
                 geometry::CubeGeometry::create(sceneManager->assets()->context()),
                 material::BasicMaterial::create()
-                    ->diffuseColor(math::vec4(1.f, .8f, .8f, .8f)),
-                sceneManager->assets()->effect(effectName)
+                    ->diffuseColor(math::vec4(1.f, .3f, .3f, 1.f))
             ))
             ->addComponent(Transform::create(math::translate(math::vec3(-1.5f, .5f, 0.f))));
         root->addChild(cube);
@@ -121,8 +120,7 @@ int main(int argc, char** argv)
             ->addComponent(Surface::create(
                 geometry::SphereGeometry::create(sceneManager->assets()->context(), 40),
                 material::BasicMaterial::create()
-                    ->diffuseColor(math::vec4(.8f, .8f, 1.f, 1.f)),
-                sceneManager->assets()->effect(effectName)
+                    ->diffuseColor(math::vec4(.3f, .3f, 1.f, 1.f))
             ))
             ->addComponent(Transform::create(math::translate(math::vec3(1.5f, .5f, 0.f))));
         root->addChild(sphere);
@@ -131,22 +129,20 @@ int main(int argc, char** argv)
             ->addComponent(Surface::create(
                 geometry::TeapotGeometry::create(sceneManager->assets()->context())->computeNormals(),
                 material::BasicMaterial::create()
-                    ->diffuseColor(math::vec4(.8f, 1.f, .8f, 1.f)),
-                sceneManager->assets()->effect(effectName)
+                    ->diffuseColor(math::vec4(.3f, 1.f, .3f, 1.f))
             ))
             ->addComponent(Transform::create(math::scale(math::vec3(.3f))));
         root->addChild(teapot);
 
-        auto ground = scene::Node::create("ground")
+        auto ground = scene::Node::create("ground", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
             ->addComponent(Surface::create(
                 geometry::QuadGeometry::create(sceneManager->assets()->context()),
                 material::BasicMaterial::create()
-                    ->diffuseColor(0xffffffff),
-                sceneManager->assets()->effect(effectName)
+                    ->diffuseColor(0xffffffff)
             ))
             ->addComponent(Transform::create(
                 math::rotate(-math::half_pi<float>(), math::vec3(1.f, 0.f, 0.f))
-                * math::scale(math::vec3(10.f))
+                * math::scale(math::vec3(100.f))
             ));
         root->addChild(ground);
 
@@ -165,47 +161,12 @@ int main(int argc, char** argv)
 
     auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
     {
-        if (k->keyIsDown(input::Keyboard::Key::UP))
+        if (k->keyIsDown(input::Keyboard::Key::R))
         {
-            camera->component<Transform>()->matrix(
-                camera->component<Transform>()->matrix() * math::translate(math::vec3(0.f, 0.f, -.1f))
-            );
-            cameraMoved = true;
-        }
-        if (k->keyIsDown(input::Keyboard::Key::DOWN))
-        {
-            camera->component<Transform>()->matrix(
-                camera->component<Transform>()->matrix() * math::translate(math::vec3(0.f, 0.f, .1f))
-            );
-            cameraMoved = true;
-        }
-        if (k->keyIsDown(input::Keyboard::Key::Q))
-        {
-            camera->component<Transform>()->matrix(
-                camera->component<Transform>()->matrix() * math::translate(math::vec3(-.1f, 0.f, 0.f))
-            );
-            cameraMoved = true;
-        }
-        if (k->keyIsDown(input::Keyboard::Key::D))
-        {
-            camera->component<Transform>()->matrix(
-                camera->component<Transform>()->matrix() * math::translate(math::vec3(.1f, 0.f, 0.f))
-            );
-            cameraMoved = true;
-        }
-        if (k->keyIsDown(input::Keyboard::Key::LEFT))
-        {
-            camera->component<Transform>()->matrix(
-                math::rotate(-.03f, math::vec3(0.f, 1.f, .0f)) * camera->component<Transform>()->matrix()
-            );
-            cameraMoved = true;
-        }
-        if (k->keyIsDown(input::Keyboard::Key::RIGHT))
-        {
-            camera->component<Transform>()->matrix(
-                math::rotate(.03f, math::vec3(0.f, 1.f, .0f)) * camera->component<Transform>()->matrix()
-            );
-            cameraMoved = true;
+            if (renderer->effect() == sceneManager->assets()->effect("effect/Phong.effect"))
+                renderer->effect(sceneManager->assets()->effect("effect/debug/ShadowMappingDebug.effect"));
+            else
+                renderer->effect(sceneManager->assets()->effect("effect/Phong.effect"));
         }
         if (k->keyIsDown(input::Keyboard::Key::C))
         {
@@ -223,19 +184,19 @@ int main(int argc, char** argv)
         {
             auto p = camera->component<PerspectiveCamera>();
             std::array<math::vec4, 4> colors = {
-                math::vec4(1.f, 0.f, 0.f, .2f),
-                math::vec4(0.f, 1.f, 0.f, .2f),
-                math::vec4(0.f, 0.f, 1.f, .2f),
-                math::vec4(1.f, 1.f, 0.f, .2f)
+                math::vec4(1.f, 0.f, 0.f, .1f),
+                math::vec4(0.f, 1.f, 0.f, .1f),
+                math::vec4(0.f, 0.f, 1.f, .1f),
+                math::vec4(1.f, 1.f, 0.f, .1f)
             };
 
-            // directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix());
             for (auto i = 0u; i < directionalLight->numShadowCascades(); ++i)
             {
                 if (frustums[i] && debugNode->hasComponent(frustums[i]))
                 {
                     debugNode->removeComponent(frustums[i]);
                     debugDisplay = false;
+                    cameraMoved = true;
                 }
                 else
                 {
@@ -277,16 +238,16 @@ int main(int argc, char** argv)
         cameraMoved = true;
     });
 
-    float yaw = 0.3f;
-    float pitch = 1.3f;//float(M_PI) * .5f;
+    float yaw = -0.8f;
+    float pitch = 0.9f;//float(M_PI) * .5f;
     // float pitch = float(M_PI) * .5f;
     auto minPitch = 0.f + 0.1f;
     auto maxPitch = float(M_PI) * .5f - .1f;
     // auto maxPitch = float(M_PI) - .1f;
     auto lookAt = math::vec3(0.f, 0.f, 0.f);
-    float distance = 3.f;
+    float distance = 6.f;
     float minDistance = 1.f;
-    float maxDistance = 20.f;
+    float maxDistance = 40.f;
     float zoomSpeed = 0.f;
 
     // handle mouse signals
@@ -344,6 +305,10 @@ int main(int argc, char** argv)
                 pitch = minPitch;
         }
 
+        auto p = camera->component<PerspectiveCamera>();
+        directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
+        directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
+
         if (cameraMoved)
         {
             camera->component<Transform>()->matrix(math::inverse(math::lookAt(
@@ -355,13 +320,6 @@ int main(int argc, char** argv)
                 lookAt,
                 math::vec3(0.f, 1.f, 0.f)
             )));
-
-            auto p = camera->component<PerspectiveCamera>();
-
-            directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 80.f);
-            directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 80.f);
-
-            cameraMoved = false;
         }
 
         teapot->component<Transform>()->matrix(

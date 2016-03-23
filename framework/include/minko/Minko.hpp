@@ -63,6 +63,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SpotLight.hpp"
 #include "minko/component/PointLight.hpp"
 #include "minko/component/ImageBasedLight.hpp"
+#include "minko/component/ShadowMappingTechnique.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/MousePicking.hpp"
 #include "minko/component/MouseManager.hpp"

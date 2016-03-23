@@ -68,7 +68,7 @@ Provider::set(std::initializer_list<data::Provider::ValueType> values)
 }
 
 Provider::Ptr
-Provider::unset(const std::string& propertyName)
+Provider::unset(const PropertyName& propertyName)
 {
     auto propertyIt = _values->find(propertyName);
 
@@ -84,31 +84,25 @@ Provider::unset(const std::string& propertyName)
 }
 
 Provider::Ptr
-Provider::clone()
+Provider::clear()
 {
-	auto provider = Provider::create();
+    _values->clear();
 
-	provider->copyFrom(shared_from_this());
-
-	return provider;
+    return shared_from_this();
 }
 
 Provider::Ptr
 Provider::copyFrom(Provider::Ptr source)
 {
-    _values->clear();
-
     for (auto nameAndValue : *source->_values)
-        _values->insert({ nameAndValue.first, new Any(*nameAndValue.second) });
+    {
+        if (hasProperty(nameAndValue.first))
+            *getValue(nameAndValue.first) = *nameAndValue.second;
+        else
+            _values->insert({ nameAndValue.first, new Any(*nameAndValue.second) });
+    }
 
 	return shared_from_this();
-}
-
-void
-Provider::merge(Provider::Ptr source)
-{
-    for (auto nameAndValue : *source->_values)
-        (*_values)[nameAndValue.first] = nameAndValue.second;
 }
 
 Any*

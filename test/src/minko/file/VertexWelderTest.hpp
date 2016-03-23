@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "gtest/gtest.h"
 
+#include "minko/Minko.hpp"
+
 namespace minko
 {
     namespace file

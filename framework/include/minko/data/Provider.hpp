@@ -204,19 +204,16 @@ namespace minko
 				return Any::cast<T>(getValue(propertyName)) != nullptr;
 			}
 
+            Ptr
+            clear();
+
 			virtual
 			Ptr
-            unset(const std::string& propertyName);
-
-			Ptr
-			clone();
+            unset(const PropertyName& propertyName);
 
 			virtual
 			Ptr
 			copyFrom(Ptr source);
-
-            void
-            merge(Ptr source);
 
             ~Provider();
 
@@ -233,7 +230,6 @@ namespace minko
 
             void
             setValue(const PropertyName& propertyName, Any* value);
-
 		};
 	}
 }

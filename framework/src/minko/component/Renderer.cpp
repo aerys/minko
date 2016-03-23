@@ -744,8 +744,12 @@ Renderer::enableDrawCalls(SurfacePtr surface, bool enabled)
         for (const auto& drawCalls : priorityToDrawCalls.second)
             for (auto drawCall : drawCalls)
             {
+                // FIXME: we don't enable/disable draw calls for deffered passes (ie draw calls
+                // with multiple batch IDs) despite it could lead to useless deferred passes.
+                // But it would require an (de)activation counter which is "very unlikely" to
+                // be equal to batchIDs.size.
                 if (drawCall->batchIDs().size() > 1u)
-                    throw std::runtime_error("");
+                    continue;
 
                 if (drawCall->batchIDs().front() == drawCallId)
                     drawCall->enabled(enabled);

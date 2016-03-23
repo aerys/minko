@@ -325,3 +325,16 @@ TEST_F(ProviderTest, CreateByCopy)
 	ASSERT_EQ(p1->get<float>("foo"), p2->get<float>("foo"));
 	ASSERT_NE(p1->getUnsafePointer<float>("foo"), p2->getUnsafePointer<float>("foo"));
 }
+
+TEST_F(ProviderTest, CopyHasDifferentPointers)
+{
+    auto p1 = Provider::create();
+
+    p1->set("foo", 42.f);
+
+    auto p2 = Provider::create();
+
+    p2->copyFrom(p1);
+
+    ASSERT_NE(p1->getPointer<float>("foo"), p2->getPointer<float>("foo"));
+}

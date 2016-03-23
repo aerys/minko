@@ -1,0 +1,72 @@
+{
+    "name" : "shadow-mapping-debug-effect",
+
+    "techniques" : [{
+        "name" : "default",
+
+        "passes" : [{
+            "extends" : {
+                "effect"    : "../Phong.effect",
+                "technique" : "default",
+                "pass"      : "phong-opaque-pass"
+            },
+            "uniforms" : {
+                "uCameraDirection" : { "binding" : { "property" : "eyeDirection", "source" : "renderer" } }
+            },
+            "vertexShader" : "#pragma include \"../Phong.vertex.glsl\"",
+            "fragmentShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+                #pragma include \"../ShadowMapping.function.glsl\"
+
+                // directional lights
+                #ifdef NUM_DIRECTIONAL_LIGHTS
+
+                # if NUM_DIRECTIONAL_LIGHTS > 0
+                uniform vec3 uDirLight0_direction;
+                uniform vec3 uDirLight0_color;
+                uniform float uDirLight0_diffuse;
+                #  ifdef SHININESS
+                uniform float uDirLight0_specular;
+                #  endif
+                #  ifdef DIRECTIONAL_0_SHADOW_MAP
+                uniform sampler2D uDirLight0_shadowMap;
+                uniform mat4 uDirLight0_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
+                uniform float uDirLight0_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
+                uniform float uDirLight0_zFar[SHADOW_MAPPING_MAX_NUM_CASCADES];
+                uniform float uDirLight0_shadowMaxDistance;
+                uniform vec4 uDirLight0_shadowSplitNear;
+                uniform vec4 uDirLight0_shadowSplitFar;
+                uniform float uDirLight0_shadowMapSize;
+                uniform float uDirLight0_shadowSpread;
+                uniform float uDirLight0_shadowBias;
+                #  endif
+                # endif
+
+                #endif
+
+                uniform vec3 uCameraDirection;
+
+                varying vec4 vVertexScreenPosition;
+                varying vec3 vVertexNormal;
+
+                void main(void)
+                {
+                    vec4 weights = shadowMapping_getCascadeWeights(vVertexScreenPosition.z, uDirLight0_shadowSplitNear, uDirLight0_shadowSplitFar);
+                    vec4 cascadeColor = vec4(weights.x + weights.w, weights.y + weights.w, weights.z, 1.0);
+
+                    cascadeColor *= (0.2 + 0.8 * dot(normalize(vVertexNormal), normalize(uCameraDirection)))
+                        * (1.0 - shadowMapping_applyDistanceFade(vVertexScreenPosition.z, uDirLight0_shadowSplitFar.w, 0.0, uDirLight0_shadowMaxDistance));
+
+                    gl_FragColor = cascadeColor;
+                }
+            "
+        }]
+    }]
+}

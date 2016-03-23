@@ -1,5 +1,5 @@
---[[
-Copyright (c) 2014 Aerys
+/*
+Copyright (c) 2015 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -15,20 +15,28 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-]]--
+*/
 
--- debug plugin
-minko.plugin.debug = {}
+#pragma once
 
-function minko.plugin.debug:enable()
-	minko.plugin.links { "debug" }
-	includedirs { minko.plugin.path("debug") .. "/include" }
-	defines { "MINKO_PLUGIN_DEBUG" }
+#include "gtest/gtest.h"
 
-	prelinkcommands {
-		minko.action.copy(path.join(minko.plugin.path("debug"), "asset"))
-	}
-	minko.package.assetdirs {
-	  path.join(minko.plugin.path("debug"), "asset")
-	}
-end
+#include "minko/Minko.hpp"
+
+namespace minko
+{
+    namespace file
+    {
+        class MeshPartitionerTest :
+            public ::testing::Test
+        {
+        protected:
+            scene::Node::Ptr
+            createScene();
+
+            void
+            getWorldPositions(const std::vector<component::Surface::Ptr>&   surfaces,
+                              std::vector<math::vec3>&                      positions);
+        };
+    }
+}
