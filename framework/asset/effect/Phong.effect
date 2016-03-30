@@ -16,6 +16,7 @@
                     "aColor"    : "geometry[${geometryUuid}].color"
                 },
                 "uniforms" : {
+                    "uGammaCorrection"  : { "binding" : { "property" : "gammaCorrection", "source" : "renderer" }, "default" : 2.2 },
                     "uNormalMap" : {
                         "binding"       : "material[${materialUuid}].normalMap",
                         "wrapMode"      : "repeat",
@@ -188,6 +189,7 @@
                 },
 
                 "macros" : {
+                    "GAMMA_CORRECTION"          : { "binding" : { "property" : "gammaCorrection", "source" : "renderer" } },
                     "HAS_NORMAL"                : "geometry[${geometryUuid}].normal",
                     "VERTEX_COLOR"              : "geometry[${geometryUuid}].color",
                     "NORMAL_MAP"                : "material[${materialUuid}].normalMap",

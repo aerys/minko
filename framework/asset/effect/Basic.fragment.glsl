@@ -16,6 +16,10 @@
 
 uniform vec4 uDiffuseColor;
 
+#ifdef GAMMA_CORRECTION
+uniform float uGammaCorrection;
+#endif
+
 #ifdef DIFFUSE_MAP
 uniform sampler2D uDiffuseMap;
 #endif
@@ -73,6 +77,10 @@ void main(void)
 				diffuse = texture2D(uDiffuseMap, vVertexUV);
 			#endif
 		#endif
+
+        #ifdef GAMMA_CORRECTION
+            diffuse.rgb = pow(diffuse.rgb, vec3(uGammaCorrection));
+        #endif // GAMMA_CORRECTION
 	#endif // VERTEX_UV
 
 	#if defined(VERTEX_UV) && defined(ALPHA_MAP)
@@ -103,6 +111,10 @@ void main(void)
 	#ifdef FOG_TECHNIQUE
 		diffuse.rgb = fog_sampleFog(diffuse.rgb, vVertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
 	#endif
+
+    #ifdef GAMMA_CORRECTION
+        diffuse.rgb = pow(diffuse.rgb, vec3(1.0 / uGammaCorrection));
+    #endif
 
 	gl_FragColor = diffuse;
 }

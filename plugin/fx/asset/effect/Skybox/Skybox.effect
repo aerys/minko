@@ -13,8 +13,10 @@
                 },
                 "uLatLongMap" : {
                     "binding" : "material[${materialUuid}].diffuseLatLongMap",
+                    "wrapMode" : "repeat",
                     "textureFilter" : "linear"
                 },
+                "uOrientation" : "material[${materialUuid}].orientation",
                 "uGammaCorrection" : "material[${materialUuid}].gammaCorrection",
                 "uZFar" : { "binding" : { "property" : "zFar", "source" : "renderer" } },
                 "uWorldToScreenMatrix" : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
@@ -35,6 +37,7 @@
             "macros" : {
                 "CUBE_MAP" : "material[${materialUuid}].diffuseCubeMap",
                 "LATLONG_MAP" : "material[${materialUuid}].diffuseLatLongMap",
+                "ORIENTATION" : "material[${materialUuid}].orientation",
                 "GAMMA_CORRECTION" : "material[${materialUuid}].gammaCorrection",
                 "FOG_COLOR" : "material[${materialUuid}].fogColor"
             },

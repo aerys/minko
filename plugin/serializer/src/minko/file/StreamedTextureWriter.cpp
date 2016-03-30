@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/PVRTranscoder.hpp"
 #include "minko/file/QTranscoder.hpp"
 #include "minko/file/StreamedTextureWriter.hpp"
+#include "minko/file/TextureWriter.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/log/Logger.hpp"
 #include "minko/render/AbstractTexture.hpp"
@@ -77,6 +78,13 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
         writerOptions->generateMipmaps(_textureType, true);
 
     auto texture = _data;
+
+    if (texture->type() == TextureType::Texture2D && !writerOptions->useTextureSRGBSpace(_textureType))
+    {
+        auto texture2D = std::static_pointer_cast<Texture>(texture);
+
+        TextureWriter::gammaDecode(texture2D->data(), texture2D->data(), TextureWriter::defaultGamma());
+    }
 
     ensureTextureSizeIsValid(texture, writerOptions);
 
