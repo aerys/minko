@@ -17,9 +17,9 @@
 #pragma include "Fog.function.glsl"
 #pragma include "LightMapping.function.glsl"
 
-//#ifdef GAMMA_CORRECTION
+#ifdef GAMMA_CORRECTION
 uniform float uGammaCorrection;
-//#endif
+#endif
 
 #ifdef UV_SCALE
 uniform vec2 uUVScale;
@@ -437,6 +437,10 @@ void main(void)
         #else
             lightMapDiffuse = texture2D(uLightMap, lightMapUV);
         #endif
+
+        #ifdef GAMMA_CORRECTION
+            lightMapDiffuse.rgb = pow(lightMapDiffuse.rgb, vec3(uGammaCorrection));
+        #endif
     #endif // (VERTEX_UV || VERTEX_UV1) && LIGHT_MAP
 
 	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
@@ -448,6 +452,10 @@ void main(void)
 			#endif
 		// #elif defined(NORMAL_MAP) && defined(VERTEX_UV)
 		// 	specular.a = texture2D(uNormalMap, uv).a; // ???
+
+            #ifdef GAMMA_CORRECTION
+                specular.rgb = pow(specular.rgb, vec3(uGammaCorrection));
+            #endif // GAMMA_CORRECTION
 		#endif // SPECULAR_MAP
 	#endif
 
@@ -692,9 +700,9 @@ void main(void)
 		phong = fog_sampleFog(phong, vVertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
 	#endif
 
-    //#ifdef GAMMA_CORRECTION
+    #ifdef GAMMA_CORRECTION
         phong.rgb = pow(phong.rgb, vec3(1.0 / uGammaCorrection));
-    //#endif
+    #endif
 
 	gl_FragColor = vec4(phong.rgb, diffuse.a);
 }
