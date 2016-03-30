@@ -14,6 +14,10 @@
     uniform sampler2D uLatLongMap;
 #endif
 
+#ifdef ORIENTATION
+    uniform float uOrientation;
+#endif
+
 #ifdef GAMMA_CORRECTION
     uniform float uGammaCorrection;
 #endif
@@ -31,7 +35,13 @@ void main()
     #if defined(CUBE_MAP)
         color = textureCube(uCubeMap, normalize(vDirection));
     #elif defined(LATLONG_MAP)
-        color = texture2D(uLatLongMap, normalToLatLongUV(normalize(vDirection)));
+        vec2 latLongUV = normalToLatLongUV(normalize(vDirection));
+
+        #ifdef ORIENTATION
+            latLongUV.x += uOrientation;
+        #endif
+
+        color = texture2D(uLatLongMap, latLongUV);
     #endif
 
     #if defined(FOG_COLOR)
