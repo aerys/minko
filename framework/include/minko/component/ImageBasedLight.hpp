@@ -99,6 +99,20 @@ namespace minko
                 return std::static_pointer_cast<ImageBasedLight>(shared_from_this());
             }
 
+            float
+            orientation() const
+            {
+                return provider()->get<float>("orientation");
+            }
+
+            Ptr
+            orientation(float value)
+            {
+                provider()->set("orientation", value);
+
+                return std::static_pointer_cast<ImageBasedLight>(shared_from_this());
+            }
+
         private:
             ImageBasedLight() :
                 AbstractLight("imageBasedLight")
