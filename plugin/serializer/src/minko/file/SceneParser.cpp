@@ -62,6 +62,13 @@ SceneParser::SceneParser()
         std::placeholders::_3,
 		std::placeholders::_4));
 
+    registerComponent(serialize::IMAGE_BASED_LIGHT,
+        std::bind(&deserialize::ComponentDeserializer::deserializeImageBasedLight,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
+
     registerComponent(serialize::AMBIENT_LIGHT,
         std::bind(&deserialize::ComponentDeserializer::deserializeAmbientLight,
         std::placeholders::_1,

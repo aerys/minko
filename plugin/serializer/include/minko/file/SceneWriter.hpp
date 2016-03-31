@@ -47,8 +47,8 @@ namespace minko
 			typedef std::shared_ptr<file::Dependency> 					DependencyPtr;
 			typedef std::shared_ptr<scene::Node> 						NodePtr;
 			typedef std::shared_ptr<component::AbstractComponent>		AbstractComponentPtr;
-			typedef std::function<std::string(NodePtr, AbstractComponentPtr, DependencyPtr)>	NodeWriterFunc;
-			typedef std::shared_ptr<file::AssetLibrary>					AssetLibraryPtr;
+            typedef std::shared_ptr<file::AssetLibrary>					AssetLibraryPtr;
+			typedef std::function<std::string(NodePtr, AbstractComponentPtr, AssetLibraryPtr, DependencyPtr)>	NodeWriterFunc;
 			typedef std::shared_ptr<Options>                            OptionsPtr;
 
 		private:

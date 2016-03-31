@@ -33,6 +33,7 @@ namespace minko
 			typedef std::shared_ptr<scene::Node>						NodePtr;
             typedef std::shared_ptr<component::AbstractComponent>       AbstractComponentPtr;
 			typedef std::shared_ptr<component::Surface>					SurfacePtr;
+            typedef std::shared_ptr<file::AssetLibrary>                 AssetLibraryPtr;
 			typedef std::shared_ptr<file::Dependency>					DependencyPtr;
 			typedef msgpack::type::tuple<std::string, std::string>		SimpleProperty;
 			typedef msgpack::type::tuple<std::vector<SimpleProperty>>	SimplePropertyVector;
@@ -42,78 +43,98 @@ namespace minko
 			std::string
 			serializeTransform(NodePtr			    node,
                                AbstractComponentPtr component,
+                               AssetLibraryPtr      assetLibrary,
                                DependencyPtr	    dependencies);
 
 			static
 			std::string
 			serializePerspectiveCamera(NodePtr			    node,
                                        AbstractComponentPtr component,
+                                       AssetLibraryPtr      assetLibrary,
 									   DependencyPtr	    dependencies);
+
+			static
+			std::string
+			serializeImageBasedLight(NodePtr		        node,
+                                  	 AbstractComponentPtr   component,
+                                     AssetLibraryPtr        assetLibrary,
+                                     DependencyPtr	        dependencies);
 
 			static
 			std::string
 			serializeAmbientLight(NodePtr		        node,
                                   AbstractComponentPtr  component,
+                                  AssetLibraryPtr       assetLibrary,
 								  DependencyPtr         dependencies);
 
 			static
 			std::string
 			serializeDirectionalLight(NodePtr		        node,
                                       AbstractComponentPtr  component,
+                                      AssetLibraryPtr       assetLibrary,
 									  DependencyPtr         dependencies);
 
 			static
 			std::string
 			serializePointLight(NodePtr			        node,
                                 AbstractComponentPtr    component,
+                                AssetLibraryPtr         assetLibrary,
 								DependencyPtr	        dependencies);
 
 			static
 			std::string
 			serializeSpotLight(NodePtr			    node,
                                AbstractComponentPtr component,
+                               AssetLibraryPtr      assetLibrary,
 							   DependencyPtr	    dependencies);
 
 			static
 			std::string
 			serializeSurface(NodePtr		        node,
                              AbstractComponentPtr   component,
+                             AssetLibraryPtr        assetLibrary,
 							 DependencyPtr	        dependencies);
 
 			static
 			std::string
 			serializeRenderer(NodePtr		        node,
                               AbstractComponentPtr  component,
+                              AssetLibraryPtr       assetLibrary,
 							  DependencyPtr         dependencies);
 
 			static
 			std::string
 			serializeMasterAnimation(NodePtr 		        node,
                                      AbstractComponentPtr   component,
+                                     AssetLibraryPtr        assetLibrary,
 							         DependencyPtr 	        dependencies);
 
 			static
 			std::string
 			serializeAnimation(NodePtr 		        node,
                                AbstractComponentPtr component,
+                               AssetLibraryPtr      assetLibrary,
 							   DependencyPtr 	    dependencies);
 
             static
 			std::string
 			serializeSkinning(NodePtr 		        node,
                               AbstractComponentPtr  component,
+                              AssetLibraryPtr       assetLibrary,
 							  DependencyPtr 	    dependencies);
 
 			static
 			std::string
 			serializeBoundingBox(NodePtr 		        node,
                                  AbstractComponentPtr   component,
+                                 AssetLibraryPtr        assetLibrary,
 								 DependencyPtr 	        dependencies);
 
 			static
 			std::string
  			serializeMetadata(NodePtr              	node,
                               AbstractComponentPtr	component,
+                              AssetLibraryPtr       assetLibrary,
                               DependencyPtr 	    dependencies);
 
 			static

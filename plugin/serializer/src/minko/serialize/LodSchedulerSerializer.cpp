@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/StreamingCommon.hpp"
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/deserialize/Unpacker.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/serialize/LodSchedulerSerializer.hpp"
@@ -33,6 +34,7 @@ using namespace minko::serialize;
 std::string
 LodSchedulerSerializer::serializePOPGeometryLodScheduler(Node::Ptr                 node,
                                                          AbstractComponent::Ptr    component,
+                                                         AssetLibrary::Ptr         assetLibrary,
                                                          Dependency::Ptr           dependency)
 {
     auto type = static_cast<int8_t>(POP_GEOMETRY_LOD_SCHEDULER);
@@ -47,6 +49,7 @@ LodSchedulerSerializer::serializePOPGeometryLodScheduler(Node::Ptr              
 std::string
 LodSchedulerSerializer::serializeTextureLodScheduler(Node::Ptr                 node,
                                                      AbstractComponent::Ptr    component,
+                                                     AssetLibrary::Ptr         assetLibrary,
                                                      Dependency::Ptr           dependency)
 {
     auto type = static_cast<int8_t>(TEXTURE_LOD_SCHEDULER);

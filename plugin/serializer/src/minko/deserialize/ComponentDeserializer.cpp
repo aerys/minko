@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/ImageBasedLight.hpp"
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
 #include "minko/component/PointLight.hpp"
@@ -86,6 +87,44 @@ ComponentDeserializer::deserializeProjectionCamera(file::SceneVersion sceneVersi
 	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
 	return component::PerspectiveCamera::create(dstContent[0], dstContent[1], dstContent[2], dstContent[3]);
+}
+
+component::AbstractComponent::Ptr
+ComponentDeserializer::deserializeImageBasedLight(file::SceneVersion        sceneVersion,
+                                                  std::string&              serializedImageBasedLight,
+                                                  file::AssetLibrary::Ptr   assetLibrary,
+                                                  file::Dependency::Ptr     dependencies)
+{
+    auto deserializedImageBasedLight = msgpack::type::tuple<float, float, float, unsigned int, unsigned int>();
+    auto imageBasedLight = component::ImageBasedLight::create();
+
+    unpack(deserializedImageBasedLight, serializedImageBasedLight.data(), serializedImageBasedLight.size() - 1);
+
+    imageBasedLight
+        ->diffuse(deserializedImageBasedLight.get<0>())
+        ->specular(deserializedImageBasedLight.get<1>())
+        ->orientation(deserializedImageBasedLight.get<2>());
+
+    const auto irradianceMapId = deserializedImageBasedLight.get<3>();
+    const auto radianceMapId = deserializedImageBasedLight.get<4>();
+
+    if (irradianceMapId != 0u)
+    {
+        auto irradianceMap = dependencies->getTextureReference(irradianceMapId);
+
+        if (irradianceMap)
+            imageBasedLight->irradianceMap(irradianceMap->sampler());
+    }
+
+    if (radianceMapId != 0u)
+    {
+        auto radianceMap = dependencies->getTextureReference(radianceMapId);
+
+        if (radianceMap)
+            imageBasedLight->radianceMap(radianceMap->sampler());
+    }
+
+    return imageBasedLight;
 }
 
 std::shared_ptr<component::AbstractComponent>

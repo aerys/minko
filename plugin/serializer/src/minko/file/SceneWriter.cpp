@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Transform.hpp"
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
+#include "minko/component/ImageBasedLight.hpp"
 #include "minko/component/Skinning.hpp"
 #include "minko/component/SpotLight.hpp"
 #include "minko/component/PointLight.hpp"
@@ -52,7 +53,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 		&typeid(component::PerspectiveCamera),
 		std::bind(
 			&serialize::ComponentSerializer::serializePerspectiveCamera,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 		)
 	);
 
@@ -60,15 +61,23 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 		&typeid(component::Transform),
 		std::bind(
 			&serialize::ComponentSerializer::serializeTransform,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-		)
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
+            )
 	);
+
+    registerComponent(
+        &typeid(component::ImageBasedLight),
+        std::bind(
+            &serialize::ComponentSerializer::serializeImageBasedLight,
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
+        )
+    );
 
 	registerComponent(
 		&typeid(component::AmbientLight),
 		std::bind(
 			&serialize::ComponentSerializer::serializeAmbientLight,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 		)
 	);
 
@@ -76,7 +85,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 		&typeid(component::DirectionalLight),
 		std::bind(
 			&serialize::ComponentSerializer::serializeDirectionalLight,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 		)
 	);
 
@@ -84,7 +93,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 		&typeid(component::SpotLight),
 		std::bind(
 			&serialize::ComponentSerializer::serializeSpotLight,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 		)
 	);
 
@@ -92,7 +101,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 		&typeid(component::PointLight),
 		std::bind(
 			&serialize::ComponentSerializer::serializePointLight,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 		)
 	);
 
@@ -100,7 +109,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 		&typeid(component::Surface),
 		std::bind(
 			&serialize::ComponentSerializer::serializeSurface,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 		)
 	);
 
@@ -108,7 +117,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 		&typeid(component::Renderer),
 		std::bind(
 			&serialize::ComponentSerializer::serializeRenderer,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 		)
 	);
 
@@ -118,7 +127,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 	    	&typeid(component::MasterAnimation),
 	    	std::bind(
 	    		&serialize::ComponentSerializer::serializeMasterAnimation,
-	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 	    	)
 	    );
 
@@ -126,7 +135,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 	    	&typeid(component::Animation),
 	    	std::bind(
 	    		&serialize::ComponentSerializer::serializeAnimation,
-	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 	    	)
 	    );
 
@@ -134,7 +143,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 	    	&typeid(component::Skinning),
 	    	std::bind(
 	    		&serialize::ComponentSerializer::serializeSkinning,
-	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 	    	)
 	    );
     }
@@ -143,7 +152,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 		&typeid(component::BoundingBox),
 		std::bind(
 			&serialize::ComponentSerializer::serializeBoundingBox,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 		)
 	);
 
@@ -151,7 +160,7 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 		&typeid(component::Metadata),
 		std::bind(
 			&serialize::ComponentSerializer::serializeMetadata,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 		)
 	);
 }
@@ -228,7 +237,7 @@ SceneWriter::writeNode(std::shared_ptr<scene::Node>		node,
 			if (_componentIdToWriteFunction.find(currentComponentType) != _componentIdToWriteFunction.end())
 			{
 				index = serializedControllerList.size();
-				serializedControllerList.push_back(_componentIdToWriteFunction[currentComponentType](node, currentComponent, dependency));
+				serializedControllerList.push_back(_componentIdToWriteFunction[currentComponentType](node, currentComponent, assetLibrary, dependency));
 			}
 		}
 

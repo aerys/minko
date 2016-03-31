@@ -54,7 +54,8 @@ PhysicsExtension::bind()
             std::bind(&PhysicsExtension::serializePhysics,
             std::placeholders::_1,
             std::placeholders::_2,
-            std::placeholders::_3)
+            std::placeholders::_3,
+            std::placeholders::_4)
         );
 
     file::SceneParser::registerComponent(
@@ -190,6 +191,7 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
 std::string
 PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 node,
                                     std::shared_ptr<component::AbstractComponent>    component,
+                                    std::shared_ptr<file::AssetLibrary>         assetLibrary,
                                     std::shared_ptr<file::Dependency>           dependency)
 {
     std::shared_ptr<component::bullet::Collider> collider = std::dynamic_pointer_cast<component::bullet::Collider>(component);
