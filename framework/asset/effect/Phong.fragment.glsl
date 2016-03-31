@@ -16,6 +16,7 @@
 #pragma include "ShadowMapping.function.glsl"
 #pragma include "Fog.function.glsl"
 #pragma include "LightMapping.function.glsl"
+#pragma include "PBR.function.glsl"
 
 #ifdef GAMMA_CORRECTION
 uniform float uGammaCorrection;
@@ -102,6 +103,16 @@ uniform vec2 uNormalMapSize;
 #ifdef SPECULAR_MAP_LOD
 uniform float uSpecularMapMaxAvailableLod;
 uniform vec2 uSpecularMapSize;
+#endif
+
+#ifdef NUM_IMAGE_BASED_LIGHTS
+# if NUM_IMAGE_BASED_LIGHTS > 0
+uniform float uImageBasedLight0_diffuse;
+uniform float uImageBasedLight0_specular;
+uniform sampler2D uImageBasedLight0_radianceMap;
+uniform sampler2D uImageBasedLight0_irradianceMap;
+uniform float uImageBasedLight0_orientation;
+# endif
 #endif
 
 // directional lights
@@ -421,8 +432,6 @@ void main(void)
 			discard;
 	#endif // ALPHA_THRESHOLD
 
-    vec4 lightMapDiffuse = vec4(0.0);
-
     #if (defined (VERTEX_UV) || defined(VERTEX_UV1)) && defined(LIGHT_MAP)
         vec2 lightMapUV = vec2(0.0);
 
@@ -432,15 +441,19 @@ void main(void)
             lightMapUV = vVertexUV;
         #endif
 
+        vec3 lightMapColor = vec3(0.0);
+
         #ifdef LIGHT_MAP_LOD
-            lightMapDiffuse = texturelod_texture2D(uLightMap, lightMapUV, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0));
+            lightMapColor = texturelod_texture2D(uLightMap, lightMapUV, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0)).rgb;
         #else
-            lightMapDiffuse = texture2D(uLightMap, lightMapUV);
+            lightMapColor = texture2D(uLightMap, lightMapUV).rgb;
         #endif
 
         #ifdef GAMMA_CORRECTION
-            lightMapDiffuse.rgb = pow(lightMapDiffuse.rgb, vec3(uGammaCorrection));
+            lightMapColor = pow(lightMapColor, vec3(uGammaCorrection));
         #endif
+
+        diffuseAccum += lightMapColor;
     #endif // (VERTEX_UV || VERTEX_UV1) && LIGHT_MAP
 
 	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
@@ -458,6 +471,40 @@ void main(void)
             #endif // GAMMA_CORRECTION
 		#endif // SPECULAR_MAP
 	#endif
+
+    #ifdef NUM_IMAGE_BASED_LIGHTS
+        #if NUM_IMAGE_BASED_LIGHTS > 0
+            vec3 imageBasedLight0Diffuse = pbr_envDiffuse(
+                uImageBasedLight0_irradianceMap,
+                normalVector,
+                vec2(uImageBasedLight0_orientation, 0.0)
+            );
+
+            #ifdef GAMMA_CORRECTION
+                imageBasedLight0Diffuse = pow(imageBasedLight0Diffuse, vec3(uGammaCorrection));
+            #endif // GAMMA_CORRECTION
+
+            diffuseAccum += uImageBasedLight0_diffuse * imageBasedLight0Diffuse;
+
+            vec3 imageBasedLight0Specular = pbr_envSpecular(
+                specular.rgb,
+                uImageBasedLight0_radianceMap,
+                10,
+                pbr_roughness(shininessCoeff),
+                reflect(-eyeVector, normalVector),
+                saturate(dot(normalVector, eyeVector)),
+                normalVector,
+                eyeVector,
+                vec2(uImageBasedLight0_orientation, 0.0)
+            );
+
+            #ifdef GAMMA_CORRECTION
+                imageBasedLight0Specular = pow(imageBasedLight0Specular, vec3(uGammaCorrection));
+            #endif
+
+            specularAccum += uImageBasedLight0_specular * imageBasedLight0Specular;
+        #endif // NUM_IMAGE_BASED_LIGHTS > 0
+    #endif
 
     #ifdef NUM_AMBIENT_LIGHTS
     	#if NUM_AMBIENT_LIGHTS > 0
@@ -673,7 +720,7 @@ void main(void)
 
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 
-	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum + lightMapDiffuse.rgb) + specular.a * specularAccum;
+	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
 
 	#if defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
 
@@ -682,6 +729,10 @@ void main(void)
 		#elif defined(ENVIRONMENT_CUBE_MAP)
 			vec4 envmapColor = envmap_sampleEnvironmentCubeMap(uEnvironmentCubemap, eyeVector, normalVector);
 		#endif
+
+        #if def(GAMMA_CORRECTION)
+            envmapColor.rgb = pow(envmapColor.rgb, vec3(uGammaCorrection));
+        #endif // GAMMA_CORRECTION
 
         #if defined(ENVIRONMENT_ALPHA)
 		    float reflectivity = uEnvironmentAlpha;
