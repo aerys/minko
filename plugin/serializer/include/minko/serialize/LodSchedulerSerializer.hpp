@@ -33,12 +33,14 @@ namespace minko
             std::string
             serializePOPGeometryLodScheduler(std::shared_ptr<scene::Node>                  node,
                                              std::shared_ptr<component::AbstractComponent> component,
+                                             std::shared_ptr<file::AssetLibrary>           assetLibrary,
                                              std::shared_ptr<file::Dependency>             dependency);
 
             static
             std::string
             serializeTextureLodScheduler(std::shared_ptr<scene::Node>                  node,
                                          std::shared_ptr<component::AbstractComponent> component,
+                                         std::shared_ptr<file::AssetLibrary>           assetLibrary,
                                          std::shared_ptr<file::Dependency>             dependency);
         };
     }

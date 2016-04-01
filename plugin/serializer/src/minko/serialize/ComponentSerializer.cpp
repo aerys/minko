@@ -26,17 +26,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/ImageBasedLight.hpp"
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
 #include "minko/component/PointLight.hpp"
 #include "minko/component/Skinning.hpp"
 #include "minko/component/SpotLight.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/geometry/Bone.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/geometry/Skin.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/render/Effect.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Metadata.hpp"
@@ -51,6 +54,7 @@ using namespace minko::serialize;
 std::string
 ComponentSerializer::serializeTransform(NodePtr			        node,
                                         AbstractComponentPtr    component,
+                                        AssetLibraryPtr         assetLibrary,
 										DependencyPtr	        dependencies)
 {
 	int8_t										type		= serialize::TRANSFORM;
@@ -68,6 +72,7 @@ ComponentSerializer::serializeTransform(NodePtr			        node,
 std::string
 ComponentSerializer::serializePerspectiveCamera(NodePtr			        node,
                                                 AbstractComponentPtr    component,
+                                                AssetLibraryPtr         assetLibrary,
 												DependencyPtr	        dependencies)
 {
 	int8_t              type = serialize::PROJECTION_CAMERA;
@@ -88,10 +93,37 @@ ComponentSerializer::serializePerspectiveCamera(NodePtr			        node,
 	return buffer.str();
 }
 
+std::string
+ComponentSerializer::serializeImageBasedLight(NodePtr               node,
+                                              AbstractComponentPtr  component,
+                                              AssetLibraryPtr       assetLibrary,
+                                              DependencyPtr         dependencies)
+{
+    int8_t type = serialize::IMAGE_BASED_LIGHT;
+    auto imageBasedLight = std::static_pointer_cast<component::ImageBasedLight>(component);
+    std::stringstream buffer;
+
+    auto irradianceMap = assetLibrary->getTextureByUuid(imageBasedLight->irradianceMap().uuid);
+    auto radianceMap = assetLibrary->getTextureByUuid(imageBasedLight->radianceMap().uuid);
+
+    auto src = msgpack::type::tuple<float, float, float, unsigned int, unsigned int> {
+        imageBasedLight->diffuse(),
+        imageBasedLight->specular(),
+        imageBasedLight->orientation(),
+        irradianceMap ? dependencies->registerDependency(irradianceMap, "irradianceMap") : 0u,
+        radianceMap ? dependencies->registerDependency(radianceMap, "radianceMap") : 0u
+    };
+
+    msgpack::pack(buffer, src);
+    msgpack::pack(buffer, type);
+
+    return buffer.str();
+}
 
 std::string
 ComponentSerializer::serializeAmbientLight(NodePtr			    node,
                                            AbstractComponentPtr component,
+                                           AssetLibraryPtr      assetLibrary,
 										   DependencyPtr	    dependencies)
 {
 	int8_t				type		= serialize::AMBIENT_LIGHT;
@@ -115,6 +147,7 @@ ComponentSerializer::serializeAmbientLight(NodePtr			    node,
 std::string
 ComponentSerializer::serializeDirectionalLight(NodePtr			    node,
                                                AbstractComponentPtr component,
+                                               AssetLibraryPtr      assetLibrary,
 											   DependencyPtr	    dependencies)
 {
 	int8_t											type		= serialize::DIRECTIONAL_LIGHT;
@@ -140,6 +173,7 @@ ComponentSerializer::serializeDirectionalLight(NodePtr			    node,
 std::string
 ComponentSerializer::serializePointLight(NodePtr		        node,
                                          AbstractComponentPtr   component,
+                                         AssetLibraryPtr        assetLibrary,
 										 DependencyPtr	        dependencies)
 {
 	int8_t				type	= serialize::POINT_LIGHT;
@@ -167,6 +201,7 @@ ComponentSerializer::serializePointLight(NodePtr		        node,
 std::string
 ComponentSerializer::serializeSpotLight(NodePtr			        node,
                                         AbstractComponentPtr    component,
+                                        AssetLibraryPtr         assetLibrary,
 										DependencyPtr	        dependencies)
 {
 	int8_t				type	= serialize::SPOT_LIGHT;
@@ -196,6 +231,7 @@ ComponentSerializer::serializeSpotLight(NodePtr			        node,
 std::string
 ComponentSerializer::serializeSurface(NodePtr		        node,
                                       AbstractComponentPtr  component,
+                                      AssetLibraryPtr       assetLibrary,
 									  DependencyPtr         dependencies)
 {
 	int8_t				type	= serialize::SURFACE;
@@ -246,6 +282,7 @@ ComponentSerializer::getSurfaceExtension(NodePtr node, SurfacePtr surface)
 std::string
 ComponentSerializer::serializeRenderer(NodePtr			    node,
                                        AbstractComponentPtr component,
+                                       AssetLibraryPtr      assetLibrary,
 									   DependencyPtr	    dependencies)
 {
 	int8_t				type		= serialize::RENDERER;
@@ -263,6 +300,7 @@ ComponentSerializer::serializeRenderer(NodePtr			    node,
 std::string
 ComponentSerializer::serializeMasterAnimation(NodePtr			        node,
                                               AbstractComponentPtr      component,
+                                              AssetLibraryPtr           assetLibrary,
                                               DependencyPtr	            dependencies)
 {
     const auto type = static_cast<int8_t>(serialize::MASTER_ANIMATION);
@@ -284,6 +322,7 @@ ComponentSerializer::serializeMasterAnimation(NodePtr			        node,
 std::string
 ComponentSerializer::serializeAnimation(NodePtr			        node,
                                         AbstractComponentPtr    component,
+                                        AssetLibraryPtr         assetLibrary,
                                         DependencyPtr	        dependencies)
 {
     auto type = static_cast<int8_t>(serialize::ANIMATION);
@@ -326,6 +365,7 @@ ComponentSerializer::serializeAnimation(NodePtr			        node,
 std::string
 ComponentSerializer::serializeSkinning(NodePtr			    node,
                                        AbstractComponentPtr component,
+                                       AssetLibraryPtr      assetLibrary,
                                        DependencyPtr	    dependencies)
 {
     auto type = static_cast<int8_t>(serialize::SKINNING);
@@ -394,6 +434,7 @@ ComponentSerializer::serializeSkinning(NodePtr			    node,
 std::string
 ComponentSerializer::serializeBoundingBox(NodePtr 			    node,
                                           AbstractComponentPtr  component,
+                                          AssetLibraryPtr       assetLibrary,
 					 				      DependencyPtr 	    dependencies)
 {
     auto                boundingBox = std::static_pointer_cast<component::BoundingBox>(component);
@@ -427,6 +468,7 @@ ComponentSerializer::serializeBoundingBox(NodePtr 			    node,
 std::string
 ComponentSerializer::serializeMetadata(NodePtr              node,
                                        AbstractComponentPtr component,
+                                       AssetLibraryPtr      assetLibrary,
                                        DependencyPtr 	    dependencies)
 {
     auto metadata = std::dynamic_pointer_cast<component::Metadata>(component);

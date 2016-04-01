@@ -48,12 +48,12 @@ namespace minko
                 return extention;
             }
 
-
             static
             std::string
-            serializePhysics(std::shared_ptr<scene::Node>                       node,
-                               std::shared_ptr<component::AbstractComponent>    component,
-                                std::shared_ptr<file::Dependency>               dependency);
+            serializePhysics(std::shared_ptr<scene::Node>                     node,
+                             std::shared_ptr<component::AbstractComponent>    component,
+                             std::shared_ptr<file::AssetLibrary>              assetLibrary,
+                             std::shared_ptr<file::Dependency>                dependency);
 
             static
             std::shared_ptr<component::AbstractComponent>

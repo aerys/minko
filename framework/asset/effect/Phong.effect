@@ -47,6 +47,19 @@
                     "uFresnelReflectance"           : { "binding" : "material[${materialUuid}].fresnelReflectance", "default" : 0.0 },
                     "uFresnelExponent"              : { "binding" : "material[${materialUuid}].fresnelExponent", "default" : 1.0 },
                     "uCameraPosition"               : { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
+                    "uImageBasedLight0_diffuse"     : { "binding" : { "property" : "imageBasedLight[0].diffuse", "source" : "root" } },
+                    "uImageBasedLight0_specular"    : { "binding" : { "property" : "imageBasedLight[0].specular", "source" : "root" } },
+                    "uImageBasedLight0_radianceMap" : {
+                        "binding" : { "property" : "imageBasedLight[0].radianceMap", "source" : "root" },
+                        "wrapMode"      : "repeat",
+                        "textureFilter" : "linear",
+                        "mipFilter"     : "linear"
+                    },
+                    "uImageBasedLight0_irradianceMap"  : {
+                        "binding"       : { "property" : "imageBasedLight[0].irradianceMap", "source" : "root" },
+                        "wrapMode"      : "repeat"
+                    },
+                    "uImageBasedLight0_orientation" : { "binding" : { "property" : "imageBasedLight[0].orientation", "source" : "root" } },
                     "uAmbientLight0_color"          : { "binding" : { "property" : "ambientLight[0].color", "source" : "root" } },
                     "uAmbientLight0_ambient"        : { "binding" : { "property" : "ambientLight[0].ambient", "source" : "root" } },
                     "uAmbientLight1_color"          : { "binding" : { "property" : "ambientLight[1].color", "source" : "root" } },
@@ -202,6 +215,7 @@
                     "ENVIRONMENT_TYPE_2D"       : "material[${materialUuid}].environmentMap2dType",
                     "SHININESS"                 : "material[${materialUuid}].shininess",
                     "FOG_TECHNIQUE"             : { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" },
+                    "NUM_IMAGE_BASED_LIGHTS"    : { "binding" : { "property" : "imageBasedLight.length", "source" : "root", "max" : 1 }, "type" : "int" },
                     "NUM_AMBIENT_LIGHTS"        : { "binding" : { "property" : "ambientLight.length", "source" : "root" }, "type" : "int" },
                     "NUM_DIRECTIONAL_LIGHTS"    : { "binding" : { "property" : "directionalLight.length", "source" : "root", "max" : 4 }, "type" : "int" },
                     "NUM_POINT_LIGHTS"          : { "binding" : { "property" : "pointLight.length", "source" : "root", "max" : 4 }, "type" : "int" },
