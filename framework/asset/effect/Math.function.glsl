@@ -56,7 +56,8 @@ vec2 normalToLatLongUV(const vec3 dir)
     vec2 pos = vec2((n > 0.0000001) ? dir.x / n : 0.0, dir.y);
     pos = acos(pos)*INV_PI;
     pos.x = (dir.z > 0.0) ? pos.x * 0.5 : 0.9999999 - (pos.x * 0.5);
-
+    pos.y = min(0.9999999, pos.y);
+    
     return pos;
 }
 
