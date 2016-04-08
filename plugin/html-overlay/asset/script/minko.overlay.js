@@ -185,8 +185,8 @@ Minko.createIframe = function() //EMSCRIPTEN
 	iframe.id = 'canvasiframe';
 	iframe.className = 'emscripten';
 
-	iframe.style.width = canvas.clientWidth + 'px';
-	iframe.style.height = canvas.clientHeight + 'px';
+	iframe.style.width = canvas.width + 'px';
+	iframe.style.height = canvas.height + 'px';
 
 	iframe.style.backgroundColor = 'transparent';
 	iframe.allowTransparency = 'true';
