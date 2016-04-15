@@ -46,14 +46,16 @@ namespace minko
         private:
             std::shared_ptr<file::Options>                                          _options;
             std::shared_ptr<file::AssetLibrary>                                     _assets;
+            std::string                                                             _resolvedFilename;
             ErrorFunction                                                           _errorFunction;
             std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>                  _loaderCompleteSlots;
             std::unordered_map<LoaderPtr, Signal<LoaderPtr, const Error&>::Slot>    _loaderErrorSlots;
 
         public:
-            IOHandler(std::shared_ptr<file::Options> options, std::shared_ptr<file::AssetLibrary> assets) :
+            IOHandler(std::shared_ptr<file::Options> options, std::shared_ptr<file::AssetLibrary> assets, const std::string& resolvedFilename) :
                 _options(options),
-                _assets(assets)
+                _assets(assets),
+                _resolvedFilename(resolvedFilename)
             {
 
             }
@@ -91,10 +93,7 @@ namespace minko
             Assimp::IOStream*
             Open(const char* pFile, const char* pMode = "rb")
             {
-                const auto filename = std::string(pFile);
-
                 auto loader = Loader::create();
-
                 loader->options(_options);
 
                 _options
@@ -104,6 +103,15 @@ namespace minko
                     {
                         return nullptr;
                     });
+
+                const auto absolutePath = File::extractPrefixPathFromFilename(_resolvedFilename);
+                const auto relativePath = File::extractPrefixPathFromFilename(pFile);
+                const auto completePath = absolutePath + '/' + relativePath;
+                const auto filename = File::removePrefixPathFromFilename(pFile);
+
+                // Some relative paths begin with "./"
+                if (!relativePath.empty() && !(relativePath.size() == 1 && relativePath[0] == '.'))
+                    _options->includePaths().push_front(completePath);
 
                 Assimp::IOStream* stream = nullptr;
 

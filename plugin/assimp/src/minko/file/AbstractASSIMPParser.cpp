@@ -167,7 +167,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
     auto ioHandlerOptions = options->clone();
 	ioHandlerOptions->loadAsynchronously(false);
 
-    auto ioHandler = new IOHandler(ioHandlerOptions, _assetLibrary);
+    auto ioHandler = new IOHandler(ioHandlerOptions, _assetLibrary, _resolvedFilename);
 
     ioHandler->errorFunction([this](IOHandler& self, const std::string& filename, const Error& error) -> void
     {

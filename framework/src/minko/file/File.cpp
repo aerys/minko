@@ -177,6 +177,8 @@ File::extractPrefixPathFromFilename(const std::string& filename)
 
     if (lastSeparatorPosition != std::string::npos)
         prefixPath = prefixPath.substr(0, lastSeparatorPosition);
+    else
+        return std::string();
 
     return prefixPath;
 }
