@@ -224,7 +224,7 @@ Loader::processData(const std::string&                      filename,
 
     std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
-    auto parser = _options->getParser(extension);
+    auto parser = options->getParser(extension);
 
     if (parser)
     {
