@@ -115,9 +115,47 @@ Texture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
     const auto previousWidth = this->width();
     const auto previousHeight = this->height();
 
-    auto previousData = _data;
+    const auto previousNumMipMaps = data().size() > TextureFormatInfo::textureSize(_format, previousWidth, previousHeight)
+        ? math::getp2(previousWidth) + 1u
+        : 1u;
 
-    resizeData(previousWidth, previousHeight, &previousData[0], width, height, resizeSmoothly, _data);
+    const auto numMipMaps = previousNumMipMaps > 1u
+        ? math::getp2(width) + 1u
+        : 1u;
+
+    auto dataOffset = 0u;
+
+    auto newData = std::vector<unsigned char>();
+
+    for (auto i = 0u; i < numMipMaps; ++i)
+    {
+        const auto mipMapPreviousWidth = math::max(previousWidth >> i, 1u);
+        const auto mipMapPreviousHeight = math::max(previousHeight >> i, 1u);
+        const auto mipMapWidth = width >> i;
+        const auto mipMapHeight = height >> i;
+
+        const auto mipMapDataBegin = data().begin() + dataOffset;
+        const auto mipMapDataEnd = mipMapDataBegin + TextureFormatInfo::textureSize(_format, mipMapPreviousWidth, mipMapPreviousHeight);
+        auto mipMapData = std::vector<unsigned char>(mipMapDataBegin, mipMapDataEnd);
+
+        dataOffset += mipMapData.size();
+
+        auto newMipMapData = std::vector<unsigned char>();
+
+        resizeData(
+            mipMapPreviousWidth,
+            mipMapPreviousHeight,
+            mipMapData.data(),
+            mipMapWidth,
+            mipMapHeight,
+            resizeSmoothly,
+            newMipMapData
+        );
+
+        newData.insert(newData.end(), newMipMapData.begin(), newMipMapData.end());
+    }
+
+    _data = newData;
 
     _width = width;
     _widthGPU = width;

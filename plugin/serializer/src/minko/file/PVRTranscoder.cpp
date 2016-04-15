@@ -146,7 +146,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             }
         }
 
-        const auto generateMipmaps = writerOptions->generateMipmaps(textureType);
+        const auto generateMipmaps = writerOptions->generateMipMaps(textureType);
 
         if (generateMipmaps)
         {

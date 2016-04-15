@@ -25,8 +25,8 @@ using namespace minko::render;
 
 std::unordered_map<TextureFormat, TextureFormatInfo::Entry, Hash<TextureFormat>> TextureFormatInfo::_formats =
 {
-    { TextureFormat::RGB,               Entry("RGB",                false,    24u,   24u, false,  false) },
-    { TextureFormat::RGBA,              Entry("RGBA",               false,    32u,   32u, true,   false) },
+    { TextureFormat::RGB,               Entry("RGB",                false,    24u,   3u, false,  false) },
+    { TextureFormat::RGBA,              Entry("RGBA",               false,    32u,   4u, true,   false) },
 
     { TextureFormat::RGB_DXT1,          Entry("RGB_DXT1",           true,     4u,    8u,  false,  false) },
     { TextureFormat::RGBA_DXT1,         Entry("RGBA_DXT1",          true,     4u,    8u,  true,   false) },

@@ -111,7 +111,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 {
     auto texture = _data;
 
-    ensureTextureSizeIsValid(texture, writerOptions);
+    ensureTextureSizeIsValid(texture, writerOptions, _textureType);
 
     if (texture->type() == TextureType::Texture2D && !writerOptions->useTextureSRGBSpace(_textureType))
     {
@@ -120,7 +120,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
         gammaDecode(texture2D->data(), texture2D->data(), defaultGamma());
     }
 
-    const auto generateMipmaps = writerOptions->generateMipmaps(_textureType);
+    const auto generateMipmaps = writerOptions->generateMipMaps(_textureType);
 
     const auto& textureFormats = writerOptions->textureFormats();
 
@@ -192,7 +192,8 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 
 void
 TextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
-                                        WriterOptions::Ptr      writerOptions)
+                                        WriterOptions::Ptr      writerOptions,
+                                        const std::string&      textureType)
 {
     const auto width = texture->width();
     const auto height = texture->height();
@@ -200,10 +201,10 @@ TextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
     auto newWidth = width;
     auto newHeight = height;
 
-    if (writerOptions->generateMipmaps(_textureType) &&
+    if (writerOptions->generateMipMaps(_textureType) &&
         newWidth != newHeight)
     {
-        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipmapping(_textureType)
+        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipMapping(_textureType)
             ? std::max<uint>(newWidth, newHeight)
             : std::min<uint>(newWidth, newHeight);
     }
@@ -217,7 +218,11 @@ TextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
     if (width != newWidth ||
         height != newHeight)
     {
-        texture->resize(newWidth, newHeight, true);
+        texture->resize(
+            newWidth,
+            newHeight,
+            writerOptions->textureFilter(textureType) == TextureFilter::LINEAR
+        );
     }
 }
 
