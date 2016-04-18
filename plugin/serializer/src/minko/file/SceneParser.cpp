@@ -197,13 +197,29 @@ SceneParser::parseHeader(const std::string&					filename,
         return;
     }
 
+    const auto embedContentOffset = this->embedContentOffset();
+    const auto embedContentLength = this->embedContentLength();
+
+    if (data.size() >= embedContentOffset + embedContentLength)
+    {
+        const auto embedContentDataBegin = data.begin() + embedContentOffset;
+        const auto embedContentDataEnd = embedContentDataBegin + embedContentLength;
+
+        parseEmbedContent(
+            filename,
+            resolvedFilename,
+            options,
+            std::vector<unsigned char>(embedContentDataBegin, embedContentDataEnd),
+            assetLibrary
+        );
+
+        return;
+    }
+
     auto embedContentLoader = Loader::create();
     auto embedContentOptions = options->clone();
 
     embedContentLoader->options(embedContentOptions);
-
-    const auto embedContentOffset = this->embedContentOffset();
-    const auto embedContentLength = this->embedContentLength();
 
     embedContentOptions
         ->seekingOffset(embedContentOffset)
