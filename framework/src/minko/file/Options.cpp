@@ -341,30 +341,31 @@ Options::initializeDefaultFunctions()
             return defaultProtocol;
         };
 
-    _protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-    {
-        std::string protocol = "";
-
-        uint i;
-
-        for (i = 0; i < filename.length(); ++i)
+    if (!_protocolFunction)
+        _protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
         {
-            if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-                break;
+            std::string protocol = "";
 
-            protocol += filename.at(i);
-        }
+            uint i;
 
-        if (i != filename.length())
-        {
-            auto loader = options->getProtocol(protocol);
+            for (i = 0; i < filename.length(); ++i)
+            {
+                if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+                    break;
 
-            if (loader)
-                return loader;
-        }
+                protocol += filename.at(i);
+            }
 
-        return _defaultProtocolFunction(filename);
-    };
+            if (i != filename.length())
+            {
+                auto loader = options->getProtocol(protocol);
+
+                if (loader)
+                    return loader;
+            }
+
+            return _defaultProtocolFunction(filename);
+        };
 
     _parserFunction = nullptr;
 }
