@@ -106,10 +106,12 @@ ComponentSerializer::serializeImageBasedLight(NodePtr               node,
     auto irradianceMap = assetLibrary->getTextureByUuid(imageBasedLight->irradianceMap().uuid);
     auto radianceMap = assetLibrary->getTextureByUuid(imageBasedLight->radianceMap().uuid);
 
-    auto src = msgpack::type::tuple<float, float, float, unsigned int, unsigned int> {
-        imageBasedLight->diffuse(),
-        imageBasedLight->specular(),
-        imageBasedLight->orientation(),
+    auto src = msgpack::type::tuple<std::string, unsigned int, unsigned int> {
+        serialize::TypeSerializer::serializeVector<float>({
+            imageBasedLight->diffuse(),
+            imageBasedLight->specular(),
+            imageBasedLight->orientation()
+        }),
         irradianceMap ? dependencies->registerDependency(irradianceMap, "irradianceMap") : 0u,
         radianceMap ? dependencies->registerDependency(radianceMap, "radianceMap") : 0u
     };
