@@ -565,6 +565,15 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
         filename = uniqueFilename;
     }
 
+    auto existingTexture = assetLibrary->texture(filename);
+
+    if (existingTexture)
+    {
+        dependencies->registerReference(assetRef, existingTexture);
+
+        return;
+    }
+
     auto textureData = Provider::create();
 
     auto parser = StreamedTextureParser::create();
