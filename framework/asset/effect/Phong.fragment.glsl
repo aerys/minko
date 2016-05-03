@@ -730,7 +730,7 @@ void main(void)
 			vec4 envmapColor = envmap_sampleEnvironmentCubeMap(uEnvironmentCubemap, eyeVector, normalVector);
 		#endif
 
-        #if def(GAMMA_CORRECTION)
+        #if defined(GAMMA_CORRECTION)
             envmapColor.rgb = pow(envmapColor.rgb, vec3(uGammaCorrection));
         #endif // GAMMA_CORRECTION
 
