@@ -542,21 +542,37 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
         return;
     }
 
-    auto filename = std::string("minko_default");
+    auto filename = std::string();
     
     if (linkedAsset != nullptr)
     {
         filename = File::removePrefixPathFromFilename(linkedAsset->filename());
     }
+    else
+    {
+        static auto textureId = 0u;
 
-    static auto textureId = 0u;
+        const auto defaultNamePrefix = std::string("$minko_default");
 
-    auto uniqueFilename = filename;
+        auto uniqueFilename = std::string();
 
-    while (assetLibrary->texture(uniqueFilename))
-        uniqueFilename = std::string(filename + "_" + std::to_string(textureId++) + ".texture");
+        do
+        {
+            uniqueFilename = std::string(defaultNamePrefix + "_" + std::to_string(textureId++) + ".texture");
 
-    filename = uniqueFilename;
+        } while (assetLibrary->texture(uniqueFilename));
+
+        filename = uniqueFilename;
+    }
+
+    auto existingTexture = assetLibrary->texture(filename);
+
+    if (existingTexture)
+    {
+        dependencies->registerReference(assetRef, existingTexture);
+
+        return;
+    }
 
     auto textureData = Provider::create();
 
