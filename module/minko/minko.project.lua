@@ -223,6 +223,8 @@ minko.project.application = function(name)
 		cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
 		cmd = cmd .. ' -s NO_EXIT_RUNTIME=1'
 
+		cmd = cmd .. ' -s EXPORTED_FUNCTIONS="[\'_main\', \'_minkoRunPlayer\']"'
+
 		--[[
 			optimize (very) long functions by breaking them into smaller ones
 

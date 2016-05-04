@@ -16,7 +16,7 @@ varying vec3 vDirection;
 
 void main()
 {
-    vec3 pos = aPosition * uZFar + uEyePosition;
+    vec3 pos = normalize(aPosition) * uZFar + uEyePosition;
 
     vDirection = aPosition;
 
