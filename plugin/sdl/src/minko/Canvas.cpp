@@ -675,12 +675,12 @@ Canvas::step()
         {
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
-            auto id = (int)(event.tfinger.fingerId);
+            auto id = static_cast<int>(event.tfinger.fingerId);
 
             _touch->addTouch(id, x, y, 0.f, 0.f);
 
-            _mouse->x((int)_touch->averageX());
-            _mouse->y((int)_touch->averageY());
+            _mouse->x(static_cast<int>(_touch->averageX()));
+            _mouse->y(static_cast<int>(_touch->averageY()));
 
             _touch->touchDown()->execute(
                 _touch,
@@ -708,10 +708,10 @@ Canvas::step()
         {
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
-            auto id = (int)(event.tfinger.fingerId);
+            auto id = static_cast<int>(event.tfinger.fingerId);
 
-            _mouse->x((int)_touch->averageX());
-            _mouse->y((int)_touch->averageY());
+            _mouse->x(static_cast<int>(_touch->averageX()));
+            _mouse->y(static_cast<int>(_touch->averageY()));
 
             _touch->removeTouch(id);
 
@@ -788,6 +788,8 @@ Canvas::step()
 
             _mouse->dX(static_cast<int>(_touch->averageDX()));
             _mouse->dY(static_cast<int>(_touch->averageDY()));
+
+            executeMouseMove = true;
 
             _touch->touchMove()->execute(_touch, id, dx, dy);
 
@@ -982,12 +984,14 @@ Canvas::step()
         }
     }
 
+    if (mouseDX != 0)
+        _mouse->dX(mouseDX);
+    if (mouseDY != 0)
+        _mouse->dY(mouseDY);
+
     // Execute mouse move event only once per frame
     if (executeMouseMove)
-        _mouse->move()->execute(_mouse, mouseDX, mouseDY);
-
-    _mouse->dX(mouseDX);
-    _mouse->dY(mouseDY);
+        _mouse->move()->execute(_mouse, _mouse->dX(), _mouse->dY());
 
     if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
     {
