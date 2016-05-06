@@ -457,6 +457,9 @@ Canvas::step()
     _mouse->dX(0);
     _mouse->dY(0);
 
+    auto mouseDX = 0;
+    auto mouseDY = 0;
+
     _touch->resetDeltas();
 
     while (SDL_PollEvent(&event))
@@ -604,8 +607,11 @@ Canvas::step()
             _mouse->x(x);
             _mouse->y(y);
 
-            _mouse->dX(_mouse->dX() + dX);
-            _mouse->dY(_mouse->dY() + dY);
+            mouseDX += dX;
+            mouseDY += dY;
+
+            _mouse->dX(mouseDX);
+            _mouse->dY(mouseDY);
 
             _mouse->move()->execute(_mouse, dX, dY);
             break;
@@ -1066,7 +1072,7 @@ Canvas::desiredFramerate(float desiredFramerate)
 }
 
 void
-Canvas::resetInputs()
+Canvas::resetInputs() const
 {
     while (_touch->numTouches())
     {
