@@ -454,6 +454,8 @@ Canvas::step()
 
     std::vector<char16_t> chars;
 
+    auto executeMouseMove = false;
+
     _mouse->dX(0);
     _mouse->dY(0);
 
@@ -613,7 +615,7 @@ Canvas::step()
             _mouse->dX(mouseDX);
             _mouse->dY(mouseDY);
 
-            _mouse->move()->execute(_mouse, dX, dY);
+			executeMouseMove = true;
             break;
         }
 
@@ -979,6 +981,13 @@ Canvas::step()
             break;
         }
     }
+
+    // Execute mouse move event only once per frame
+    if (executeMouseMove)
+        _mouse->move()->execute(_mouse, mouseDX, mouseDY);
+
+    _mouse->dX(mouseDX);
+    _mouse->dY(mouseDY);
 
     if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
     {
