@@ -116,22 +116,31 @@ Loader::load()
                 _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
                 _loading.push_back(filename);
 
-                _protocolSlots.push_back(protocol->error()->connect(std::bind(
-                    &Loader::protocolErrorHandler,
-                    shared_from_this(),
-                    std::placeholders::_1
-                    )));
-                _protocolSlots.push_back(protocol->complete()->connect(std::bind(
-                    &Loader::protocolCompleteHandler,
-                    shared_from_this(),
-                    std::placeholders::_1
-                )));
-                _protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
-                    &Loader::protocolProgressHandler,
-                    shared_from_this(),
-                    std::placeholders::_1,
-                    std::placeholders::_2
-                )));
+                auto that = shared_from_this();
+
+                _protocolErrorSlots.emplace(
+                    protocol,
+                    protocol->error()->connect([that](AbstractProtocol::Ptr protocol)
+                    {
+                        that->protocolErrorHandler(protocol);
+                    }
+                ));
+
+                _protocolCompleteSlots.emplace(
+                    protocol,
+                    protocol->complete()->connect([that](AbstractProtocol::Ptr protocol)
+                    {
+                        that->protocolCompleteHandler(protocol);
+                    }
+                ));
+
+                _protocolProgressSlots.emplace(
+                    protocol,
+                    protocol->progress()->connect([that](AbstractProtocol::Ptr protocol, float progress)
+                    {
+                        that->protocolProgressHandler(protocol, progress);
+                    }
+                ));
 
                 protocol->load(filename, resolvedFilename, options);
             }
@@ -188,10 +197,12 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     auto filename = protocol->file()->filename();
 
     _loading.erase(std::find(_loading.begin(), _loading.end(), filename));
-    //_filenameToProtocol.erase(protocol->filename());
+
     _filenameToOptions.erase(filename);
-    _protocolSlots.clear();
-    _protocolProgressSlots.clear();
+
+    _protocolErrorSlots.erase(protocol);
+    _protocolCompleteSlots.erase(protocol);
+    _protocolProgressSlots.erase(protocol);
 
     _numFilesToParse++;
 
@@ -305,7 +316,8 @@ Loader::finalize()
 {
     if (_loading.size() == 0 && _filesQueue.size() == 0 && _numFilesToParse == 0)
     {
-        _protocolSlots.clear();
+        _protocolErrorSlots.clear();
+        _protocolCompleteSlots.clear();
         _protocolProgressSlots.clear();
         _parserErrorSlots.clear();
         _filenameToOptions.clear();

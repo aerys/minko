@@ -38,8 +38,15 @@ namespace minko
             typedef std::unordered_map<std::string, std::shared_ptr<Options>>               FilenameToOptions;
             typedef std::unordered_map<std::string, std::shared_ptr<File>>                  FilenameToFile;
             typedef std::unordered_map<std::shared_ptr<AbstractProtocol>, float>            ProtocolToProgress;
-            typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>>::Slot>            ProtocolSlots;
-            typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>, float>::Slot>     ProtocolProgressSlots;
+
+            typedef std::unordered_map<
+                std::shared_ptr<AbstractProtocol>,
+                Signal<std::shared_ptr<AbstractProtocol>>::Slot
+            >                                                                               ProtocolSlots;
+            typedef std::unordered_map<
+                std::shared_ptr<AbstractProtocol>,
+                Signal<std::shared_ptr<AbstractProtocol>, float>::Slot
+            >                                                                               ProtocolProgressSlots;
             typedef std::unordered_map<std::shared_ptr<AbstractParser>, float>              ParserToProgress;
             typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr, float>::Slot>     ParserProgressSlots;
             typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>            ParserCompleteSlots;
@@ -59,7 +66,8 @@ namespace minko
             std::shared_ptr<Signal<Ptr>>                        _complete;
             std::shared_ptr<Signal<Ptr, const Error&>>          _error;
 
-            ProtocolSlots                                       _protocolSlots;
+            ProtocolSlots                                       _protocolErrorSlots;
+            ProtocolSlots                                       _protocolCompleteSlots;
             ProtocolProgressSlots                               _protocolProgressSlots;
             ParserProgressSlots                                 _parserProgressSlots;
             ParserCompleteSlots                                 _parserCompleteSlots;
