@@ -220,7 +220,7 @@ minko.project.application = function(name)
 		cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
 		-- disable exception catching
 		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
-		cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
+		cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=0'
 		cmd = cmd .. ' -s NO_EXIT_RUNTIME=1'
 
 		cmd = cmd .. ' -s EXPORTED_FUNCTIONS="[\'_main\', \'_minkoRunPlayer\']"'
@@ -269,7 +269,7 @@ minko.project.application = function(name)
 		-- disable exception catching
 		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
 		-- allow memory pool to be dynamic
-		cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
+		cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=0'
 		-- demangling C++ symbols
 		cmd = cmd .. ' -s DEMANGLE_SUPPORT=1'
 		-- use a separate *.mem file to initialize the app memory
