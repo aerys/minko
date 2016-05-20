@@ -174,7 +174,7 @@ SceneParser::parse(const std::string&                   filename,
     );
 
     if (includePathIt == includePaths.end())
-        includePaths.push_back(scenePath);
+        includePaths.push_front(scenePath);
 
     _dependency = Dependency::create();
 
