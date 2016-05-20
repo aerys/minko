@@ -87,7 +87,7 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 void
 EmscriptenDOMEngine::loadScript(std::string filename)
 {
-    auto path = "asset/" + filename;
+    auto path = filename;
     auto options = _sceneManager->assets()->loader()->options()->clone();
     auto loader = file::Loader::create();
 
