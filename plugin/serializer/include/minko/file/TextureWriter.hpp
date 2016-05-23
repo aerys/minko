@@ -114,7 +114,8 @@ namespace minko
         private:
             void
             ensureTextureSizeIsValid(std::shared_ptr<render::AbstractTexture>   texture,
-                                     std::shared_ptr<WriterOptions>             writerOptions);
+                                     std::shared_ptr<WriterOptions>             writerOptions,
+                                     const std::string&                         textureType);
 
             static
             bool

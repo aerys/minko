@@ -63,6 +63,40 @@ compressorTypeFromQualityFactor(TextureFormat format, float qualityFactor)
 
     return compressorType;
 }
+
+static
+void
+fillTextureData(const crn_uint32*                           data[6][16],
+                std::shared_ptr<render::Texture>            texture,
+                const std::string&                          textureType,
+                std::shared_ptr<WriterOptions>              writerOptions)
+{
+    const auto mipMapping = writerOptions->generateMipMaps(textureType);
+    const auto preserveMipMaps = writerOptions->preserveMipMaps(textureType);
+
+    if (mipMapping && preserveMipMaps)
+    {
+        const auto width = texture->width();
+        const auto height = texture->height();
+        const auto numMipMaps = math::getp2(texture->width()) + 1u;
+
+        auto offset = 0u;
+
+        for (auto i = 0u; i < numMipMaps; ++i)
+        {
+            const auto mipMapSize = TextureFormatInfo::textureSize(texture->format(), width >> i, height >> i);
+
+            data[0][i] = reinterpret_cast<const unsigned int*>(texture->data().data() + offset);
+
+            offset += mipMapSize;
+        }
+    }
+    else
+    {
+        data[0][0] = reinterpret_cast<const unsigned int*>(texture->data().data());
+    }
+}
+
 #endif
 
 bool
@@ -85,7 +119,8 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
     const auto startTimeStamp = std::clock();
 
-    const auto generateMipmaps = writerOptions->generateMipmaps(textureType);
+    const auto generateMipmaps = writerOptions->generateMipMaps(textureType);
+    const auto numMipMaps = generateMipmaps ? math::getp2(texture->width()) + 1u : 1u;
 
     switch (texture->type())
     {
@@ -102,9 +137,12 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         crn_comp_params compressorParameters;
 
+        compressorParameters.m_faces = 1u;
+
         compressorParameters.m_width = texture2d->width();
         compressorParameters.m_height = texture2d->height();
-        compressorParameters.m_pImages[0][0] = reinterpret_cast<const unsigned int*>(texture2dData.data());
+
+        fillTextureData(compressorParameters.m_pImages, texture2d, textureType, writerOptions);
 
         compressorParameters.set_flag(cCRNCompFlagDXT1AForTransparency, outFormat == TextureFormat::RGBA_DXT1);
         compressorParameters.set_flag(cCRNCompFlagHierarchical, false);
@@ -120,7 +158,21 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
         compressorParameters.m_quality_level = cCRNMaxQualityLevel;
 
         crn_mipmap_params compressorMipParameters;
-        compressorMipParameters.m_mode = generateMipmaps ? cCRNMipModeGenerateMips : cCRNMipModeNoMips;
+        compressorMipParameters.m_mode = cCRNMipModeNoMips;
+
+        if (generateMipmaps)
+        {
+            if (writerOptions->preserveMipMaps(textureType))
+            {
+                compressorParameters.m_levels = numMipMaps;
+                compressorMipParameters.m_mode = cCRNMipModeUseSourceMips;
+            }
+            else
+            {
+                compressorMipParameters.m_mode = cCRNMipModeGenerateMips;
+            }
+        }
+
         compressorMipParameters.m_gamma_filtering = useSRGBSpace;
 
         unsigned int actualQualityLevel;
@@ -138,7 +190,6 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         const auto width = texture->width();
         const auto height = texture->height();
-        const auto numMipmaps = generateMipmaps ? math::getp2(texture->width()) + 1u : 0u;
 
         auto ddsFileData = reinterpret_cast<const char*>(ddsFileRawData);
 
@@ -153,7 +204,7 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         auto mipOffset = crnlib::cDDSSizeofDDSurfaceDesc2 + 4u;
 
-        for (auto i = 0u; i < numMipmaps; ++i)
+        for (auto i = 0u; i < numMipMaps; ++i)
         {
             const auto mipWidth = width >> i;
             const auto mipHeight = height >> i;

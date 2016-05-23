@@ -218,28 +218,33 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
         const auto& effectFilename = asset.get<2>();
         const auto effectCompleteFilename = "effect/" + effectFilename;
 
-        auto effectLoaded = false;
+        auto effect = assetLibrary->effect(effectFilename);
 
-        auto effectLoader = Loader::create(options->clone());
-
-        effectLoader->options()->storeDataIfNotParsed(false);
-
-        auto errorSlot = effectLoader->error()->connect([](Loader::Ptr loaderThis, const Error& error)
+        if (!effect)
         {
-            LOG_ERROR(error.type() << ": " << error.what());
-        });
+            auto effectLoader = Loader::create(options->clone());
 
-        auto completeSlot = effectLoader->complete()->connect([&effectLoaded](Loader::Ptr loaderThis)
-        {
-            effectLoaded = true;
-        });
+            effectLoader->options()->storeDataIfNotParsed(false);
 
-        effectLoader
-            ->queue(effectCompleteFilename)
-            ->load();
+            auto errorSlot = effectLoader->error()->connect([](Loader::Ptr loaderThis, const Error& error)
+            {
+                LOG_ERROR(error.type() << ": " << error.what());
+            });
 
-        if (effectLoaded)
-            _dependency->registerReference(asset.get<1>(), assetLibrary->effect(effectCompleteFilename));
+            auto completeSlot = effectLoader->complete()->connect(
+                [&effect, &effectCompleteFilename, assetLibrary](Loader::Ptr loaderThis)
+                {
+                    effect = assetLibrary->effect(effectCompleteFilename);
+                }
+            );
+
+            effectLoader
+                ->queue(effectCompleteFilename)
+                ->load();
+        }
+
+        if (effect)
+            _dependency->registerReference(asset.get<1>(), effect);
     }
     else if ((asset.get<0>() == serialize::AssetType::EMBED_TEXTURE_ASSET ||
         asset.get<0>() == serialize::AssetType::TEXTURE_ASSET) &&

@@ -70,14 +70,16 @@ namespace minko
 
             struct TextureOptions
             {
-                bool                compressTexture;
-                float               compressedTextureQualityFactor;
-                bool                generateMipmaps;
-                bool                useTextureSRGBSpace;
-                bool                upscaleTextureWhenProcessedForMipmapping;
-                math::vec2          textureScale;
-                math::ivec2         textureMaxSize;
-                render::MipFilter   mipFilter;
+                bool                    compressTexture;
+                float                   compressedTextureQualityFactor;
+                bool                    preserveMipMaps;
+                bool                    generateMipMaps;
+                bool                    useTextureSRGBSpace;
+                bool                    upscaleTextureWhenProcessedForMipMapping;
+                math::vec2              textureScale;
+                math::ivec2             textureMaxSize;
+                render::TextureFilter   textureFilter;
+                render::MipFilter       mipFilter;
             };
 
         private:
@@ -405,23 +407,47 @@ namespace minko
 
             inline
             bool
-            generateMipmaps(const std::string& textureType) const
+            preserveMipMaps(const std::string& textureType) const
             {
-                return textureOptions(textureType).generateMipmaps;
+                return textureOptions(textureType).preserveMipMaps;
             }
 
             inline
             Ptr
-            generateMipmaps(const std::string& textureType, bool value)
+            preserveMipMaps(const std::string& textureType, bool value)
             {
                 if (textureType.empty())
                 {
                     for (auto& textureOption : _textureOptions)
-                        textureOption.second.generateMipmaps = value;
+                        textureOption.second.preserveMipMaps = value;
                 }
                 else
                 {
-                    _textureOptions.at(textureType).generateMipmaps = value;
+                    _textureOptions.at(textureType).preserveMipMaps = value;
+                }
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            generateMipMaps(const std::string& textureType) const
+            {
+                return textureOptions(textureType).generateMipMaps;
+            }
+
+            inline
+            Ptr
+            generateMipMaps(const std::string& textureType, bool value)
+            {
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.generateMipMaps = value;
+                }
+                else
+                {
+                    _textureOptions.at(textureType).generateMipMaps = value;
                 }
 
                 return shared_from_this();
@@ -453,23 +479,23 @@ namespace minko
 
             inline
             bool
-            upscaleTextureWhenProcessedForMipmapping(const std::string& textureType) const
+            upscaleTextureWhenProcessedForMipMapping(const std::string& textureType) const
             {
-                return textureOptions(textureType).upscaleTextureWhenProcessedForMipmapping;
+                return textureOptions(textureType).upscaleTextureWhenProcessedForMipMapping;
             }
 
             inline
             Ptr
-            upscaleTextureWhenProcessedForMipmapping(const std::string& textureType, bool value)
+            upscaleTextureWhenProcessedForMipMapping(const std::string& textureType, bool value)
             {
                 if (textureType.empty())
                 {
                     for (auto& textureOption : _textureOptions)
-                        textureOption.second.upscaleTextureWhenProcessedForMipmapping = value;
+                        textureOption.second.upscaleTextureWhenProcessedForMipMapping = value;
                 }
                 else
                 {
-                    _textureOptions.at(textureType).upscaleTextureWhenProcessedForMipmapping = value;
+                    _textureOptions.at(textureType).upscaleTextureWhenProcessedForMipMapping = value;
                 }
 
                 return shared_from_this();
@@ -518,6 +544,30 @@ namespace minko
                 else
                 {
                     _textureOptions.at(textureType).textureScale = value;
+                }
+
+                return shared_from_this();
+            }
+
+            inline
+            render::TextureFilter
+            textureFilter(const std::string& textureType) const
+            {
+                return textureOptions(textureType).textureFilter;
+            }
+
+            inline
+            Ptr
+            textureFilter(const std::string& textureType, render::TextureFilter value)
+            {
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.textureFilter = value;
+                }
+                else
+                {
+                    _textureOptions.at(textureType).textureFilter = value;
                 }
 
                 return shared_from_this();

@@ -105,7 +105,7 @@ QTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             qSrcTexture.pData = texture2dData.data();
         }
 
-        const auto generateMipmaps = writerOptions->generateMipmaps(textureType);
+        const auto generateMipmaps = writerOptions->generateMipMaps(textureType);
 
         if (generateMipmaps)
         {

@@ -105,6 +105,7 @@ namespace minko
 			MaterialFunction							                _materialFunction;
 			TextureFunction							                    _textureFunction;
 			GeometryFunction							                _geometryFunction;
+			ProtocolFunction								            _defaultProtocolFunction;
 			ProtocolFunction								            _protocolFunction;
             ParserFunction                                              _parserFunction;
 			UriFunction									                _uriFunction;
@@ -116,7 +117,6 @@ namespace minko
             int                                                         _seekingOffset;
             int                                                         _seekedLength;
 
-			static ProtocolFunction								        _defaultProtocolFunction;
             static MaterialPtr                                          _defaultMaterial;
 
 		public:
@@ -544,7 +544,7 @@ namespace minko
 			const ProtocolFunction&
 			protocolFunction() const
 			{
-				return _protocolFunction;
+				return _protocolFunction ? _protocolFunction : _defaultProtocolFunction;
 			}
 
 			inline
@@ -780,7 +780,6 @@ namespace minko
 			AbsProtocolPtr
 			getProtocol(const std::string& protocol);
 
-			static
 			void
 			defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func);
 

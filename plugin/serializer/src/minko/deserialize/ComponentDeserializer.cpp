@@ -95,18 +95,20 @@ ComponentDeserializer::deserializeImageBasedLight(file::SceneVersion        scen
                                                   file::AssetLibrary::Ptr   assetLibrary,
                                                   file::Dependency::Ptr     dependencies)
 {
-    auto deserializedImageBasedLight = msgpack::type::tuple<float, float, float, unsigned int, unsigned int>();
+    auto deserializedImageBasedLight = msgpack::type::tuple<std::string, unsigned int, unsigned int>();
     auto imageBasedLight = component::ImageBasedLight::create();
 
     unpack(deserializedImageBasedLight, serializedImageBasedLight.data(), serializedImageBasedLight.size() - 1);
 
-    imageBasedLight
-        ->diffuse(deserializedImageBasedLight.get<0>())
-        ->specular(deserializedImageBasedLight.get<1>())
-        ->orientation(deserializedImageBasedLight.get<2>());
+    auto properties = deserialize::TypeDeserializer::deserializeVector<float>(deserializedImageBasedLight.get<0>());
 
-    const auto irradianceMapId = deserializedImageBasedLight.get<3>();
-    const auto radianceMapId = deserializedImageBasedLight.get<4>();
+    imageBasedLight
+        ->diffuse(properties.at(0))
+        ->specular(properties.at(1))
+        ->orientation(properties.at(2));
+
+    const auto irradianceMapId = deserializedImageBasedLight.get<1>();
+    const auto radianceMapId = deserializedImageBasedLight.get<2>();
 
     if (irradianceMapId != 0u)
     {

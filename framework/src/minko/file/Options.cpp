@@ -35,7 +35,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-Options::ProtocolFunction Options::_defaultProtocolFunction = nullptr;
 Options::MaterialPtr Options::_defaultMaterial = material::Material::create();
 
 Options::Options() :
@@ -331,17 +330,7 @@ Options::initializeDefaultFunctions()
         {
         };
 
-    if (!_defaultProtocolFunction)
-        _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-        {
-            auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
-
-            defaultProtocol->options(options->clone());
-
-            return defaultProtocol;
-        };
-
-    _protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+    _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
     {
         std::string protocol = "";
 
@@ -363,7 +352,11 @@ Options::initializeDefaultFunctions()
                 return loader;
         }
 
-        return _defaultProtocolFunction(filename);
+        auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
+
+        defaultProtocol->options(options->clone());
+
+        return defaultProtocol;
     };
 
     _parserFunction = nullptr;

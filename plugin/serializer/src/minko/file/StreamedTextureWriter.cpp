@@ -74,8 +74,8 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
                              WriterOptions::Ptr             writerOptions,
                              std::vector<unsigned char>&    embeddedHeaderData)
 {
-    if (!writerOptions->generateMipmaps(_textureType))
-        writerOptions->generateMipmaps(_textureType, true);
+    if (!writerOptions->generateMipMaps(_textureType))
+        writerOptions->generateMipMaps(_textureType, true);
 
     auto texture = _data;
 
@@ -86,7 +86,7 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
         TextureWriter::gammaDecode(texture2D->data(), texture2D->data(), TextureWriter::defaultGamma());
     }
 
-    ensureTextureSizeIsValid(texture, writerOptions);
+    ensureTextureSizeIsValid(texture, writerOptions, _textureType);
 
     const auto& textureFormats = writerOptions->textureFormats();
 
@@ -127,13 +127,13 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
     const auto width = texture->width();
     const auto height = texture->height();
     const auto numFaces = static_cast<unsigned char>(texture->type() == TextureType::Texture2D ? 1 : 6);
-    const auto numMipmaps = static_cast<unsigned char>(writerOptions->generateMipmaps(_textureType) && texture->width() == texture->height() ? math::getp2(texture->width()) + 1 : 0);
+    const auto numMipMaps = static_cast<unsigned char>(writerOptions->generateMipMaps(_textureType) && texture->width() == texture->height() ? math::getp2(texture->width()) + 1 : 0);
 
     auto textureHeaderData = msgpack::type::tuple<int, int, unsigned char, unsigned char>(
         width,
         height,
         numFaces,
-        numMipmaps
+        numMipMaps
     );
 
     headerData.get<0>() = linkedAssetId;
@@ -175,7 +175,8 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
 
 void
 StreamedTextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
-                                                WriterOptions::Ptr      writerOptions)
+                                                WriterOptions::Ptr      writerOptions,
+                                                const std::string&      textureType)
 {
     const auto width = texture->width();
     const auto height = texture->height();
@@ -185,7 +186,7 @@ StreamedTextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
 
     if (newWidth != newHeight)
     {
-        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipmapping(_textureType)
+        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipMapping(_textureType)
             ? std::max<uint>(newWidth, newHeight)
             : std::min<uint>(newWidth, newHeight);
     }
@@ -199,7 +200,11 @@ StreamedTextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
     if (width != newWidth ||
         height != newHeight)
     {
-        texture->resize(newWidth, newHeight, true);
+        texture->resize(
+            newWidth,
+            newHeight,
+            writerOptions->textureFilter(textureType) == TextureFilter::LINEAR
+        );
     }
 }
 
@@ -211,14 +216,14 @@ StreamedTextureWriter::writeMipLevels(TextureFormat                             
                                       std::vector<msgpack::type::tuple<int, int>>&   mipLevels,
                                       msgpack::sbuffer&                              blob)
 {
-    const auto numMipmaps = math::getp2(std::max<int>(textureWidth, textureHeight)) + 1;
+    const auto numMipMaps = math::getp2(std::max<int>(textureWidth, textureHeight)) + 1;
 
-    mipLevels.resize(numMipmaps);
+    mipLevels.resize(numMipMaps);
 
     auto dataOffset = 0;
     auto serializedDataOffset = blob.size();
 
-    for (auto i = 0u; i < numMipmaps; ++i)
+    for (auto i = 0u; i < numMipMaps; ++i)
     {
         const auto previousBlobSize = blob.size();
 

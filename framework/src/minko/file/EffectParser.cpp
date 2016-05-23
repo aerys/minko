@@ -173,7 +173,8 @@ EffectParser::parse(const std::string&				    filename,
         );
     }
 
-	_options = options;
+    _options = options->clone()
+        ->loadAsynchronously(false);
 
     int pos	= resolvedFilename.find_last_of("/\\");
     if (pos != std::string::npos)

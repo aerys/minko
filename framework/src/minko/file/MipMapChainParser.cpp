@@ -45,8 +45,8 @@ MipMapChainParser::parseTexture(std::shared_ptr<AbstractContext>   context,
                                 TextureFormat                      format,
                                 const std::string&                 filename)
 {
-    int numLevels = mipMapping && parseMipMaps ? std::ceil(math::log2(float(width))) : 1;
-    int actualHeight = height;
+    const unsigned int numLevels = mipMapping && parseMipMaps ? math::getp2(width) + 1u : 1u;
+    unsigned int actualHeight = height;
 
     if (mipMapping && parseMipMaps && width * 2 - 1 != height)
     {
@@ -74,9 +74,12 @@ MipMapChainParser::parseTexture(std::shared_ptr<AbstractContext>   context,
     texture->data(&rgba[0]);
     texture->upload();
 
+    auto& textureRgbaData = texture->data();
+
     if (mipMapping && parseMipMaps)
     {
         uint dataOffset = width * actualHeight * bytesPerPixel;
+        uint rgbaOffset = width * actualHeight * 4u;
 
         for (uint level = 1; level < numLevels; level++)
         {
@@ -84,10 +87,16 @@ MipMapChainParser::parseTexture(std::shared_ptr<AbstractContext>   context,
             if (dataOffset > width * height * bytesPerPixel)
                 break;
 
-            parseMipMap(&rgba[0], data + dataOffset, width, height, math::ivec2(0), width >> level, actualHeight >> level, bytesPerPixel);
+            const auto mipMapSize = math::max(width >> level, 1u) * math::max(actualHeight >> level, 1u) * 4u;
+
+            textureRgbaData.resize(textureRgbaData.size() + mipMapSize);
+
+            parseMipMap(&textureRgbaData[rgbaOffset], data + dataOffset, width, height, math::ivec2(0), width >> level, actualHeight >> level, bytesPerPixel);
 
             dataOffset += width * (actualHeight >> level) * bytesPerPixel;
-            texture->uploadMipLevel(level, &rgba[0]);
+            texture->uploadMipLevel(level, &textureRgbaData[rgbaOffset]);
+
+            rgbaOffset += mipMapSize;
         }
     }
 
