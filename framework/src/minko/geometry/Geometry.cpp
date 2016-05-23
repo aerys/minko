@@ -146,10 +146,12 @@ Geometry::computeNormals()
 	if (!xyzBuffer)
 		throw std::logic_error("Computation of normals requires positions.");
 
-	const std::vector<unsigned short>& indices	= this->indices()->data();
-	const unsigned int numFaces					= indices.size() / 3;
+    const auto ushortIndices = indices()->dataPointer<unsigned short>();
+    const auto uintIndices = indices()->dataPointer<unsigned int>();
 
-	unsigned short vertexIds[3] = { 0, 0, 0 };
+	const unsigned int numFaces = (ushortIndices ? ushortIndices->size() : uintIndices->size()) / 3u;
+
+	unsigned int vertexIds[3] = { 0, 0, 0 };
 	std::vector<math::vec3> xyz(3);
 
 	const auto& xyzAttribute			= xyzBuffer->attribute("position");
@@ -188,7 +190,9 @@ Geometry::computeNormals()
 	{
 		for (unsigned int k = 0; k < 3; ++k)
 		{
-			vertexIds[k] = indices[offset++];
+            vertexIds[k] = ushortIndices
+                ? static_cast<unsigned int>(ushortIndices->at(offset++))
+                : uintIndices->at(offset++);
 			const unsigned int index = xyzOffset + vertexIds[k] * xyzSize;
 			xyz[k] = { xyzData[index], xyzData[index + 1], xyzData[index + 2] };
 		}
@@ -240,7 +244,6 @@ Geometry::computeTangentSpace(bool doNormals)
 	if (numVertices == 0)
 		return shared_from_this();
 
-
     auto xyzBuffer = vertexBuffer("position");
     if (!xyzBuffer)
         throw std::logic_error("Computation of tangent space requires positions.");
@@ -252,10 +255,12 @@ Geometry::computeTangentSpace(bool doNormals)
 	if (doNormals)
 		computeNormals();
 
-	const std::vector<unsigned short>& indices (this->indices()->data());
-	const unsigned int numFaces = indices.size() / 3;
+    const auto ushortIndices = indices()->dataPointer<unsigned short>();
+    const auto uintIndices = indices()->dataPointer<unsigned int>();
 
-	unsigned short vertexIds[3] = { 0, 0, 0 };
+	const unsigned int numFaces = (ushortIndices ? ushortIndices->size() : uintIndices->size()) / 3u;
+
+	unsigned int vertexIds[3] = { 0, 0, 0 };
 	std::vector<math::vec3> xyz(3);
 	std::vector<math::vec2> uv(3);
 
@@ -273,7 +278,9 @@ Geometry::computeTangentSpace(bool doNormals)
 	{
 		for (unsigned int k = 0; k < 3; ++k)
 		{
-			vertexIds[k] = indices[offset++];
+            vertexIds[k] = ushortIndices
+                ? static_cast<unsigned int>(ushortIndices->at(offset++))
+                : uintIndices->at(offset++);
 			unsigned int index = xyzOffset + vertexIds[k] * xyzSize;
 			xyz[k] = { xyzData[index], xyzData[index + 1], xyzData[index + 2] };
 			index = uvOffset + vertexIds[k] * uvSize;
