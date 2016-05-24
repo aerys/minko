@@ -81,8 +81,7 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 											  const std::vector<unsigned char>&		data,
 											  short									dataOffset,
 											  unsigned int							dependenciesSize,
-											  std::shared_ptr<Options>				options,
-											  std::string&							assetFilePath)
+											  std::shared_ptr<Options>				options)
 {
 	SerializedAsset							serializedAsset;
 
@@ -104,7 +103,7 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 
         unpack(serializedAsset, data, assetSize, offset);
 
-		deserializeAsset(serializedAsset, assetLibrary, options, assetFilePath);
+		deserializeAsset(serializedAsset, assetLibrary, options);
 
 		offset += assetSize;
 	}
@@ -147,11 +146,10 @@ loadAssetData(const std::string&            resolvedFilename,
 void
 AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 											AssetLibraryPtr				assetLibrary,
-											std::shared_ptr<Options>	options,
-											std::string&				assetFilePath)
+											std::shared_ptr<Options>	options)
 {
 	std::vector<unsigned char>	data;
-	std::string					assetCompletePath	= assetFilePath + "/";
+	std::string					assetCompletePath	= "";
 	std::string					resolvedPath		= "";
 	unsigned short				metaData			= (asset.get<0>() & 0xFFFF0000) >> 16;
 
