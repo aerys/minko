@@ -48,6 +48,11 @@ APKProtocol::load()
         resolvedFilename = resolvedFilename.substr(protocolPrefixPosition + 3);
     }
 
+    if (resolvedFilename.find("./") == 0u)
+    {
+        resolvedFilename = resolvedFilename.substr(2u);
+    }
+
     _options = options;
 
     SDL_RWops* file = SDL_RWFromFile(resolvedFilename.c_str(), "rb");
@@ -140,6 +145,11 @@ APKProtocol::fileExists(const std::string& filename)
     if (protocolPrefixPosition != std::string::npos)
     {
         resolvedFilename = filename.substr(protocolPrefixPosition + 3);
+    }
+
+    if (resolvedFilename.find("./") == 0u)
+    {
+        resolvedFilename = resolvedFilename.substr(2u);
     }
 
     auto file = SDL_RWFromFile(resolvedFilename.c_str(), "rb");

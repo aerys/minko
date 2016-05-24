@@ -70,6 +70,7 @@ Options::Options() :
     auto binaryDir = File::getBinaryDirectory();
 
     includePaths().push_back(binaryDir + "/asset");
+    includePaths().push_back(".");
 
  #if defined(DEBUG) && !defined(EMSCRIPTEN)
      includePaths().push_back(binaryDir + "/../../../asset");
