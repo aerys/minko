@@ -490,7 +490,7 @@ void main(void)
                 specular.rgb,
                 uImageBasedLight0_radianceMap,
                 10,
-                pbr_roughness(shininessCoeff),
+                pbr_shininessToRoughness(shininessCoeff),
                 reflect(-eyeVector, normalVector),
                 saturate(dot(normalVector, eyeVector)),
                 normalVector,

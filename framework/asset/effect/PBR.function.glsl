@@ -79,7 +79,7 @@ vec3 pbr_envSpecular(vec3       specularColor,
     );
 }
 
-float pbr_roughness(float shininessCoeff)
+float pbr_shininessToRoughness(float shininessCoeff)
 {
     // http://computergraphics.stackexchange.com/a/1517
 
