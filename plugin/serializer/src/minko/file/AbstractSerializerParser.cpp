@@ -341,19 +341,21 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
         auto linkedAssetOffset = linkedAssetdata.get<0>();
         auto linkedAssetFilename = linkedAssetdata.get<2>();
+        auto linkedAssetAbsoluteFilename = File::extractPrefixPathFromFilename(_resolvedFilename) + "/" + linkedAssetFilename;
+
         const auto linkedAssetLinkType = static_cast<LinkedAsset::LinkType>(linkedAssetdata.get<4>());
 
         if (linkedAssetLinkType == LinkedAsset::LinkType::Internal)
         {
             linkedAssetOffset += internalLinkedContentOffset();
 
-            linkedAssetFilename = assetCompletePath + File::removePrefixPathFromFilename(_resolvedFilename);
+            linkedAssetAbsoluteFilename = assetCompletePath + File::removePrefixPathFromFilename(_resolvedFilename);
         }
 
         auto linkedAsset = LinkedAsset::create()
             ->offset(linkedAssetOffset)
             ->length(linkedAssetdata.get<1>())
-            ->filename(linkedAssetFilename)
+            ->filename(linkedAssetAbsoluteFilename)
             ->data(linkedAssetdata.get<3>())
             ->linkType(linkedAssetLinkType);
 
