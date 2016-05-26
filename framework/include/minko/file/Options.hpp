@@ -61,6 +61,7 @@ namespace minko
 			typedef std::function<EffectPtr(EffectPtr)>											EffectFunction;
             typedef std::function<render::TextureFormat(const TextureFormatSet&)>				TextureFormatFunction;
             typedef std::function<void(NodePtr, const std::string&, const std::string&)> 		AttributeFunction;
+            typedef std::function<bool(const std::string&)> 		                            PreventLoadingFunction;
 
             enum class FileStatus
             {
@@ -113,6 +114,7 @@ namespace minko
             TextureFormatFunction                                       _textureFormatFunction;
             AttributeFunction                                           _attributeFunction;
             FileStatusFunction                                          _fileStatusFunction;
+            PreventLoadingFunction                                        _preventLoadingFunction;
             int                                                         _seekingOffset;
             int                                                         _seekedLength;
 
@@ -720,6 +722,22 @@ namespace minko
             fileStatusFunction(const FileStatusFunction& func)
             {
                 _fileStatusFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const PreventLoadingFunction&
+            preventLoadingFunction() const
+            {
+                return _preventLoadingFunction;
+            }
+
+            inline
+            Ptr
+            preventLoadingFunction(const PreventLoadingFunction& func)
+            {
+                _preventLoadingFunction = func;
 
                 return shared_from_this();
             }
