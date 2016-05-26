@@ -148,6 +148,9 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 											AssetLibraryPtr				assetLibrary,
 											std::shared_ptr<Options>	options)
 {
+    if (options->preventLoadingFunction()(asset.get<2>()))
+       return;
+
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= "";
 	std::string					resolvedPath		= "";
@@ -155,6 +158,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
 	asset.get<0>() = asset.get<0>() & 0x000000FF;
 
+    // Is this an external asset?
     if (asset.get<0>() < 10)
     {
 		assetCompletePath += asset.get<2>();
