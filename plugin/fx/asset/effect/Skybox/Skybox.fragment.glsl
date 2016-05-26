@@ -44,6 +44,10 @@ void main()
         color = texture2D(uLatLongMap, latLongUV);
     #endif
 
+    #if defined(GAMMA_CORRECTION) && (defined(CUBE_MAP) || defined(LATLONG_MAP))
+        color.rgb = pow(color.rgb, vec3(uGammaCorrection));
+    #endif
+
     #if defined(FOG_COLOR)
         color.rgb = mix(color.rgb, uFogColor.rgb, pow(1.0 - saturate(vDirection.y), 30.0));
     #endif
