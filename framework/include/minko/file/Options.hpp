@@ -105,7 +105,6 @@ namespace minko
 			MaterialFunction							                _materialFunction;
 			TextureFunction							                    _textureFunction;
 			GeometryFunction							                _geometryFunction;
-			ProtocolFunction								            _defaultProtocolFunction;
 			ProtocolFunction								            _protocolFunction;
             ParserFunction                                              _parserFunction;
 			UriFunction									                _uriFunction;
@@ -117,6 +116,10 @@ namespace minko
             int                                                         _seekingOffset;
             int                                                         _seekedLength;
 
+            static std::unordered_map<
+                Flyweight<std::string>,
+                ProtocolHandler
+            >                                                           _defaultProtocols;
             static MaterialPtr                                          _defaultMaterial;
 
 		public:
@@ -541,10 +544,15 @@ namespace minko
             }
 
             inline
-			const ProtocolFunction&
-			protocolFunction() const
+			ProtocolFunction
+			protocolFunction()
 			{
-				return _protocolFunction ? _protocolFunction : _defaultProtocolFunction;
+				return _protocolFunction
+                    ? _protocolFunction
+                    : [this](const std::string& filename)
+                        {
+                            return defaultProtocolFunction(filename);
+                        };
 			}
 
 			inline
@@ -764,6 +772,18 @@ namespace minko
 			std::shared_ptr<AbstractParser>
 			getParser(const std::string& extension);
 
+            template <typename T>
+            typename std::enable_if<std::is_base_of<file::AbstractProtocol, T>::value, void>::type
+            static
+            registerDefaultProtocol(const std::string& protocol)
+            {
+                std::string prefix(protocol);
+
+                std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
+
+                _defaultProtocols[prefix] = T::create;
+            }
+
 			template <typename T>
 			typename std::enable_if<std::is_base_of<file::AbstractProtocol, T>::value, Ptr>::type
 			registerProtocol(const std::string& protocol)
@@ -779,9 +799,6 @@ namespace minko
 
 			AbsProtocolPtr
 			getProtocol(const std::string& protocol);
-
-			void
-			defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func);
 
         protected:
 			Options();
@@ -804,6 +821,9 @@ namespace minko
 
             void
             resetNotInheritedValues();
+
+            AbsProtocolPtr
+            defaultProtocolFunction(const std::string& filename);
 
 #if MINKO_PLATFORM & MINKO_PLATFORM_HTML5
             bool

@@ -96,10 +96,7 @@ void
 Canvas::initialize()
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-    file::Options::defaultProtocolFunction("file", [](const std::string& filename)
-    {
-        return file::APKProtocol::create();
-    });
+    file::Options::registerDefaultProtocol<file::APKProtocol>("file");
 #endif
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS

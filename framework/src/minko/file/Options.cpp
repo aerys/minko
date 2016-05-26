@@ -35,6 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
+std::unordered_map<Flyweight<std::string>, Options::ProtocolHandler> Options::_defaultProtocols;
 Options::MaterialPtr Options::_defaultMaterial = material::Material::create();
 
 Options::Options() :
@@ -69,6 +70,7 @@ Options::Options() :
     auto binaryDir = File::getBinaryDirectory();
 
     includePaths().push_back(binaryDir + "/asset");
+    includePaths().push_back(".");
 
  #if defined(DEBUG) && !defined(EMSCRIPTEN)
      includePaths().push_back(binaryDir + "/../../../asset");
@@ -143,8 +145,8 @@ Options::initialize()
     if (_parsers.find("effect") == _parsers.end())
         registerParser<file::EffectParser>("effect");
 
-    if (_protocols.find("file") == _protocols.end())
-        registerProtocol<FileProtocol>("file");
+    if (_defaultProtocols.find("file") == _defaultProtocols.end())
+        registerDefaultProtocol<FileProtocol>("file");
 }
 
 void
@@ -211,15 +213,15 @@ Options::getProtocol(const std::string& protocol)
     auto p = _protocols.count(protocol) == 0 ? nullptr : _protocols[protocol]();
 
     if (p)
+    {
         p->options(p->options()->clone());
 
-    return p;
-}
+        return p;
+    }
 
-void
-Options::defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func)
-{
-    _defaultProtocolFunction = func;
+    auto defaultProtocol = _defaultProtocols.count(protocol) == 0 ? nullptr : _defaultProtocols[protocol]();
+
+    return defaultProtocol;
 }
 
 void
@@ -330,35 +332,6 @@ Options::initializeDefaultFunctions()
         {
         };
 
-    _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-    {
-        std::string protocol = "";
-
-        uint i;
-
-        for (i = 0; i < filename.length(); ++i)
-        {
-            if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-                break;
-
-            protocol += filename.at(i);
-        }
-
-        if (i != filename.length())
-        {
-            auto loader = options->getProtocol(protocol);
-
-            if (loader)
-                return loader;
-        }
-
-        auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
-
-        defaultProtocol->options(options->clone());
-
-        return defaultProtocol;
-    };
-
     _parserFunction = nullptr;
 }
 
@@ -367,6 +340,32 @@ Options::resetNotInheritedValues()
 {
     seekingOffset(0);
     seekedLength(0);
+}
+
+AbstractProtocol::Ptr
+Options::defaultProtocolFunction(const std::string& filename)
+{
+    std::string protocol = "";
+
+    uint i;
+
+    for (i = 0; i < filename.length(); ++i)
+    {
+        if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+            break;
+
+        protocol += filename.at(i);
+    }
+
+    if (i != filename.length())
+    {
+        auto loader = getProtocol(protocol);
+
+        if (loader)
+            return loader;
+    }
+
+    return getProtocol("file");
 }
 
 #if MINKO_PLATFORM & MINKO_PLATFORM_HTML5
