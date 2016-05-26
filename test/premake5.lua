@@ -30,14 +30,18 @@ minko.project.application "minko-test"
 		minko.package.assets {
 			['**.effect'] = { 'copy' },
 			['**.glsl'] = { 'copy' },
-			['**.png'] = { 'copy' }
+			['**.png'] = { 'copy' },
+			['**.scene'] = { 'copy' },
+			['**.texture'] = { 'copy' }
 		}
 
 	configuration { "html5" }
 		minko.package.assets {
 			['**.effect'] = { 'embed' },
 			['**.glsl'] = { 'embed' },
-			['**.png'] = { 'embed' }
+			['**.png'] = { 'embed' },
+			['**.scene'] = { 'embed' },
+			['**.texture'] = { 'embed' }
 		}
 
 		includedirs { '"${EMSCRIPTEN}/system/lib/libcxxabi/include"' }

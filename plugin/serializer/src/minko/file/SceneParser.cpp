@@ -257,11 +257,9 @@ SceneParser::parseEmbedContent(const std::string&					filename,
 				               const std::vector<unsigned char>&	data,
 				               AssetLibraryPtr					    assetLibrary)
 {
-	std::string 		folderPath = extractFolderPath(resolvedFilename);
-
     msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
 
-    extractDependencies(assetLibrary, data, 0, _dependencySize, options, folderPath);
+    extractDependencies(assetLibrary, data, 0, _dependencySize, options);
 
     unpack(dst, data, _sceneDataSize, _dependencySize);
 

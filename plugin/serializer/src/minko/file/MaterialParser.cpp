@@ -63,10 +63,9 @@ MaterialParser::parse(const std::string&                filename,
     if (!readHeader(filename, data, 0x4D))
         return;
 
-	std::string 		folderpath = extractFolderPath(resolvedFilename);
     SerializedMaterial  serializedMaterial;
 
-    extractDependencies(assetLibrary, data, _headerSize, _dependencySize, options, folderpath);
+    extractDependencies(assetLibrary, data, _headerSize, _dependencySize, options);
 
     unpack(serializedMaterial, data, _sceneDataSize, _headerSize + _dependencySize);
 
