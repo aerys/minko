@@ -17,6 +17,7 @@
                     "textureFilter" : "linear"
                 },
                 "uOrientation" : "material[${materialUuid}].orientation",
+                "uBrightness" : "material[${materialUuid}].brightness",
                 "uGammaCorrection" : "material[${materialUuid}].gammaCorrection",
                 "uZFar" : { "binding" : { "property" : "zFar", "source" : "renderer" } },
                 "uWorldToScreenMatrix" : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
@@ -38,6 +39,7 @@
                 "CUBE_MAP" : "material[${materialUuid}].diffuseCubeMap",
                 "LATLONG_MAP" : "material[${materialUuid}].diffuseLatLongMap",
                 "ORIENTATION" : "material[${materialUuid}].orientation",
+                "BRIGHTNESS" : "material[${materialUuid}].brightness",
                 "GAMMA_CORRECTION" : "material[${materialUuid}].gammaCorrection",
                 "FOG_COLOR" : "material[${materialUuid}].fogColor"
             },

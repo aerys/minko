@@ -6,7 +6,8 @@
     #endif
 #endif
 
-#pragma include "../Math.function.glsl"
+#pragma include "Math.function.glsl"
+#pragma include "ToneMapping.function.glsl"
 
 #if defined(CUBE_MAP)
     uniform samplerCube uCubeMap;
@@ -16,6 +17,10 @@
 
 #ifdef ORIENTATION
     uniform float uOrientation;
+#endif
+
+#ifdef BRIGHTNESS
+    uniform float uBrightness;
 #endif
 
 #ifdef GAMMA_CORRECTION
@@ -42,6 +47,10 @@ void main()
         #endif
 
         color = texture2D(uLatLongMap, latLongUV);
+    #endif
+
+    #if defined(BRIGHTNESS)
+        color.rgb = toneMapping_toneMap(color.rgb, uBrightness);
     #endif
 
     #if defined(FOG_COLOR)

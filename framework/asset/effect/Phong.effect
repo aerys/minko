@@ -59,6 +59,7 @@
                         "binding"       : { "property" : "imageBasedLight[0].irradianceMap", "source" : "root" },
                         "wrapMode"      : "repeat"
                     },
+                    "uImageBasedLight0_brightness"  : { "binding" : { "property" : "imageBasedLight[0].brightness", "source" : "root" }, "default" : 1.0 },
                     "uImageBasedLight0_orientation" : { "binding" : { "property" : "imageBasedLight[0].orientation", "source" : "root" } },
                     "uAmbientLight0_color"          : { "binding" : { "property" : "ambientLight[0].color", "source" : "root" } },
                     "uAmbientLight0_ambient"        : { "binding" : { "property" : "ambientLight[0].ambient", "source" : "root" } },
@@ -224,7 +225,8 @@
                     "DIRECTIONAL_1_SHADOW_MAP"  : { "binding" : { "property" : "directionalLight[1].shadowMap", "source" : "root" } },
                     "DIRECTIONAL_2_SHADOW_MAP"  : { "binding" : { "property" : "directionalLight[2].shadowMap", "source" : "root" } },
                     "DIRECTIONAL_3_SHADOW_MAP"  : { "binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" } },
-                    "SHADOW_MAPPING_TECHNIQUE"  : { "binding" : { "property" : "shadowMappingTechnique", "source" : "root" }, "type" : "int" }
+                    "SHADOW_MAPPING_TECHNIQUE"  : { "binding" : { "property" : "shadowMappingTechnique", "source" : "root" }, "type" : "int" },
+                    "TONE_MAPPING_TECHNIQUE"  : { "binding" : { "property" : "toneMappingTechnique", "source" : "root" }, "type" : "int" }
                 },
                 "vertexShader"      : "#pragma include \"Phong.vertex.glsl\"",
                 "fragmentShader"    : "#pragma include \"Phong.fragment.glsl\""
