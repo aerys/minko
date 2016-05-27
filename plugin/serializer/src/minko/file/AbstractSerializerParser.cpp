@@ -353,7 +353,12 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
         auto linkedAssetOffset = linkedAssetdata.get<0>();
         auto linkedAssetFilename = linkedAssetdata.get<2>();
-        auto linkedAssetAbsoluteFilename = File::extractPrefixPathFromFilename(_resolvedFilename) + "/" + linkedAssetFilename;
+        auto linkedAssetAbsoluteFilename = linkedAssetFilename;
+
+        if (linkedAssetFilename == "")
+            linkedAssetAbsoluteFilename = _resolvedFilename;
+        else
+            linkedAssetAbsoluteFilename = File::extractPrefixPathFromFilename(_resolvedFilename) + "/" + linkedAssetAbsoluteFilename;
 
         const auto linkedAssetLinkType = static_cast<LinkedAsset::LinkType>(linkedAssetdata.get<4>());
 
@@ -361,7 +366,8 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
         {
             linkedAssetOffset += internalLinkedContentOffset();
 
-            linkedAssetAbsoluteFilename = assetCompletePath + File::removePrefixPathFromFilename(_resolvedFilename);
+            if (linkedAssetFilename != "")
+                linkedAssetAbsoluteFilename = assetCompletePath + File::removePrefixPathFromFilename(_resolvedFilename);
         }
 
         auto linkedAsset = LinkedAsset::create()
