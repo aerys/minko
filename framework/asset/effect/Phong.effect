@@ -197,8 +197,7 @@
                     "uSpotLight3_attenuationCoeffs"     : { "binding" : { "property" : "spotLight[3].attenuationCoeffs", "source" : "root" } },
                     "uSpotLight3_specular"              : { "binding" : { "property" : "spotLight[3].specular", "source" : "root" } },
                     "uFogColor"                         : "material[${materialUuid}].fogColor",
-                    "uFogBounds"                        : "material[${materialUuid}].fogBounds",
-                    "uGammaCorrection"                  : { "binding" : { "property" : "gammaCorrection", "source" : "renderer" }, "default" : 2.2 }
+                    "uFogBounds"                        : "material[${materialUuid}].fogBounds"
                 },
 
                 "macros" : {
