@@ -148,8 +148,16 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 											AssetLibraryPtr				assetLibrary,
 											std::shared_ptr<Options>	options)
 {
-    if (options->preventLoadingFunction()(asset.get<2>()))
-       return;
+    if (asset.get<0>() == serialize::AssetType::GEOMETRY_ASSET || 
+        asset.get<0>() == serialize::AssetType::TEXTURE_ASSET ||
+        asset.get<0>() == serialize::AssetType::MATERIAL_ASSET ||
+        asset.get<0>() == serialize::AssetType::TEXTURE_PACK_ASSET ||
+        asset.get<0>() == serialize::AssetType::EFFECT_ASSET
+    )
+    {
+        if (options->preventLoadingFunction()(asset.get<2>()))
+            return;
+    }
 
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= "";
