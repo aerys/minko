@@ -120,6 +120,7 @@ Options::Options(const Options& copy) :
     _textureFormatFunction(copy._textureFormatFunction),
     _attributeFunction(copy._attributeFunction),
     _fileStatusFunction(copy._fileStatusFunction),
+    _preventLoadingFunction(copy._preventLoadingFunction),
     _loadAsynchronously(copy._loadAsynchronously),
     _seekingOffset(copy._seekingOffset),
     _seekedLength(copy._seekedLength)
@@ -333,6 +334,14 @@ Options::initializeDefaultFunctions()
         };
 
     _parserFunction = nullptr;
+
+    if (!_preventLoadingFunction)
+    {
+        _preventLoadingFunction = [](const std::string& filename) -> bool
+        {
+            return false;
+        };
+    }
 }
 
 void
