@@ -251,7 +251,7 @@ Minko.redispatchKeyboardEvent = function(event) //EMSCRIPTEN
 
 	var copiedProperties = ['type', 'bubbles', 'cancelable', 'view',
 	'ctrlKey', 'altKey', 'shiftKey', 'metaKey', 'keyCode', 'charCode',
-	'which', 'key', 'detail', 'keyIdentifier'];
+	'which', 'key', 'detail'];
 
 	for(var k in copiedProperties)
 		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
@@ -319,7 +319,7 @@ Minko.redispatchWheelEvent = function(event)
 	var copiedProperties = [
 		'wheelDelta', 'wheelDeltaX', 'wheelDeltaY', 'wheelDeltaZ',
 		'delta', 'deltaMode', 'deltaX', 'deltaY', 'deltaZ',
-		'which', 'key', 'detail', 'keyIdentifier'
+		'which', 'key', 'detail'
 	];
 
 	for(var k in copiedProperties)
