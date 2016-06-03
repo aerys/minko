@@ -1822,7 +1822,7 @@ AbstractASSIMPParser::textureSet(material::Material::Ptr material, const std::st
 		enableTransparency(material);
 
 		if (!material->data()->hasProperty("alphaThreshold"))
-			material->data()->set("alphaThreshold", .01f);
+			material->data()->set("alphaThreshold", .5f);
 	}
 }
 
