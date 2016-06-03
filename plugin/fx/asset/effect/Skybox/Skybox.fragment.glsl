@@ -49,6 +49,10 @@ void main()
         color = texture2D(uLatLongMap, latLongUV);
     #endif
 
+    #if defined(GAMMA_CORRECTION) && (defined(CUBE_MAP) || defined(LATLONG_MAP))
+        color.rgb = pow(color.rgb, vec3(uGammaCorrection));
+    #endif
+
     #if defined(BRIGHTNESS)
         color.rgb = toneMapping_toneMap(color.rgb, uBrightness);
     #endif

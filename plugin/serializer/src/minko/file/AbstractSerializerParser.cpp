@@ -148,6 +148,17 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 											AssetLibraryPtr				assetLibrary,
 											std::shared_ptr<Options>	options)
 {
+    if (asset.get<0>() == serialize::AssetType::GEOMETRY_ASSET || 
+        asset.get<0>() == serialize::AssetType::TEXTURE_ASSET ||
+        asset.get<0>() == serialize::AssetType::MATERIAL_ASSET ||
+        asset.get<0>() == serialize::AssetType::TEXTURE_PACK_ASSET ||
+        asset.get<0>() == serialize::AssetType::EFFECT_ASSET
+    )
+    {
+        if (options->preventLoadingFunction()(asset.get<2>()))
+            return;
+    }
+
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= "";
 	std::string					resolvedPath		= "";
@@ -155,6 +166,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
 	asset.get<0>() = asset.get<0>() & 0x000000FF;
 
+    // Is this an external asset?
     if (asset.get<0>() < 10)
     {
 		assetCompletePath += asset.get<2>();
@@ -341,19 +353,27 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
         auto linkedAssetOffset = linkedAssetdata.get<0>();
         auto linkedAssetFilename = linkedAssetdata.get<2>();
+        auto linkedAssetAbsoluteFilename = linkedAssetFilename;
+
+        if (linkedAssetFilename == "")
+            linkedAssetAbsoluteFilename = _resolvedFilename;
+        else
+            linkedAssetAbsoluteFilename = File::extractPrefixPathFromFilename(_resolvedFilename) + "/" + linkedAssetAbsoluteFilename;
+
         const auto linkedAssetLinkType = static_cast<LinkedAsset::LinkType>(linkedAssetdata.get<4>());
 
         if (linkedAssetLinkType == LinkedAsset::LinkType::Internal)
         {
             linkedAssetOffset += internalLinkedContentOffset();
 
-            linkedAssetFilename = assetCompletePath + File::removePrefixPathFromFilename(_resolvedFilename);
+            if (linkedAssetFilename != "")
+                linkedAssetAbsoluteFilename = assetCompletePath + File::removePrefixPathFromFilename(_resolvedFilename);
         }
 
         auto linkedAsset = LinkedAsset::create()
             ->offset(linkedAssetOffset)
             ->length(linkedAssetdata.get<1>())
-            ->filename(linkedAssetFilename)
+            ->filename(linkedAssetAbsoluteFilename)
             ->data(linkedAssetdata.get<3>())
             ->linkType(linkedAssetLinkType);
 

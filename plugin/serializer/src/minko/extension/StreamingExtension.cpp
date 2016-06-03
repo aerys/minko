@@ -687,6 +687,9 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
 
         linkedAsset = dependency->getLinkedAssetReference(linkedAssetId);
 
+        if (options->preventLoadingFunction()(linkedAsset->filename()))
+            return false;
+
         const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
 
         auto linkedAssetResolutionSuccessful = true;
