@@ -81,8 +81,10 @@ uniform float uEnvironmentAlpha;
 #endif
 
 // fresnel
+#ifdef FRESNEL
 uniform float uFresnelReflectance;
 uniform float uFresnelExponent;
+#endif
 
 // texture lod
 #ifdef DIFFUSE_MAP_LOD
@@ -538,6 +540,7 @@ void main(void)
 
 		float shadow;
 		vec3 dir;
+        vec3 lightFresnel = vec3(1.0);
         #ifdef NUM_DIRECTIONAL_LIGHTS
 
 		#if NUM_DIRECTIONAL_LIGHTS > 0
@@ -548,8 +551,11 @@ void main(void)
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight0_diffuse * uDirLight0_color;
 			#if defined(SHININESS)
+                #if defined(FRESNEL)
+                    lightFresnel = phong_fresnel(specular.rgb, -dir, eyeVector);
+                #endif // FRESNEL
 				specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uDirLight0_color * uDirLight0_specular
-					* phong_fresnel(specular.rgb, -dir, eyeVector);
+					* lightFresnel;
 			#endif // SHININESS
 		#endif // NUM_DIRECTIONAL_LIGHTS > 0
 		#if NUM_DIRECTIONAL_LIGHTS > 1
@@ -560,8 +566,11 @@ void main(void)
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight1_diffuse * uDirLight1_color;
 			#if defined(SHININESS)
+                #if defined(FRESNEL)
+                    lightFresnel = phong_fresnel(specular.rgb, -dir, eyeVector);
+                #endif // FRESNEL
 				specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uDirLight1_color * uDirLight1_specular
-					* phong_fresnel(specular.rgb, -dir, eyeVector);
+					* lightFresnel;
 			#endif // SHININESS
 		#endif // NUM_DIRECTIONAL_LIGHTS > 1
 		#if NUM_DIRECTIONAL_LIGHTS > 2
@@ -572,8 +581,11 @@ void main(void)
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight2_diffuse * uDirLight2_color;
 			#if defined(SHININESS)
+                #if defined(FRESNEL)
+                    lightFresnel = phong_fresnel(specular.rgb, -dir, eyeVector);
+                #endif // FRESNEL
 				specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uDirLight2_color * uDirLight2_specular
-					* phong_fresnel(specular.rgb, -dir, eyeVector);
+					* lightFresnel;
 			#endif // SHININESS
 		#endif // NUM_DIRECTIONAL_LIGHTS > 2
 		#if NUM_DIRECTIONAL_LIGHTS > 3
@@ -584,8 +596,11 @@ void main(void)
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight3_diffuse * uDirLight3_color;
 			#if defined(SHININESS)
+                #if defined(FRESNEL)
+                    lightFresnel = phong_fresnel(specular.rgb, -dir, eyeVector);
+                #endif // FRESNEL
 				specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uDirLight3_color * uDirLight3_specular
-					* phong_fresnel(specular.rgb, -dir, eyeVector);
+					* lightFresnel;
 			#endif // SHININESS
 		#endif // NUM_DIRECTIONAL_LIGHTS > 3
 
@@ -602,8 +617,11 @@ void main(void)
                 att = any(lessThan(uPointLight0_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight0_attenuationCoeffs, distVec));
                 diffuseAccum += phong_diffuseReflection(normalVector, dir) * uPointLight0_color * uPointLight0_diffuse;// * att;
                 #if defined(SHININESS)
+                    #if defined(FRESNEL)
+                        lightFresnel = phong_fresnel(specular.rgb, dir, eyeVector);
+                    #endif // FRESNEL
                     specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uPointLight0_color * (uPointLight0_specular * att)
-                        * phong_fresnel(specular.rgb, dir, eyeVector);
+                        * lightFresnel;
                 #endif // defined(SHININESS)
             #endif // NUM_POINT_LIGHTS > 0
             #if NUM_POINT_LIGHTS > 1
@@ -613,8 +631,11 @@ void main(void)
                 att = any(lessThan(uPointLight1_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight1_attenuationCoeffs, distVec));
                 diffuseAccum += phong_diffuseReflection(normalVector, dir) * uPointLight1_color * uPointLight1_diffuse;// * att;
                 #if defined(SHININESS)
+                    #if defined(FRESNEL)
+                        lightFresnel = phong_fresnel(specular.rgb, dir, eyeVector);
+                    #endif // FRESNEL
                     specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uPointLight1_color * (uPointLight1_specular * att)
-                        * phong_fresnel(specular.rgb, dir, eyeVector);
+                        * lightFresnel;
                 #endif // defined(SHININESS)
             #endif // NUM_POINT_LIGHTS > 1
             #if NUM_POINT_LIGHTS > 2
@@ -624,8 +645,11 @@ void main(void)
                 att = any(lessThan(uPointLight2_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight2_attenuationCoeffs, distVec));
                 diffuseAccum += phong_diffuseReflection(normalVector, dir) * uPointLight2_color * uPointLight2_diffuse;// * att;
                 #if defined(SHININESS)
+                    #if defined(FRESNEL)
+                        lightFresnel = phong_fresnel(specular.rgb, dir, eyeVector);
+                    #endif // FRESNEL
                     specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uPointLight2_color * (uPointLight2_specular * att)
-                        * phong_fresnel(specular.rgb, dir, eyeVector);
+                        * lightFresnel;
                 #endif // defined(SHININESS)
             #endif // NUM_POINT_LIGHTS > 2
             #if NUM_POINT_LIGHTS > 3
@@ -635,8 +659,11 @@ void main(void)
                 att = any(lessThan(uPointLight3_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight3_attenuationCoeffs, distVec));
                 diffuseAccum += phong_diffuseReflection(normalVector, dir) * uPointLight3_color * uPointLight3_diffuse;// * att;
                 #if defined(SHININESS)
+                    #if defined(FRESNEL)
+                        lightFresnel = phong_fresnel(specular.rgb, dir, eyeVector);
+                    #endif // FRESNEL
                     specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uPointLight3_color * (uPointLight3_specular * att)
-                        * phong_fresnel(specular.rgb, dir, eyeVector);
+                        * lightFresnel;
                 #endif // defined(SHININESS)
             #endif // NUM_POINT_LIGHTS > 3
         #endif // defined(NUM_POINT_LIGHTS)
@@ -658,7 +685,7 @@ void main(void)
                     diffuseAccum += phong_diffuseReflection(normalVector, dir) * uSpotLight0_color * uSpotLight0_diffuse * att * cutoff;
                     #ifdef SHININESS
     					specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uSpotLight0_color * uSpotLight0_specular * att * cutoff
-    						* phong_fresnel(specular.rgb, dir, eyeVector);
+    						* lightFresnel;
     				#endif // defined(SHININESS)
                 }
             #endif // NUM_SPOT_LIGHTS > 0
@@ -675,8 +702,11 @@ void main(void)
     					: 1.0;
                     diffuseAccum += phong_diffuseReflection(normalVector, dir) * uSpotLight1_color * uSpotLight1_diffuse * att * cutoff;
                     #ifdef SHININESS
+                        #if defined(FRESNEL)
+                            lightFresnel = phong_fresnel(specular.rgb, dir, eyeVector);
+                        #endif // FRESNEL
     					specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uSpotLight1_color * uSpotLight1_specular * att * cutoff
-    						* phong_fresnel(specular.rgb, dir, eyeVector);
+    						* lightFresnel;
     				#endif // defined(SHININESS)
                 }
             #endif // NUM_SPOT_LIGHTS > 1
@@ -693,8 +723,11 @@ void main(void)
     					: 1.0;
                     diffuseAccum += phong_diffuseReflection(normalVector, dir) * uSpotLight2_color * uSpotLight2_diffuse * att * cutoff;
                     #ifdef SHININESS
+                        #if defined(FRESNEL)
+                            lightFresnel = phong_fresnel(specular.rgb, dir, eyeVector);
+                        #endif // FRESNEL
     					specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uSpotLight2_color * uSpotLight2_specular * att * cutoff
-    						* phong_fresnel(specular.rgb, dir, eyeVector);
+    						* lightFresnel;
     				#endif // defined(SHININESS)
                 }
             #endif // NUM_SPOT_LIGHTS > 2
@@ -711,8 +744,11 @@ void main(void)
     					: 1.0;
                     diffuseAccum += phong_diffuseReflection(normalVector, dir) * uSpotLight3_color * uSpotLight3_diffuse * att * cutoff;
                     #ifdef SHININESS
+                        #if defined(FRESNEL)
+                            lightFresnel = phong_fresnel(specular.rgb, dir, eyeVector);
+                        #endif // FRESNEL
     					specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uSpotLight3_color * uSpotLight3_specular * att * cutoff
-    						* phong_fresnel(specular.rgb, dir, eyeVector);
+    						* lightFresnel;
     				#endif // defined(SHININESS)
                 }
             #endif // NUM_SPOT_LIGHTS > 3
@@ -720,7 +756,7 @@ void main(void)
 
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 
-	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
+	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.rgb * specular.a * specularAccum;
 
 	#if defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
 
@@ -739,9 +775,12 @@ void main(void)
         #else
             float reflectivity = specular.a;
         #endif
-        float fresnel = uFresnelReflectance + (1.0 - uFresnelReflectance) * pow(1.0 - dot(normalVector, eyeVector), uFresnelExponent);
 
-        reflectivity *= fresnel;
+        #if defined(FRESNEL)
+            float fresnel = uFresnelReflectance + (1.0 - uFresnelReflectance) * pow(1.0 - dot(normalVector, eyeVector), uFresnelExponent);
+
+            reflectivity *= fresnel;
+        #endif // FRESNEL
 
 		// diffuse.rgb = mix(diffuse.rgb, envmapColor.rgb, reflectivity);
         phong += envmapColor.rgb * reflectivity;
