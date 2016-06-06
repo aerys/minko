@@ -213,6 +213,7 @@
                     "ENVIRONMENT_ALPHA"         : "material[${materialUuid}].environmentAlpha",
                     "ENVIRONMENT_TYPE_2D"       : "material[${materialUuid}].environmentMap2dType",
                     "SHININESS"                 : "material[${materialUuid}].shininess",
+                    "FRESNEL"                   : "material[${materialUuid}].fresnel",
                     "FOG_TECHNIQUE"             : { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" },
                     "NUM_IMAGE_BASED_LIGHTS"    : { "binding" : { "property" : "imageBasedLight.length", "source" : "root", "max" : 1 }, "type" : "int" },
                     "NUM_AMBIENT_LIGHTS"        : { "binding" : { "property" : "ambientLight.length", "source" : "root" }, "type" : "int" },
