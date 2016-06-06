@@ -40,7 +40,11 @@ namespace minko
             Ptr
             create()
             {
-                return Ptr(new ImageBasedLight());
+                auto instance = Ptr(new ImageBasedLight());
+
+                instance->brightness(1.f);
+
+                return instance;
             }
 
             float
@@ -95,6 +99,20 @@ namespace minko
             radianceMap(const render::TextureSampler& value)
             {
                 provider()->set("radianceMap", value);
+
+                return std::static_pointer_cast<ImageBasedLight>(shared_from_this());
+            }
+
+            float
+            brightness() const
+            {
+                return provider()->get<float>("brightness");
+            }
+
+            Ptr
+            brightness(float value)
+            {
+                provider()->set("brightness", value);
 
                 return std::static_pointer_cast<ImageBasedLight>(shared_from_this());
             }

@@ -6,7 +6,8 @@
     #endif
 #endif
 
-#pragma include "../Math.function.glsl"
+#pragma include "Math.function.glsl"
+#pragma include "ToneMapping.function.glsl"
 
 #if defined(CUBE_MAP)
     uniform samplerCube uCubeMap;
@@ -16,6 +17,10 @@
 
 #ifdef ORIENTATION
     uniform float uOrientation;
+#endif
+
+#ifdef BRIGHTNESS
+    uniform float uBrightness;
 #endif
 
 #ifdef GAMMA_CORRECTION
@@ -46,6 +51,10 @@ void main()
 
     #if defined(GAMMA_CORRECTION) && (defined(CUBE_MAP) || defined(LATLONG_MAP))
         color.rgb = pow(color.rgb, vec3(uGammaCorrection));
+    #endif
+
+    #if defined(BRIGHTNESS)
+        color.rgb = toneMapping_toneMap(color.rgb, uBrightness);
     #endif
 
     #if defined(FOG_COLOR)

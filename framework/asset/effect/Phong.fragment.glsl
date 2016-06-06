@@ -17,6 +17,7 @@
 #pragma include "Fog.function.glsl"
 #pragma include "LightMapping.function.glsl"
 #pragma include "PBR.function.glsl"
+#pragma include "ToneMapping.function.glsl"
 
 #ifdef GAMMA_CORRECTION
 uniform float uGammaCorrection;
@@ -113,6 +114,7 @@ uniform float uImageBasedLight0_diffuse;
 uniform float uImageBasedLight0_specular;
 uniform sampler2D uImageBasedLight0_radianceMap;
 uniform sampler2D uImageBasedLight0_irradianceMap;
+uniform float uImageBasedLight0_brightness;
 uniform float uImageBasedLight0_orientation;
 # endif
 #endif
@@ -486,8 +488,6 @@ void main(void)
                 imageBasedLight0Diffuse = pow(imageBasedLight0Diffuse, vec3(uGammaCorrection));
             #endif // GAMMA_CORRECTION
 
-            diffuseAccum += uImageBasedLight0_diffuse * imageBasedLight0Diffuse;
-
             vec3 imageBasedLight0Specular = pbr_envSpecular(
                 specular.rgb,
                 uImageBasedLight0_radianceMap,
@@ -504,7 +504,8 @@ void main(void)
                 imageBasedLight0Specular = pow(imageBasedLight0Specular, vec3(uGammaCorrection));
             #endif
 
-            specularAccum += uImageBasedLight0_specular * imageBasedLight0Specular;
+            diffuseAccum += toneMapping_toneMap(uImageBasedLight0_diffuse * imageBasedLight0Diffuse, uImageBasedLight0_brightness);
+            specularAccum += toneMapping_toneMap(uImageBasedLight0_specular * imageBasedLight0Specular, uImageBasedLight0_brightness);
         #endif // NUM_IMAGE_BASED_LIGHTS > 0
     #endif
 
