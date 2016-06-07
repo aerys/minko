@@ -36,6 +36,8 @@
                             "textureFilter" : "linear",
                             "mipFilter"     : "none"
                         },
+                        "uAlphaMapMaxAvailableLod"  : "material[${materialUuid}].alphaMapMaxAvailableLod",
+                        "uAlphaMapSize"             : "material[${materialUuid}].alphaMapSize",
                         "uAlphaThreshold"           : "material[${materialUuid}].alphaThreshold",
                         "uDiffuseCubeMap"           : "material[${materialUuid}].diffuseCubeMap",
                         "uBoneMatrices[0]"          : "geometry[${geometryUuid}].boneMatrices",
@@ -54,6 +56,7 @@
                         "VERTEX_UV1"            : "geometry[${geometryUuid}].uv1",
                         "DIFFUSE_CUBEMAP"       : "material[${materialUuid}].diffuseCubeMap",
                         "ALPHA_MAP"             : "material[${materialUuid}].alphaMap",
+                        "ALPHA_MAP_LOD"         : "material[${materialUuid}].alphaMapLodEnabled",
                         "ALPHA_THRESHOLD"       : "material[${materialUuid}].alphaThreshold",
                         "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
                         "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
