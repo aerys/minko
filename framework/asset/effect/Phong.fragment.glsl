@@ -108,6 +108,11 @@ uniform float uSpecularMapMaxAvailableLod;
 uniform vec2 uSpecularMapSize;
 #endif
 
+#ifdef ALPHA_MAP_LOD
+uniform float uAlphaMapMaxAvailableLod;
+uniform vec2 uAlphaMapSize;
+#endif
+
 #ifdef NUM_IMAGE_BASED_LIGHTS
 # if NUM_IMAGE_BASED_LIGHTS > 0
 uniform float uImageBasedLight0_diffuse;
@@ -427,9 +432,13 @@ void main(void)
         #endif // GAMMA_CORRECTION
 	#endif // DIFFUSE_MAP
 
-	#if defined(ALPHA_MAP) && defined(VERTEX_UV)
-		diffuse.a = texture2D(uAlphaMap, uv).r;
-	#endif // ALPHA_MAP
+    #if defined(ALPHA_MAP) && defined(VERTEX_UV)
+        #ifdef ALPHA_MAP_LOD
+            diffuse.a = texturelod_texture2D(uAlphaMap, uv, uAlphaMapSize, 0.0, uAlphaMapMaxAvailableLod, vec4(diffuse.a)).r;
+        #else
+            diffuse.a = texture2D(uAlphaMap, uv).r;
+        #endif // ALPHA_MAP_LOD
+    #endif // ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD
 		if (diffuse.a < uAlphaThreshold)
