@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Types.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/file/AbstractWriter.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/file/CRNTranscoder.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/PNGWriter.hpp"
@@ -122,7 +123,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 
     const auto generateMipmaps = writerOptions->generateMipMaps(_textureType);
 
-    const auto& textureFormats = writerOptions->textureFormats();
+    const auto textureFormats = writerOptions->textureFormats(_textureType, assetLibrary->textureName(texture));
 
     std::stringstream headerStream;
     std::stringstream blobStream;
@@ -135,10 +136,6 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 
     for (auto textureFormat : textureFormats)
     {
-        if (TextureFormatInfo::isCompressed(textureFormat) &&
-            !writerOptions->compressTexture(_textureType))
-            continue;
-
         const auto offset = blobStream.str().size();
 
         if (!_formatWriterFunctions.at(textureFormat)(_data, _textureType, writerOptions, blobStream))

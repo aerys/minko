@@ -88,7 +88,7 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
 
     ensureTextureSizeIsValid(texture, writerOptions, _textureType);
 
-    const auto& textureFormats = writerOptions->textureFormats();
+    const auto textureFormats = writerOptions->textureFormats(_textureType, assetLibrary->textureName(texture));
 
     auto linkedAsset = _linkedAsset;
     const auto linkedAssetId = _linkedAssetId;
@@ -105,10 +105,6 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
 
     for (auto textureFormat : textureFormats)
     {
-        if (TextureFormatInfo::isCompressed(textureFormat) &&
-            !writerOptions->compressTexture(_textureType))
-            continue;
-
         auto formatHeader = msgpack::type::tuple<int, std::vector<msgpack::type::tuple<int, int>>>();
 
         formatHeader.get<0>() = static_cast<int>(textureFormat);
