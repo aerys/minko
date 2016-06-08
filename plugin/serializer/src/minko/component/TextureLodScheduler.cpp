@@ -26,14 +26,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/StreamingOptions.hpp"
-#include "minko/log/Logger.hpp"
 #include "minko/material/Material.hpp"
-#include "minko/math/Ray.hpp"
-#include "minko/render/AbstractContext.hpp"
 #include "minko/render/AbstractTexture.hpp"
-#include "minko/render/OpenGLES2Context.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/scene/NodeSet.hpp"
 
 #include "sparsehash/sparse_hash_map"
 
@@ -66,6 +61,42 @@ TextureLodScheduler::rendererSet(Renderer::Ptr renderer)
     AbstractLodScheduler::rendererSet(renderer);
 
     _renderer = renderer;
+}
+
+void
+TextureLodScheduler::masterLodSchedulerSet(MasterLodScheduler::Ptr masterLodScheduler)
+{
+    AbstractLodScheduler::masterLodSchedulerSet(masterLodScheduler);
+
+    if (!masterLodScheduler)
+    {
+        _deferredTextureRegisteredSlot = nullptr;
+        _deferredTextureReadySlot = nullptr;
+
+        return;
+    }
+
+    for (auto deferredTextureData : masterLodScheduler->deferredTextureDataSet())
+        textureRegistered(deferredTextureData);
+
+    _deferredTextureRegisteredSlot = masterLodScheduler->deferredTextureRegistered()->connect(
+        [this](MasterLodScheduler::Ptr  masterLodScheduler,
+               ProviderPtr              data)
+        {
+            textureRegistered(data);
+        }
+    );
+
+    _deferredTextureReadySlot = masterLodScheduler->deferredTextureReady()->connect(
+        [this](MasterLodScheduler::Ptr                  masterLodScheduler,
+               ProviderPtr                              data,
+               const std::unordered_set<ProviderPtr>&   materialDataSet,
+               const Flyweight<std::string>&            textureType,
+               AbstractTexture::Ptr                     texture)
+        {
+            textureReady(_textureResources.at(data->uuid()), data, materialDataSet, textureType, texture);
+        }
+    );
 }
 
 void
@@ -116,7 +147,7 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
                 resourceBase.uuid(),
                 TextureResourceInfo()
             ));
-    
+
             auto& newResource = newResourceIt.first->second;
 
             newResource.base = &resourceBase;
@@ -162,66 +193,81 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
                 true
             );
 
-            resource->textureName = textureName;
-
-            resource->materials.insert(material);
-            resource->surfaceToActiveLodMap.insert(std::make_pair(surface, -1));
+            resource->textureType = textureName;
+            resource->materialDataSet.insert(material->data());
 
             resource->maxLod = textureData->get<int>("maxLod");
+            resource->activeLod = std::max(resource->activeLod, DEFAULT_LOD);
         }
         else
         {
             resource = &resourceIt->second;
         }
-
-        resource->surfaceToActiveLodMap.insert(std::make_pair(surface, DEFAULT_LOD));
     }
 }
 
 void
-TextureLodScheduler::surfaceRemoved(Surface::Ptr surface)
+TextureLodScheduler::textureRegistered(ProviderPtr data)
 {
-    AbstractLodScheduler::surfaceRemoved(surface);
+    auto resourceIt = _textureResources.find(data->uuid());
 
-    auto surfaceTarget = surface->target();
-    auto material = surface->material();
+    TextureResourceInfo* resource = nullptr;
 
-    auto textures = std::unordered_map<AbstractTexture::Ptr, Flyweight<std::string>>();
-
-    for (const auto& propertyNameToValuePair : material->data()->values())
+    if (resourceIt == _textureResources.end())
     {
-        const auto propertyName = propertyNameToValuePair.first;
+        auto& resourceBase = registerResource(data);
 
-        if (!material->data()->propertyHasType<TextureSampler>(propertyName))
-            continue;
+        auto newResourceIt = _textureResources.insert(std::make_pair(
+            resourceBase.uuid(),
+            TextureResourceInfo()
+        ));
+    
+        auto& newResource = newResourceIt.first->second;
 
-        auto texture = _assetLibrary->getTextureByUuid(
-            material->data()->get<TextureSampler>(propertyName).uuid
+        newResource.base = &resourceBase;
+
+        resource = &newResource;
+    }
+    else
+    {
+        resource = &resourceIt->second;
+    }
+}
+
+void
+TextureLodScheduler::textureReady(TextureResourceInfo&                      resource,
+                                  ProviderPtr                               data,
+                                  const std::unordered_set<ProviderPtr>&    materialDataSet,
+                                  const Flyweight<std::string>&             textureType,
+                                  AbstractTexturePtr                        texture)
+{
+    resource.texture = texture;
+    resource.textureType = *textureType;
+
+    resource.maxLod = data->get<int>("maxLod");
+
+    for (auto materialData : materialDataSet)
+    {
+        resource.materialDataSet.insert(materialData);
+
+        materialData->set(
+            *textureType + std::string("MaxAvailableLod"),
+            static_cast<float>(lodToMipLevel(
+                DEFAULT_LOD,
+                resource.texture->width(),
+                resource.texture->height())
+            )
         );
 
-        textures.insert(std::make_pair(texture, propertyName));
-    }
+        materialData->set(
+            *textureType + std::string("Size"),
+            math::vec2(texture->width(), texture->height())
+        );
 
-    for (auto textureToTextureNamePair : textures)
-    {
-        auto texture = textureToTextureNamePair.first;
-        const auto textureName = *textureToTextureNamePair.second;
-
-        auto masterLodScheduler = this->masterLodScheduler();
-
-        auto textureData = masterLodScheduler->textureData(texture);
-
-        if (textureData == nullptr)
-            continue;
-
-        auto resourceIt = _textureResources.find(textureData->uuid());
-
-        if (resourceIt != _textureResources.end())
-        {
-            auto& resource = resourceIt->second;
-
-            resource.surfaceToActiveLodMap.erase(surface);
-        }
+        materialData->set(
+            *textureType + std::string("LodEnabled"),
+            true
+        );
     }
 }
 
@@ -281,34 +327,21 @@ TextureLodScheduler::lodInfo(ResourceInfo&  resource,
     auto textureData = resource.data;
     auto& textureResource = _textureResources.at(resource.uuid());
 
-    auto maxRequiredLod = 0;
-    auto maxPriority = 0.f;
+    const auto previousActiveLod = textureResource.activeLod;
 
-    for (auto& surfaceToActiveLodPair : textureResource.surfaceToActiveLodMap)
+    const auto requiredLod = computeRequiredLod(textureResource, nullptr);
+
+    const auto activeLod = std::min(requiredLod, textureResource.maxAvailableLod);
+
+    if (previousActiveLod != activeLod)
     {
-        auto surface = surfaceToActiveLodPair.first;
-        const auto previousActiveLod = surfaceToActiveLodPair.second;
+        textureResource.activeLod = activeLod;
 
-        const auto requiredLod = computeRequiredLod(textureResource, surface);
-
-        const auto activeLod = std::min(requiredLod, textureData->get<int>("maxAvailableLod"));
-
-        if (previousActiveLod != activeLod)
-        {
-            surfaceToActiveLodPair.second = activeLod;
-
-            activeLodChanged(textureResource, surface, previousActiveLod, activeLod);
-        }
-
-        maxRequiredLod = std::max(requiredLod, maxRequiredLod);
-
-        const auto priority = computeLodPriority(textureResource, surface, requiredLod, activeLod, time);
-
-        maxPriority = std::max(priority, maxPriority);
+        activeLodChanged(textureResource, nullptr, previousActiveLod, activeLod);
     }
 
-    lodInfo.requiredLod = maxRequiredLod;
-    lodInfo.priority = maxPriority;
+    lodInfo.requiredLod = requiredLod;
+    lodInfo.priority = computeLodPriority(textureResource, nullptr, requiredLod, activeLod, time);
 
     return lodInfo;
 }
@@ -323,15 +356,15 @@ TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
 
     const auto maxAvailableLod = textureData->get<int>("maxAvailableLod");
 
-    const auto& textureName = resource.textureName;
+    const auto& textureType = resource.textureType;
 
-    const auto maxAvailableLodPropertyName = textureName + "MaxAvailableLod";
-    const auto lodEnabledPropertyName = textureName + "LodEnabled";
+    const auto maxAvailableLodPropertyName = textureType + "MaxAvailableLod";
+    const auto lodEnabledPropertyName = textureType + "LodEnabled";
 
-    for (auto material : resource.materials)
+    for (auto materialData : resource.materialDataSet)
     {
-        if (material->data()->hasProperty(maxAvailableLodPropertyName) &&
-            material->data()->get<float>(maxAvailableLodPropertyName) ==
+        if (materialData->hasProperty(maxAvailableLodPropertyName) &&
+            materialData->get<float>(maxAvailableLodPropertyName) ==
             float(lodToMipLevel(maxAvailableLod, resource.texture->width(), resource.texture->height())))
         {
             continue;
@@ -354,7 +387,7 @@ TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
         }
 */
 
-        material->data()->set(maxAvailableLodPropertyName, mipLevel);
+        materialData->set(maxAvailableLodPropertyName, mipLevel);
     }
 }
 
@@ -362,65 +395,15 @@ int
 TextureLodScheduler::computeRequiredLod(const TextureResourceInfo&  resource,
 										Surface::Ptr 				surface)
 {
-    auto target = surface->target();
-    const auto targetDistance = distanceFromEye(resource, surface, _eyePosition);
-
-    if (targetDistance <= 0)
-        return masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()
-            ? masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()(
-                std::numeric_limits<int>::max(),
-                resource.maxLod,
-                resource.maxLod,
-                0.f,
-                surface
-            )
-            : std::numeric_limits<int>::max();
-
-    const auto fov = _fov;
-    const auto viewportHeight = _viewport.w > 0.f ? _viewport.w : 600.f;
-
-    const auto unitSize = std::abs(2.0f * std::tan(0.5f * fov) *
-                          targetDistance / (viewportHeight));
-
-    auto box = target->component<BoundingBox>()->box();
-    const auto boxWidth = box->width();
-    const auto boxHeight = box->height();
-
-    const auto screenSpaceBoxWidth = boxWidth * unitSize;
-    const auto screenSpaceBoxHeight = boxHeight * unitSize;
-    const auto numPixels = screenSpaceBoxWidth * screenSpaceBoxHeight;
-
-    const auto textureWidth = resource.texture->width();
-    const auto textureHeight = resource.texture->height();
-    const auto maxMipLevel = math::getp2(textureWidth);
-
-    auto requiredMipLevel = maxMipLevel;
-
-    for (auto i = 0u; i < maxMipLevel; ++i)
-    {
-        const auto mipWidth = textureWidth >> i;
-
-        const auto numTexels = mipWidth * mipWidth;
-
-        if (numTexels <= numPixels)
-        {
-            requiredMipLevel = i;
-
-            break;
-        }
-    }
-
-    const auto requiredLod = mipLevelToLod(requiredMipLevel, textureWidth, textureHeight);
-
     return masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()
         ? masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()(
-            requiredLod,
+            std::numeric_limits<int>::max(),
             resource.maxLod,
             resource.maxLod,
             0.f,
             surface
         )
-        : requiredLod;
+        : std::numeric_limits<int>::max();
 }
 
 float
@@ -441,7 +424,7 @@ TextureLodScheduler::computeLodPriority(const TextureResourceInfo& 	resource,
             activeLod,
             requiredLod,
             surface,
-            surface->target()->data(),
+            surface ? surface->target()->data() : target()->data(),
             _sceneManager->target()->data(),
             _renderer->target()->data()
         );

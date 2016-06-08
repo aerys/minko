@@ -60,6 +60,7 @@ namespace minko
                 Signal<std::shared_ptr<AbstractStreamedAssetParser>, float>::Slot               parserBeforePriorityChangedSlot;
                 Signal<std::shared_ptr<AbstractStreamedAssetParser>, float>::Slot               parserPriorityChangedSlot;
                 Signal<std::shared_ptr<AbstractStreamedAssetParser>>::Slot                      parserLodRequestCompleteSlot;
+                Signal<std::shared_ptr<AbstractParser>, const Error&>::Slot                     parserErrorSlot;
                 Signal<std::shared_ptr<AbstractParser>>::Slot                                   parserCompleteSlot;
 
                 std::vector<unsigned char>                                                      pendingData;

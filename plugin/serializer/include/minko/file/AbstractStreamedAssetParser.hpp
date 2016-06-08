@@ -125,7 +125,11 @@ namespace minko
             int																					_assetExtension;
             int																					_fileOffset;
 
+            bool                                                                                _deferParsing;
+            unsigned int                                                                        _dependencyId;
+
             bool																				_headerIsRead;
+            bool                                                                                _readingHeader;
 
             int																					_previousLod;
             int																					_currentLod;
@@ -133,8 +137,8 @@ namespace minko
             int																					_nextLodOffset;
             int																					_nextLodSize;
 
-            Signal<std::shared_ptr<LinkedAsset>, const Error&>::Slot							_loaderErrorSlot;
-            Signal<std::shared_ptr<LinkedAsset>, const std::vector<unsigned char>&>::Slot		_loaderCompleteSlot;
+            Signal<std::shared_ptr<LinkedAsset>, const Error&>::Slot                            _loaderErrorSlot;
+            Signal<std::shared_ptr<LinkedAsset>, const std::vector<unsigned char>&>::Slot       _loaderCompleteSlot;
 
             bool																				_complete;
 
@@ -152,6 +156,14 @@ namespace minko
             Signal<Ptr, float>::Ptr																_progress;
 
         public:
+            void
+            deferParsing(unsigned int dependencyId)
+            {
+                _deferParsing = true;
+
+                _dependencyId = dependencyId;
+            }
+
             inline
             Ptr
             data(std::shared_ptr<data::Provider> data)
@@ -234,6 +246,9 @@ namespace minko
             float
             priority();
 
+            bool
+            prepareForNextLodRequest();
+
             void
             getNextLodRequestInfo(int& offset, int& size);
 
@@ -257,6 +272,18 @@ namespace minko
             data() const
             {
                 return _data;
+            }
+
+            bool
+            deferParsing() const
+            {
+                return _deferParsing;
+            }
+
+            unsigned int
+            dependencyId() const
+            {
+                return _dependencyId;
             }
 
             virtual
@@ -369,6 +396,9 @@ namespace minko
             {
                 return assetHeaderOffset() + MINKO_SCENE_HEADER_SIZE + _dependencySize;
             }
+
+            void
+            parseStreamedAssetHeader();
         };
     }
 }
