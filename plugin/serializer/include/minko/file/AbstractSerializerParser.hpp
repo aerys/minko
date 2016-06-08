@@ -108,14 +108,16 @@ namespace minko
                                 const std::vector<unsigned char>&       data,
                                 short                                   dataOffset,
                                 unsigned int                            dependenciesSize,
-                                std::shared_ptr<Options>                options);
+                                std::shared_ptr<Options>                options,
+                                std::string&                            assetFilePath);
 
             AbstractSerializerParser();
 
             void
             deserializeAsset(SerializedAsset&                           asset,
                               AssetLibraryPtr                           assetLibrary,
-                              std::shared_ptr<Options>                  options);
+                              std::shared_ptr<Options>                  options,
+                              std::string&                              assetFilePath);
 
             std::string
             extractFolderPath(const std::string& filepath);
