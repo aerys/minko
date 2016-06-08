@@ -360,7 +360,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
         if (linkedAssetFilename == "")
             linkedAssetAbsoluteFilename = _resolvedFilename;
         else
-            linkedAssetAbsoluteFilename = File::extractPrefixPathFromFilename(_resolvedFilename) + "/" + linkedAssetAbsoluteFilename;
+            linkedAssetAbsoluteFilename = assetCompletePath + "/" + linkedAssetAbsoluteFilename;
 
         const auto linkedAssetLinkType = static_cast<LinkedAsset::LinkType>(linkedAssetdata.get<4>());
 
