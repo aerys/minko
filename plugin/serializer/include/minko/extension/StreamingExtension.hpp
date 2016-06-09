@@ -202,6 +202,7 @@ namespace minko
                                    const std::string&                   filename,
                                    std::shared_ptr<file::Dependency>    dependency,
                                    std::shared_ptr<file::Options>       options,
+                                   bool                                 requireHeader,
                                    std::vector<unsigned char>&          streamedAssetHeaderData,
                                    bool&                                hasHeader,
                                    int&                                 streamedAssetHeaderSize,

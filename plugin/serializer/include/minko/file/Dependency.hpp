@@ -35,13 +35,21 @@ namespace minko
 			typedef std::shared_ptr<Dependency>					Ptr;
 			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
 			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
+			typedef std::shared_ptr<material::Material>			MaterialPtr;
+            typedef std::shared_ptr<data::Provider>             ProviderPtr;
 
-            // FIXME: Provide AbstractDependency interface.
             struct TextureDependency
             {
-                uint                                        dependencyId;
-                std::shared_ptr<render::AbstractTexture>    texture;
-                Flyweight<std::string>                      textureType;
+                uint                    dependencyId;
+                AbsTexturePtr    		texture;
+                Flyweight<std::string>  textureType;
+            };
+
+            struct TextureReference
+            {
+            	AbsTexturePtr 				    texture;
+            	Flyweight<std::string> 		    textureType;
+            	std::unordered_set<ProviderPtr>	dependentMaterialDataSet;
             };
 
 		private:
@@ -60,7 +68,7 @@ namespace minko
 			std::unordered_map<std::shared_ptr<render::Effect>, uint>		_effectDependencies;
 			std::unordered_map<std::shared_ptr<LinkedAsset>, uint>		    _linkedAssetDependencies;
 
-			std::unordered_map<uint, AbsTexturePtr>							_textureReferences;
+			std::unordered_map<uint, TextureReference>						_textureReferences;
 			std::unordered_map<uint, std::shared_ptr<material::Material>>	_materialReferences;
 			std::unordered_map<uint, std::shared_ptr<scene::Node>>			_subSceneReferences;
 			std::unordered_map<uint, std::shared_ptr<geometry::Geometry>>	_geometryReferences;
@@ -161,7 +169,7 @@ namespace minko
 			void
             registerReference(uint referenceId, std::shared_ptr<material::Material> material);
 
-			AbsTexturePtr
+			TextureReference&
 			getTextureReference(uint textureId);
 
 			void
@@ -186,19 +194,19 @@ namespace minko
             getLinkedAssetReference(uint id);
 
 			bool
-			geometryReferenceExist(uint referenceId);
+			geometryReferenceExists(uint referenceId);
 
 			bool
-			textureReferenceExist(uint referenceId);
+			textureReferenceExists(uint referenceId);
 
 			bool
-			materialReferenceExist(uint referenceId);
+			materialReferenceExists(uint referenceId);
 
 			bool
-			effectReferenceExist(uint referenceId);
+			effectReferenceExists(uint referenceId);
 
 			bool
-			linkedAssetReferenceExist(uint referenceId);
+			linkedAssetReferenceExists(uint referenceId);
 
 			std::vector<SerializedAsset>
 			serialize(const std::string&                        parentFilename,

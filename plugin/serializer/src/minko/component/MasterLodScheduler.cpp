@@ -37,7 +37,10 @@ using namespace minko::scene;
 MasterLodScheduler::MasterLodScheduler() :
     AbstractComponent(),
     _geometryToDataMap(),
-    _textureToDataMap()
+    _textureToDataMap(),
+    _deferredTextureDataSet(),
+    _deferredTextureRegistered(DeferredTextureRegisteredSignal::create()),
+    _deferredTextureReady(DeferredTextureReadySignal::create())
 {
 }
 
@@ -88,6 +91,36 @@ MasterLodScheduler::Ptr
 MasterLodScheduler::registerTexture(AbstractTexture::Ptr texture, Provider::Ptr data)
 {
     _textureToDataMap.insert(std::make_pair(texture, data));
+
+    return std::static_pointer_cast<MasterLodScheduler>(shared_from_this());
+}
+
+MasterLodScheduler::Ptr
+MasterLodScheduler::registerDeferredTexture(ProviderPtr data)
+{
+    _deferredTextureDataSet.emplace(data);
+
+    deferredTextureRegistered()->execute(
+        std::static_pointer_cast<MasterLodScheduler>(shared_from_this()),
+        data
+    );
+
+    return std::static_pointer_cast<MasterLodScheduler>(shared_from_this());
+}
+
+MasterLodScheduler::Ptr
+MasterLodScheduler::deferredTextureReady(ProviderPtr                            data,
+                                         const std::unordered_set<ProviderPtr>& materialDataSet,
+                                         const Flyweight<std::string>&          textureType,
+                                         AbstractTexturePtr                     texture)
+{
+    deferredTextureReady()->execute(
+        std::static_pointer_cast<MasterLodScheduler>(shared_from_this()),
+        data,
+        materialDataSet,
+        textureType,
+        texture
+    );
 
     return std::static_pointer_cast<MasterLodScheduler>(shared_from_this());
 }
