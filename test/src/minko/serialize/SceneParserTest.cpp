@@ -46,7 +46,7 @@ TEST_F(SceneParserTest, SceneDependencyLoadedWithRelativePath)
     auto loaderCompleteSlot = loader->complete()->connect(
         [sceneManager](file::Loader::Ptr loader)
         {
-            ASSERT_NE(sceneManager->assets()->texture("box.png.texture"), nullptr);
+            ASSERT_NE(sceneManager->assets()->texture(file::File::getBinaryDirectory() + "/asset/scene/box.png.texture"), nullptr);
         }
     );
 
@@ -76,7 +76,7 @@ TEST_F(SceneParserTest, SceneDependencyLoadedWithAbsolutePath)
     auto loaderCompleteSlot = loader->complete()->connect(
         [sceneManager](file::Loader::Ptr loader)
         {
-            ASSERT_NE(sceneManager->assets()->texture("box.png.texture"), nullptr);
+            ASSERT_NE(sceneManager->assets()->texture(file::File::getBinaryDirectory() + "/asset/scene/box.png.texture"), nullptr);
         }
     );
 
