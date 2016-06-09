@@ -98,6 +98,9 @@ namespace minko
             void
             targetRemoved(NodePtr target)
             {
+                _addedSlot = nullptr;
+                _removedSlot = nullptr;
+
                 updateRoot(nullptr);
             }
 
