@@ -43,6 +43,7 @@ StreamingOptions::StreamingOptions() :
     _streamedTextureMaxMipLevel(0),
     _popGeometryLodRangeFetchingBoundFunction(),
     _streamedTextureLodRangeFetchingBoundFunction(),
+    _createStreamedTextureOnTheFly(false),
     _popGeometryBlendingRange(0.f),
     _maxNumActiveParsers(40),
     _requestAbortingEnabled(false),

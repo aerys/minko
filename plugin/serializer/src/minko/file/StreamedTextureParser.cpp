@@ -77,6 +77,25 @@ StreamedTextureParser::parsed(const std::string&                 filename,
             shared_from_this(),
             Error("StreamedTextureParsingError", "streamed texture parsing error")
         );
+
+        return;
+    }
+
+    if (deferParsing())
+    {
+        auto& textureReference = _dependency->getTextureReference(dependencyId());
+
+        textureReference.texture = _texture;
+
+        for (auto materialData : textureReference.dependentMaterialDataSet)
+            materialData->set(textureReference.textureType, textureReference.texture->sampler());
+
+        streamingOptions()->masterLodScheduler()->deferredTextureReady(
+            this->data(),
+            textureReference.dependentMaterialDataSet,
+            textureReference.textureType,
+            textureReference.texture
+        );
     }
 }
 

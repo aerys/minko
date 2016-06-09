@@ -350,6 +350,7 @@ StreamingExtension::deserializePOPGeometry(unsigned short					metaData,
         completePath,
         dependencies,
         options,
+        true,
         streamedAssetHeaderData,
         hasHeader,
         streamedAssetHeaderSize,
@@ -516,6 +517,7 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
         assetCompletePath,
         dependencies,
         options,
+        !_streamingOptions->createStreamedTextureOnTheFly(),
         streamedAssetHeaderData,
         hasHeader,
         streamedAssetHeaderSize,
@@ -547,6 +549,15 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
     if (linkedAsset != nullptr)
     {
         filename = File::removePrefixPathFromFilename(linkedAsset->filename());
+
+        auto existingTexture = assetLibrary->texture(filename);
+
+        if (existingTexture)
+        {
+            dependencies->registerReference(assetRef, existingTexture);
+
+            return;
+        }
     }
     else
     {
@@ -565,27 +576,21 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
         filename = uniqueFilename;
     }
 
-    auto existingTexture = assetLibrary->texture(filename);
+    auto texture = AbstractTexture::Ptr();
 
-    if (existingTexture)
-    {
-        dependencies->registerReference(assetRef, existingTexture);
+    auto parser = StreamedTextureParser::create();
+    parser->dependency(dependencies);
+    parser->streamingOptions(_streamingOptions);
 
-        return;
-    }
+    if (linkedAsset != nullptr)
+        parser->linkedAsset(linkedAsset);
 
     auto textureData = Provider::create();
 
-    auto parser = StreamedTextureParser::create();
-
     parser->data(textureData);
-    parser->streamingOptions(_streamingOptions);
-    parser->dependency(dependencies);
 
-    if (linkedAsset != nullptr)
-    {
-        parser->linkedAsset(linkedAsset);
-    }
+    if (!hasHeader && _streamingOptions->createStreamedTextureOnTheFly())
+        parser->deferParsing(assetRef);
 
     parser->parse(
         filename,
@@ -595,19 +600,27 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
         assetLibrary
     );
 
-    auto texture = AbstractTexture::Ptr();
-
     texture = assetLibrary->texture(filename);
-
     dependencies->registerReference(assetRef, texture);
 
+    if (texture)
+    {
+        // texture is created upong parsing
+
+        _streamingOptions->masterLodScheduler()->registerTexture(texture, textureData);
+    }
+    else
+    {
+        // texture parsing is deferred
+
+        _streamingOptions->masterLodScheduler()->registerDeferredTexture(textureData);
+    }
+    
     registerStreamedTextureParser(parser, texture);
 
     auto parserScheduler = this->parserScheduler(options, jobList);
 
     parserScheduler->addParser(parser);
-
-    _streamingOptions->masterLodScheduler()->registerTexture(texture, textureData);
 }
 
 void
@@ -665,6 +678,7 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
                                            const std::string&                   filename,
                                            Dependency::Ptr                      dependency,
                                            Options::Ptr                         options,
+                                           bool                                 requireHeader,
                                            std::vector<unsigned char>&          streamedAssetHeaderData,
                                            bool&                                hasHeader,
                                            int&                                 streamedAssetHeaderSize,
@@ -676,84 +690,87 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
     if (hasHeader)
     {
         streamedAssetHeaderData = data;
+
+        return true;
     }
-    else
+
+    std::stringstream dataStream(std::string(data.begin(), data.end()));
+
+    short linkedAssetId = 0;
+
+    dataStream >> linkedAssetId;
+
+    linkedAsset = dependency->getLinkedAssetReference(linkedAssetId);
+
+    if (options->preventLoadingFunction()(linkedAsset->filename()))
+        return false;
+
+    if (!requireHeader)
+        return true;
+
+    const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
+
+    auto linkedAssetResolutionSuccessful = true;
+
+    auto linkedAssetErrorSlot = linkedAsset->error()->connect(
+        [&](LinkedAsset::Ptr    linkedAssetThis,
+            const Error&        error)
+        {
+            linkedAssetResolutionSuccessful = false;
+        }
+    );
+
     {
-        std::stringstream dataStream(std::string(data.begin(), data.end()));
+        auto headerOptions = options->clone()
+            ->loadAsynchronously(false)
+            ->seekingOffset(0)
+            ->seekedLength(assetHeaderSize)
+            ->storeDataIfNotParsed(false)
+            ->parserFunction([](const std::string&) -> AbstractParser::Ptr { return nullptr; });
 
-        short linkedAssetId = 0;
-
-        dataStream >> linkedAssetId;
-
-        linkedAsset = dependency->getLinkedAssetReference(linkedAssetId);
-
-        if (options->preventLoadingFunction()(linkedAsset->filename()))
-            return false;
-
-        const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
-
-        auto linkedAssetResolutionSuccessful = true;
-
-        auto linkedAssetErrorSlot = linkedAsset->error()->connect(
-            [&](LinkedAsset::Ptr    linkedAssetThis,
-                const Error&        error)
+        auto linkedAssetCompleteSlot = linkedAsset->complete()->connect(
+            [&](LinkedAsset::Ptr                    linkedAssetThis,
+                const std::vector<unsigned char>&   linkedAssetData) -> void
             {
-                linkedAssetResolutionSuccessful = false;
+                linkedAsset->filename(linkedAsset->lastResolvedFilename());
+
+                const auto streamedAssetHeaderSizeOffset = assetHeaderSize - 2;
+
+                streamedAssetHeaderSize = assetHeaderSize +
+                                          (linkedAssetData[streamedAssetHeaderSizeOffset] << 8) +
+                                          linkedAssetData[streamedAssetHeaderSizeOffset + 1];
             }
         );
 
-        {
-            auto headerOptions = options->clone()
-                ->loadAsynchronously(false)
-                ->seekingOffset(0)
-                ->seekedLength(assetHeaderSize)
-                ->storeDataIfNotParsed(false)
-                ->parserFunction([](const std::string&) -> AbstractParser::Ptr { return nullptr; });
-
-            auto linkedAssetCompleteSlot = linkedAsset->complete()->connect(
-                [&](LinkedAsset::Ptr                    linkedAssetThis,
-                    const std::vector<unsigned char>&   linkedAssetData) -> void
-                {
-                    linkedAsset->filename(linkedAsset->lastResolvedFilename());
-
-                    const auto streamedAssetHeaderSizeOffset = assetHeaderSize - 2;
-
-                    streamedAssetHeaderSize = assetHeaderSize +
-                                              (linkedAssetData[streamedAssetHeaderSizeOffset] << 8) +
-                                              linkedAssetData[streamedAssetHeaderSizeOffset + 1];
-                }
-            );
-
-            linkedAsset->resolve(headerOptions);
-        }
-
-        if (!linkedAssetResolutionSuccessful)
-            return false;
-
-        {
-            auto headerOptions = options->clone()
-                ->loadAsynchronously(false)
-                ->seekingOffset(0)
-                ->seekedLength(streamedAssetHeaderSize)
-                ->storeDataIfNotParsed(false)
-                ->parserFunction([](const std::string&) -> AbstractParser::Ptr { return nullptr; });
-
-            auto linkedAssetCompleteSlot = linkedAsset->complete()->connect(
-                [&](LinkedAsset::Ptr                    linkedAssetThis,
-                    const std::vector<unsigned char>&   linkedAssetData) -> void
-                {
-                    streamedAssetHeaderData = linkedAssetData;
-                }
-            );
-
-            linkedAsset->resolve(headerOptions);
-        }
-
-        if (!linkedAssetResolutionSuccessful)
-            return false;
-
-        linkedAsset->offset(linkedAsset->offset() + streamedAssetHeaderSize + 2);
+        linkedAsset->resolve(headerOptions);
     }
+
+    if (!linkedAssetResolutionSuccessful)
+        return false;
+
+    {
+        auto headerOptions = options->clone()
+            ->loadAsynchronously(false)
+            ->seekingOffset(0)
+            ->seekedLength(streamedAssetHeaderSize)
+            ->storeDataIfNotParsed(false)
+            ->parserFunction([](const std::string&) -> AbstractParser::Ptr { return nullptr; });
+
+        auto linkedAssetCompleteSlot = linkedAsset->complete()->connect(
+            [&](LinkedAsset::Ptr                    linkedAssetThis,
+                const std::vector<unsigned char>&   linkedAssetData) -> void
+            {
+                streamedAssetHeaderData = linkedAssetData;
+            }
+        );
+
+        linkedAsset->resolve(headerOptions);
+    }
+
+    if (!linkedAssetResolutionSuccessful)
+        return false;
+
+    linkedAsset->offset(linkedAsset->offset() + streamedAssetHeaderSize + 2);
 
     return true;
 }

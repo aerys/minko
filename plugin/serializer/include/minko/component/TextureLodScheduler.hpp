@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/component/AbstractLodScheduler.hpp"
+#include "minko/component/MasterLodScheduler.hpp"
 
 namespace minko
 {
@@ -39,10 +40,10 @@ namespace minko
             typedef std::shared_ptr<Renderer>                   RendererPtr;
             typedef std::shared_ptr<Surface>                    SurfacePtr;
 
+            typedef std::shared_ptr<MasterLodScheduler>         MasterLodSchedulerPtr;
+
             typedef std::shared_ptr<data::Provider>             ProviderPtr;
 
-            typedef std::shared_ptr<material::Material>         MaterialPtr;
-            
             typedef std::shared_ptr<render::AbstractTexture>    AbstractTexturePtr;
 
             typedef std::shared_ptr<file::AssetLibrary>         AssetLibraryPtr;
@@ -52,10 +53,10 @@ namespace minko
                 ResourceInfo*                                   base;
 
                 AbstractTexturePtr                              texture;
-                std::string                                     textureName;
+                std::string                                     textureType;
 
-                std::unordered_set<MaterialPtr>                 materials;
-                std::unordered_map<SurfacePtr, int>             surfaceToActiveLodMap;
+                std::unordered_set<ProviderPtr>                 materialDataSet;
+                int                                             activeLod;
 
                 int                                             maxAvailableLod;
                 int                                             maxLod;
@@ -69,6 +70,9 @@ namespace minko
         private:
             SceneManagerPtr                                             _sceneManager;
             RendererPtr                                                 _renderer;
+
+            MasterLodScheduler::DeferredTextureRegisteredSignal::Slot   _deferredTextureRegisteredSlot;
+            MasterLodScheduler::DeferredTextureReadySignal::Slot        _deferredTextureReadySlot;
 
             std::unordered_map<std::string, TextureResourceInfo>        _textureResources;
 
@@ -93,16 +97,16 @@ namespace minko
 
         protected:
             void
-            sceneManagerSet(SceneManagerPtr sceneManager);
+            sceneManagerSet(SceneManagerPtr sceneManager) override;
 
             void
-            rendererSet(RendererPtr renderer);
+            rendererSet(RendererPtr renderer) override;
 
             void
-            surfaceAdded(SurfacePtr surface);
+            masterLodSchedulerSet(MasterLodSchedulerPtr masterLodScheduler) override;
 
             void
-            surfaceRemoved(SurfacePtr surface);
+            surfaceAdded(SurfacePtr surface) override;
 
             void
             viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
@@ -111,21 +115,31 @@ namespace minko
                                 float               fov,
                                 float               aspectRatio,
                                 float               zNear,
-                                float               zFar);
+                                float               zFar) override;
 
             void
-            viewportChanged(const math::vec4& viewport);
+            viewportChanged(const math::vec4& viewport) override;
 
             void
             maxAvailableLodChanged(ResourceInfo&    resource,
-                                   int              maxAvailableLod);
+                                   int              maxAvailableLod) override;
 
             LodInfo
             lodInfo(ResourceInfo&   resource,
-                    float           time);
+                    float           time) override;
 
         private:
             TextureLodScheduler(AssetLibraryPtr assetLibrary);
+
+            void
+            textureRegistered(ProviderPtr data);
+
+            void
+            textureReady(TextureResourceInfo&                      resource,
+                         ProviderPtr                               data,
+                         const std::unordered_set<ProviderPtr>&    materialDataSet,
+                         const Flyweight<std::string>&             textureType,
+                         AbstractTexturePtr                        texture);
 
             void
             activeLodChanged(TextureResourceInfo&   resource,

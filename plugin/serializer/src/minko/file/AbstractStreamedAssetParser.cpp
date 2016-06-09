@@ -45,7 +45,10 @@ AbstractStreamedAssetParser::AbstractStreamedAssetParser() :
     _filename(),
     _resolvedFilename(),
     _fileOffset(0),
+    _deferParsing(false),
+    _dependencyId(0u),
     _headerIsRead(false),
+    _readingHeader(false),
     _previousLod(-1),
     _currentLod(-1),
     _nextLodOffset(0),
@@ -103,6 +106,9 @@ AbstractStreamedAssetParser::parse(const std::string&                 filename,
         return;
     }
 
+    if (_deferParsing)
+        return;
+
     if (!_headerIsRead)
     {
         _headerIsRead = true;
@@ -120,7 +126,23 @@ AbstractStreamedAssetParser::parse(const std::string&                 filename,
 float
 AbstractStreamedAssetParser::priority()
 {
+    if (_readingHeader)
+        return 0.f;
+
     return _priority;
+}
+
+bool
+AbstractStreamedAssetParser::prepareForNextLodRequest()
+{
+    if (_deferParsing && !_headerIsRead && !_readingHeader)
+    {
+        parseStreamedAssetHeader();
+
+        return false;
+    }
+
+    return true;
 }
 
 void
@@ -243,6 +265,9 @@ AbstractStreamedAssetParser::requiredLod(int requiredLod)
 
     _requiredLod = requiredLod;
 
+    if (!_headerIsRead)
+        return;
+
     nextLod(_previousLod, _requiredLod, _currentLod, _nextLodOffset, _nextLodSize);
 }
 
@@ -338,4 +363,74 @@ AbstractStreamedAssetParser::nextLod(int      previousLod,
 
     nextLod = lodLowerBound(upperLod);
     lodRangeRequestByteRange(lowerLod, upperLod, nextLodOffset, nextLodSize);
+}
+
+void
+AbstractStreamedAssetParser::parseStreamedAssetHeader()
+{
+    _readingHeader = true;
+
+    const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
+
+    auto headerOptions = _options->clone()
+        ->loadAsynchronously(true)
+        ->seekingOffset(0)
+        ->seekedLength(assetHeaderSize)
+        ->storeDataIfNotParsed(false)
+        ->parserFunction([](const std::string&) -> AbstractParser::Ptr { return nullptr; });
+
+    _loaderErrorSlot = _linkedAsset->error()->connect(
+        [&](LinkedAsset::Ptr    linkedAssetThis,
+            const Error&        error)
+        {
+            _loaderErrorSlot = nullptr;
+            _loaderCompleteSlot = nullptr;
+
+            _readingHeader = false;
+
+            this->error()->execute(shared_from_this(), error);
+        }
+    );
+
+    _loaderCompleteSlot = _linkedAsset->complete()->connect(
+        [=](LinkedAsset::Ptr                    linkedAsset,
+            const std::vector<unsigned char>&   linkedAssetData)
+        {
+            linkedAsset->filename(linkedAsset->lastResolvedFilename());
+
+            const auto streamedAssetHeaderSizeOffset = assetHeaderSize - 2;
+
+            const auto streamedAssetHeaderSize = assetHeaderSize +
+                (linkedAssetData[streamedAssetHeaderSizeOffset] << 8) +
+                linkedAssetData[streamedAssetHeaderSizeOffset + 1];
+
+            headerOptions->seekedLength(streamedAssetHeaderSize);
+
+            _loaderCompleteSlot = _linkedAsset->complete()->connect(
+                [=](LinkedAsset::Ptr                    linkedAsset,
+                    const std::vector<unsigned char>&   linkedAssetData)
+                {
+                    _loaderErrorSlot = nullptr;
+                    _loaderCompleteSlot = nullptr;
+
+                    _linkedAsset->offset(linkedAsset->offset() + streamedAssetHeaderSize + 2);
+
+                    _headerIsRead = true;
+                    _readingHeader = false;
+
+                    parseHeader(linkedAssetData, _options);
+
+                    prepareNextLod();
+
+                    parsed(_filename, _resolvedFilename, _options, linkedAssetData, _assetLibrary);
+
+                    ready()->execute(std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()));
+                }
+            );
+
+            _linkedAsset->resolve(headerOptions);
+        }
+    );
+
+    _linkedAsset->resolve(headerOptions);
 }

@@ -54,8 +54,16 @@ StreamedAssetParserScheduler::addParser(AbstractStreamedAssetParser::Ptr parser)
     auto entryIt = _entries.insert(ParserEntryPtr(new ParserEntry(parser)));
     auto entry = *entryIt.first;
 
+    entry->parserErrorSlot = parser->error()->connect(
+        [=](AbstractParser::Ptr parser,
+            const Error&        error)
+        {
+            removeEntry(entry);
+        }
+    );
+
     entry->parserCompleteSlot = parser->AbstractParser::complete()->connect(
-        [=](AbstractParser::Ptr parserThis)
+        [=](AbstractParser::Ptr parser)
         {
             removeEntry(entry);
         }
@@ -113,7 +121,12 @@ StreamedAssetParserScheduler::step()
 {
     while (hasPendingRequest() && _activeEntries.size() < _parameters.maxNumActiveParsers)
     {
-        auto entry = popHeadingParser();
+        auto entry = headingParser();
+
+        if (!entry->parser->prepareForNextLodRequest())
+            continue;
+
+        popHeadingParser();
 
         const int previousNumActiveEntries = _activeEntries.size();
         const int numActiveEntries = previousNumActiveEntries + 1;
@@ -173,6 +186,7 @@ StreamedAssetParserScheduler::removeEntry(ParserEntryPtr entry)
 {
     stopListeningToEntry(entry);
 
+    entry->parserErrorSlot = nullptr;
     entry->parserCompleteSlot = nullptr;
 
     _entries.erase(entry);
@@ -302,7 +316,8 @@ StreamedAssetParserScheduler::requestDisposed(ParserEntryPtr entry)
     const int previousNumActiveEntries = _activeEntries.size();
     const int numActiveEntries = previousNumActiveEntries - 1;
 
-    _activeEntries.erase(entry);
+    if (_activeEntries.erase(entry) == 0)
+        return;
 
     entryDeactivated(entry, numActiveEntries, previousNumActiveEntries);
 

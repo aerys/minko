@@ -203,7 +203,7 @@ Dependency::registerReference(uint referenceId, std::shared_ptr<material::Materi
 	_materialReferences[referenceId] = material;
 }
 
-Dependency::AbsTexturePtr
+Dependency::TextureReference&
 Dependency::getTextureReference(uint textureId)
 {
 	return _textureReferences[textureId];
@@ -212,7 +212,9 @@ Dependency::getTextureReference(uint textureId)
 void
 Dependency::registerReference(uint referenceId, AbsTexturePtr texture)
 {
-	_textureReferences[referenceId] = texture;
+    auto textureReference = _textureReferences.emplace(referenceId, TextureReference());
+
+    textureReference.first->second.texture = texture;
 }
 
 std::shared_ptr<scene::Node>
@@ -252,31 +254,31 @@ Dependency::getLinkedAssetReference(uint referenceId)
 }
 
 bool
-Dependency::geometryReferenceExist(uint referenceId)
+Dependency::geometryReferenceExists(uint referenceId)
 {
 	return _geometryReferences.find(referenceId) != _geometryReferences.end();
 }
 
 bool
-Dependency::textureReferenceExist(uint referenceId)
+Dependency::textureReferenceExists(uint referenceId)
 {
 	return _textureReferences.find(referenceId) != _textureReferences.end();
 }
 
 bool
-Dependency::materialReferenceExist(uint referenceId)
+Dependency::materialReferenceExists(uint referenceId)
 {
 	return _materialReferences.find(referenceId) != _materialReferences.end();
 }
 
 bool
-Dependency::effectReferenceExist(uint referenceId)
+Dependency::effectReferenceExists(uint referenceId)
 {
 	return _effectReferences.find(referenceId) != _effectReferences.end();
 }
 
 bool
-Dependency::linkedAssetReferenceExist(uint referenceId)
+Dependency::linkedAssetReferenceExists(uint referenceId)
 {
 	return _linkedAssetReferences.find(referenceId) != _linkedAssetReferences.end();
 }

@@ -45,9 +45,22 @@ namespace minko
 
             typedef std::shared_ptr<file::StreamingOptions>     StreamingOptionsPtr;
 
+            typedef Signal<Ptr, ProviderPtr>                    DeferredTextureRegisteredSignal;
+            typedef Signal<
+                Ptr,
+                ProviderPtr,
+                std::unordered_set<ProviderPtr>,
+                const Flyweight<std::string>&,
+                AbstractTexturePtr
+            >                                                   DeferredTextureReadySignal;
+
         private:
             std::unordered_map<GeometryPtr, ProviderPtr>            _geometryToDataMap;
             std::unordered_map<AbstractTexturePtr, ProviderPtr>     _textureToDataMap;
+            std::unordered_set<ProviderPtr>                         _deferredTextureDataSet;
+
+            DeferredTextureRegisteredSignal::Ptr                    _deferredTextureRegistered;
+            DeferredTextureReadySignal::Ptr                         _deferredTextureReady;
 
             StreamingOptionsPtr                                     _streamingOptions;
 
@@ -100,11 +113,38 @@ namespace minko
             Ptr
             registerTexture(AbstractTexturePtr texture, ProviderPtr data);
 
+            Ptr
+            registerDeferredTexture(ProviderPtr data);
+
+            Ptr
+            deferredTextureReady(ProviderPtr                            data,
+                                 const std::unordered_set<ProviderPtr>& materialDataSet,
+                                 const Flyweight<std::string>&          textureType,
+                                 AbstractTexturePtr                     texture);
+
             void
             unregisterTexture(AbstractTexturePtr texture);
 
             ProviderPtr
             textureData(AbstractTexturePtr texture);
+
+            DeferredTextureRegisteredSignal::Ptr
+            deferredTextureRegistered()
+            {
+                return _deferredTextureRegistered;
+            }
+
+            DeferredTextureReadySignal::Ptr
+            deferredTextureReady()
+            {
+                return _deferredTextureReady;
+            }
+
+            const std::unordered_set<ProviderPtr>&
+            deferredTextureDataSet() const
+            {
+                return _deferredTextureDataSet;
+            }
 
             void
             layoutMask(scene::Layout value) override;
