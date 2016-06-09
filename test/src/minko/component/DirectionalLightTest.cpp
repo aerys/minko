@@ -244,6 +244,20 @@ TEST_F(DirectionalLightTest, RemoveLastLight)
     ASSERT_EQ(root->data().get<math::vec3>("directionalLight[1].direction"), math::vec3(0.f, 0.f, -1.f));
 }
 
+TEST_F(DirectionalLightTest, RemoveLightThenChangeTargetRoot)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    auto al = DirectionalLight::create();
+    lights->addComponent(al);
+    lights->removeComponent(al);
+
+    root->addChild(lights);
+
+    ASSERT_FALSE(root->data().hasProperty("directionalLight.length"));
+}
+
 TEST_F(DirectionalLightTest, RotateXPi)
 {
     auto root = scene::Node::create("root");
