@@ -517,7 +517,7 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
         assetCompletePath,
         dependencies,
         options,
-        false,
+        !_streamingOptions->createStreamedTextureOnTheFly(),
         streamedAssetHeaderData,
         hasHeader,
         streamedAssetHeaderSize,
@@ -589,7 +589,7 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
 
     parser->data(textureData);
 
-    if (!hasHeader)
+    if (!hasHeader && _streamingOptions->createStreamedTextureOnTheFly())
         parser->deferParsing(assetRef);
 
     parser->parse(

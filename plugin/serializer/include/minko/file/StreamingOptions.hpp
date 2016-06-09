@@ -112,6 +112,8 @@ namespace minko
             std::function<void(int, int, int&, int&, int&, int&)>   _popGeometryLodRangeFetchingBoundFunction;
             std::function<void(int, int, int&, int&, int&, int&)>   _streamedTextureLodRangeFetchingBoundFunction;
 
+            bool                                                    _createStreamedTextureOnTheFly;
+
             float                                                   _popGeometryBlendingRange;
 
             int                                                     _maxNumActiveParsers;
@@ -420,6 +422,22 @@ namespace minko
             streamedTextureLodRangeFetchingBoundFunction(const std::function<void(int, int, int&, int&, int&, int&)>& function)
             {
                 _streamedTextureLodRangeFetchingBoundFunction = function;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            createStreamedTextureOnTheFly() const
+            {
+                return _createStreamedTextureOnTheFly;
+            }
+
+            inline
+            Ptr
+            createStreamedTextureOnTheFly(bool value)
+            {
+                _createStreamedTextureOnTheFly = value;
 
                 return shared_from_this();
             }
