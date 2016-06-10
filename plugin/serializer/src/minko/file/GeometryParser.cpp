@@ -102,10 +102,11 @@ GeometryParser::parse(const std::string&                filename,
     if (!readHeader(filename, data, 0x47))
         return;
 
+	std::string				folderPathName = extractFolderPath(resolvedFilename);
 	geometry::Geometry::Ptr geom	= geometry::Geometry::create(filename);
     SerializedGeometry          serializedGeometry;
 
-    extractDependencies(assetLibrary, data, _headerSize, _dependencySize, options);
+    extractDependencies(assetLibrary, data, _headerSize, _dependencySize, options, folderPathName);
 
     unpack(serializedGeometry, data, _sceneDataSize, _headerSize + _dependencySize);
 

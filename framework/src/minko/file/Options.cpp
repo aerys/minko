@@ -65,7 +65,19 @@ Options::Options() :
     _material(nullptr),
     _effect(nullptr),
     _seekingOffset(0),
-    _seekedLength(0)
+    _seekedLength(0),
+    _materialFunction(),
+    _textureFunction(),
+    _geometryFunction(),
+    _protocolFunction(),
+    _parserFunction(),
+    _uriFunction(),
+    _nodeFunction(),
+    _effectFunction(),
+    _textureFormatFunction(),
+    _attributeFunction(),
+    _fileStatusFunction(),
+    _preventLoadingFunction()
 {
     auto binaryDir = File::getBinaryDirectory();
 
