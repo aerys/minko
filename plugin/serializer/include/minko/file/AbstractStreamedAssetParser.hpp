@@ -324,6 +324,15 @@ namespace minko
 
             virtual
             void
+            lodRangeFetchingBound(int  currentLod,
+                                  int  requiredLod,
+                                  int& lodRangeMinSize,
+                                  int& lodRangeMaxSize,
+                                  int& lodRangeRequestMinSize,
+                                  int& lodRangeRequestMaxSize) = 0;
+
+            virtual
+            void
             lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const = 0;
 
             virtual

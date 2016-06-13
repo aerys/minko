@@ -310,21 +310,14 @@ AbstractStreamedAssetParser::nextLod(int      previousLod,
     auto lodRangeRequestMinSize = 0;
     auto lodRangeRequestMaxSize = 0;
 
-    if (data() && streamingOptions()->popGeometryLodRangeFetchingBoundFunction())
-    {
-        streamingOptions()->popGeometryLodRangeFetchingBoundFunction()(
-            previousLod,
-            requiredLod,
-            lodRangeMinSize,
-            lodRangeMaxSize,
-            lodRangeRequestMinSize,
-            lodRangeRequestMaxSize
-        );
-    }
-    else
-    {
-        lodRangeMinSize = StreamingOptions::MAX_LOD_RANGE;
-    }
+    lodRangeFetchingBound(
+        previousLod,
+        requiredLod,
+        lodRangeMinSize,
+        lodRangeMaxSize,
+        lodRangeRequestMinSize,
+        lodRangeRequestMaxSize
+    );
 
     auto lowerLod = previousLod + 1;
     auto upperLod = lowerLod;
