@@ -99,6 +99,14 @@ namespace minko
             completed() override;
 
             void
+            lodRangeFetchingBound(int  currentLod,
+                                  int  requiredLod,
+                                  int& lodRangeMinSize,
+                                  int& lodRangeMaxSize,
+                                  int& lodRangeRequestMinSize,
+                                  int& lodRangeRequestMaxSize) override;
+
+            void
             lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const override;
 
             int

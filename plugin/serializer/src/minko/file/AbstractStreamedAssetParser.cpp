@@ -135,9 +135,10 @@ AbstractStreamedAssetParser::priority()
 bool
 AbstractStreamedAssetParser::prepareForNextLodRequest()
 {
-    if (_deferParsing && !_headerIsRead && !_readingHeader)
+    if (_deferParsing && !_headerIsRead)
     {
-        parseStreamedAssetHeader();
+        if (!_readingHeader)
+            parseStreamedAssetHeader();
 
         return false;
     }
@@ -274,6 +275,16 @@ AbstractStreamedAssetParser::requiredLod(int requiredLod)
 void
 AbstractStreamedAssetParser::priority(float priority)
 {
+    if (_priority == priority)
+        return;
+
+    if (_readingHeader)
+    {
+        _priority = priority;
+
+        return;
+    }
+
     beforePriorityChanged()->execute(
         std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()),
         _priority
@@ -299,21 +310,14 @@ AbstractStreamedAssetParser::nextLod(int      previousLod,
     auto lodRangeRequestMinSize = 0;
     auto lodRangeRequestMaxSize = 0;
 
-    if (data() && streamingOptions()->popGeometryLodRangeFetchingBoundFunction())
-    {
-        streamingOptions()->popGeometryLodRangeFetchingBoundFunction()(
-            previousLod,
-            requiredLod,
-            lodRangeMinSize,
-            lodRangeMaxSize,
-            lodRangeRequestMinSize,
-            lodRangeRequestMaxSize
-        );
-    }
-    else
-    {
-        lodRangeMinSize = StreamingOptions::MAX_LOD_RANGE;
-    }
+    lodRangeFetchingBound(
+        previousLod,
+        requiredLod,
+        lodRangeMinSize,
+        lodRangeMaxSize,
+        lodRangeRequestMinSize,
+        lodRangeRequestMaxSize
+    );
 
     auto lowerLod = previousLod + 1;
     auto upperLod = lowerLod;
@@ -368,7 +372,17 @@ AbstractStreamedAssetParser::nextLod(int      previousLod,
 void
 AbstractStreamedAssetParser::parseStreamedAssetHeader()
 {
+    beforePriorityChanged()->execute(
+        std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()),
+        priority()
+    );
+
     _readingHeader = true;
+
+    priorityChanged()->execute(
+        std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()),
+        priority()
+    );
 
     const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
 
@@ -416,7 +430,18 @@ AbstractStreamedAssetParser::parseStreamedAssetHeader()
                     _linkedAsset->offset(linkedAsset->offset() + streamedAssetHeaderSize + 2);
 
                     _headerIsRead = true;
+
+                    beforePriorityChanged()->execute(
+                        std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()),
+                        priority()
+                    );
+
                     _readingHeader = false;
+
+                    priorityChanged()->execute(
+                        std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()),
+                        priority()
+                    );
 
                     parseHeader(linkedAssetData, _options);
 

@@ -506,6 +506,32 @@ POPGeometryParser::lodParsed(int                                 previousLod,
 }
 
 void
+POPGeometryParser::lodRangeFetchingBound(int  currentLod,
+                                         int  requiredLod,
+                                         int& lodRangeMinSize,
+                                         int& lodRangeMaxSize,
+                                         int& lodRangeRequestMinSize,
+                                         int& lodRangeRequestMaxSize)
+
+{
+    if (streamingOptions()->popGeometryLodRangeFetchingBoundFunction())
+    {
+        streamingOptions()->popGeometryLodRangeFetchingBoundFunction()(
+            currentLod,
+            requiredLod,
+            lodRangeMinSize,
+            lodRangeMaxSize,
+            lodRangeRequestMinSize,
+            lodRangeRequestMaxSize
+        );
+    }
+    else
+    {
+        lodRangeMinSize = StreamingOptions::MAX_LOD_RANGE;
+    }
+}
+
+void
 POPGeometryParser::lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const
 {
     auto lowerLodIt = _lods.lower_bound(lowerLod);

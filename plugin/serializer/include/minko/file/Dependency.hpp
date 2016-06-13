@@ -43,6 +43,13 @@ namespace minko
                 uint                    dependencyId;
                 AbsTexturePtr    		texture;
                 Flyweight<std::string>  textureType;
+
+                TextureDependency() :
+                	dependencyId(0u),
+                	texture(),
+                	textureType()
+            	{
+            	}
             };
 
             struct TextureReference
@@ -50,6 +57,13 @@ namespace minko
             	AbsTexturePtr 				    texture;
             	Flyweight<std::string> 		    textureType;
             	std::unordered_set<ProviderPtr>	dependentMaterialDataSet;
+
+            	TextureReference() :
+            		texture(),
+            		textureType(),
+            		dependentMaterialDataSet()
+        		{
+        		}
             };
 
 		private:

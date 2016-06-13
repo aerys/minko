@@ -347,6 +347,32 @@ StreamedTextureParser::extractLodData(TextureFormat                        forma
 }
 
 void
+StreamedTextureParser::lodRangeFetchingBound(int  currentLod,
+                                             int  requiredLod,
+                                             int& lodRangeMinSize,
+                                             int& lodRangeMaxSize,
+                                             int& lodRangeRequestMinSize,
+                                             int& lodRangeRequestMaxSize)
+
+{
+    if (streamingOptions()->streamedTextureLodRangeFetchingBoundFunction())
+    {
+        streamingOptions()->streamedTextureLodRangeFetchingBoundFunction()(
+            currentLod,
+            requiredLod,
+            lodRangeMinSize,
+            lodRangeMaxSize,
+            lodRangeRequestMinSize,
+            lodRangeRequestMaxSize
+        );
+    }
+    else
+    {
+        lodRangeMinSize = StreamingOptions::MAX_LOD_RANGE;
+    }
+}
+
+void
 StreamedTextureParser::lodRangeRequestByteRange(int lowerLod, int upperLod, int& offset, int& size) const
 {
     const auto& nextLodLowerBoundInfo = _mipLevelsInfo.at(lodToMipLevel(lowerLod));
