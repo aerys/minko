@@ -102,6 +102,11 @@ namespace minko
                       AssetLibraryPtr               assetLibrary,
                       std::shared_ptr<Options>      options);
 
+            void
+            handleMetadata(std::shared_ptr<scene::Node> node, 
+                           std::shared_ptr<component::Metadata> metadata,
+                           std::shared_ptr<file::Options> options);
+
             SceneParser();
         };
     }
