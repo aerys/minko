@@ -268,7 +268,6 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
     auto surface = component::Surface::Ptr();
 
     material = (material != nullptr ? material : assetLibrary->material("defaultMaterial"));
-    effect = (effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect"));
 
     if (uuid.empty())
     {
