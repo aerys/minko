@@ -17,11 +17,6 @@ You can find the complete list and the status for each platform on our [Platform
 
 Make sure you check the following pages to get started:
 
--   [Developer reference](http://doc.v3.minko.io/reference/)
 -   [Tutorials](tutorial/README.md)
--   Examples
 -   [Articles](article/README.md)
-
-If you are looking for professional technical support, please [contact us](http://minko.io/contact)!
-
-You can find Minko 2 documentation [here](http://doc.v2.minko.io/wiki/Main_Page).
+-   [Examples](../example)
