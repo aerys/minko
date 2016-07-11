@@ -26,6 +26,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/WriterOptions.hpp"
+#include "minko/serialize/TypeSerializer.hpp"
+#include "minko/render/IndexBuffer.hpp"
 
 namespace minko
 {
