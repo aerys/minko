@@ -83,9 +83,13 @@ namespace minko
                 vertexBufferTestFunctions[functionId] = testFunc;
             }
 
+            template <typename T>
             static
             std::string
-            serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer);
+            serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer)
+            {
+                return serialize::TypeSerializer::serializeVector(*indexBuffer->dataPointer<T>());
+            }
 
             static
             bool
