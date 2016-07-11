@@ -20,7 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/AbstractSerializerParser.hpp"
+#include "minko/render/IndexBuffer.hpp"
 
 namespace minko
 {
@@ -75,10 +77,16 @@ namespace minko
                 vertexBufferParserFunctions[functionId] = f;
             }
 
+            template <typename T>
             static
             IndexBufferPtr
             deserializeIndexBuffer(std::string&          serializedIndexBuffer,
-                                   AbstractContextPtr    context);
+                                   AbstractContextPtr    context)
+            {
+                auto vector = deserialize::TypeDeserializer::deserializeVector<T>(serializedIndexBuffer);
+
+                return render::IndexBuffer::create(context, vector);
+            }
 
         private:
             GeometryParser()

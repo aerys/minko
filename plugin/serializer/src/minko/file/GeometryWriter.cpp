@@ -35,14 +35,17 @@ GeometryWriter::initialize()
 {
 	_magicNumber = 0x00000047 | MINKO_SCENE_MAGIC_NUMBER;
 
+    // Default 16-bit index.
 	registerIndexBufferWriterFunction(
-		std::bind(
-			GeometryWriter::serializeIndexStream,
-			std::placeholders::_1),
-        [=](std::shared_ptr<geometry::Geometry> geometry) { return true; },
+        [](render::IndexBuffer::Ptr indexBuffer) -> std::string
+        {
+            return serializeIndexStream<unsigned short>(indexBuffer);
+        },
+        [](std::shared_ptr<geometry::Geometry> geometry) { return true; },
 		0
 	);
 
+    // 8-bit index.
 	registerIndexBufferWriterFunction(
 		std::bind(
 			GeometryWriter::serializeIndexStreamChar,
@@ -53,6 +56,21 @@ GeometryWriter::initialize()
 			std::placeholders::_1
 		),
 		1
+	);
+
+    // 32-bit index.
+	registerIndexBufferWriterFunction(
+		[](render::IndexBuffer::Ptr indexBuffer) -> std::string
+		{
+			return serializeIndexStream<unsigned int>(indexBuffer);
+		},
+		[](geometry::Geometry::Ptr geometry) -> bool
+		{
+			return geometry &&
+				geometry->numVertices() > std::numeric_limits<unsigned short>::max() &&
+				geometry->indices()->dataPointer<unsigned int>();
+		},
+		2
 	);
 
 	registerVertexBufferWriterFunction(
@@ -79,7 +97,7 @@ GeometryWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 	const std::string&			serializedIndexBuffer	= indexBufferWriterFunctions[indexBufferFunctionId](geometry->indices());
 	std::vector<std::string>	serializedVertexBuffers;
 	std::stringstream			sbuf;
-	
+
 	for (std::shared_ptr<render::VertexBuffer> vertexBuffer : geometry->vertexBuffers())
 		serializedVertexBuffers.push_back(vertexBufferWriterFunctions[vertexBufferFunctionId](vertexBuffer));
 
@@ -94,12 +112,6 @@ GeometryWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 }
 
 std::string
-GeometryWriter::serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer)
-{
-	return serialize::TypeSerializer::serializeVector<unsigned short>(indexBuffer->data());
-}
-
-std::string
 GeometryWriter::serializeIndexStreamChar(std::shared_ptr<render::IndexBuffer> indexBuffer)
 {
 	return serialize::TypeSerializer::serializeVector<unsigned short, unsigned char>(indexBuffer->data());
@@ -109,7 +121,7 @@ std::string
 GeometryWriter::serializeVertexStream(std::shared_ptr<render::VertexBuffer> vertexBuffer)
 {
 	std::vector<msgpack::type::tuple<std::string, unsigned char, unsigned char>> serializedAttributes;
-	
+
     for (const auto& attribute : vertexBuffer->attributes())
 	{
 		serializedAttributes.push_back(msgpack::type::tuple<std::string, unsigned char, unsigned char>(
@@ -133,13 +145,13 @@ GeometryWriter::serializeVertexStream(std::shared_ptr<render::VertexBuffer> vert
 }
 
 unsigned short
-GeometryWriter::computeMetaData(std::shared_ptr<geometry::Geometry> geometry, 
-							    uint&								indexBufferFunctionId, 
+GeometryWriter::computeMetaData(std::shared_ptr<geometry::Geometry> geometry,
+							    uint&								indexBufferFunctionId,
 								uint&								vertexBufferFunctionId,
 								WriterOptionsPtr					writerOptions)
 {
 	unsigned short metaData = 0x0000;
-	
+
 	for (auto functionIdTestFunc : indexBufferTestFunctions)
 		if (functionIdTestFunc.second(geometry) && functionIdTestFunc.first >= indexBufferFunctionId)
 			indexBufferFunctionId = functionIdTestFunc.first;

@@ -36,14 +36,30 @@ std::unordered_map<uint, std::function<std::shared_ptr<render::VertexBuffer>(std
 void
 GeometryParser::initialize()
 {
+    // Default 16-bit index.
     registerIndexBufferParserFunction(
-        std::bind(&GeometryParser::deserializeIndexBuffer, std::placeholders::_1, std::placeholders::_2),
+        [](std::string&                             serializedindexBuffer,
+           std::shared_ptr<render::AbstractContext> context)
+        {
+            return deserializeIndexBuffer<unsigned short>(serializedindexBuffer, context);
+        },
         0
     );
 
+    // 8-bit index.
     registerIndexBufferParserFunction(
         std::bind(&GeometryParser::deserializeIndexBufferChar, std::placeholders::_1, std::placeholders::_2),
         1
+    );
+
+    // 32-bit index.
+    registerIndexBufferParserFunction(
+        [](std::string&                             serializedindexBuffer,
+           std::shared_ptr<render::AbstractContext> context)
+        {
+            return deserializeIndexBuffer<unsigned int>(serializedindexBuffer, context);
+        },
+        2
     );
 
     registerVertexBufferParserFunction(
@@ -72,15 +88,6 @@ GeometryParser::deserializeVertexBuffer(std::string&                            
 			deserializedVertex.get<1>()[attributesIndex].get<2>());
 
 	return vertexBuffer;
-}
-
-GeometryParser::IndexBufferPtr
-GeometryParser::deserializeIndexBuffer(std::string&                             serializedIndexBuffer,
-                                       std::shared_ptr<render::AbstractContext> context)
-{
-    std::vector<unsigned short> vector = deserialize::TypeDeserializer::deserializeVector<unsigned short>(serializedIndexBuffer);
-
-    return render::IndexBuffer::create(context, vector);
 }
 
 GeometryParser::IndexBufferPtr
@@ -142,6 +149,8 @@ GeometryParser::parse(const std::string&                filename,
 
 	assetLibrary->geometry(uniqueName, geom);
 	_lastParsedAssetName = uniqueName;
+
+    complete()->execute(shared_from_this());
 }
 
 void
