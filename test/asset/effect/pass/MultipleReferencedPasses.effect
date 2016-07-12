@@ -1,0 +1,19 @@
+{
+    "techniques" : [{ "passes" : [
+        "pass1",
+        "pass2"
+    ] }],
+    "passes":
+    [
+        {
+            "name" : "pass1",
+            "vertexShader" : "#pragma include \"../dummy.glsl\"",
+            "fragmentShader" : "#pragma include \"../dummy.glsl\""
+        },
+        {
+            "name" : "pass2",
+            "vertexShader" : "#pragma include \"../dummy.glsl\"",
+            "fragmentShader" : "#pragma include \"../dummy.glsl\""
+        }
+    ]
+}

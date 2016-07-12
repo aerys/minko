@@ -474,6 +474,24 @@ TEST_F(EffectParserTest, MultiplePassesHaveDifferentAttributeData)
 
 }
 
+TEST_F(EffectParserTest, MultipleReferencedPasses)
+{
+    auto fx = MinkoTests::loadEffect("effect/pass/MultipleReferencedPasses.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 2);
+
+    auto pass1 = fx->techniques().at("default")[0];
+    auto pass2 = fx->techniques().at("default")[1];
+
+    ASSERT_NE(pass1->program()->vertexShader()->source(), "#pragma include \"../dummy.glsl\"");
+    ASSERT_NE(pass2->program()->vertexShader()->source(), "#pragma include \"../dummy.glsl\"");
+
+    ASSERT_NE(pass1->program()->fragmentShader()->source(), "#pragma include \"../dummy.glsl\"");
+    ASSERT_NE(pass2->program()->fragmentShader()->source(), "#pragma include \"../dummy.glsl\"");
+}
+
 /**************/
 /*** States ***/
 /**************/
