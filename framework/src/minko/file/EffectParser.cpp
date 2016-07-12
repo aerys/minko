@@ -430,7 +430,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 {
     if (node.isString())
     {
-        passes.push_back(Pass::create(getPassToExtend(node), true));
+        passes.push_back(Pass::create(getPassToExtend(node), false));
     }
     else if (node.isObject())
     {
