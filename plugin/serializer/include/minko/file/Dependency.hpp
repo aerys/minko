@@ -33,6 +33,7 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<Dependency>					Ptr;
+            typedef std::weak_ptr<Dependency>                   WeakPtr;
 			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
 			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
 			typedef std::shared_ptr<material::Material>			MaterialPtr;
@@ -75,6 +76,8 @@ namespace minko
 			typedef std::function<bool(std::shared_ptr<geometry::Geometry>)>			GeometryTestFunc;
 
 		private:
+            WeakPtr                                                         _parent;
+
 			std::unordered_map<AbsTexturePtr, TextureDependency>			_textureDependencies;
 			std::unordered_map<std::shared_ptr<material::Material>, uint>	_materialDependencies;
 			std::unordered_map<std::shared_ptr<scene::Node>, uint>			_subSceneDependencies;
@@ -100,12 +103,23 @@ namespace minko
 			static MaterialWriterFunction									_materialWriteFunction;
 
 		public:
-			inline static
+            static
 			Ptr
 			create()
 			{
 				return std::shared_ptr<Dependency>(new Dependency());
 			}
+
+            static
+            Ptr
+            create(Ptr parent)
+            {
+                auto instance = create();
+
+                instance->_parent = parent;
+
+                return instance;
+            }
 
 			inline
 			std::shared_ptr<scene::Node>
@@ -183,7 +197,7 @@ namespace minko
 			void
             registerReference(uint referenceId, std::shared_ptr<material::Material> material);
 
-			TextureReference&
+			TextureReference*
 			getTextureReference(uint textureId);
 
 			void
@@ -206,21 +220,6 @@ namespace minko
 
             std::shared_ptr<LinkedAsset>
             getLinkedAssetReference(uint id);
-
-			bool
-			geometryReferenceExists(uint referenceId);
-
-			bool
-			textureReferenceExists(uint referenceId);
-
-			bool
-			materialReferenceExists(uint referenceId);
-
-			bool
-			effectReferenceExists(uint referenceId);
-
-			bool
-			linkedAssetReferenceExists(uint referenceId);
 
 			std::vector<SerializedAsset>
 			serialize(const std::string&                        parentFilename,

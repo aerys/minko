@@ -83,7 +83,7 @@ StreamedTextureParser::parsed(const std::string&                 filename,
 
     if (deferParsing())
     {
-        auto& textureReference = _dependency->getTextureReference(dependencyId());
+        auto& textureReference = *_dependency->getTextureReference(dependencyId());
 
         textureReference.texture = _texture;
 

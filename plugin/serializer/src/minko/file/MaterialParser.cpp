@@ -147,16 +147,15 @@ MaterialParser::deserializeComplexProperty(MaterialPtr            material,
     else if (type == TEXTURE)
     {
         auto textureDependencyId = Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple));
+        auto* textureReference = _dependency->getTextureReference(textureDependencyId);
 
-        if (_dependency->textureReferenceExists(textureDependencyId))
+        if (textureReference)
         {
             const auto textureType = serializedProperty.get<0>();
 
-            auto& textureReference = _dependency->getTextureReference(textureDependencyId);
-
-            if (textureReference.texture)
+            if (textureReference->texture)
             {
-                auto sampler = _dependency->getTextureReference(textureDependencyId).texture->sampler();
+                auto sampler = textureReference->texture->sampler();
 
                 material->data()->set(
                     serializedProperty.get<0>(),
@@ -189,8 +188,8 @@ MaterialParser::deserializeComplexProperty(MaterialPtr            material,
             }
             else
             {
-                textureReference.textureType = textureType;
-                textureReference.dependentMaterialDataSet.emplace(material->data());
+                textureReference->textureType = textureType;
+                textureReference->dependentMaterialDataSet.emplace(material->data());
             }
         }
     }

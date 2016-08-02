@@ -112,18 +112,18 @@ ComponentDeserializer::deserializeImageBasedLight(file::SceneVersion        scen
 
     if (irradianceMapId != 0u)
     {
-        auto irradianceMap = dependencies->getTextureReference(irradianceMapId).texture;
+        auto irradianceMapDependency = dependencies->getTextureReference(irradianceMapId);
 
-        if (irradianceMap)
-            imageBasedLight->irradianceMap(irradianceMap->sampler());
+        if (irradianceMapDependency && irradianceMapDependency->texture)
+            imageBasedLight->irradianceMap(irradianceMapDependency->texture->sampler());
     }
 
     if (radianceMapId != 0u)
     {
-        auto radianceMap = dependencies->getTextureReference(radianceMapId).texture;
+        auto radianceMapDependency = dependencies->getTextureReference(radianceMapId);
 
-        if (radianceMap)
-            imageBasedLight->radianceMap(radianceMap->sampler());
+        if (radianceMapDependency && radianceMapDependency->texture)
+            imageBasedLight->radianceMap(radianceMapDependency->texture->sampler());
     }
 
     return imageBasedLight;
