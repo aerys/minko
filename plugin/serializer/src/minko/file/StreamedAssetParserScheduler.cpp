@@ -189,7 +189,14 @@ StreamedAssetParserScheduler::removeEntry(ParserEntryPtr entry)
     entry->parserErrorSlot = nullptr;
     entry->parserCompleteSlot = nullptr;
 
-    _entries.erase(entry);
+    auto entryIt = std::find_if(_entries.begin(), _entries.end(),
+        [&entry](ParserEntryPtr localEntry)
+        {
+            return localEntry == entry;
+        }
+    );
+
+    _entries.erase(entryIt);
 
     const int previousNumActiveEntries = _activeEntries.size();
 
