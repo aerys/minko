@@ -6,8 +6,8 @@
     #endif
 #endif
 
-#pragma include "Math.function.glsl"
-#pragma include "ToneMapping.function.glsl"
+#pragma include "../Math.function.glsl"
+#pragma include "../ToneMapping.function.glsl"
 
 #if defined(CUBE_MAP)
     uniform samplerCube uCubeMap;
