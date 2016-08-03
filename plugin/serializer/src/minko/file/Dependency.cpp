@@ -146,7 +146,7 @@ Dependency::registerDependency(AbsTexturePtr texture, const std::string& texture
 
         return textureDependency.dependencyId;
     }
-    
+
     return dependencyIt->second.dependencyId;
 }
 
@@ -515,10 +515,10 @@ Dependency::serialize(const std::string&                        parentFilename,
 	}
 
     auto internalLinkedAssetDataOffset = 0;
-    
+
     for (const auto& internalLinkedAsset : internalLinkedAssets)
         internalLinkedAssetDataOffset += internalLinkedAsset.size();
-        
+
     for (const auto& linkedAssetToIdPair : _linkedAssetDependencies)
     {
         const auto& linkedAsset = *linkedAssetToIdPair.first;
