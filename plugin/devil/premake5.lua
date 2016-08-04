@@ -46,6 +46,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"IL_STATIC_LIB"
 	}
 
+	configuration { "not windows" }
+		excludes {
+			"lib/devil/src/src-ILU/src/ilu_main.c",
+			"lib/devil/src/src-IL/src/il_devil.c"
+		}
+
 	configuration { "cc=clang or osx64" }
 		defines {
 			"NOINLINE"
