@@ -178,7 +178,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 	data.assign(asset.get<2>().begin(), asset.get<2>().end());
 
 	if ((asset.get<0>() == serialize::AssetType::GEOMETRY_ASSET || asset.get<0>() == serialize::AssetType::EMBED_GEOMETRY_ASSET) &&
-		!_dependency->geometryReferenceExists(asset.get<1>())) // geometry
+		 !_dependency->getGeometryReference(asset.get<1>())) // geometry
 	{
         if (asset.get<0>() == serialize::AssetType::GEOMETRY_ASSET &&
             !loadAssetData(assetCompletePath, options, data))
@@ -202,7 +202,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 		_jobList.splice(_jobList.end(), _geometryParser->_jobList);
 	}
 	else if ((asset.get<0>() == serialize::AssetType::MATERIAL_ASSET || asset.get<0>() == serialize::AssetType::EMBED_MATERIAL_ASSET) &&
-		!_dependency->materialReferenceExists(asset.get<1>())) // material
+		!_dependency->getMaterialReference(asset.get<1>())) // material
 	{
         if (asset.get<0>() == serialize::AssetType::MATERIAL_ASSET &&
             !loadAssetData(assetCompletePath, options, data))
@@ -216,7 +216,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
         }
 
 		_materialParser->_jobList.clear();
-		_materialParser->dependency(_dependency);
+		_materialParser->dependency(Dependency::create(_dependency));
 
 		if (asset.get<0>() == serialize::AssetType::EMBED_MATERIAL_ASSET)
 			resolvedPath = "material_" + std::to_string(asset.get<1>());
@@ -260,7 +260,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
     }
     else if ((asset.get<0>() == serialize::AssetType::EMBED_TEXTURE_ASSET ||
         asset.get<0>() == serialize::AssetType::TEXTURE_ASSET) &&
-			(!_dependency->textureReferenceExists(asset.get<1>()) || _dependency->getTextureReference(asset.get<1>()).texture == nullptr)) // texture
+			(!_dependency->getTextureReference(asset.get<1>()))) // texture
 	{
 		if (asset.get<0>() == serialize::AssetType::EMBED_TEXTURE_ASSET)
         {
@@ -304,8 +304,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
         _dependency->registerReference(asset.get<1>(), texture);
     }
     else if (asset.get<0>() == serialize::AssetType::EMBED_TEXTURE_PACK_ASSET &&
-             (!_dependency->textureReferenceExists(asset.get<1>()) ||
-             _dependency->getTextureReference(asset.get<1>()).texture == nullptr))
+             (!_dependency->getTextureReference(asset.get<1>())))
     {
         const auto textureName = "texture_" + std::to_string(asset.get<1>());
 
@@ -337,7 +336,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
     {
         deserializeTexture(metaData, assetLibrary, options, assetCompletePath, data, _dependency, asset.get<1>(), _jobList);
     }
-	else if (asset.get<0>() == serialize::AssetType::EFFECT_ASSET && !_dependency->effectReferenceExists(asset.get<1>())) // effect
+	else if (asset.get<0>() == serialize::AssetType::EFFECT_ASSET && !_dependency->getEffectReference(asset.get<1>())) // effect
 	{
 		assetLibrary->loader()->queue(assetCompletePath);
 		_dependency->registerReference(asset.get<1>(), assetLibrary->effect(assetCompletePath));

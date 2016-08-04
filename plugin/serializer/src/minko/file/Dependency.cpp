@@ -37,7 +37,8 @@ std::unordered_map<uint, Dependency::GeometryWriterFunction>	Dependency::_geomet
 Dependency::TextureWriterFunction	Dependency::_textureWriteFunction;
 Dependency::MaterialWriterFunction	Dependency::_materialWriteFunction;
 
-Dependency::Dependency()
+Dependency::Dependency() :
+    _parent()
 {
 	_currentId = 1;
 
@@ -145,7 +146,7 @@ Dependency::registerDependency(AbsTexturePtr texture, const std::string& texture
 
         return textureDependency.dependencyId;
     }
-    
+
     return dependencyIt->second.dependencyId;
 }
 
@@ -182,7 +183,10 @@ Dependency::registerDependency(std::shared_ptr<LinkedAsset> linkedAsset)
 std::shared_ptr<geometry::Geometry>
 Dependency::getGeometryReference(uint geometryId)
 {
-	return _geometryReferences[geometryId];
+    auto referenceIt = _geometryReferences.find(geometryId);
+
+    return referenceIt != _geometryReferences.end() ? referenceIt->second :
+        (_parent.expired() ? nullptr : _parent.lock()->getGeometryReference(geometryId));
 }
 
 void
@@ -194,7 +198,10 @@ Dependency::registerReference(uint referenceId, std::shared_ptr<geometry::Geomet
 std::shared_ptr<material::Material>
 Dependency::getMaterialReference(uint materialId)
 {
-	return _materialReferences[materialId];
+    auto referenceIt = _materialReferences.find(materialId);
+
+    return referenceIt != _materialReferences.end() ? referenceIt->second :
+        (_parent.expired() ? nullptr : _parent.lock()->getMaterialReference(materialId));
 }
 
 void
@@ -203,10 +210,13 @@ Dependency::registerReference(uint referenceId, std::shared_ptr<material::Materi
 	_materialReferences[referenceId] = material;
 }
 
-Dependency::TextureReference&
+Dependency::TextureReference*
 Dependency::getTextureReference(uint textureId)
 {
-	return _textureReferences[textureId];
+    auto referenceIt = _textureReferences.find(textureId);
+
+    return referenceIt != _textureReferences.end() ? &referenceIt->second :
+        (_parent.expired() ? nullptr : _parent.lock()->getTextureReference(textureId));
 }
 
 void
@@ -220,7 +230,10 @@ Dependency::registerReference(uint referenceId, AbsTexturePtr texture)
 std::shared_ptr<scene::Node>
 Dependency::getSubsceneReference(uint subSceneId)
 {
-	return _subSceneReferences[subSceneId];
+    auto referenceIt = _subSceneReferences.find(subSceneId);
+
+    return referenceIt != _subSceneReferences.end() ? referenceIt->second :
+        (_parent.expired() ? nullptr : _parent.lock()->getSubsceneReference(subSceneId));
 }
 
 void
@@ -244,43 +257,19 @@ Dependency::registerReference(uint referenceId, std::shared_ptr<LinkedAsset> lin
 std::shared_ptr<render::Effect>
 Dependency::getEffectReference(uint effectId)
 {
-	return _effectReferences[effectId];
+    auto referenceIt = _effectReferences.find(effectId);
+
+    return referenceIt != _effectReferences.end() ? referenceIt->second :
+        (_parent.expired() ? nullptr : _parent.lock()->getEffectReference(effectId));
 }
 
 std::shared_ptr<LinkedAsset>
 Dependency::getLinkedAssetReference(uint referenceId)
 {
-	return _linkedAssetReferences[referenceId];
-}
+    auto referenceIt = _linkedAssetReferences.find(referenceId);
 
-bool
-Dependency::geometryReferenceExists(uint referenceId)
-{
-	return _geometryReferences.find(referenceId) != _geometryReferences.end();
-}
-
-bool
-Dependency::textureReferenceExists(uint referenceId)
-{
-	return _textureReferences.find(referenceId) != _textureReferences.end();
-}
-
-bool
-Dependency::materialReferenceExists(uint referenceId)
-{
-	return _materialReferences.find(referenceId) != _materialReferences.end();
-}
-
-bool
-Dependency::effectReferenceExists(uint referenceId)
-{
-	return _effectReferences.find(referenceId) != _effectReferences.end();
-}
-
-bool
-Dependency::linkedAssetReferenceExists(uint referenceId)
-{
-	return _linkedAssetReferences.find(referenceId) != _linkedAssetReferences.end();
+    return referenceIt != _linkedAssetReferences.end() ? referenceIt->second :
+        (_parent.expired() ? nullptr : _parent.lock()->getLinkedAssetReference(referenceId));
 }
 
 Dependency::SerializedAsset
@@ -526,10 +515,10 @@ Dependency::serialize(const std::string&                        parentFilename,
 	}
 
     auto internalLinkedAssetDataOffset = 0;
-    
+
     for (const auto& internalLinkedAsset : internalLinkedAssets)
         internalLinkedAssetDataOffset += internalLinkedAsset.size();
-        
+
     for (const auto& linkedAssetToIdPair : _linkedAssetDependencies)
     {
         const auto& linkedAsset = *linkedAssetToIdPair.first;
