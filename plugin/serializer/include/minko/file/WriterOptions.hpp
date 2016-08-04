@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Flyweight.hpp"
 #include "minko/SerializerCommon.hpp"
 #include "minko/Types.hpp"
+#include "minko/render/TextureFormat.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 
 namespace minko
 {
@@ -100,7 +102,9 @@ namespace minko
             TextureFunction                     _textureFunction;
 
             serialize::ImageFormat              _imageFormat;
-            std::list<render::TextureFormat>    _textureFormats;
+            std::vector<render::TextureFormat>  _textureFormats;
+
+            std::vector<std::string>            _compressedTextureExceptions;
 
             std::unordered_map<
                 Flyweight<std::string>,
@@ -142,6 +146,7 @@ namespace minko
                 instance->_textureFunction = other->_textureFunction;
                 instance->_imageFormat = other->_imageFormat;
                 instance->_textureFormats = other->_textureFormats;
+                instance->_compressedTextureExceptions = other->_compressedTextureExceptions;
                 instance->_textureOptions = other->_textureOptions;
                 instance->_writeAnimations = other->_writeAnimations;
                 instance->_nullAssetUuids = other->_nullAssetUuids;
@@ -342,7 +347,30 @@ namespace minko
 			}
 
             inline
-            const std::list<render::TextureFormat>&
+            std::vector<render::TextureFormat>
+            textureFormats(const std::string& textureType, const std::string& filename)
+            {
+                const auto compressTexture =
+                    this->compressTexture(textureType) &&
+                    this->compressTextureByFilename(filename);
+
+                if (compressTexture)
+                    return _textureFormats;
+
+                auto textureFormats = std::vector<render::TextureFormat>();
+
+                for (const auto textureFormat : _textureFormats)
+                    if (!render::TextureFormatInfo::isCompressed(textureFormat))
+                        textureFormats.push_back(textureFormat);
+
+                if (textureFormats.empty())
+                    textureFormats.push_back(render::TextureFormat::RGBA);
+
+                return textureFormats;
+            }
+
+            inline
+            const std::vector<render::TextureFormat>&
             textureFormats() const
             {
                 return _textureFormats;
@@ -353,6 +381,26 @@ namespace minko
             registerTextureFormat(render::TextureFormat textureFormat)
             {
                 _textureFormats.push_back(textureFormat);
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            compressTextureByFilename(const std::string& filename)
+            {
+                return std::find(
+                    _compressedTextureExceptions.begin(),
+                    _compressedTextureExceptions.end(),
+                    filename
+                ) == _compressedTextureExceptions.end();
+            }
+
+            inline
+            Ptr
+            registerCompressedTextureException(const std::string& filename)
+            {
+                _compressedTextureExceptions.push_back(filename);
 
                 return shared_from_this();
             }
