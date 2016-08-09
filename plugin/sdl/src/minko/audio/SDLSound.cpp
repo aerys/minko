@@ -17,6 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/audio/SDLAudio.hpp"
 #include "minko/audio/SDLSound.hpp"
 #include "minko/audio/SDLSoundChannel.hpp"
 #include "minko/audio/SoundTransform.hpp"

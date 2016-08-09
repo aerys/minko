@@ -31,7 +31,7 @@ using namespace minko::audio;
 void
 PositionalSound::update(scene::Node::Ptr target)
 {
-    if (!_channel->playing())
+    if (!_channel || !_channel->playing())
         return;
 
     static const auto zero = math::vec3(0.f);

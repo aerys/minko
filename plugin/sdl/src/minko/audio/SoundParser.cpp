@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/audio/SoundParser.hpp"
+#include "minko/audio/SDLAudio.hpp"
 #include "minko/audio/SDLSound.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/log/Logger.hpp"
