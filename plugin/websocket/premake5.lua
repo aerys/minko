@@ -27,15 +27,16 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 		includedirs {
 			"lib/websocketpp",
-			"lib/asio/include",
-			"lib/openssl/include"
+			"lib/asio/include"
 		}
 		defines {
 			"ASIO_STANDALONE",
-			"_WEBSOCKETPP_CPP11_INTERNAL_",
 		}
 
 	configuration { "linux32 or linux64" }
+		includedirs {
+			"/usr/include/openssl"
+		}
 		links {
 			"ssl",
 			"crypto"
@@ -43,7 +44,11 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "windows32" }
 		defines {
+			"_WEBSOCKETPP_CPP11_INTERNAL_",
 			"_WIN32_WINNT=0x0501"
+		}
+		includedirs {
+			"lib/openssl/include"
 		}
 		links {
 			"lib/openssl/lib/win32/ssleay32",
