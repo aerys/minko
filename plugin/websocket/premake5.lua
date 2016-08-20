@@ -17,7 +17,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src/minko/net/EmscriptenWebSocketImpl.cpp"
 	}
 
-	configuration { "windows" }
+	configuration { "not html5" }
 		-- websocket++
 		files {
 			"lib/websocketpp/**.hpp",
@@ -33,6 +33,16 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		defines {
 			"ASIO_STANDALONE",
 			"_WEBSOCKETPP_CPP11_INTERNAL_",
+		}
+
+	configuration { "linux32 or linux64" }
+		links {
+			"ssl",
+			"crypto"
+		}
+
+	configuration { "windows32" }
+		defines {
 			"_WIN32_WINNT=0x0501"
 		}
 		links {
