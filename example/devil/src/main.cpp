@@ -105,7 +105,7 @@ main(int argc, char** argv)
     float lastChangeTime = 0;
     int currentTextureId = 0;
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 

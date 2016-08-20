@@ -293,7 +293,7 @@ main(int argc, char** argv)
         mouseMove = nullptr;
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr c, float t, float dt)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr c, float t, float dt)
     {
         camera->component<Transform>()->matrix(math::rotate(cameraRotationSpeed, math::vec3(0, 1, 0)) * camera->component<Transform>()->matrix());
         cameraRotationSpeed *= .99f;

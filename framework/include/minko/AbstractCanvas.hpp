@@ -105,6 +105,10 @@ namespace minko
         resumed() = 0;
 
         virtual
+        Signal<AbstractCanvas::Ptr, float, float>::Ptr
+        enterFrame() = 0;
+
+        virtual
         int
         getJoystickAxis(std::shared_ptr<input::Joystick> joystick, int axis) = 0;
 

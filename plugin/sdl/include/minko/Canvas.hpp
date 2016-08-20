@@ -102,8 +102,8 @@ namespace minko
         std::shared_ptr<input::SDLKeyboard>                                     _keyboard;
         std::shared_ptr<input::SDLTouch>                                        _touch;
 
-        // Events
-        Signal<Ptr, float, float>::Ptr                                          _enterFrame;
+        // Signals
+        Signal<AbstractCanvas::Ptr, float, float>::Ptr                          _enterFrame;
         Signal<AbstractCanvas::Ptr, uint, uint>::Ptr                            _resized;
         Signal<AbstractCanvas::Ptr, uint, uint>::Slot                           _resizedSlot;
         // File dropped
@@ -196,8 +196,8 @@ namespace minko
         }
 
         inline
-        Signal<Ptr, float, float>::Ptr
-        enterFrame() const
+        Signal<AbstractCanvas::Ptr, float, float>::Ptr
+        enterFrame() override
         {
             return _enterFrame;
         }

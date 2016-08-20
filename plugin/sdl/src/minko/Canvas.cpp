@@ -75,7 +75,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _framerate(0.f),
     _desiredFramerate(60.f),
 	_swapBuffersAtEnterFrame(true),
-    _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
+    _enterFrame(Signal<AbstractCanvas::Ptr, float, float>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
     _fileDropped(Signal<const std::string&>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
@@ -504,7 +504,7 @@ Canvas::step()
 
                 c = c2;
             }
-            
+
             if (c != 0)
             {
                 bool found = false;
@@ -761,7 +761,7 @@ Canvas::step()
         case SDL_FINGERMOTION:
         {
             auto id = static_cast<int>(event.tfinger.fingerId);
-            
+
             auto normalizedX = event.tfinger.x;
             auto normalizedY = event.tfinger.y;
             auto normalizedDX = event.tfinger.dx;

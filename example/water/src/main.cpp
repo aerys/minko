@@ -241,7 +241,7 @@ main(int argc, char** argv)
         mouseMove = nullptr;
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         distance += zoomSpeed;
         zoomSpeed *= 0.9f;

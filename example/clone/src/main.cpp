@@ -309,7 +309,7 @@ int main(int argc, char** argv)
 		
 	});	
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
 	{
 		auto test = root;
 

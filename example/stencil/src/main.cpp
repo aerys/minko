@@ -194,7 +194,7 @@ main(int argc, char** argv)
             root->addChild(star);
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         bigStarNode->component<Transform>()->matrix(
             math::rotate(.001f, math::vec3(0.f, 0.f, 1.f)) *
