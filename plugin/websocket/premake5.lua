@@ -12,28 +12,47 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src"
 	}
 
-	excludes {
-		"src/minko/net/EmscriptenWebSocketImpl.hpp",
-		"src/minko/net/EmscriptenWebSocketImpl.cpp"
-	}
+	configuration { "html5" }
+		excludes {
+			"src/minko/net/NativeWebSocketImpl.hpp",
+			"src/minko/net/NativeWebSocketImpl.cpp"
+		}
+		files {
+			"src/minko/net/EmscriptenWebSocketImpl.hpp",
+			"src/minko/net/EmscriptenWebSocketImpl.cpp"
+		}
 
 	configuration { "not html5" }
+		excludes {
+			"src/minko/net/EmscriptenWebSocketImpl.hpp",
+			"src/minko/net/EmscriptenWebSocketImpl.cpp"
+		}
 		-- websocket++
 		files {
 			"lib/websocketpp/**.hpp",
-			"lib/websocketpp/**.hpp",
-			"lib/asio/include/**.hpp",
-			"lib/openssl/include/**.h"
+			"lib/websocketpp/**.hpp"
 		}
 		includedirs {
 			"lib/websocketpp",
+		}
+		-- asio
+		files {
+			"lib/asio/include/**.hpp",
+		}
+		includedirs {
 			"lib/asio/include"
 		}
 		defines {
 			"ASIO_STANDALONE",
 		}
+		-- openssl
+		files {
+			"lib/openssl/include/**.h"
+		}
+
 
 	configuration { "linux32 or linux64" }
+		-- openssl
 		includedirs {
 			"/usr/include/openssl"
 		}
@@ -43,6 +62,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 
 	configuration { "android" }
+		-- openssl
 		includedirs {
 			"lib/openssl/include"
 		}
@@ -55,9 +75,16 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 
 	configuration { "windows32" }
+		-- websocket++
 		defines {
 			"_WEBSOCKETPP_CPP11_INTERNAL_",
-			"_WIN32_WINNT=0x0501",
+		}
+		-- asio
+		defines {
+			"_WIN32_WINNT=0x0501"
+		}
+		-- openssl
+		defines {
 			"OPENSSL_SYSNAME_WIN32"
 		}
 		includedirs {
@@ -66,14 +93,4 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		links {
 			"lib/openssl/lib/win32/ssleay32",
 			"lib/openssl/lib/win32/libeay32"
-		}
-
-	configuration { "html5" }
-		excludes {
-			"src/minko/net/NativeWebSocketImpl.hpp",
-			"src/minko/net/NativeWebSocketImpl.cpp"
-		}
-		files {
-			"src/minko/net/EmscriptenWebSocketImpl.hpp",
-			"src/minko/net/EmscriptenWebSocketImpl.cpp"
 		}
