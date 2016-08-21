@@ -51,4 +51,14 @@ function minko.plugin.websocket:enable()
 			minko.action.copy(minko.plugin.path("websocket") .. "/lib/openssl/lib/windows32/ssleay32.dll"),
 			minko.action.copy(minko.plugin.path("websocket") .. "/lib/openssl/lib/windows32/libeay32.dll")
 		}
+
+	configuration { "windows64" }
+		links {
+			minko.plugin.path("websocket") .. "/lib/openssl/lib/windows64/ssleay32",
+			minko.plugin.path("websocket") .. "/lib/openssl/lib/windows64/libeay32"
+		}
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("websocket") .. "/lib/openssl/lib/windows64/ssleay32.dll"),
+			minko.action.copy(minko.plugin.path("websocket") .. "/lib/openssl/lib/windows64/libeay32.dll")
+		}
 end

@@ -56,10 +56,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		includedirs {
 			"/usr/include/openssl"
 		}
-		links {
-			"ssl",
-			"crypto"
-		}
 
 	configuration { "android" }
 		-- openssl
@@ -69,12 +65,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		libdirs {
 			"lib/openssl/lib/android"
 		}
-		links {
-			"ssl",
-			"crypto"
-		}
 
-	configuration { "windows32" }
+	configuration { "windows" }
 		-- websocket++
 		defines {
 			"_WEBSOCKETPP_CPP11_INTERNAL_",
@@ -89,8 +81,4 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 		includedirs {
 			"lib/openssl/include"
-		}
-		links {
-			"lib/openssl/lib/win32/ssleay32",
-			"lib/openssl/lib/win32/libeay32"
 		}
