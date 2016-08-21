@@ -27,6 +27,12 @@ function minko.plugin.websocket:enable()
 
 	defines { "MINKO_PLUGIN_WEBSOCKET" }
 
+	configuration { "linux" }
+		links {
+			"ssl",
+			"crypto"
+		}
+
 	configuration { "windows32" }
 		links {
 			minko.plugin.path("websocket") .. "/lib/openssl/lib/windows32/ssleay32",
