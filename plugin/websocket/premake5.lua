@@ -42,10 +42,23 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"crypto"
 		}
 
+	configuration { "android" }
+		includedirs {
+			"lib/openssl/include"
+		}
+		libdirs {
+			"lib/openssl/lib/android"
+		}
+		links {
+			"ssl",
+			"crypto"
+		}
+
 	configuration { "windows32" }
 		defines {
 			"_WEBSOCKETPP_CPP11_INTERNAL_",
-			"_WIN32_WINNT=0x0501"
+			"_WIN32_WINNT=0x0501",
+			"OPENSSL_SYSNAME_WIN32"
 		}
 		includedirs {
 			"lib/openssl/include"
