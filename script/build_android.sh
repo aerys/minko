@@ -61,7 +61,11 @@ chmod u+rwx -R assets
 
 ant "${CONFIG}"
 
-UNSIGNED_APK_PATH="bin/${APP_NAME}-${CONFIG}-unsigned.apk"
+if [[ "${CONFIG}" == "debug" ]]; then
+	UNSIGNED_APK_PATH="bin/${APP_NAME}-${CONFIG}.apk"
+else
+	UNSIGNED_APK_PATH="bin/${APP_NAME}-${CONFIG}-unsigned.apk"
+fi
 ARTIFACT_PATH="bin/${ARTIFACT_NAME}-${CONFIG}.apk"
 
 DEVICE_STATE=$("${ADB}" get-state | sed 's/\r$//')
