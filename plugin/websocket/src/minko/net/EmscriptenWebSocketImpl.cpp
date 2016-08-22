@@ -80,6 +80,14 @@ EmscriptenWebSocketImpl::hostnameToIp(const char* hostname , char* ip)
 void
 EmscriptenWebSocketImpl::connect(const std::string& uri)
 {
+    // From emscripten.h:
+    // As well as being configurable at compile time via the "-s" option the WEBSOCKET_URL and WEBSOCKET_SUBPROTOCOL
+    // settings may configured at run time via the Module object e.g.
+    // Module['websocket'] = {subprotocol: 'base64, binary, text'};
+    // Module['websocket'] = {url: 'wss://', subprotocol: 'base64'};
+    // Run time configuration may be useful as it lets an application select multiple different services.
+    emscripten_run_script(std::string("Module['websocket']['url'] = '" + uri + "'").c_str());
+
     _fd = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (_fd == -1)
     {
@@ -88,13 +96,12 @@ EmscriptenWebSocketImpl::connect(const std::string& uri)
     }
     fcntl(_fd, F_SETFL, O_NONBLOCK);
 
-    std::regex uriRegex("^ws://(.*):(.*)(/.*)$");
+    std::regex uriRegex("^(ws|wss)://(.*):(.*)(/.*)$");
     std::smatch uriMatch;
 
     std::regex_search(uri, uriMatch, uriRegex);
-    std::string query = uriMatch.size() == 3 ? "" : uriMatch[3].str();
-    std::string host = uriMatch[1].str();
-    int port = std::stoi(uriMatch[2].str());
+    std::string host = uriMatch[2].str();
+    int port = std::stoi(uriMatch[3].str());
 
     std::regex ipRegex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
     if (!std::regex_match(host, ipRegex))
