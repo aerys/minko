@@ -200,7 +200,7 @@ main(int argc, char** argv)
             toogleGreenBoxLayouts    = true;
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         auto distance = 0.f;
         auto ray = camera->component<PerspectiveCamera>()->unproject(

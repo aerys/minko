@@ -130,7 +130,7 @@ main(int argc, char** argv)
         updateBlueScore();
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         mesh->component<Transform>()->matrix(mesh->component<Transform>()->matrix() * math::rotate(0.01f, math::vec3(0, 1, 0)));
 

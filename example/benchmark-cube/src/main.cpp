@@ -73,7 +73,7 @@ int main(int argc, char** argv)
         ready = true;
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         camera->component<Transform>()->matrix(
             math::rotate(0.01f, math::vec3(0.f, 1.f, 0.f))

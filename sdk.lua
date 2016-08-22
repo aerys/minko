@@ -100,6 +100,7 @@ local plugins = {
 	['sensors'] = true,
 	['serializer'] = true,
 	['video-camera'] = true,
+	['websocket'] = true
 }
 
 for plugin, enabled in pairs(plugins) do

@@ -68,11 +68,11 @@ ANDROID_NDK_HOME="${ANDROID_HOME}/toolchains/${ANDROID_TOOLCHAIN}"
 
 # Build a standalone toolchain
 pushd "${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" > /dev/null
-if [[ ! -x ${ANDROID_HOME}/ndk/build/tools/make-standalone-toolchain.sh ]]; then
+if [[ ! -x ${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make-standalone-toolchain.sh ]]; then
 	echo "Invalid NDK path: ${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" > /dev/stderr
 	exit 1
 fi
-${ANDROID_HOME}/ndk/build/tools/make-standalone-toolchain.sh --system=${ANDROID_SYSTEM} --platform=${ANDROID_SDK_VERSION} --toolchain=${ANDROID_TOOLCHAIN} --install-dir=${ANDROID_NDK_HOME}
+${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make-standalone-toolchain.sh --platform=${ANDROID_SDK_VERSION} --toolchain=${ANDROID_TOOLCHAIN} --install-dir=${ANDROID_NDK_HOME}
 popd > /dev/null
 
 # Link default NDK.

@@ -63,7 +63,7 @@ int main(int argc, char** argv)
     PNGWriter::Ptr writer = PNGWriter::create();
     std::shared_ptr<std::vector<unsigned char>> buffer(new std::vector<unsigned char>(canvas->width() * canvas->height() * 4));
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         mesh->component<Transform>()->matrix()->prependRotationY(.01f);
 

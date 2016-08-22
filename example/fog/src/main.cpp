@@ -165,7 +165,7 @@ main(int argc, char** argv)
             camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
         });
 
-        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float dt)
         {
             cameraMove = cameraMove * CAMERA_SPEED * (dt / 1000.0f);
             camera->component<Transform>()->matrix(

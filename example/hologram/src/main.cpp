@@ -162,7 +162,7 @@ main(int argc, char** argv)
             ->set("invBackbufferSize", Vector2::create(1.f / width, 1.f / height));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         mesh->component<Transform>()->matrix()->prependRotationY(0.0005f * deltaTime);
         mesh2->component<Transform>()->matrix()->prependRotationY(0.0005f * deltaTime);

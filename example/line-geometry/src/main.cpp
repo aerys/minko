@@ -81,7 +81,7 @@ main(int argc, char** argv)
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float t, float dt)
     {
         for (auto& star : stars)
             star.node->component<Transform>()->matrix()->appendRotationY(star.angRate);

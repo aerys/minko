@@ -134,7 +134,7 @@ main(int argc, char** argv)
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
     
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         greenCube->component<Transform>()->matrix(
             greenCube->component<Transform>()->matrix() * math::rotate(0.01f, math::vec3(0, 1, 0))
