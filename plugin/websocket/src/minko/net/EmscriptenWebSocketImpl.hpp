@@ -59,6 +59,9 @@ namespace minko
             ~EmscriptenWebSocketImpl();
 
         private:
+            int
+            hostnameToIp(const char* hostname , char* ip);
+
             void
             pushCallback(std::function<void(std::weak_ptr<WebSocket>)> callback);
 
