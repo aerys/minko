@@ -4,7 +4,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	files {
 		"include/**.hpp",
-		"src/**.cpp"
+		"src/**.cpp",
+		"src/**.hpp"
 	}
 
 	includedirs {
