@@ -68,6 +68,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 
 	configuration { "windows" }
+		buildoptions {
+			"/bigobj"
+		}
 		-- websocket++
 		defines {
 			"_WEBSOCKETPP_CPP11_INTERNAL_",
