@@ -190,7 +190,7 @@ EmscriptenWebSocketImpl::closeCallback(int fd, void* userData)
     impl->disconnect();
 }
 
-void
+bool
 EmscriptenWebSocketImpl::poll(std::weak_ptr<WebSocket> webSocket)
 {
     bool read = !_callbacks.empty();

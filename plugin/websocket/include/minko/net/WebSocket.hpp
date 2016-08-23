@@ -40,7 +40,7 @@ namespace minko
             Signal<std::weak_ptr<WebSocket>>::Ptr
             disconnected();
 
-            Signal<std::weak_ptr<WebSocket>, std::vector<uint8_t>>::Ptr
+            Signal<std::weak_ptr<WebSocket>, const std::vector<uint8_t>&>::Ptr
             messageReceived();
 
             void
