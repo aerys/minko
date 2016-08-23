@@ -114,17 +114,35 @@ NativeWebSocketImpl::connect(const std::string &uri)
 void
 NativeWebSocketImpl::disconnect()
 {
+    std::unique_lock<std::mutex> lock(_connectionMutex);
+
+    if (!isConnected())
+        return;
+    
     if (!!_connection && _connection->get_state() != websocketpp::session::state::closed)
+    {
         _connection->close(0, "disconnect() called");
+        _connection = nullptr;
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->disconnected()->execute(s); });
+    }
     else if (!!_tlsConnection && _tlsConnection->get_state() != websocketpp::session::state::closed)
+    {
         _tlsConnection->close(0, "disconnect() called");
-    if (_thread->joinable())
+        _tlsConnection = nullptr;
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->disconnected()->execute(s); });
+    }
+
+    lock.unlock();
+
+    if (!!_thread && _thread->joinable())
         _thread->join();
 }
 
 void
 NativeWebSocketImpl::sendMessage(const void* payload, size_t s)
 {
+    std::lock_guard<std::mutex> guard(_connectionMutex);
+
     if (_connection)
         _client.send(_connection, payload, s, websocketpp::frame::opcode::BINARY);
     else if (_tlsConnection)

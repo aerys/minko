@@ -73,6 +73,7 @@ namespace minko
             tls_client _tlsClient;
             tls_client::connection_ptr _tlsConnection;
             websocketpp::lib::shared_ptr<websocketpp::lib::thread> _thread;
+            std::mutex _connectionMutex;
 
             std::mutex _callbackMutex;
             std::list<std::function<void(std::weak_ptr<WebSocket>)>> _callbacks;
