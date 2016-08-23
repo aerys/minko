@@ -125,3 +125,9 @@ WebSocket::stopPollingOnEnterFrame()
 {
     _enterFrameSlot = nullptr;
 }
+
+bool
+WebSocket::isConnected()
+{
+    return _impl->isConnected();
+}
