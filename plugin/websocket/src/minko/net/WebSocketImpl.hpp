@@ -47,7 +47,7 @@ namespace minko
             }
 
             inline
-            minko::Signal<WebSocketWPtr, std::vector<uint8_t>>::Ptr
+            minko::Signal<WebSocketWPtr, const std::vector<uint8_t>&>::Ptr
             messageReceived()
             {
                 return _messageReceived;
@@ -77,13 +77,13 @@ namespace minko
             WebSocketImpl() :
                 _connected(minko::Signal<WebSocketWPtr>::create()),
                 _disconnected(minko::Signal<WebSocketWPtr>::create()),
-                _messageReceived(minko::Signal<WebSocketWPtr, std::vector<uint8_t>>::create())
+                _messageReceived(minko::Signal<WebSocketWPtr, const std::vector<uint8_t>&>::create())
             {}
 
         private:
             minko::Signal<WebSocketWPtr>::Ptr _connected;
             minko::Signal<WebSocketWPtr>::Ptr _disconnected;
-            minko::Signal<WebSocketWPtr, std::vector<uint8_t>>::Ptr _messageReceived;
+            minko::Signal<WebSocketWPtr, const std::vector<uint8_t>&>::Ptr _messageReceived;
         };
     }
 }

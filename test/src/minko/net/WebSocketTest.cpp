@@ -103,7 +103,7 @@ TEST_F(WebSocketTest, SendMessage)
     {
         ws->sendMessage(sent);
     });
-    auto __ = ws->messageReceived()->connect([&](WebSocket::WeakPtr, std::vector<uint8_t> msg)
+    auto __ = ws->messageReceived()->connect([&](WebSocket::WeakPtr, const std::vector<uint8_t>& msg)
     {
         received = std::string((char*)&msg[0], msg.size());
     });
@@ -128,7 +128,7 @@ TEST_F(WebSocketTest, TLSSendMessage)
     {
         ws->sendMessage(sent);
     });
-    auto __ = ws->messageReceived()->connect([&](WebSocket::WeakPtr, std::vector<uint8_t> msg)
+    auto __ = ws->messageReceived()->connect([&](WebSocket::WeakPtr, const std::vector<uint8_t>& msg)
     {
         received = std::string((char*)&msg[0], msg.size());
     });

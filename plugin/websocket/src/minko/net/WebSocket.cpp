@@ -63,7 +63,7 @@ WebSocket::disconnected()
     return _impl->disconnected();
 }
 
-Signal<std::weak_ptr<WebSocket>, std::vector<uint8_t>>::Ptr
+Signal<std::weak_ptr<WebSocket>, const std::vector<uint8_t>&>::Ptr
 WebSocket::messageReceived()
 {
     return _impl->messageReceived();
