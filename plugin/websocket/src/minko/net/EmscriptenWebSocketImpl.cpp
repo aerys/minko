@@ -193,9 +193,13 @@ EmscriptenWebSocketImpl::closeCallback(int fd, void* userData)
 void
 EmscriptenWebSocketImpl::poll(std::weak_ptr<WebSocket> webSocket)
 {
+    bool read = !_callbacks.empty();
+
     for (auto& callback : _callbacks)
         callback(webSocket);
     _callbacks.clear();
+
+    return read;
 }
 
 void

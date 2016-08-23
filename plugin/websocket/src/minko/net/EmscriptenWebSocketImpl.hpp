@@ -51,7 +51,7 @@ namespace minko
                 return _connected;
             }
 
-            void
+            bool
             poll(std::weak_ptr<WebSocket> webSocket) override;
 
             EmscriptenWebSocketImpl();

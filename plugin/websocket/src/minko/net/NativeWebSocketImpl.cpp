@@ -141,13 +141,17 @@ NativeWebSocketImpl::isConnected()
             : false;
 }
 
-void
+bool
 NativeWebSocketImpl::poll(std::weak_ptr<WebSocket> webSocket)
 {
+    bool read = !_callbacks.empty();
+
     std::lock_guard<std::mutex> guard(_callbackMutex);
     for (auto& callback : _callbacks)
         callback(webSocket);
     _callbacks.clear();
+
+    return read;
 }
 
 void

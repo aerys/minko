@@ -47,7 +47,7 @@ namespace minko
             bool
             isConnected() override;
 
-            void
+            bool
             poll(std::weak_ptr<WebSocket> webSocket) override;
 
             NativeWebSocketImpl();

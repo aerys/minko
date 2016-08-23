@@ -70,7 +70,7 @@ namespace minko
             isConnected() =  0;
 
             virtual
-            void
+            bool
             poll(std::weak_ptr<WebSocket> webSocket) = 0;
 
         protected:
