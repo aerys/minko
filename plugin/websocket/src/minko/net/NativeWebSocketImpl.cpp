@@ -50,7 +50,7 @@ NativeWebSocketImpl::tlsConnect(const std::string &uri)
 
     _tlsClient.set_tls_init_handler([&](websocketpp::connection_hdl hdl)
     {
-        websocketpp::lib::shared_ptr<asio::ssl::context> ctx(new asio::ssl::context(asio::ssl::context::tlsv1));
+        websocketpp::lib::shared_ptr<asio::ssl::context> ctx(new asio::ssl::context(asio::ssl::context::tlsv12));
 
         return ctx;
     });
