@@ -4,7 +4,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	files {
 		"include/**.hpp",
-		"src/**.cpp"
+		"src/**.cpp",
+		"src/**.hpp"
 	}
 
 	includedirs {
@@ -67,6 +68,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 
 	configuration { "windows" }
+		buildoptions {
+			"/bigobj"
+		}
 		-- websocket++
 		defines {
 			"_WEBSOCKETPP_CPP11_INTERNAL_",

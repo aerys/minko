@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <netdb.h>
 
 using namespace minko::net;
 
@@ -50,9 +51,43 @@ EmscriptenWebSocketImpl::~EmscriptenWebSocketImpl()
     disconnect();
 }
 
+int
+EmscriptenWebSocketImpl::hostnameToIp(const char* hostname , char* ip)
+{
+    struct hostent *he;
+    struct in_addr **addr_list;
+    int i;
+
+    if ((he = gethostbyname( hostname ) ) == NULL)
+    {
+        // get the host info
+        herror("gethostbyname");
+        return 1;
+    }
+
+    addr_list = (struct in_addr **) he->h_addr_list;
+
+    for(i = 0; addr_list[i] != NULL; i++)
+    {
+        //Return the first one;
+        strcpy(ip , inet_ntoa(*addr_list[i]) );
+        return 0;
+    }
+
+    return 1;
+}
+
 void
 EmscriptenWebSocketImpl::connect(const std::string& uri)
 {
+    // From emscripten.h:
+    // As well as being configurable at compile time via the "-s" option the WEBSOCKET_URL and WEBSOCKET_SUBPROTOCOL
+    // settings may configured at run time via the Module object e.g.
+    // Module['websocket'] = {subprotocol: 'base64, binary, text'};
+    // Module['websocket'] = {url: 'wss://', subprotocol: 'base64'};
+    // Run time configuration may be useful as it lets an application select multiple different services.
+    emscripten_run_script(std::string("Module['websocket']['url'] = '" + uri + "'").c_str());
+
     _fd = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (_fd == -1)
     {
@@ -61,12 +96,24 @@ EmscriptenWebSocketImpl::connect(const std::string& uri)
     }
     fcntl(_fd, F_SETFL, O_NONBLOCK);
 
-    std::regex uriRegex("^ws://(.*):(.*)/?.*$");
+    std::regex uriRegex("^(ws|wss)://(.*):(.*)(/.*)$");
     std::smatch uriMatch;
 
     std::regex_search(uri, uriMatch, uriRegex);
-    std::string host = uriMatch[1].str();
-    int port = std::stoi(uriMatch[2].str());
+    std::string host = uriMatch[2].str();
+    int port = std::stoi(uriMatch[3].str());
+
+    std::regex ipRegex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
+    if (!std::regex_match(host, ipRegex))
+    {
+        char ip[32];
+        if (hostnameToIp(host.c_str(), ip) != 0)
+        {
+            std::cerr << "unable to resolve hostname \"" << host << "\"" << std::endl;
+            return;
+        }
+        host = ip;
+    }
 
     sockaddr_in server;
     memset(&server, 0, sizeof(server));
@@ -146,9 +193,13 @@ EmscriptenWebSocketImpl::closeCallback(int fd, void* userData)
 void
 EmscriptenWebSocketImpl::poll(std::weak_ptr<WebSocket> webSocket)
 {
+    bool read = !_callbacks.empty();
+
     for (auto& callback : _callbacks)
         callback(webSocket);
     _callbacks.clear();
+
+    return read;
 }
 
 void

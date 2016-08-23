@@ -34,19 +34,63 @@ NativeWebSocketImpl::~NativeWebSocketImpl()
 }
 
 void
+NativeWebSocketImpl::tlsConnect(const std::string &uri)
+{
+    _tlsClient.set_access_channels(websocketpp::log::alevel::none);
+    _tlsClient.clear_access_channels(websocketpp::log::alevel::all);
+
+    _tlsClient.init_asio();
+    _tlsClient.set_message_handler([&](websocketpp::connection_hdl c, tls_message_ptr msg)
+    {
+        auto payloadString = msg->get_payload();
+        std::vector<uint8_t> payload(payloadString.begin(), payloadString.end());
+
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->messageReceived()->execute(s, payload); });
+    });
+
+    _tlsClient.set_tls_init_handler([&](websocketpp::connection_hdl hdl)
+    {
+        websocketpp::lib::shared_ptr<asio::ssl::context> ctx(new asio::ssl::context(asio::ssl::context::tlsv12));
+
+        return ctx;
+    });
+
+    _tlsClient.set_open_handler([&](websocketpp::connection_hdl hdl)
+    {
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->connected()->execute(s); });
+    });
+
+    websocketpp::lib::error_code ec;
+    _tlsConnection = _tlsClient.get_connection(uri, ec);
+    if (ec)
+    {
+        std::cerr << "could not create connection because: " << ec.message() << std::endl;
+        return;
+    }
+
+    _tlsConnection->add_subprotocol("binary");
+
+    _tlsClient.connect(_tlsConnection);
+    _thread.reset(new websocketpp::lib::thread(&tls_client::run, &_tlsClient));
+}
+
+void
 NativeWebSocketImpl::connect(const std::string &uri)
 {
+    if (uri.find("wss") == 0)
+        return tlsConnect(uri);
+
     _client.set_access_channels(websocketpp::log::alevel::none);
     _client.clear_access_channels(websocketpp::log::alevel::all);
 
     _client.init_asio();
-    _client.set_message_handler(std::bind(
-        &NativeWebSocketImpl::onMessage,
-        this,
-        &_client,
-        websocketpp::lib::placeholders::_1,
-        websocketpp::lib::placeholders::_2
-    ));
+    _client.set_message_handler([&](websocketpp::connection_hdl c, message_ptr msg)
+    {
+        auto payloadString = msg->get_payload();
+        std::vector<uint8_t> payload(payloadString.begin(), payloadString.end());
+
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->messageReceived()->execute(s, payload); });
+    });
 
     _client.set_open_handler([&](websocketpp::connection_hdl hdl)
     {
@@ -55,13 +99,13 @@ NativeWebSocketImpl::connect(const std::string &uri)
 
     websocketpp::lib::error_code ec;
     _connection = _client.get_connection(uri, ec);
-    _connection->add_subprotocol("binary");
-
     if (ec)
     {
-        std::cout << "could not create connection because: " << ec.message() << std::endl;
-        return ;
+        std::cerr << "could not create connection because: " << ec.message() << std::endl;
+        return;
     }
+
+    _connection->add_subprotocol("binary");
 
     _client.connect(_connection);
     _thread.reset(new websocketpp::lib::thread(&client::run, &_client));
@@ -70,41 +114,62 @@ NativeWebSocketImpl::connect(const std::string &uri)
 void
 NativeWebSocketImpl::disconnect()
 {
-    if (_connection->get_state() != websocketpp::session::state::closed)
+    std::unique_lock<std::mutex> lock(_connectionMutex);
+
+    if (!isConnected())
+        return;
+    
+    if (!!_connection && _connection->get_state() != websocketpp::session::state::closed)
+    {
         _connection->close(0, "disconnect() called");
-    if (_thread->joinable())
+        _connection = nullptr;
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->disconnected()->execute(s); });
+    }
+    else if (!!_tlsConnection && _tlsConnection->get_state() != websocketpp::session::state::closed)
+    {
+        _tlsConnection->close(0, "disconnect() called");
+        _tlsConnection = nullptr;
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->disconnected()->execute(s); });
+    }
+
+    lock.unlock();
+
+    if (!!_thread && _thread->joinable())
         _thread->join();
 }
 
 void
 NativeWebSocketImpl::sendMessage(const void* payload, size_t s)
 {
-    _client.send(_connection, payload, s, websocketpp::frame::opcode::BINARY);
-}
+    std::lock_guard<std::mutex> guard(_connectionMutex);
 
-void
-NativeWebSocketImpl::onMessage(client* c, websocketpp::connection_hdl hdl, message_ptr msg)
-{
-    auto payloadString = msg->get_payload();
-    std::vector<uint8_t> payload(payloadString.begin(), payloadString.end());
-
-    pushCallback([=](std::weak_ptr<WebSocket> s) { this->messageReceived()->execute(s, payload); });
+    if (_connection)
+        _client.send(_connection, payload, s, websocketpp::frame::opcode::BINARY);
+    else if (_tlsConnection)
+        _tlsClient.send(_tlsConnection, payload, s, websocketpp::frame::opcode::BINARY);
 }
 
 bool
 NativeWebSocketImpl::isConnected()
 {
-    return !!_connection &&
-        _connection->get_state() == websocketpp::session::state::open;
+    return !!_connection
+        ? _connection->get_state() == websocketpp::session::state::open
+        : !!_tlsConnection
+            ? _tlsConnection->get_state() == websocketpp::session::state::open
+            : false;
 }
 
-void
+bool
 NativeWebSocketImpl::poll(std::weak_ptr<WebSocket> webSocket)
 {
+    bool read = !_callbacks.empty();
+
     std::lock_guard<std::mutex> guard(_callbackMutex);
     for (auto& callback : _callbacks)
         callback(webSocket);
     _callbacks.clear();
+
+    return read;
 }
 
 void

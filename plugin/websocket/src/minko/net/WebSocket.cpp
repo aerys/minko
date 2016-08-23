@@ -77,10 +77,10 @@ WebSocket::connect(const std::string& uri)
     _impl->connect(uri);
 }
 
-void
+bool
 WebSocket::poll()
 {
-    _impl->poll(shared_from_this());
+    return _impl->poll(shared_from_this());
 }
 
 void
@@ -124,4 +124,10 @@ void
 WebSocket::stopPollingOnEnterFrame()
 {
     _enterFrameSlot = nullptr;
+}
+
+bool
+WebSocket::isConnected()
+{
+    return _impl->isConnected();
 }

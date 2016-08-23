@@ -46,11 +46,14 @@ namespace minko
             void
             connect(const std::string& uri);
 
-            void
+            bool
             poll();
 
             void
             disconnect();
+
+            bool
+            isConnected();
 
             void
             sendMessage(const std::string& message);

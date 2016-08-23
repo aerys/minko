@@ -47,7 +47,7 @@ namespace minko
             bool
             isConnected() override;
 
-            void
+            bool
             poll(std::weak_ptr<WebSocket> webSocket) override;
 
             NativeWebSocketImpl();
@@ -57,10 +57,12 @@ namespace minko
         private:
             typedef websocketpp::client<websocketpp::config::asio_client> client;
             typedef websocketpp::config::asio_client::message_type::ptr message_ptr;
+            typedef websocketpp::client<websocketpp::config::asio_tls_client> tls_client;
+            typedef websocketpp::config::asio_tls_client::message_type::ptr tls_message_ptr;
 
         private:
             void
-            onMessage(client* c, websocketpp::connection_hdl hdl, message_ptr msg);
+            tlsConnect(const std::string& uri);
 
             void
             pushCallback(std::function<void(std::weak_ptr<WebSocket>)> callback);
@@ -68,7 +70,10 @@ namespace minko
         private:
             client _client;
             client::connection_ptr _connection;
+            tls_client _tlsClient;
+            tls_client::connection_ptr _tlsConnection;
             websocketpp::lib::shared_ptr<websocketpp::lib::thread> _thread;
+            std::mutex _connectionMutex;
 
             std::mutex _callbackMutex;
             std::list<std::function<void(std::weak_ptr<WebSocket>)>> _callbacks;

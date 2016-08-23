@@ -13,6 +13,7 @@ minko.project.application "minko-test"
 	-- plugin
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("serializer")
+	minko.plugin.enable("websocket")
 
 	-- googletest framework
 	links { "googletest" }
@@ -45,4 +46,3 @@ minko.project.application "minko-test"
 		}
 
 		includedirs { '"${EMSCRIPTEN}/system/lib/libcxxabi/include"' }
-
