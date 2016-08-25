@@ -71,6 +71,7 @@ NativeWebSocketImpl::tlsConnect(const std::string &uri)
     _tlsConnection->add_subprotocol("binary");
 
     _tlsClient.connect(_tlsConnection);
+    _tlsClient.start_perpetual();
     _thread.reset(new websocketpp::lib::thread(&tls_client::run, &_tlsClient));
 }
 
@@ -108,6 +109,7 @@ NativeWebSocketImpl::connect(const std::string &uri)
     _connection->add_subprotocol("binary");
 
     _client.connect(_connection);
+    _client.start_perpetual();
     _thread.reset(new websocketpp::lib::thread(&client::run, &_client));
 }
 
@@ -118,7 +120,12 @@ NativeWebSocketImpl::disconnect()
 
     if (!isConnected())
         return;
-    
+
+    if (_connection)
+        _client.stop_perpetual();
+    if (_tlsConnection)
+        _tlsClient.stop_perpetual();
+
     if (!!_connection && _connection->get_state() != websocketpp::session::state::closed)
     {
         _connection->close(0, "disconnect() called");
@@ -143,10 +150,17 @@ NativeWebSocketImpl::sendMessage(const void* payload, size_t s)
 {
     std::lock_guard<std::mutex> guard(_connectionMutex);
 
-    if (_connection)
-        _client.send(_connection, payload, s, websocketpp::frame::opcode::BINARY);
-    else if (_tlsConnection)
-        _tlsClient.send(_tlsConnection, payload, s, websocketpp::frame::opcode::BINARY);
+    try
+    {
+        if (_connection)
+            _client.send(_connection, payload, s, websocketpp::frame::opcode::BINARY);
+        else if (_tlsConnection)
+            _tlsClient.send(_tlsConnection, payload, s, websocketpp::frame::opcode::BINARY);
+    }
+    catch (std::exception& e)
+    {
+        disconnect();
+    }
 }
 
 bool
