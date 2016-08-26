@@ -291,6 +291,10 @@ Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> 	node,
 			unwatchSurface(surface, surfaceNode);
 			removeSurface(surface);
 		}
+
+	// Because scene signals bubble down before bubbling up, some Surface might
+	// have been removed before we add a chance to
+	removeOutOfSceneSurfaces();
 }
 
 void
@@ -437,7 +441,6 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		watchSurface(surface);
         addSurface(surface);
 	}
-
     _toCollect.clear();
 
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
@@ -768,4 +771,37 @@ Renderer::changeEffectOrTechnique(EffectPtr effect, const std::string& technique
 
         rootDescendantAddedHandler(target()->root(), target()->root(), target()->parent());
     }
+}
+
+void
+Renderer::removeOutOfSceneSurfaces()
+{
+	// We can't both iterate on _surfaceToDrawCallIterator and remove stuff from
+	// it at the same time.
+	std::list<Surface::Ptr> surfaceToRemove;
+
+	for (auto& surfaceAndDrawCallIt : _surfaceToDrawCallIterator)
+		if (surfaceAndDrawCallIt.first->target() == nullptr
+			|| surfaceAndDrawCallIt.first->target()->root() != target()->root())
+		{
+			surfaceToRemove.push_back(surfaceAndDrawCallIt.first);
+		}
+
+	for (auto& surface : surfaceToRemove)
+	{
+		// We can't call unwatchSurface() directly here since we don't remember
+		// what node this Surface was on.
+		_surfaceLayoutMaskChangedSlot.erase(surface);
+		removeSurface(surface);
+	}
+
+	// Because we couldn't call unwatchSurface(), we have to check that we're not
+	// listening for nodes that don't have a Surface anymore.
+	// And we still can't both iterate and delete stuff.
+	std::list<Node::Ptr> nodeToRemove;
+	for (auto& nodeAndLayoutChangedSlot : _nodeLayoutChangedSlot)
+		if (!nodeAndLayoutChangedSlot.first->hasComponent<Surface>())
+			nodeToRemove.push_back(nodeAndLayoutChangedSlot.first);
+	for (auto& node : nodeToRemove)
+		_nodeLayoutChangedSlot.erase(node);
 }
