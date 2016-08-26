@@ -59,31 +59,72 @@ namespace minko
             ~EmscriptenWebSocketImpl();
 
         private:
+
+            class SocketCallbackBroker
+            {
+            private:
+                static std::list<std::pair<int, EmscriptenWebSocketImpl*>> _sockets;
+                static bool _initialized;
+
+            public:
+                static
+                void
+                registerSocket(int fd, EmscriptenWebSocketImpl* socket);
+
+                static
+                void
+                unregisterSocket(int fd, EmscriptenWebSocketImpl* socket);
+
+            private:
+                static
+                void
+                initializeHandlers();
+
+                static
+                void
+                openCallback(int fd, void* userData);
+
+                static
+                void
+                listenCallback(int fd, void* userData);
+
+                static
+                void
+                connectionCallback(int fd, void* userData);
+
+                static
+                void
+                messageCallback(int fd, void* userData);
+
+                static
+                void
+                closeCallback(int fd, void* userData);
+
+                static
+                EmscriptenWebSocketImpl*
+                getSocketByFd(int fd);
+            };
+
             int
             hostnameToIp(const char* hostname , char* ip);
 
             void
             pushCallback(std::function<void(std::weak_ptr<WebSocket>)> callback);
 
-            static
             void
-            openCallback(int fd, void* userData);
+            openCallback(int fd);
 
-            static
             void
-            listenCallback(int fd, void* userData);
+            listenCallback(int fd);
 
-            static
             void
-            connectionCallback(int fd, void* userData);
+            connectionCallback(int fd);
 
-            static
             void
-            messageCallback(int fd, void* userData);
+            messageCallback(int fd);
 
-            static
             void
-            closeCallback(int fd, void* userData);
+            closeCallback(int fd);
 
         private:
             bool _connected;
