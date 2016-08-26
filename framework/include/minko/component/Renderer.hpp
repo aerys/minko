@@ -381,8 +381,6 @@ namespace minko
 				return _filterChanged;
 			}*/
 
-            
-
         protected:
 			Renderer(const Renderer& renderer, const CloneOption& option);
 
@@ -493,6 +491,9 @@ namespace minko
 
             void
             changeEffectOrTechnique(EffectPtr effect, const std::string& technique = "default");
+
+			void
+			removeOutOfSceneSurfaces();
 		};
 	}
 }
