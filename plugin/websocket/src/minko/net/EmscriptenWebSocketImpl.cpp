@@ -132,6 +132,7 @@ EmscriptenWebSocketImpl::connect(const std::string& uri)
 void
 EmscriptenWebSocketImpl::disconnect()
 {
+    close(_fd);
     _connected = false;
 
     pushCallback([=](std::weak_ptr<WebSocket> s) { disconnected()->execute(s); });
