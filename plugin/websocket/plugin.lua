@@ -33,6 +33,15 @@ function minko.plugin.websocket:enable()
 			"crypto"
 		}
 
+	configuration { "ios" }
+		libdirs {
+			minko.plugin.path("websocket") .. "/lib/openssl/lib/ios"
+		}
+		links {
+			"ssl",
+			"crypto"
+		}
+
 	configuration { "android" }
 		libdirs {
 			minko.plugin.path("websocket") .. "/lib/openssl/lib/android"
