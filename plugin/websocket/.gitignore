@@ -1,2 +1,4 @@
 !lib/openssl/lib/android/libcrypto.a
 !lib/openssl/lib/android/libssl.a
+!lib/openssl/lib/ios/libcrypto.a
+!lib/openssl/lib/ios/libssl.a
