@@ -51,7 +51,7 @@ function minko.plugin.websocket:enable()
 			"crypto"
 		}
 
-	configuration { "osx" }
+	configuration { "osx64" }
 		links {
 			"ssl",
 			"crypto"
