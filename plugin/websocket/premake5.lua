@@ -50,7 +50,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		files {
 			"lib/openssl/include/**.h"
 		}
-
+		includedirs {
+			"lib/openssl/include"
+		}
 
 	configuration { "linux32 or linux64" }
 		-- openssl
@@ -60,9 +62,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "android" }
 		-- openssl
-		includedirs {
-			"lib/openssl/include"
-		}
 		libdirs {
 			"lib/openssl/lib/android"
 		}
@@ -82,7 +81,4 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		-- openssl
 		defines {
 			"OPENSSL_SYSNAME_WIN32"
-		}
-		includedirs {
-			"lib/openssl/include"
 		}
