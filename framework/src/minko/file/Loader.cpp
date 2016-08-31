@@ -75,7 +75,10 @@ Loader::load()
             auto options = _filenameToOptions[filename];
             auto assets = options->assetLibrary();
 
-            if (assets->cubeTexture(filename) != nullptr
+            const auto byteRangeRequested = options->seekedLength() > 0;
+
+            if (!byteRangeRequested && (
+                assets->cubeTexture(filename) != nullptr
                 || assets->texture(filename) != nullptr
                 || assets->geometry(filename) != nullptr
                 || assets->effect(filename) != nullptr
@@ -83,7 +86,7 @@ Loader::load()
                 || assets->sound(filename) != nullptr
                 || assets->material(filename) != nullptr
                 || assets->script(filename) != nullptr
-                || assets->hasBlob(filename))
+                || assets->hasBlob(filename)))
             {
                 _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
                 _filenameToOptions.erase(filename);
