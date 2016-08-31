@@ -40,6 +40,16 @@ namespace minko
                 void
                 stop(scene::Node::Ptr target) override;
             };
+
+            class RequireAssetScript : public AbstractScript
+            {
+            public:
+                file::Loader::Ptr
+                requiredAssetLoader()
+                {
+                    return requiredAssets();
+                }
+            };
         };
     }
 }
