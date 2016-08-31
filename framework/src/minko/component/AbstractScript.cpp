@@ -182,6 +182,7 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
         if (_requiredAssetLoader->filesQueue().size() != 0)
         {
             _requiredAssetLoader->options()->assetLibrary(sceneManager->assets());
+            _requiredAssetLoader->options()->context(sceneManager->assets()->context());
             _requiredAssetLoader->load();
         }
 
