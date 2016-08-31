@@ -70,3 +70,30 @@ TEST_F(AbstractScriptTest, RemoveChildImpliesScriptStopThatRemovesSurface)
 
     ASSERT_EQ(root->component<Renderer>()->numDrawCalls(), 0);
 }
+
+TEST_F(AbstractScriptTest, RequireAsset)
+{
+    auto root = scene::Node::create()
+        ->addComponent(SceneManager::create(MinkoTests::canvas()));
+    auto script = std::make_shared<RequireAssetScript>();
+
+    script->requiredAssetLoader()->queue("effect/Basic.effect");
+    script->requiredAssetLoader()->queue("effect/Phong.effect");
+
+    ASSERT_EQ(root->component<SceneManager>()->assets()->effect("effect/Basic.effect"), nullptr);
+    ASSERT_EQ(root->component<SceneManager>()->assets()->effect("effect/Phong.effect"), nullptr);
+    ASSERT_FALSE(script->ready());
+    ASSERT_FALSE(script->started());
+
+    root->addComponent(script);
+
+    ASSERT_NE(root->component<SceneManager>()->assets()->effect("effect/Basic.effect"), nullptr);
+    ASSERT_NE(root->component<SceneManager>()->assets()->effect("effect/Phong.effect"), nullptr);
+    ASSERT_TRUE(script->ready());
+    ASSERT_FALSE(script->started());
+
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
+
+    ASSERT_TRUE(script->ready());
+    ASSERT_TRUE(script->started());
+}

@@ -22,10 +22,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/SceneManager.hpp"
+#include "minko/file/Loader.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/file/AssetLibrary.hpp"
 
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
+
+AbstractScript::AbstractScript() :
+    _enabled(true),
+    _started(false),
+    _time(0.f),
+    _deltaTime(0.f),
+    _targetAddedSlot(nullptr),
+    _targetRemovedSlot(nullptr),
+    _addedSlot(nullptr),
+    _removedSlot(nullptr),
+    _componentAddedSlot(nullptr),
+    _componentRemovedSlot(nullptr),
+    _frameBeginSlot(nullptr),
+    _frameEndSlot(nullptr),
+    _requiredAssetLoader(file::Loader::create())
+{
+    _requiredAssetErrorSlot = _requiredAssetLoader->error()->connect(
+        [&](file::Loader::Ptr loader, const file::Error& error)
+        {
+            this->requiredAssetErrorHandler(loader, error);
+        }
+    );
+}
+
+AbstractScript::~AbstractScript()
+{
+    _requiredAssetErrorSlot = nullptr;
+    _componentAddedSlot = nullptr;
+    _componentRemovedSlot = nullptr;
+    _addedSlot = nullptr;
+    _removedSlot = nullptr;
+    _frameBeginSlot = nullptr;
+    _frameEndSlot = nullptr;
+}
 
 void
 AbstractScript::targetAdded(Node::Ptr target)
@@ -142,6 +179,12 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 {
 	if (sceneManager && _enabled)
 	{
+        if (_requiredAssetLoader->filesQueue().size() != 0)
+        {
+            _requiredAssetLoader->options()->assetLibrary(sceneManager->assets());
+            _requiredAssetLoader->load();
+        }
+
         if (!_frameBeginSlot)
             _frameBeginSlot = sceneManager->frameBegin()->connect(
 				[=](SceneManager::Ptr s, float t, float dt)
@@ -183,4 +226,10 @@ AbstractScript::enabled(bool v)
 		if (target())
 			setSceneManager(target()->root()->component<SceneManager>());
 	}
+}
+
+bool
+AbstractScript::ready()
+{
+   return _requiredAssetLoader->filesQueue().size() == 0 && !_requiredAssetLoader->loading();
 }
