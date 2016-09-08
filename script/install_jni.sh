@@ -47,7 +47,7 @@ fi
 
 if [[ $OSTYPE == cygwin* ]]; then
 	ANDROID_HOME=`cygpath -u "${ANDROID_HOME}"`
-	ANDROID_SYSTEM="windows-x86_64"
+	ANDROID_SYSTEM="windows"
 elif [[ $OSTYPE == darwin* ]]; then
 	ANDROID_SYSTEM="darwin-x86_64"
 fi
@@ -72,7 +72,7 @@ if [[ ! -x ${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make-standalon
 	echo "Invalid NDK path: ${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" > /dev/stderr
 	exit 1
 fi
-${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make-standalone-toolchain.sh --platform=${ANDROID_SDK_VERSION} --toolchain=${ANDROID_TOOLCHAIN} --install-dir=${ANDROID_NDK_HOME}
+${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make-standalone-toolchain.sh --platform=${ANDROID_SDK_VERSION} --toolchain=${ANDROID_TOOLCHAIN} --install-dir=${ANDROID_NDK_HOME} --system=${ANDROID_SYSTEM}
 popd > /dev/null
 
 # Link default NDK.

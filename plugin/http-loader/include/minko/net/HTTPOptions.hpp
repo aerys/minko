@@ -57,7 +57,13 @@ namespace minko
             Ptr
             create(file::Options::Ptr copy)
             {
-                auto instance = Ptr(new HTTPOptions(*copy));
+                auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(copy);
+                Ptr instance = nullptr;
+
+                if (!httpOptions)
+                    instance = Ptr(new HTTPOptions(*copy));
+                else
+                    instance = std::static_pointer_cast<HTTPOptions>(httpOptions->clone());
 
                 instance->initialize();
 
