@@ -1,6 +1,5 @@
 # Known limitations
 
-* Only one WebSocket object per app when building with Emscripten/targeting HTML5.
 * Not tested/working on:
  * iOS
  * OSX

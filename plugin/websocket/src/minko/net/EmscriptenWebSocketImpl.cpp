@@ -36,14 +36,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::net;
 
+std::list<std::pair<int, EmscriptenWebSocketImpl*>> EmscriptenWebSocketImpl::SocketCallbackBroker::_sockets;
+bool EmscriptenWebSocketImpl::SocketCallbackBroker::_initialized = false;
+
 EmscriptenWebSocketImpl::EmscriptenWebSocketImpl()
     : WebSocketImpl()
 {
-    emscripten_set_socket_open_callback(this, EmscriptenWebSocketImpl::openCallback);
-    emscripten_set_socket_listen_callback(this, EmscriptenWebSocketImpl::listenCallback);
-    emscripten_set_socket_connection_callback(this, EmscriptenWebSocketImpl::connectionCallback);
-    emscripten_set_socket_message_callback(this, EmscriptenWebSocketImpl::messageCallback);
-    emscripten_set_socket_close_callback(this, EmscriptenWebSocketImpl::closeCallback);
 }
 
 EmscriptenWebSocketImpl::~EmscriptenWebSocketImpl()
@@ -96,6 +94,8 @@ EmscriptenWebSocketImpl::connect(const std::string& uri)
     }
     fcntl(_fd, F_SETFL, O_NONBLOCK);
 
+    SocketCallbackBroker::registerSocket(_fd, this);
+
     std::regex uriRegex("^(ws|wss)://(.*):(.*)(/.*)$");
     std::smatch uriMatch;
 
@@ -133,6 +133,9 @@ void
 EmscriptenWebSocketImpl::disconnect()
 {
     close(_fd);
+    SocketCallbackBroker::unregisterSocket(_fd, this);
+
+    _fd = -1;
     _connected = false;
 
     pushCallback([=](std::weak_ptr<WebSocket> s) { disconnected()->execute(s); });
@@ -145,26 +148,24 @@ EmscriptenWebSocketImpl::sendMessage(const void* payload, size_t s)
 }
 
 void
-EmscriptenWebSocketImpl::openCallback(int fd, void* userData)
+EmscriptenWebSocketImpl::openCallback(int fd)
 {
-    auto impl = static_cast<EmscriptenWebSocketImpl*>(userData);
-
-    impl->_connected = true;
-    impl->pushCallback([=](std::weak_ptr<WebSocket> s) { impl->connected()->execute(s); });
+    _connected = true;
+    pushCallback([=](std::weak_ptr<WebSocket> s) { connected()->execute(s); });
 }
 
 void
-EmscriptenWebSocketImpl::listenCallback(int fd, void* userData)
+EmscriptenWebSocketImpl::listenCallback(int fd)
 {
 }
 
 void
-EmscriptenWebSocketImpl::connectionCallback(int fd, void* userData)
+EmscriptenWebSocketImpl::connectionCallback(int fd)
 {
 }
 
 void
-EmscriptenWebSocketImpl::messageCallback(int fd, void* userData)
+EmscriptenWebSocketImpl::messageCallback(int fd)
 {
     std::array<char, 1024> buffer;
     std::vector<uint8_t> payload;
@@ -178,17 +179,13 @@ EmscriptenWebSocketImpl::messageCallback(int fd, void* userData)
     }
     while (len > 0);
 
-    auto impl = static_cast<EmscriptenWebSocketImpl*>(userData);
-
-    impl->pushCallback([=](std::weak_ptr<WebSocket> s) { impl->messageReceived()->execute(s, payload); });
+    pushCallback([=](std::weak_ptr<WebSocket> s) { messageReceived()->execute(s, payload); });
 }
 
 void
-EmscriptenWebSocketImpl::closeCallback(int fd, void* userData)
+EmscriptenWebSocketImpl::closeCallback(int fd)
 {
-    EmscriptenWebSocketImpl* impl = static_cast<EmscriptenWebSocketImpl*>(userData);
-
-    impl->disconnect();
+    disconnect();
 }
 
 bool
@@ -209,5 +206,72 @@ EmscriptenWebSocketImpl::pushCallback(std::function<void(std::weak_ptr<WebSocket
     _callbacks.push_back(callback);
 }
 
+void
+EmscriptenWebSocketImpl::SocketCallbackBroker::initializeHandlers()
+{
+    if (_initialized)
+        return;
+
+    emscripten_set_socket_open_callback(0, SocketCallbackBroker::openCallback);
+    emscripten_set_socket_listen_callback(0, SocketCallbackBroker::listenCallback);
+    emscripten_set_socket_connection_callback(0, SocketCallbackBroker::connectionCallback);
+    emscripten_set_socket_message_callback(0, SocketCallbackBroker::messageCallback);
+    emscripten_set_socket_close_callback(0, SocketCallbackBroker::closeCallback);
+
+    _initialized = true;
+}
+
+void
+EmscriptenWebSocketImpl::SocketCallbackBroker::registerSocket(int fd, EmscriptenWebSocketImpl* socket)
+{
+    initializeHandlers();
+    _sockets.push_back(std::pair<int, EmscriptenWebSocketImpl*>(fd, socket));
+}
+
+void
+EmscriptenWebSocketImpl::SocketCallbackBroker::unregisterSocket(int fd, EmscriptenWebSocketImpl* socket)
+{
+
+}
+
+EmscriptenWebSocketImpl*
+EmscriptenWebSocketImpl::SocketCallbackBroker::getSocketByFd(int fd)
+{
+    for (auto& fdToSocket : _sockets)
+        if (fdToSocket.first == fd)
+                return fdToSocket.second;
+
+    return nullptr;
+}
+
+void
+EmscriptenWebSocketImpl::SocketCallbackBroker::openCallback(int fd, void* userData)
+{
+    getSocketByFd(fd)->openCallback(fd);
+}
+
+void
+EmscriptenWebSocketImpl::SocketCallbackBroker::listenCallback(int fd, void* userData)
+{
+    getSocketByFd(fd)->listenCallback(fd);
+}
+
+void
+EmscriptenWebSocketImpl::SocketCallbackBroker::connectionCallback(int fd, void* userData)
+{
+    getSocketByFd(fd)->connectionCallback(fd);
+}
+
+void
+EmscriptenWebSocketImpl::SocketCallbackBroker::messageCallback(int fd, void* userData)
+{
+    getSocketByFd(fd)->messageCallback(fd);
+}
+
+void
+EmscriptenWebSocketImpl::SocketCallbackBroker::closeCallback(int fd, void* userData)
+{
+    getSocketByFd(fd)->closeCallback(fd);
+}
 
 #endif // defined(EMSCRIPTEN)
