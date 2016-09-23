@@ -122,6 +122,19 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
             if (seekedDrawCall != nullptr)
             {
                 seekedDrawCall->batchIDs().push_back(_batchId);
+                std::cout << "delete drawCall " << drawCall << std::endl;
+
+                if (drawCall->program())
+                {
+                    unwatchProgramSignature(
+                        *drawCall,
+                        drawCall->pass()->macroBindings(),
+                        drawCall->rootData(),
+                        drawCall->rendererData(),
+                        drawCall->targetData()
+                    );
+                    unbindDrawCall(*drawCall);
+                }
                 delete drawCall;
                 continue;
             }
