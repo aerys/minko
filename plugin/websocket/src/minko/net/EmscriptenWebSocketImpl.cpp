@@ -87,23 +87,39 @@ EmscriptenWebSocketImpl::connect(const std::string& uri)
     emscripten_run_script(std::string("Module['websocket']['url'] = '" + uri + "'").c_str());
 
     _fd = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+
     if (_fd == -1)
     {
         std::cerr << "failed to create client socket" << std::endl;
-        return ;
+        return;
     }
+
     fcntl(_fd, F_SETFL, O_NONBLOCK);
 
     SocketCallbackBroker::registerSocket(_fd, this);
 
-    std::regex uriRegex("^(ws|wss)://(.*):(.*)(/.*)$");
+    std::regex uriRegex("^(ws|wss)://(.*)(/.*)$");
     std::smatch uriMatch;
 
-    std::regex_search(uri, uriMatch, uriRegex);
+    if (!std::regex_search(uri, uriMatch, uriRegex))
+        return;
+
+    std::string protocol = uriMatch[1].str();
     std::string host = uriMatch[2].str();
-    int port = std::stoi(uriMatch[3].str());
+
+    int port = protocol == "wss" ? 443 : 80;
+
+    std::regex portRegex("^(.*):([0-9]+)$");
+    std::smatch portMatch;
+
+    if (std::regex_search(host, portMatch, portRegex))
+    {
+        host = portMatch[1];
+        port = std::stoi(portMatch[2]);
+    }
 
     std::regex ipRegex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
+
     if (!std::regex_match(host, ipRegex))
     {
         char ip[32];
@@ -122,6 +138,7 @@ EmscriptenWebSocketImpl::connect(const std::string& uri)
     server.sin_port = htons(port);
 
     auto res = ::connect(_fd, (struct sockaddr*)&server , sizeof(server));
+
     if (res == -1 && errno != EINPROGRESS)
     {
         std::cerr << "failed to connect to " << uri << std::endl;

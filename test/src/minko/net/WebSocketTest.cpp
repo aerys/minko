@@ -81,7 +81,7 @@ TEST_F(WebSocketTest, Disconnect)
     });
 
     ws->connect("ws://echo.websocket.org");
-    
+
     std::this_thread::sleep_for(std::chrono::seconds(3));
     ws->poll();
 
@@ -99,6 +99,7 @@ TEST_F(WebSocketTest, SendMessage)
     auto ws = std::make_shared<WebSocket>();
     std::string sent = "hello world!";
     std::string received;
+
     auto _ = ws->connected()->connect([&](WebSocket::WeakPtr s)
     {
         ws->sendMessage(sent);

@@ -2455,8 +2455,6 @@ TEST_F(EffectParserTest, ExtendedPassFromEffectWithExtendedPass)
 
     for (size_t i = 0; i < uniformNames.size(); i++)
     {
-        std::cout << uniformNames[i] << std::endl;
-
         ASSERT_TRUE(fx->techniques().at("test-technique-1")[0]->uniformBindings().bindings.count(uniformNames[i]) != 0);
         ASSERT_EQ(fx->techniques().at("test-technique-1")[0]->uniformBindings().bindings[uniformNames[i]].propertyName, uniformPropertyNames[i]);
         ASSERT_EQ(fx->techniques().at("test-technique-1")[0]->uniformBindings().bindings[uniformNames[i]].source, data::Binding::Source::TARGET);
