@@ -168,23 +168,26 @@ EmscriptenDOMEngine::enterFrame()
 
 	if (_currentDOM->initialized())
 	{
-		std::string eval = "(Minko.messagesToSend.length);";
+		std::string eval = "Minko._tempMessagesToSend = Minko.messagesToSend.concat();Minko.messagesToSend = [];";
+		emscripten_run_script(eval.c_str());
+
+		eval = "(Minko._tempMessagesToSend.length);";
 		int l = emscripten_run_script_int(eval.c_str());
 
 		if (l > 0)
 		{
 			for(int i = 0; i < l; ++i)
 			{
-				std::string eval = "(Minko.messagesToSend[" + std::to_string(i) + "])";
+				eval = "(Minko._tempMessagesToSend[" + std::to_string(i) + "])";
 				char* charMessage = emscripten_run_script_string(eval.c_str());
 
 				std::string message(charMessage);
-
+				
 				_currentDOM->onmessage()->execute(_currentDOM, message);
 				_onmessage->execute(_currentDOM, message);
 			}
 
-			std::string eval = "Minko.messagesToSend = [];";
+			eval = "delete Minko._tempMessagesToSend";
 			emscripten_run_script(eval.c_str());
 		}
 	}
