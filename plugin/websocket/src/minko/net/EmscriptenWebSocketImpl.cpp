@@ -42,6 +42,7 @@ bool EmscriptenWebSocketImpl::SocketCallbackBroker::_initialized = false;
 EmscriptenWebSocketImpl::EmscriptenWebSocketImpl()
     : WebSocketImpl()
 {
+    _connected = false;
 }
 
 EmscriptenWebSocketImpl::~EmscriptenWebSocketImpl()
@@ -78,6 +79,8 @@ EmscriptenWebSocketImpl::hostnameToIp(const char* hostname , char* ip)
 void
 EmscriptenWebSocketImpl::connect(const std::string& uri)
 {
+    _connected = false;
+
     // From emscripten.h:
     // As well as being configurable at compile time via the "-s" option the WEBSOCKET_URL and WEBSOCKET_SUBPROTOCOL
     // settings may configured at run time via the Module object e.g.
