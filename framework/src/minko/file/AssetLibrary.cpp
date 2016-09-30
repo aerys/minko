@@ -24,10 +24,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractAssetDescriptor.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/geometry/Geometry.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/RectangleTexture.hpp"
 #include "minko/render/Effect.hpp"
+#include "minko/render/IndexBuffer.hpp"
+#include "minko/render/VertexBuffer.hpp"
 #include "minko/geometry/Geometry.hpp"
 
 using namespace minko;
@@ -50,7 +53,7 @@ AssetLibrary::Ptr
 AssetLibrary::create(AssetLibrary::Ptr original)
 {
     auto al = create(original->_context);
-        
+
     for (auto it = original->_materials.begin(); it != original->_materials.end(); ++it)
         al->_materials[it->first] = it->second;
 
@@ -62,7 +65,7 @@ AssetLibrary::create(AssetLibrary::Ptr original)
 
     for (auto it = original->_textures.begin(); it != original->_textures.end(); ++it)
         al->_textures[it->first] = it->second;
-    
+
     for (auto it = original->_cubeTextures.begin(); it != original->_cubeTextures.end(); ++it)
         al->_cubeTextures[it->first] = it->second;
 
@@ -93,6 +96,49 @@ AssetLibrary::AssetLibrary(std::shared_ptr<AbstractContext> context) :
 {
 }
 
+AssetLibrary::~AssetLibrary()
+{
+    clear();
+
+    disposeLoader();
+}
+
+void
+AssetLibrary::clear()
+{
+    for (const auto& geometryEntry : _geometries)
+    {
+        auto geometry = geometryEntry.second;
+
+        for (auto vertexBuffer : geometry->vertexBuffers())
+            vertexBuffer->dispose();
+
+        geometry->indices()->dispose();
+    }
+
+    for (auto textureEntry : _textures)
+        textureEntry.second->dispose();
+
+    for (auto cubeTextureEntry : _cubeTextures)
+        cubeTextureEntry.second->dispose();
+
+    for (auto rectangleTextureEntry : _rectangleTextures)
+        rectangleTextureEntry.second->dispose();
+
+    _materials.clear();
+    _geometries.clear();
+    _effects.clear();
+    _textures.clear();
+    _cubeTextures.clear();
+    _rectangleTextures.clear();
+    _symbols.clear();
+    _blobs.clear();
+    _scripts.clear();
+    _layouts.clear();
+    _sounds.clear();
+    _assetDescriptors.clear();
+}
+
 void
 AssetLibrary::disposeLoader()
 {
@@ -111,7 +157,7 @@ AssetLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geomet
     std::string tempname = name;
     if (_geometries[tempname])
     {
-        std::stringstream ss; 
+        std::stringstream ss;
         ss << _geometries.size();
         tempname = tempname + "_" + ss.str();
     }
