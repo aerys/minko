@@ -393,7 +393,7 @@ namespace minko
             setVertexAttributeArray(const uint vertexArray) override;
 
             void
-            deleteVertexAttributeArray(const uint vertexArray);
+            deleteVertexAttributeArray(const uint vertexArray) override;
 
 		protected:
 			OpenGLES2Context();
