@@ -42,12 +42,16 @@ JobManager::JobManager(unsigned int loadingFramerate):
     _frameTime = 1.f / loadingFramerate;
 }
 
+JobManager::~JobManager()
+{
+}
+
 JobManager::Ptr
 JobManager::pushJob(Job::Ptr job)
 {
     _jobPriorityChangedSlots.insert(std::make_pair(
         job,
-        job->priorityChanged()->connect([=](float priority) -> void 
+        job->priorityChanged()->connect([=](float priority) -> void
         {
             _sortingNeeded = true;
         }))

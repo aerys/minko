@@ -33,7 +33,7 @@ namespace minko
             public component::JobManager::Job
         {
         public:
-            typedef std::shared_ptr<StreamedAssetParserScheduler> Ptr;
+            typedef std::shared_ptr<StreamedAssetParserScheduler>   Ptr;
 
             struct Parameters
             {
@@ -48,7 +48,7 @@ namespace minko
         private:
             struct ParserEntry;
 
-            typedef std::shared_ptr<ParserEntry> ParserEntryPtr;
+            typedef ParserEntry*                                    ParserEntryPtr;
 
             struct ParserEntry
             {
@@ -77,7 +77,7 @@ namespace minko
             {
                 inline
                 bool
-                operator()(ParserEntryPtr left, ParserEntryPtr right) const
+                operator()(const ParserEntryPtr left, const ParserEntryPtr right) const
                 {
                     static const auto epsilon = 1e-3f;
 
@@ -89,7 +89,7 @@ namespace minko
 
                     if (rightPriority > leftPriority)
                         return false;
-                    
+
                     if (left < right)
                         return true;
 
@@ -124,6 +124,8 @@ namespace minko
             Signal<Ptr>::Ptr            _inactive;
 
         public:
+            ~StreamedAssetParserScheduler();
+
             inline
             static
             Ptr
@@ -155,6 +157,9 @@ namespace minko
                 return _inactive;
             }
 
+            void
+            clear();
+
 			bool
 			complete() override;
 
@@ -163,10 +168,10 @@ namespace minko
 
 			void
 			step() override;
-			
+
 			float
 			priority() override;
-			
+
 			void
 			afterLastStep() override;
 

@@ -48,22 +48,54 @@ StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr         
 {
 }
 
+StreamedAssetParserScheduler::~StreamedAssetParserScheduler()
+{
+    clear();
+}
+
+void
+StreamedAssetParserScheduler::clear()
+{
+    auto toRemove = std::list<ParserEntryPtr>();
+
+    for (auto entry : _activeEntries)
+        toRemove.push_back(entry);
+
+    for (auto entry : _entries)
+        toRemove.push_back(entry);
+
+    while (!toRemove.empty())
+    {
+        removeEntry(toRemove.front());
+        toRemove.pop_front();
+    }
+
+    _entries.clear();
+    _activeEntries.clear();
+    _pendingDataEntries.clear();
+
+    _active = nullptr;
+    _inactive = nullptr;
+
+    _options = nullptr;
+}
+
 void
 StreamedAssetParserScheduler::addParser(AbstractStreamedAssetParser::Ptr parser)
 {
-    auto entryIt = _entries.insert(ParserEntryPtr(new ParserEntry(parser)));
+    auto entryIt = _entries.insert(new ParserEntry(parser));
     auto entry = *entryIt.first;
 
     entry->parserErrorSlot = parser->error()->connect(
-        [=](AbstractParser::Ptr parser,
-            const Error&        error)
+        [this, entry](AbstractParser::Ptr parser,
+                      const Error&        error)
         {
             removeEntry(entry);
         }
     );
 
     entry->parserCompleteSlot = parser->AbstractParser::complete()->connect(
-        [=](AbstractParser::Ptr parser)
+        [this, entry](AbstractParser::Ptr parser)
         {
             removeEntry(entry);
         }
@@ -78,7 +110,7 @@ StreamedAssetParserScheduler::removeParser(AbstractStreamedAssetParser::Ptr pars
     auto entryIt = std::find_if(
         _entries.begin(),
         _entries.end(),
-        [&](ParserEntryPtr entry) -> bool { return entry->parser == parser; }
+        [&parser](ParserEntryPtr entry) -> bool { return entry->parser == parser; }
     );
 
     if (entryIt != _entries.end())
@@ -190,13 +222,14 @@ StreamedAssetParserScheduler::removeEntry(ParserEntryPtr entry)
     entry->parserCompleteSlot = nullptr;
 
     auto entryIt = std::find_if(_entries.begin(), _entries.end(),
-        [&entry](ParserEntryPtr localEntry)
+        [&entry](const ParserEntryPtr localEntry)
         {
             return localEntry == entry;
         }
     );
 
-    _entries.erase(entryIt);
+    if (entryIt != _entries.end())
+        _entries.erase(entryIt);
 
     const int previousNumActiveEntries = _activeEntries.size();
 
@@ -210,6 +243,8 @@ StreamedAssetParserScheduler::removeEntry(ParserEntryPtr entry)
     {
         _complete = true;
     }
+
+    delete entry;
 }
 
 void
@@ -265,14 +300,14 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
                     if (priorityRank >= _parameters.maxNumActiveParsers)
                         return Options::FileStatus::Aborted;
                 }
-            
+
                 return Options::FileStatus::Pending;
             });
     }
 
     entry->loaderErrorSlot = linkedAsset->error()->connect(
-        [=](LinkedAsset::Ptr    loaderThis,
-            const Error&        error) -> void
+        [this, entry, parser, filename](LinkedAsset::Ptr    loaderThis,
+                                        const Error&        error) -> void
     {
         parser->lodRequestFetchingError(Error("StreamedAssetLoadingError", std::string("Failed to load streamed asset ") + filename));
 
@@ -280,8 +315,8 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
     });
 
     entry->loaderCompleteSlot = linkedAsset->complete()->connect(
-        [=](LinkedAsset::Ptr                    loaderThis,
-            const std::vector<unsigned char>&   data) -> void
+        [this, entry](LinkedAsset::Ptr                    loaderThis,
+                      const std::vector<unsigned char>&   data) -> void
     {
         requestComplete(entry, data);
     });
@@ -361,14 +396,14 @@ StreamedAssetParserScheduler::stopListeningToEntry(ParserEntryPtr entry)
 }
 
 void
-StreamedAssetParserScheduler::entryActivated(ParserEntryPtr entry, int numActiveEntries, int previousNumActiveEntries)
+StreamedAssetParserScheduler::entryActivated(const ParserEntryPtr entry, int numActiveEntries, int previousNumActiveEntries)
 {
     if (previousNumActiveEntries == 0 && numActiveEntries > 0)
         active()->execute(shared_from_this());
 }
 
 void
-StreamedAssetParserScheduler::entryDeactivated(ParserEntryPtr entry, int numActiveEntries, int previousNumActiveEntries)
+StreamedAssetParserScheduler::entryDeactivated(const ParserEntryPtr entry, int numActiveEntries, int previousNumActiveEntries)
 {
     if (previousNumActiveEntries > 0 && numActiveEntries == 0)
         inactive()->execute(shared_from_this());
