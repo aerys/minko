@@ -55,7 +55,6 @@ end
 -- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)
 local NDK_HOME = ANDROID_HOME .. "/toolchains/" .. _OPTIONS["toolchain"]
 
-
 if not os.isdir(NDK_HOME) then
 	print(color.fg.yellow .. 'NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
 	do return end
