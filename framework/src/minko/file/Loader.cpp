@@ -178,13 +178,27 @@ Loader::load()
 void
 Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
+    const auto& filename = protocol->file()->filename();
+    auto optionsIt = _filenameToOptions.find(filename);
+    auto options = optionsIt->second;
+
+    _loading.remove(filename);
+
+    _filenameToOptions.erase(optionsIt);
+
+    _protocolErrorSlots.erase(protocol);
+    _protocolCompleteSlots.erase(protocol);
+    _protocolProgressSlots.erase(protocol);
+
     auto error = Error(
         "ProtocolError",
-        std::string("Protocol error: ") + protocol->file()->filename() +
-        std::string(", include paths: ") + std::to_string(_options->includePaths(), ",")
+        std::string("Protocol error: ") + filename +
+        std::string(", include paths: ") + std::to_string(options->includePaths(), ",")
     );
 
     errorThrown(error);
+
+    finalize();
 }
 
 void
@@ -213,7 +227,7 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
 
     auto filename = protocol->file()->filename();
 
-    _loading.erase(std::find(_loading.begin(), _loading.end(), filename));
+    _loading.remove(filename);
 
     _filenameToOptions.erase(filename);
 
@@ -306,7 +320,7 @@ Loader::parserProgressHandler(AbstractParser::Ptr parser, float progress)
         newTotalProgress = 1.0f;
 
     _parsingProgress->execute(
-        std::dynamic_pointer_cast<Loader>(shared_from_this()), 
+        std::dynamic_pointer_cast<Loader>(shared_from_this()),
         newTotalProgress
     );
 }
