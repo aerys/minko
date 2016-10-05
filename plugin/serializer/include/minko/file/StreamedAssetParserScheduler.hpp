@@ -113,6 +113,9 @@ namespace minko
             std::unordered_set<
                 ParserEntryPtr
             >                           _pendingDataEntries;
+            std::unordered_set<
+                ParserEntryPtr
+            >                           _entriesToRemove;
 
             Parameters                  _parameters;
 

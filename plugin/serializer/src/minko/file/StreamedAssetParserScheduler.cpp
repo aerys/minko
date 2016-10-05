@@ -41,6 +41,7 @@ StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr         
     _options(options),
     _entries(),
     _activeEntries(),
+    _entriesToRemove(),
     _parameters(parameters),
     _complete(false),
     _active(Signal<Ptr>::create()),
@@ -58,6 +59,9 @@ StreamedAssetParserScheduler::clear()
 {
     auto toRemove = std::list<ParserEntryPtr>();
 
+    for (auto entry : _entriesToRemove)
+        toRemove.push_back(entry);
+
     for (auto entry : _activeEntries)
         toRemove.push_back(entry);
 
@@ -73,6 +77,7 @@ StreamedAssetParserScheduler::clear()
     _entries.clear();
     _activeEntries.clear();
     _pendingDataEntries.clear();
+    _entriesToRemove.clear();
 
     _active = nullptr;
     _inactive = nullptr;
@@ -90,14 +95,14 @@ StreamedAssetParserScheduler::addParser(AbstractStreamedAssetParser::Ptr parser)
         [this, entry](AbstractParser::Ptr parser,
                       const Error&        error)
         {
-            removeEntry(entry);
+            _entriesToRemove.insert(entry);
         }
     );
 
     entry->parserCompleteSlot = parser->AbstractParser::complete()->connect(
         [this, entry](AbstractParser::Ptr parser)
         {
-            removeEntry(entry);
+            _entriesToRemove.insert(entry);
         }
     );
 
@@ -114,7 +119,7 @@ StreamedAssetParserScheduler::removeParser(AbstractStreamedAssetParser::Ptr pars
     );
 
     if (entryIt != _entries.end())
-        removeEntry(*entryIt);
+        _entriesToRemove.insert(*entryIt);
 }
 
 void
@@ -151,6 +156,11 @@ StreamedAssetParserScheduler::priority()
 void
 StreamedAssetParserScheduler::step()
 {
+    for (auto entry : _entriesToRemove)
+        removeEntry(entry);
+
+    _entriesToRemove.clear();
+
     while (hasPendingRequest() && _activeEntries.size() < _parameters.maxNumActiveParsers)
     {
         auto entry = headingParser();
@@ -221,19 +231,11 @@ StreamedAssetParserScheduler::removeEntry(ParserEntryPtr entry)
     entry->parserErrorSlot = nullptr;
     entry->parserCompleteSlot = nullptr;
 
-    auto entryIt = std::find_if(_entries.begin(), _entries.end(),
-        [&entry](const ParserEntryPtr localEntry)
-        {
-            return localEntry == entry;
-        }
-    );
-
-    if (entryIt != _entries.end())
-        _entries.erase(entryIt);
+    auto numErasedEntries = _entries.erase(entry);
 
     const int previousNumActiveEntries = _activeEntries.size();
 
-    _activeEntries.erase(entry);
+    numErasedEntries += _activeEntries.erase(entry);
 
     const int numActiveEntries = _activeEntries.size();
 
@@ -244,7 +246,8 @@ StreamedAssetParserScheduler::removeEntry(ParserEntryPtr entry)
         _complete = true;
     }
 
-    delete entry;
+    if (numErasedEntries > 0)
+        delete entry;
 }
 
 void
