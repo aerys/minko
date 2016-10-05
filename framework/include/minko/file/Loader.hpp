@@ -50,7 +50,7 @@ namespace minko
             typedef std::unordered_map<std::shared_ptr<AbstractParser>, float>              ParserToProgress;
             typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr, float>::Slot>     ParserProgressSlots;
             typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>            ParserCompleteSlots;
-            
+
             typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr, const Error&>::Slot>            ParserErrorSlots;
 
         protected:
@@ -60,6 +60,7 @@ namespace minko
             std::list<std::string>                              _loading;
             FilenameToOptions                                   _filenameToOptions;
             FilenameToFile                                      _files;
+            std::unordered_map<std::string, int>                _filenameToNumAttempts;
 
             std::shared_ptr<Signal<Ptr, float>>                 _progress;
             std::shared_ptr<Signal<Ptr, float>>                 _parsingProgress;
@@ -77,7 +78,7 @@ namespace minko
             ParserToProgress                                    _parserToProgress;
 
             int                                                 _numFiles;
-        
+
         private:
             int                                                 _numFilesToParse;
 
@@ -193,7 +194,7 @@ namespace minko
 
             void
             protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol);
-            
+
             void
             protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float);
 
@@ -211,7 +212,7 @@ namespace minko
 
             void
             parserCompleteHandler(std::shared_ptr<AbstractParser> parser);
-            
+
             void
             parserErrorHandler(std::shared_ptr<AbstractParser> parser, const Error& error);
 
