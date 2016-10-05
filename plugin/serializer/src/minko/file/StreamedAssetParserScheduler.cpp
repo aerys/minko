@@ -228,7 +228,7 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
 
     const auto& filename = linkedAsset->filename();
 
-    auto options = _options
+    auto options = _options->clone()
         ->parserFunction([](const std::string& extension) -> AbstractParser::Ptr
         {
             return nullptr;
@@ -265,7 +265,7 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
                     if (priorityRank >= _parameters.maxNumActiveParsers)
                         return Options::FileStatus::Aborted;
                 }
-            
+
                 return Options::FileStatus::Pending;
             });
     }
