@@ -57,9 +57,12 @@ namespace minko
 
             void
             initializeVRDevice(
-                std::shared_ptr<component::Renderer> leftRenderer, 
-                std::shared_ptr<component::Renderer> rightRenderer, 
+                std::shared_ptr<component::Renderer> leftRenderer,
+                std::shared_ptr<component::Renderer> rightRenderer,
                 void* window = nullptr);
+
+            void
+            enable(bool value) override;
 
             void
             targetAdded();
@@ -69,8 +72,8 @@ namespace minko
 
             void
             updateCameraOrientation(
-                std::shared_ptr<scene::Node> target, 
-                std::shared_ptr<scene::Node> leftCamera, 
+                std::shared_ptr<scene::Node> target,
+                std::shared_ptr<scene::Node> leftCamera,
                 std::shared_ptr<scene::Node> rightCamera);
 
             void

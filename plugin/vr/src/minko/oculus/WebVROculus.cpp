@@ -43,50 +43,111 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
     _zFar(zFar),
     _initialized(false)
 {
+    std::string eval = "";
+
+    // Retrieve VRDisplay device and store it into window.vrDisplay
+    eval += "function vrDeviceCallback(vrDisplays) {                                                    \n";
+    eval += "    for (var i = 0; i < vrDisplays.length; ++i) {                                          \n";
+    eval += "        var vrDisplay = vrDisplays[i];                                                     \n";
+    eval += "        vrDisplay.depthNear = " + std::to_string(_zNear) + "                               \n";
+    eval += "        vrDisplay.depthFar = " + std::to_string(_zFar) +  "                                \n";
+    eval += "        window.vrDisplay = vrDisplay;                                                      \n";
+    eval += "        break;                                                                             \n";
+    eval += "    }                                                                                      \n";
+    eval += "}                                                                                          \n";
+    eval += "                                                                                           \n";
+    eval += "                                                                                           \n";
+    eval += "if (navigator.getVRDisplays !== undefined) {                                               \n";
+    eval += "    navigator.getVRDisplays().then(vrDeviceCallback);                                      \n";
+    eval += "}                                                                                          \n";
+
+    // VRDisplay callbacks
+    eval += "function onVRRequestPresent() {                                                            \n";
+    eval += "   console.log('onVRRequestPresent');                                                      \n";
+    eval += "   var renderCanvas = document.getElementById('canvas');                                   \n";
+    eval += "   window.vrDisplay.requestPresent([{ source: renderCanvas }]).then(                       \n";
+    eval += "        function () {                                                                      \n";
+    eval += "           console.log('Success: requestPresent succeed.')                                 \n";
+    eval += "        },                                                                                 \n";
+    eval += "        function () {                                                                      \n";
+    eval += "           console.log('Error: requestPresent failed.');                                   \n";
+    eval += "        }                                                                                  \n";
+    eval += "   );                                                                                      \n";
+    eval += " };                                                                                        \n";
+    eval += "                                                                                           \n";
+
+    eval += "function onVRExitPresent () {                                                              \n";
+    eval += "   console.log('onVRExitPresent');                                                         \n";
+    eval += "    if (!window.vrDisplay || !window.vrDisplay.isPresenting)                               \n";
+    eval += "        return;                                                                            \n";
+    eval += "                                                                                           \n";
+    eval += "    window.vrDisplay.exitPresent().then(                                                   \n";
+    eval += "        function () {                                                                      \n";
+    eval += "            console.log('Success: exitPresent succeed.')                                   \n";
+    eval += "        },                                                                                 \n";
+    eval += "        function () {                                                                      \n";
+    eval += "            console.log('Error: exitPresent failed.');                                     \n";
+    eval += "        }                                                                                  \n";
+    eval += "    );                                                                                     \n";
+    eval += "}                                                                                          \n";
+
+    eval += "function onVRPresentChange () {                                                            \n";
+    eval += "    onResize();                                                                            \n";
+    eval += "}                                                                                          \n";
+
+    eval += "function onResize () {                                                                     \n";
+    eval += "   console.log('onResize');                                                                \n";
+    eval += "   var renderCanvas = document.getElementById('canvas');                                   \n";
+    eval += "   if (window.vrDisplay && window.vrDisplay.isPresenting) {                                \n";
+    eval += "       var leftEye = window.vrDisplay.getEyeParameters('left');                            \n";
+    eval += "       var rightEye = window.vrDisplay.getEyeParameters('right');                          \n";
+    eval += "       console.log('Left eye', leftEye);                                                   \n";
+    eval += "       console.log('Right eye', rightEye);                                                 \n";
+    eval += "       renderCanvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;       \n";
+    eval += "       renderCanvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight);        \n";
+    eval += "   } else {                                                                                \n";
+    eval += "       renderCanvas.width = renderCanvas.offsetWidth * window.devicePixelRatio;            \n";
+    eval += "       renderCanvas.height = renderCanvas.offsetHeight * window.devicePixelRatio;          \n";
+    eval += "   }                                                                                       \n";
+    eval += "}                                                                                          \n";
+
+    eval += "window.addEventListener('vrdisplayactivate', onVRRequestPresent, false);                   \n";
+    eval += "window.addEventListener('vrdisplaydeactivate', onVRExitPresent, false);                    \n";
+    eval += "window.addEventListener('vrdisplaypresentchange', onVRPresentChange, false);               \n";
+    eval += "window.addEventListener('resize', onResize, false);                                        \n";
+
+    // Put the rendering into the VRDisplay pressing a keyboard key (keycode 70 = "F")
+    eval += "window.addEventListener('keydown', function(e) {                                           \n";
+    eval += "   if (e.keyCode == 70) {                                                                  \n";
+    eval += "       if (!window.vrDisplay)                                                              \n";
+    eval += "           return;                                                                         \n";
+    eval += "                                                                                           \n";
+    eval += "       if (!window.vrDisplay.isPresenting)                                                 \n";
+    eval += "           onVRRequestPresent();                                                           \n";
+    eval += "       else                                                                                \n";
+    eval += "           onVRExitPresent();                                                              \n";
+    eval += "   }                                                                                       \n";
+    eval += "}, false);                                                                                 \n";
+
+    emscripten_run_script(eval.c_str());
 }
 
 void
 WebVROculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window)
 {
-    std::string eval = "";
+    _leftRenderer = leftRenderer;
+    _rightRenderer = rightRenderer;
 
-    eval += "function vrDeviceCallback(vrdevs) {                             \n";
-    eval += "    for (var i = 0; i < vrdevs.length; ++i) {                   \n";
-    eval += "        if (vrdevs[i] instanceof HMDVRDevice) {                 \n";
-    eval += "            vrHMD = vrdevs[i];                                  \n";
-    eval += "            break;                                              \n";
-    eval += "        }                                                       \n";
-    eval += "    }                                                           \n";
-    eval += "    for (var i = 0; i < vrdevs.length; ++i) {                   \n";
-    eval += "        if (vrdevs[i] instanceof PositionSensorVRDevice &&      \n";
-    eval += "            vrdevs[i].hardwareUnitId == vrHMD.hardwareUnitId) { \n";
-    eval += "            window.vrHMDSensor = vrdevs[i];                     \n";
-    eval += "            break;                                              \n";
-    eval += "        }                                                       \n";
-    eval += "    }                                                           \n";
-    eval += "}                                                               \n";
-    eval += "                                                                \n";
-    eval += "window.addEventListener(\"keydown\", function(e) {              \n";
-    eval += "    if (e.keyCode == 70) {                                      \n";
-    eval += "        var renderCanvas = document.getElementById('canvas');   \n";
-    eval += "        if (renderCanvas.mozRequestFullScreen) {                \n";
-    eval += "            renderCanvas.mozRequestFullScreen({                 \n";
-    eval += "                vrDisplay: vrHMD                                \n";
-    eval += "            });                                                 \n";
-    eval += "        } else if (renderCanvas.webkitRequestFullscreen) {      \n";
-    eval += "            renderCanvas.webkitRequestFullscreen({              \n";
-    eval += "                vrDisplay: vrHMD,                               \n";
-    eval += "            });                                                 \n";
-    eval += "        }                                                       \n";
-    eval += "    }                                                           \n";
-    eval += "}, false);                                                      \n";
-    eval += "                                                                \n";
-    eval += "if (navigator.getVRDevices !== undefined) {                     \n";
-    eval += "    navigator.getVRDevices().then(vrDeviceCallback);            \n";
-    eval += "}                                                               \n";
+    _renderingEndSlot = rightRenderer->renderingEnd()->connect([&](std::shared_ptr<minko::component::Renderer> rightRenderer)
+    {
+        std::string eval = "";
+        eval += "if (!!window.vrDisplay && window.vrDisplay.isPresenting) {                 \n";
+        eval += "   console.log('submitFrame');                                             \n";
+        eval += "   window.vrDisplay.submitFrame();                                         \n";
+        eval += "}                                                                          \n";
 
-
-    emscripten_run_script(eval.c_str());
+        emscripten_run_script_int(eval.c_str());
+    });
 }
 
 void
@@ -103,20 +164,11 @@ WebVROculus::targetRemoved()
 void
 WebVROculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
 {
-    std::string eval = "";
+}
 
-    eval += "var renderCanvas = document.getElementById('canvas');   \n";
-    eval += "if (renderCanvas.mozRequestFullScreen) {                \n";
-    eval += "    renderCanvas.mozRequestFullScreen({                 \n";
-    eval += "        vrDisplay: vrHMD                                \n";
-    eval += "    });                                                 \n";
-    eval += "} else if (renderCanvas.webkitRequestFullscreen) {      \n";
-    eval += "    renderCanvas.webkitRequestFullscreen({              \n";
-    eval += "        vrDisplay: vrHMD,                               \n";
-    eval += "    });                                                 \n";
-    eval += "}                                                       \n";
-
-    //emscripten_run_script(eval.c_str());
+void
+WebVROculus::enable(bool value)
+{
 }
 
 void
@@ -127,7 +179,7 @@ WebVROculus::updateViewport(int viewportWidth, int viewportHeight)
 bool
 WebVROculus::detected()
 {
-    auto eval = std::string("if (navigator.getVRDevices != undefined || navigator.mozGetVRDevices != undefined) (1); else (0);");
+    auto eval = std::string("if (navigator.getVRDisplays != undefined) (1); else (0);");
     bool result = emscripten_run_script_int(eval.c_str()) != 0;
 
     return result;
@@ -136,51 +188,58 @@ WebVROculus::detected()
 float
 WebVROculus::getLeftEyeFov()
 {
-    return 1.91f;
+    // FIXME: Should depend on the VRDisplay
+    // Oculus Rift CV1
+    // leftDegrees:43.97737166932644 (0.76754993200111731877)
+    // rightDegrees:35.5747704995392 (0.6208968758567666724)
+    // fov = atan(leftDegrees + rightDegrees) = 0.94
+    return 0.94f;
 }
 
 float
 WebVROculus::getRightEyeFov()
 {
-    return 1.91f;
+    // FIXME: Should depend on the VRDisplay
+    // Oculus Rift CV1
+    // leftDegrees:35.5747704995392 (0.6208968758567666724)
+    // rightDegrees:43.97737166932644 (0.76754993200111731877)
+    // fov = atan(leftDegrees + rightDegrees) = 0.94
+    return 0.94f;
 }
 
 void
 WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
-    if (!_initialized)
-    {
-        auto checkVrHDM = std::string("window.vrHMDSensor != null ? 1 : 0;");
-        auto result = emscripten_run_script_int(checkVrHDM.c_str());
+    std::string eval = "";
 
-        if (result == 0)
-            return;
-        else
-            _initialized = true;
-    }
+    // Get VRDisplay orientation
+    eval += "var hasVRDisplay = !!window.vrDisplay;                             \n";
+    eval += "if (hasVRDisplay) {                \n";
+    eval += "   var pose = hasVRDisplay ? window.vrDisplay.getPose() : null;       \n";
+    eval += "   if (!!pose && !!pose.orientation) {                                \n";
+    eval += "       pose.orientation.join(' ');                                    \n";
+    eval += "   }                                                                  \n";
+    eval += "}                                                                  \n";
 
-    std::string eval = "if (window.vrHMDSensor.getState().orientation != null) { window.vrHMDSensor.getState().orientation.x + ' ' + window.vrHMDSensor.getState().orientation.y + ' ' + window.vrHMDSensor.getState().orientation.z + ' ' + window.vrHMDSensor.getState().orientation.w; }\n";
-    auto s = std::string(emscripten_run_script_string(eval.c_str()));
+    auto orientationString = std::string(emscripten_run_script_string(eval.c_str()));
 
-    if (s != "undefined")
+    if (orientationString != "undefined")
     {
         std::array<float, 4> orientation;
-        std::stringstream ssOrientation(s);
+        std::stringstream ssOrientation(orientationString);
 
-        ssOrientation >> orientation[0];
-        ssOrientation >> orientation[1];
-        ssOrientation >> orientation[2];
-        ssOrientation >> orientation[3];
+        for (auto i = 0; i < 4; i++)
+            ssOrientation >> orientation[i];
 
-    	auto quaternion = math::quat(orientation[3], orientation[0], orientation[1], orientation[2]);
+        auto quaternion = math::quat(orientation[3], orientation[0], orientation[1], orientation[2]);
 
-    	auto matrix = glm::mat4_cast(quaternion);
-    	target->component<Transform>()->matrix(matrix);
+        auto matrix = glm::mat4_cast(quaternion);
+        target->component<Transform>()->matrix(matrix);
     }
 
     // Get position tracking
-	/*
-    eval = "if (window.vrHMDSensor.getState().position != null) { window.vrHMDSensor.getState().position.x + ' ' + window.vrHMDSensor.getState().position.y + ' ' + window.vrHMDSensor.getState().position.z; }\n";
+    /*
+    eval = "if (window.vrDisplaySensor.getState().position != null) { window.vrDisplaySensor.getState().position.x + ' ' + window.vrDisplaySensor.getState().position.y + ' ' + window.vrDisplaySensor.getState().position.z; }\n";
     s = std::string(emscripten_run_script_string(eval.c_str()));
 
     if (s != "undefined")
@@ -192,7 +251,7 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<sc
         ssPosition >> position[1];
         ssPosition >> position[2];
 
-    	target->component<Transform>()->matrix(math::translate(math::vec3(position[0], position[1], position[2])) * target->component<Transform>()->matrix());
-	}
-	*/
+        target->component<Transform>()->matrix(math::translate(math::vec3(position[0], position[1], position[2])) * target->component<Transform>()->matrix());
+    }
+    */
 }

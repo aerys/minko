@@ -75,6 +75,11 @@ NativeOculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
     initializePostProcessingRenderer(sceneManager);
 }
 
+void
+NativeOculus::enable(bool value)
+{
+}
+
 bool
 NativeOculus::detected()
 {
@@ -243,7 +248,7 @@ NativeOculus::targetRemoved()
 void
 NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
 {
-    // Renderer viewports and aspect ratio are updated into VRCamera, 
+    // Renderer viewports and aspect ratio are updated into VRCamera,
     // for Oculus we need a specific viewport given by SDK
     auto aspectRatio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
 
@@ -270,7 +275,7 @@ NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
     {
         if (_rightRendererViewport.z > 0 && _rightRendererViewport.w > 0)
             _rightRenderer->viewport(_rightRendererViewport);
-     
+
         auto rightCamera = _rightRenderer->target()->component<PerspectiveCamera>();
         rightCamera->aspectRatio(aspectRatio);
         rightCamera->fieldOfView(getRightEyeFov() * M_PI_2);

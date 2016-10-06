@@ -72,6 +72,11 @@ Cardboard::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer,
 }
 
 void
+Cardboard::enable(bool value)
+{
+}
+
+void
 Cardboard::updateViewport(int viewportWidth, int viewportHeight)
 {
 }

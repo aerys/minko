@@ -41,6 +41,10 @@ namespace minko
 
             virtual
             void
+            enable(bool value) = 0;
+
+            virtual
+            void
             targetRemoved() = 0;
 
             virtual

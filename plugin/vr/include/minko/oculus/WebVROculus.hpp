@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 #include "minko/log/Logger.hpp"
 
 #include "VRImpl.hpp"
@@ -42,6 +43,11 @@ namespace minko
             float                                   _zNear;
             float                                   _zFar;
             bool                                    _initialized;
+
+            Signal<std::shared_ptr<minko::component::Renderer>>::Slot   _renderingEndSlot;
+
+            std::shared_ptr<minko::component::Renderer> _leftRenderer;
+            std::shared_ptr<minko::component::Renderer> _rightRenderer;
         public:
 
             void
@@ -49,6 +55,9 @@ namespace minko
 
             void
             initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr);
+
+            void
+            enable(bool value) override;
 
             void
             targetAdded();
