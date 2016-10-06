@@ -83,13 +83,13 @@ namespace minko
 
                     _complete = true;
                 }
-			
+
 			    float
 			    priority() override
                 {
                     return _priority;
                 }
-			
+
 			    void
 			    afterLastStep() override
                 {
@@ -118,7 +118,7 @@ namespace minko
 
             std::shared_ptr<LinkedAsset>														_linkedAsset;
 
-            std::shared_ptr<component::JobManager>                                              _jobManager;
+            std::weak_ptr<component::JobManager>                                                _jobManager;
 
             std::string																			_filename;
             std::string																			_resolvedFilename;

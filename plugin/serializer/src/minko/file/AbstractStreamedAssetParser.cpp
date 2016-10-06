@@ -172,7 +172,7 @@ AbstractStreamedAssetParser::lodRequestFetchingError(const Error& error)
 void
 AbstractStreamedAssetParser::lodRequestFetchingComplete(const std::vector<unsigned char>& data)
 {
-    if (_jobManager)
+    if (!_jobManager.expired())
     {
         auto parsingJob = ParsingJob::create(
             [this, data]() -> void
@@ -189,7 +189,7 @@ AbstractStreamedAssetParser::lodRequestFetchingComplete(const std::vector<unsign
             }
         );
 
-        _jobManager->pushJob(parsingJob);
+        _jobManager.lock()->pushJob(parsingJob);
     }
     else
     {

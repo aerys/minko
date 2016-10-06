@@ -358,6 +358,10 @@ namespace minko
             virtual
             void
             setVertexAttributeArray(const uint vertexArray) = 0;
+
+            virtual
+            void
+            deleteVertexAttributeArray(const uint vertexArray) = 0;
         };
     }
 }
