@@ -60,6 +60,11 @@ NativeWebSocketImpl::tlsConnect(const std::string &uri)
         pushCallback([=](std::weak_ptr<WebSocket> s) { this->connected()->execute(s); });
     });
 
+    _tlsClient.set_close_handler([this](websocketpp::connection_hdl hdl)
+    {
+        pushCallback([this](std::weak_ptr<WebSocket> s) { this->disconnected()->execute(s); });
+    });
+
     websocketpp::lib::error_code ec;
     _tlsConnection = _tlsClient.get_connection(uri, ec);
     if (ec)
@@ -96,6 +101,11 @@ NativeWebSocketImpl::connect(const std::string &uri)
     _client.set_open_handler([&](websocketpp::connection_hdl hdl)
     {
         pushCallback([=](std::weak_ptr<WebSocket> s) { this->connected()->execute(s); });
+    });
+
+    _client.set_close_handler([this](websocketpp::connection_hdl hdl)
+    {
+        pushCallback([this](std::weak_ptr<WebSocket> s) { this->disconnected()->execute(s); });
     });
 
     websocketpp::lib::error_code ec;

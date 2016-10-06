@@ -62,6 +62,7 @@ namespace minko
             typedef std::function<render::TextureFormat(const TextureFormatSet&)>				TextureFormatFunction;
             typedef std::function<void(NodePtr, const std::string&, const std::string&)> 		AttributeFunction;
             typedef std::function<bool(const std::string&)> 		                            PreventLoadingFunction;
+            typedef std::function<bool(const std::string&, const Error&, int)>                  RetryOnErrorFunction;
 
             enum class FileStatus
             {
@@ -114,7 +115,8 @@ namespace minko
             TextureFormatFunction                                       _textureFormatFunction;
             AttributeFunction                                           _attributeFunction;
             FileStatusFunction                                          _fileStatusFunction;
-            PreventLoadingFunction                                        _preventLoadingFunction;
+            PreventLoadingFunction                                      _preventLoadingFunction;
+            RetryOnErrorFunction                                        _retryOnErrorFunction;
             int                                                         _seekingOffset;
             int                                                         _seekedLength;
 
@@ -738,6 +740,22 @@ namespace minko
             preventLoadingFunction(const PreventLoadingFunction& func)
             {
                 _preventLoadingFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const RetryOnErrorFunction&
+            retryOnErrorFunction() const
+            {
+                return _retryOnErrorFunction;
+            }
+
+            inline
+            Ptr
+            retryOnErrorFunction(const RetryOnErrorFunction& func)
+            {
+                _retryOnErrorFunction = func;
 
                 return shared_from_this();
             }
