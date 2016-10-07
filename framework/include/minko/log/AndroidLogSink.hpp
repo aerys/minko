@@ -54,7 +54,7 @@ namespace minko
                 else if (level == Logger::Level::Error)
                     logLevel = ANDROID_LOG_ERROR;
 
-                __android_log_print(logLevel, "minko-cpp", log.c_str());
+                __android_log_print(logLevel, "Minko/Native", log.c_str());
             }
 
         private:
