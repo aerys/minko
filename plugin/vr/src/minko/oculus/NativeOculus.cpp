@@ -261,8 +261,8 @@ NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
             _leftRenderer->viewport(_leftRendererViewport);
 
         auto leftCamera = _leftRenderer->target()->component<PerspectiveCamera>();
-        leftCamera->aspectRatio(aspectRatio);
-        leftCamera->fieldOfView(getLeftEyeFov() * M_PI_2);
+        //leftCamera->aspectRatio(aspectRatio);
+        //leftCamera->fieldOfView(getLeftEyeFov() * M_PI_2);
 
         auto root = _leftRenderer->target()->root();
         if (root->data().hasProperty("viewport"))
@@ -277,8 +277,8 @@ NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
             _rightRenderer->viewport(_rightRendererViewport);
 
         auto rightCamera = _rightRenderer->target()->component<PerspectiveCamera>();
-        rightCamera->aspectRatio(aspectRatio);
-        rightCamera->fieldOfView(getRightEyeFov() * M_PI_2);
+        //rightCamera->aspectRatio(aspectRatio);
+        //rightCamera->fieldOfView(getRightEyeFov() * M_PI_2);
     }
 
     _ppRenderer->viewport(math::ivec4(0, 0, viewportWidth, viewportHeight));

@@ -779,10 +779,12 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 
             cameraNode
 			    ->addComponent(PerspectiveCamera::create(
-				    aiCamera->mAspect,
-				    half_fovy,
-				    aiCamera->mClipPlaneNear,
-				    aiCamera->mClipPlaneFar
+                    math::perspective(
+                        half_fovy,
+    				    aiCamera->mAspect,
+    				    aiCamera->mClipPlaneNear,
+    				    aiCamera->mClipPlaneFar
+                    )
 			    ));
 			if (!cameraNode->hasComponent<Transform>())
 				cameraNode->addComponent(Transform::create());

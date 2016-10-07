@@ -75,9 +75,9 @@ Picking::Picking() :
 
 void
 Picking::initialize(NodePtr             camera,
-                    bool                addPickingLayout, 
+                    bool                addPickingLayout,
                     bool                emulateMouseWithTouch,
-                    EffectPtr           pickingEffect, 
+                    EffectPtr           pickingEffect,
                     EffectPtr           pickingDepthEffect)
 {
     _camera = camera;
@@ -85,7 +85,7 @@ Picking::initialize(NodePtr             camera,
     _emulateMouseWithTouch = emulateMouseWithTouch;
     _pickingEffect = pickingEffect;
     _pickingDepthEffect = pickingDepthEffect;
-    
+
 	_pickingProvider->set("pickingProjection", _pickingProjection);
 	_pickingProvider->set("pickingOrigin", math::vec3());
 }
@@ -140,7 +140,7 @@ Picking::bindSignals()
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3));
-    
+
     _touchDownSlot = _touch->touchDown()->connect(std::bind(
         &Picking::touchDownHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
@@ -148,7 +148,7 @@ Picking::bindSignals()
         std::placeholders::_2,
         std::placeholders::_3,
         std::placeholders::_4));
-    
+
     _touchUpSlot = _touch->touchUp()->connect(std::bind(
         &Picking::touchUpHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
@@ -156,7 +156,7 @@ Picking::bindSignals()
         std::placeholders::_2,
         std::placeholders::_3,
         std::placeholders::_4));
-    
+
     _touchMoveSlot = _touch->touchMove()->connect(std::bind(
         &Picking::touchMoveHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
@@ -164,14 +164,14 @@ Picking::bindSignals()
         std::placeholders::_2,
         std::placeholders::_3,
         std::placeholders::_4));
-    
+
     _touchTapSlot = _touch->tap()->connect(std::bind(
         &Picking::touchTapHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3));
-    
+
     _touchDoubleTapSlot = _touch->doubleTap()->connect(std::bind(
         &Picking::touchDoubleTapHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
@@ -225,7 +225,7 @@ Picking::unbindSignals()
     _depthRenderingEndSlot = nullptr;
     _componentAddedSlot = nullptr;
     _componentRemovedSlot = nullptr;
-    
+
     _addedSlot = nullptr;
     _removedSlot = nullptr;
 }
@@ -235,16 +235,16 @@ Picking::targetAdded(NodePtr target)
 {
     _sceneManager = target->root()->component<SceneManager>();
     auto canvas = _sceneManager->canvas();
-    
+
     _mouse = canvas->mouse();
     _touch = canvas->touch();
     _context = canvas->context();
 
     bindSignals();
-    
+
     if (_pickingEffect == nullptr)
         _pickingEffect = _sceneManager->assets()->effect("effect/Picking.effect");
-        
+
     auto priority = _debug ? -1000.0f : 1000.0f;
 
     _renderer = Renderer::create(
@@ -612,7 +612,7 @@ Picking::depthRenderingBegin(RendererPtr renderer)
 {
     if (!_enabled)
         return;
-    
+
     updatePickingOrigin();
 }
 
@@ -621,7 +621,7 @@ Picking::depthRenderingEnd(RendererPtr renderer)
 {
     if (!_enabled)
         return;
-    
+
     uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
 
     auto surfaceIt = _pickingIdToSurface.find(pickedSurfaceId);
@@ -651,12 +651,7 @@ Picking::updatePickingProjection()
 	const auto mouseY = static_cast<float>(_mouse->y());
 
 	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
-	auto projection	= math::perspective(
-		perspectiveCamera->fieldOfView(),
-		perspectiveCamera->aspectRatio(),
-		perspectiveCamera->zNear(),
-		perspectiveCamera->zFar()
-	);
+	auto projection	= perspectiveCamera->projectionMatrix();
 
 	projection[2][0] = mouseX / _context->viewportWidth() * 2.f;
 	projection[2][1] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
@@ -686,7 +681,7 @@ Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
             _mouseOut->execute(_lastPickedSurface->target());
 
         _lastPickedSurface = pickedSurface;
-        
+
         if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
             _mouseOver->execute(_lastPickedSurface->target());
     }

@@ -296,13 +296,13 @@ Canvas::createScene()
 		->addComponent(Transform::create(
 			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0.f, 1.f, 0.f)))
 		))
-		->addComponent(PerspectiveCamera::create(shared_from_this()->aspectRatio()));
+		->addComponent(PerspectiveCamera::create(math::perspective(.785f, shared_from_this()->aspectRatio(), 0.1f, 1000.f)));
 
     root->addChild(_camera);
 
     _resizedSlot = _resized->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		_camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        _camera->component<PerspectiveCamera>()->projectionMatrix(math::perspective(.785f, float(w) / float(h), 0.1f, 1000.f));
 	});
 
     return root;

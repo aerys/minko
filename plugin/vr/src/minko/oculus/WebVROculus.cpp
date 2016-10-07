@@ -105,6 +105,8 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
     eval += "       console.log('Right eye', rightEye);                                                 \n";
     eval += "       renderCanvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;       \n";
     eval += "       renderCanvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight);        \n";
+    // eval += "       renderCanvas.width = " + std::to_string(viewportWidth) + ";                         \n";
+    // eval += "       renderCanvas.height = " + std::to_string(viewportHeight) + ";                       \n";
     eval += "   } else {                                                                                \n";
     eval += "       renderCanvas.width = renderCanvas.offsetWidth * window.devicePixelRatio;            \n";
     eval += "       renderCanvas.height = renderCanvas.offsetHeight * window.devicePixelRatio;          \n";
@@ -174,6 +176,75 @@ WebVROculus::enable(bool value)
 void
 WebVROculus::updateViewport(int viewportWidth, int viewportHeight)
 {
+    std::cout << "Viewport width: " << viewportWidth << std::endl;
+    std::cout << "Viewport height: " << viewportHeight << std::endl;
+
+    if (!_leftRenderer || !_rightRenderer)
+    {
+        std::cout << "Left or right renderer is null." << std::endl;
+        return;
+    }
+
+    // TODO: Get the viewport values from the VRDisplay
+    // viewportWidth = 2664;
+    // viewportHeight = 1586;
+    std::string eval = "";
+    eval += "var hasVRDisplay = !!window.vrDisplay;                                 \n";
+    eval += "if (hasVRDisplay) {                                                    \n";
+    eval += "   var pose = hasVRDisplay ? window.vrDisplay.getPose() : null;        \n";
+    eval += "   var leftEye = window.vrDisplay.getEyeParameters('left');            \n";
+    eval += "   var rightEye = window.vrDisplay.getEyeParameters('right');          \n";
+    eval += "   if (hasVRDisplay && !!leftEye && !!rightEye) {                      \n";
+    eval += "       leftEye.renderWidth + ' ' + leftEye.renderHeight + ' ' +        \n";
+    eval += "       rightEye.renderWidth + ' ' + rightEye.renderHeight              \n";
+    eval += "   }                                                                   \n";
+    eval += "}                                                                      \n";
+
+    auto viewportString = std::string(emscripten_run_script_string(eval.c_str()));
+
+    if (viewportString != "undefined")
+    {
+        std::array<uint, 4> viewport;
+        std::stringstream ssViewport(viewportString);
+
+        for (auto i = 0; i < 4; i++)
+            ssViewport >> viewport[i];
+
+        viewportWidth = std::max(viewport[0], viewport[2]) * 2.f;
+        viewportHeight = std::max(viewport[1], viewport[3]);
+
+        std::cout << "New viewport value (from VRDisplay): " << viewportWidth << "x" << viewportHeight << std::endl;
+    }
+    else
+    {
+        std::cout << "VRDisplay is not ready yet!" << std::endl;
+    }
+
+    // Update left and right eyes renderer
+    _leftRenderer->viewport(math::vec4(0, 0, viewportWidth / 2.f, viewportHeight));
+    _rightRenderer->viewport(math::vec4(viewportWidth / 2.f, 0, viewportWidth / 2.f, viewportHeight));
+
+    std::cout << "Left renderer viewport: " << std::to_string(math::vec4(0, 0, viewportWidth / 2.f, viewportHeight)) << std::endl;
+    std::cout << "Right renderer viewport: " << std::to_string(math::vec4(viewportWidth / 2.f, 0, viewportWidth / 2.f, viewportHeight)) << std::endl;
+
+    // // Don't forget to update the aspect ratio too
+    // auto aspectRatio = (viewportWidth / 2.f) / viewportHeight;
+
+    // std::cout << "Aspect ratio: " << aspectRatio << std::endl;
+
+    // std::cout << "Left renderer: " << _leftRenderer << std::endl;
+    // std::cout << "Left renderer target: " << _leftRenderer->target() << std::endl;
+
+    // if (_leftRenderer->target() != nullptr)
+    // {
+    //     std::cout << "Update aspect ratio of the left renderer target" << std::endl;
+    //     _leftRenderer->target()->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
+    // }
+    // if (_rightRenderer->target() != nullptr)
+    // {
+    //     std::cout << "Update aspect ratio of the right renderer target" << std::endl;
+    //     _rightRenderer->target()->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
+    // }
 }
 
 bool
@@ -213,28 +284,128 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<sc
     std::string eval = "";
 
     // Get VRDisplay orientation
+    // eval += "var hasVRDisplay = !!window.vrDisplay;                                 \n";
+    // eval += "if (hasVRDisplay) {                                                    \n";
+    // eval += "   var pose = hasVRDisplay ? window.vrDisplay.getPose() : null;        \n";
+    // eval += "   if (!!pose && !!pose.orientation) {                                 \n";
+    // eval += "       pose.orientation.join(' ');                                     \n";
+    // eval += "   }                                                                   \n";
+    // eval += "}                                                                      \n";
+
+    // auto orientationString = std::string(emscripten_run_script_string(eval.c_str()));
+
+    // if (orientationString != "undefined")
+    // {
+    //     std::array<float, 4> orientation;
+    //     std::stringstream ssOrientation(orientationString);
+
+    //     for (auto i = 0; i < 4; i++)
+    //         ssOrientation >> orientation[i];
+
+    //     auto quaternion = math::quat(orientation[3], orientation[0], orientation[1], orientation[2]);
+
+    //     auto matrix = glm::mat4_cast(quaternion);
+    //     target->component<Transform>()->matrix(matrix);
+    // }
+
+    // Get view matrixes
+    eval = "";
     eval += "var hasVRDisplay = !!window.vrDisplay;                             \n";
-    eval += "if (hasVRDisplay) {                \n";
-    eval += "   var pose = hasVRDisplay ? window.vrDisplay.getPose() : null;       \n";
-    eval += "   if (!!pose && !!pose.orientation) {                                \n";
-    eval += "       pose.orientation.join(' ');                                    \n";
-    eval += "   }                                                                  \n";
+    eval += "if (hasVRDisplay) {                                                \n";
+    eval += "   var frameData = new VRFrameData();                              \n";
+    eval += "   window.vrDisplay.getFrameData(frameData);                       \n";
+    eval += "   if (!!frameData && !!frameData.leftViewMatrix)                  \n";
+    eval += "       frameData.leftViewMatrix.join(' ');                         \n";
     eval += "}                                                                  \n";
 
-    auto orientationString = std::string(emscripten_run_script_string(eval.c_str()));
+    auto leftViewMatrixString = std::string(emscripten_run_script_string(eval.c_str()));
 
-    if (orientationString != "undefined")
+    if (leftViewMatrixString != "undefined")
     {
-        std::array<float, 4> orientation;
-        std::stringstream ssOrientation(orientationString);
+        std::array<float, 16> leftViewMatrix;
+        std::stringstream ssLeftViewMatrix(leftViewMatrixString);
 
-        for (auto i = 0; i < 4; i++)
-            ssOrientation >> orientation[i];
+        for (auto i = 0; i < 16; i++)
+            ssLeftViewMatrix >> leftViewMatrix[i];
 
-        auto quaternion = math::quat(orientation[3], orientation[0], orientation[1], orientation[2]);
+        auto matrix = math::inverse(glm::make_mat4(leftViewMatrix.data()));
 
-        auto matrix = glm::mat4_cast(quaternion);
-        target->component<Transform>()->matrix(matrix);
+        _leftRenderer->target()->component<Transform>()->matrix(matrix);
+    }
+
+    eval = "";
+    eval += "var hasVRDisplay = !!window.vrDisplay;                             \n";
+    eval += "if (hasVRDisplay) {                                                \n";
+    eval += "   var frameData = new VRFrameData();                              \n";
+    eval += "   window.vrDisplay.getFrameData(frameData);                       \n";
+    eval += "   if (!!frameData && !!frameData.rightViewMatrix)                 \n";
+    eval += "       frameData.rightViewMatrix.join(' ');                        \n";
+    eval += "}                                                                  \n";
+
+    auto rightViewMatrixString = std::string(emscripten_run_script_string(eval.c_str()));
+
+    if (rightViewMatrixString != "undefined")
+    {
+        std::array<float, 16> rightViewMatrix;
+        std::stringstream ssRightViewMatrix(rightViewMatrixString);
+
+        for (auto i = 0; i < 16; i++)
+            ssRightViewMatrix >> rightViewMatrix[i];
+
+        auto matrix = math::inverse(glm::make_mat4(rightViewMatrix.data()));
+
+        _rightRenderer->target()->component<Transform>()->matrix(matrix);
+    }
+
+    // Get projection matrixes
+    eval = "";
+    eval += "var hasVRDisplay = !!window.vrDisplay;                             \n";
+    eval += "if (hasVRDisplay) {                                                \n";
+    eval += "   var frameData = new VRFrameData();                              \n";
+    eval += "   window.vrDisplay.getFrameData(frameData);                       \n";
+    eval += "   if (!!frameData && !!frameData.leftProjectionMatrix)            \n";
+    eval += "       frameData.leftProjectionMatrix.join(' ');                         \n";
+    eval += "}                                                                  \n";
+
+    auto leftProjectionMatrixString = std::string(emscripten_run_script_string(eval.c_str()));
+
+    if (leftProjectionMatrixString != "undefined")
+    {
+        std::array<float, 16> leftProjectionMatrix;
+        std::stringstream ssLeftProjectionMatrix(leftProjectionMatrixString);
+
+        for (auto i = 0; i < 16; i++)
+            ssLeftProjectionMatrix >> leftProjectionMatrix[i];
+
+        auto matrix = glm::make_mat4(leftProjectionMatrix.data());
+
+        std::cout << "Update left camera projection matrix" << std::endl;
+        _leftRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(matrix);
+    }
+
+    eval = "";
+    eval += "var hasVRDisplay = !!window.vrDisplay;                             \n";
+    eval += "if (hasVRDisplay) {                                                \n";
+    eval += "   var frameData = new VRFrameData();                              \n";
+    eval += "   window.vrDisplay.getFrameData(frameData);                       \n";
+    eval += "   if (!!frameData && !!frameData.rightProjectionMatrix)            \n";
+    eval += "       frameData.rightProjectionMatrix.join(' ');                         \n";
+    eval += "}                                                                  \n";
+
+    auto rightProjectionMatrixString = std::string(emscripten_run_script_string(eval.c_str()));
+
+    if (rightProjectionMatrixString != "undefined")
+    {
+        std::array<float, 16> rightProjectionMatrix;
+        std::stringstream ssrightProjectionMatrix(rightProjectionMatrixString);
+
+        for (auto i = 0; i < 16; i++)
+            ssrightProjectionMatrix >> rightProjectionMatrix[i];
+
+        auto matrix = glm::make_mat4(rightProjectionMatrix.data());
+
+        std::cout << "Update right camera projection matrix" << std::endl;
+        _rightRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(matrix);
     }
 
     // Get position tracking

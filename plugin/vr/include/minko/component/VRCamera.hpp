@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Minko.hpp"
+#include "minko/Common.hpp"
 #include "minko/OculusCommon.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
@@ -91,6 +92,9 @@ namespace minko
             detected();
 
             void
+            enable(bool value);
+
+            void
             enableLeftRenderer(bool value)
             {
                 _leftRenderer->enabled(value);
@@ -121,12 +125,12 @@ namespace minko
             VRCamera();
 
             void
-            initialize(int viewportWidth, 
-                       int viewportHeight, 
-                       float zNear, 
-                       float zFar, 
+            initialize(int viewportWidth,
+                       int viewportHeight,
+                       float zNear,
+                       float zFar,
                        uint rendererClearColor,
-                       void* window, 
+                       void* window,
                        Renderer::Ptr leftRenderer = nullptr,
                        Renderer::Ptr rightRenderer = nullptr);
 

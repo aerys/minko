@@ -80,10 +80,10 @@ ComponentSerializer::serializePerspectiveCamera(NodePtr			        node,
 	std::stringstream   buffer;
 	std::vector<float>  data;
 
-	data.push_back(perspectiveCamera->aspectRatio());
-	data.push_back(perspectiveCamera->fieldOfView());
-	data.push_back(perspectiveCamera->zNear());
-	data.push_back(perspectiveCamera->zFar());
+	data.push_back(1.f);
+	data.push_back(0.785);
+	data.push_back(0.1f);
+	data.push_back(1000.f);
 
 	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
 

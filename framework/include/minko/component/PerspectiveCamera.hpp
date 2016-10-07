@@ -29,169 +29,95 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class PerspectiveCamera :
+    namespace component
+    {
+        class PerspectiveCamera :
             public AbstractComponent
-		{
-		public:
-			typedef std::shared_ptr<PerspectiveCamera> Ptr;
+        {
+        public:
+            typedef std::shared_ptr<PerspectiveCamera> Ptr;
 
-		private:
-			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
-			typedef std::shared_ptr<scene::Node>		NodePtr;
+        private:
+            typedef std::shared_ptr<AbstractComponent>  AbsCtrlPtr;
+            typedef std::shared_ptr<scene::Node>        NodePtr;
             typedef std::shared_ptr<scene::NodeSet>     NodeSetPtr;
 
-		private:
-			std::shared_ptr<data::Provider>		            _data;
-			float											_fov;
-			float											_aspectRatio;
-			float											_zNear;
-			float											_zFar;
+        private:
+            std::shared_ptr<data::Provider>                 _data;
 
-			math::mat4										_view;
-			math::mat4										_projection;
-			math::mat4										_viewProjection;
-            math::vec3	                 					_position;
-            math::vec3	                 					_direction;
-			math::mat4										_postProjection;
+            math::mat4                                      _view;
+            math::mat4                                      _projection;
+            math::mat4                                      _viewProjection;
+            math::vec3                                      _position;
+            math::vec3                                      _direction;
+            math::mat4                                      _postProjection;
 
-			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
-			data::Store::PropertyChangedSignal::Slot	    _modelToWorldChangedSlot;
+            Signal<AbsCtrlPtr, NodePtr>::Slot               _targetAddedSlot;
+            Signal<AbsCtrlPtr, NodePtr>::Slot               _targetRemovedSlot;
+            data::Store::PropertyChangedSignal::Slot        _modelToWorldChangedSlot;
 
-		public:
-			inline static
-			Ptr
-			create(float 				aspectRatio,
-				   float 				fov				= .785f,
-				   float 				zNear			= 0.1f,
-				   float 				zFar			= 1000.f,
-				   const math::mat4& 	postProjection 	= math::mat4(1.f))
-			{
+        public:
+            inline static
+            Ptr
+            create(const math::mat4&    projection,
+                   const math::mat4&    postProjection  = math::mat4(1.f))
+            {
                 return std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(
-                    fov, aspectRatio, zNear, zFar, postProjection
+                    projection, postProjection
                 ));
-			}
+            }
 
             // TODO #Clone
             /*
             AbstractComponent::Ptr
             clone(const CloneOption& option);
-			*/
+            */
 
-			inline
-			float
-			fieldOfView()
-			{
-				return _fov;
-			}
+            inline
+            std::shared_ptr<data::Provider>
+            data()
+            {
+                return _data;
+            }
 
-			inline
-			void
-			fieldOfView(float fov)
-			{
-				if (fov != _fov)
-				{
-					_fov = fov;
-					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
-				}
-			}
+            inline
+            const math::mat4&
+            viewMatrix()
+            {
+                return _view;
+            }
 
-			inline
-			float
-			aspectRatio()
-			{
-				return _aspectRatio;
-			}
+            inline
+            const math::mat4&
+            projectionMatrix()
+            {
+                return _projection;
+            }
 
-			inline
-			void
-			aspectRatio(float aspectRatio)
-			{
-				if (aspectRatio != _aspectRatio)
-				{
-					_aspectRatio = aspectRatio;
-					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
-				}
-			}
+            inline
+            const math::mat4&
+            viewProjectionMatrix()
+            {
+                return _viewProjection;
+            }
 
-			inline
-			float
-			zNear()
-			{
-				return _zNear;
-			}
+            inline
+            void
+            projectionMatrix(const math::mat4& projection)
+            {
+                _projection = projection;
+                updateWorldToScreenMatrix();
+            }
 
-			inline
-			void
-			zNear(float zNear)
-			{
-				if (zNear != _zNear)
-				{
-					_zNear = zNear;
-					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
-				}
-			}
+            ~PerspectiveCamera()
+            {
+            }
 
-			inline
-			float
-			zFar()
-			{
-				return _zFar;
-			}
+            std::shared_ptr<math::Ray>
+            unproject(float x, float y);
 
-			inline
-			void
-			zFar(float zFar)
-			{
-				if (zFar != _zFar)
-				{
-					_zFar = zFar;
-					updateProjection(_fov, _aspectRatio, _zNear, _zFar);
-				}
-			}
-
-			inline
-			std::shared_ptr<data::Provider>
-			data()
-			{
-				return _data;
-			}
-
-			inline
-			const math::mat4&
-			viewMatrix()
-			{
-				return _view;
-			}
-
-			inline
-			const math::mat4&
-			projectionMatrix()
-			{
-				return _projection;
-			}
-
-			inline
-			const math::mat4&
-			viewProjectionMatrix()
-			{
-				return _viewProjection;
-			}
-
-			~PerspectiveCamera()
-			{
-			}
-
-			void
-			updateProjection(float fov, float aspectRatio, float zNear, float zFar);
-
-			std::shared_ptr<math::Ray>
-			unproject(float x, float y);
-
-			math::vec3
-			project(const math::vec3& worldPosition) const;
+            math::vec3
+            project(const math::vec3& worldPosition) const;
 
             static
             math::vec3
@@ -205,24 +131,23 @@ namespace minko
             void
             targetAdded(NodePtr target);
 
-			void
-			targetRemoved(NodePtr target);
+            void
+            targetRemoved(NodePtr target);
 
-		private:
-			PerspectiveCamera(float				fov,
-							  float				aspectRatio,
-							  float				zNear,
-							  float				zFar,
-							  const math::mat4&	postPerspective);
+        private:
+            PerspectiveCamera(const math::mat4& projection,
+                              const math::mat4& postProjection);
 
             PerspectiveCamera(const PerspectiveCamera& camera, const CloneOption& option);
 
-			void
-			localToWorldChangedHandler(data::Store& data);
+            void
+            localToWorldChangedHandler(data::Store& data);
 
             void
             updateMatrices(const math::mat4& modelToWorldMatrix);
 
-		};
-	}
+            void
+            updateWorldToScreenMatrix();
+        };
+    }
 }

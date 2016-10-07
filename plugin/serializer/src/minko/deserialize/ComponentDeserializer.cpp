@@ -86,7 +86,7 @@ ComponentDeserializer::deserializeProjectionCamera(file::SceneVersion sceneVersi
 
 	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-	return component::PerspectiveCamera::create(dstContent[0], dstContent[1], dstContent[2], dstContent[3]);
+	return component::PerspectiveCamera::create(math::perspective(dstContent[1], dstContent[0], dstContent[2], dstContent[3]));
 }
 
 component::AbstractComponent::Ptr

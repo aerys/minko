@@ -105,7 +105,7 @@ main(int argc, char** argv)
 		else
 		{
 			camera
-				->addComponent(PerspectiveCamera::create(canvas->aspectRatio(), 1.0f))
+				->addComponent(PerspectiveCamera::create(math::perspective(1.0f, canvas->aspectRatio(), 0.1f, 1000.f)))
 				->addComponent(Renderer::create(0x050514ff));
 		}
 
@@ -167,7 +167,9 @@ main(int argc, char** argv)
 		if (camera->hasComponent<VRCamera>())
 			camera->component<VRCamera>()->updateViewport(width, height);
 		else if (camera->hasComponent<PerspectiveCamera>())
-			camera->component<PerspectiveCamera>()->aspectRatio(float(width) / float(height));
+        {
+            camera->component<PerspectiveCamera>()->projectionMatrix(math::perspective(1.0f, float(width) / float(height), 0.1f, 1000.f));
+        }
     });
 
     auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr c, float time, float deltaTime)
@@ -235,14 +237,14 @@ createObjectGroup(unsigned int              numObjects,
         }
 
         auto transform = Transform::create(matrix);
-        
+
         auto objectMaterial = material::BasicMaterial::create();
         objectMaterial->data()
             ->set("diffuseColor", color)
             ->set("triangleCulling", doQuads ? render::TriangleCulling::FRONT : render::TriangleCulling::BACK)
             ->set("priority", priority)
             ->set("zsorted", false);
-        
+
         objectMaterial->blendingMode(render::Blending::Mode::ALPHA);
 
         auto objectNode = scene::Node::create((doQuads ? "quad_" : "sphere_") + std::to_string(i))
