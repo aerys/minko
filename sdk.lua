@@ -92,7 +92,7 @@ local plugins = {
 	['http-worker'] = true,
 	['jpeg'] = true,
 	['leap'] = false,
-	['vr'] = true,
+	['nodejs-worker'] = false,
 	['offscreen'] = false,
 	['particles'] = false,
 	['png'] = true,
@@ -100,6 +100,7 @@ local plugins = {
 	['sensors'] = true,
 	['serializer'] = true,
 	['video-camera'] = true,
+	['vr'] = true,
 	['websocket'] = true
 }
 
