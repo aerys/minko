@@ -189,7 +189,14 @@ StreamingExtension::initialize(StreamingOptions::Ptr streamingOptions)
 void
 StreamingExtension::loadingContextDisposed()
 {
-    _parserScheduler = nullptr;
+    if (_parserScheduler)
+    {
+        _parserScheduler->clear();
+
+        _parserSchedulerActiveSlot = nullptr;
+        _parserSchedulerInactiveSlot = nullptr;
+        _parserScheduler = nullptr;
+    }
 }
 
 void
@@ -545,7 +552,7 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
     }
 
     auto filename = std::string();
-    
+
     if (linkedAsset != nullptr)
     {
         filename = File::removePrefixPathFromFilename(linkedAsset->filename());
@@ -615,7 +622,7 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
 
         _streamingOptions->masterLodScheduler()->registerDeferredTexture(textureData);
     }
-    
+
     registerStreamedTextureParser(parser, texture);
 
     auto parserScheduler = this->parserScheduler(options, jobList);

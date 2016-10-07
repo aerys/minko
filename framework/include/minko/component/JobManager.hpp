@@ -53,7 +53,7 @@ namespace minko
             protected:
 				std::weak_ptr<JobManager>		_jobManager;
 				bool							_running;
-				
+
                 Signal<float>::Ptr              _priorityChanged;
 
             public:
@@ -68,11 +68,11 @@ namespace minko
 				virtual
 				void
 				step() = 0;
-				
+
 				virtual
 				float
 				priority() = 0;
-				
+
 				virtual
 				void
 				afterLastStep() = 0;
@@ -114,7 +114,7 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<scene::Node> NodePtr;
-		
+
 		private:
             static const unsigned int                           _defaultMinimumNumStepsPerFrame;
 
@@ -126,6 +126,8 @@ namespace minko
 			clock_t					                            _frameStartTime;
 
 		public:
+			~JobManager();
+
 			static
 			Ptr
 			create(unsigned int loadingFramerate)

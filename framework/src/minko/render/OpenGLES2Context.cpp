@@ -514,6 +514,9 @@ OpenGLES2Context::deleteVertexBuffer(const uint vertexBuffer)
 
 	_vertexBuffers.erase(std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer));
 
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, 0, 0, GL_STATIC_DRAW);
+
 	// http://www.opengl.org/sdk/docs/man/xhtml/glDeleteBuffers.xml
 	//
 	// void glDeleteBuffers(GLsizei n, const GLuint* buffers)
@@ -660,6 +663,9 @@ OpenGLES2Context::deleteIndexBuffer(const uint indexBuffer)
 		_currentIndexBuffer = 0;
 
 	_indexBuffers.erase(std::find(_indexBuffers.begin(), _indexBuffers.end(), indexBuffer));
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 0, 0, GL_STATIC_DRAW);
 
 	glDeleteBuffers(1, &indexBuffer);
 

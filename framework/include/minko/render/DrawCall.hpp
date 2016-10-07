@@ -130,7 +130,7 @@ namespace minko
             ChangedSlot                         _modelToWorldMatrixPropertyRemovedSlot;
             ChangedSlot                         _worldToScreenMatrixPropertyRemovedSlot;
 
-            uint                                _vertexAttribArray;
+            int                                 _vertexAttribArray;
 
 		public:
             DrawCall(uint					batchId,
@@ -139,6 +139,8 @@ namespace minko
                      data::Store&           rootData,
                      data::Store&           rendererData,
                      data::Store&           targetData);
+
+            ~DrawCall();
 
             inline
             bool

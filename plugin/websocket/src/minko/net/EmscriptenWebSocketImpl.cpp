@@ -152,6 +152,9 @@ EmscriptenWebSocketImpl::connect(const std::string& uri)
 void
 EmscriptenWebSocketImpl::disconnect()
 {
+    if (!_connected)
+        return;
+
     close(_fd);
     SocketCallbackBroker::unregisterSocket(_fd, this);
 
@@ -251,7 +254,17 @@ EmscriptenWebSocketImpl::SocketCallbackBroker::registerSocket(int fd, Emscripten
 void
 EmscriptenWebSocketImpl::SocketCallbackBroker::unregisterSocket(int fd, EmscriptenWebSocketImpl* socket)
 {
+    auto it = std::find_if(
+        _sockets.begin(),
+        _sockets.end(),
+        [=](std::pair<int, EmscriptenWebSocketImpl*> p)
+        {
+            return p.first == fd && p.second == socket;
+        }
+    );
 
+    if (it != _sockets.end())
+        _sockets.erase(it);
 }
 
 EmscriptenWebSocketImpl*
@@ -267,31 +280,46 @@ EmscriptenWebSocketImpl::SocketCallbackBroker::getSocketByFd(int fd)
 void
 EmscriptenWebSocketImpl::SocketCallbackBroker::openCallback(int fd, void* userData)
 {
-    getSocketByFd(fd)->openCallback(fd);
+    auto socket = getSocketByFd(fd);
+
+    if (socket)
+        socket->openCallback(fd);
 }
 
 void
 EmscriptenWebSocketImpl::SocketCallbackBroker::listenCallback(int fd, void* userData)
 {
-    getSocketByFd(fd)->listenCallback(fd);
+    auto socket = getSocketByFd(fd);
+
+    if (socket)
+        socket->listenCallback(fd);
 }
 
 void
 EmscriptenWebSocketImpl::SocketCallbackBroker::connectionCallback(int fd, void* userData)
 {
-    getSocketByFd(fd)->connectionCallback(fd);
+    auto socket = getSocketByFd(fd);
+
+    if (socket)
+        socket->connectionCallback(fd);
 }
 
 void
 EmscriptenWebSocketImpl::SocketCallbackBroker::messageCallback(int fd, void* userData)
 {
-    getSocketByFd(fd)->messageCallback(fd);
+    auto socket = getSocketByFd(fd);
+
+    if (socket)
+        socket->messageCallback(fd);
 }
 
 void
 EmscriptenWebSocketImpl::SocketCallbackBroker::closeCallback(int fd, void* userData)
 {
-    getSocketByFd(fd)->closeCallback(fd);
+    auto socket = getSocketByFd(fd);
+
+    if (socket)
+        socket->closeCallback(fd);
 }
 
 #endif // defined(EMSCRIPTEN)
