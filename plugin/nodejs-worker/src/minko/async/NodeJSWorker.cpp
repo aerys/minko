@@ -131,6 +131,10 @@ namespace minko
             std::string path(input.begin(), input.end());
 
             startNode(path);
+
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+
+            post({ "ready" });
         });
     }
 }

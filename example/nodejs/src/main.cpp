@@ -18,81 +18,86 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
+#include "minko/MinkoHTTP.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoNodeJSWorker.hpp"
 
+#include "json/json.h"
+
 using namespace minko;
+using namespace minko::async;
 using namespace minko::component;
+using namespace minko::file;
+using namespace minko::net;
 
-minko::async::Worker::Ptr worker;
+using namespace std;
 
-int main(int argc, char** argv)
+async::Worker::Ptr worker;
+Signal<Loader::Ptr>::Slot requestCompleteSlot;
+Signal<Loader::Ptr, const Error&>::Slot requestErrorSlot;
+
+void
+callEndpoint(const string& url)
+{
+    auto loader = Loader::create();
+    auto options = HTTPOptions::create();
+
+    options
+        ->verifyPeer(false)
+        ->loadAsynchronously(true)
+        ->parserFunction([](const string& extension){ return nullptr; })
+        ->storeDataIfNotParsed(false);
+
+    loader->options(options);
+
+    requestErrorSlot = loader->error()->connect(
+        [](Loader::Ptr loaderThis, const Error& error) -> void
+    {
+        LOG_WARNING(error.type() << ": " << error.what());
+    });
+
+    requestCompleteSlot = loader->complete()->connect(
+        [](Loader::Ptr loaderThis) -> void
+    {
+        auto& files = loaderThis->files();
+
+        for (auto& p : files)
+        {
+            auto endpoint = p.first;
+            auto result = p.second;
+            auto& data = result->data();
+
+            auto reader = Json::Reader();
+            auto root = Json::Value();
+
+            auto parsingError = false;
+
+            if (reader.parse(reinterpret_cast<const char*>(data.data()),
+                              reinterpret_cast<const char*>(data.data()) + data.size(),
+                              root))
+            {
+                cout << "success: " << root["success"].asBool() << endl;
+            }
+        }
+    });
+
+    loader->queue(url)->load();
+}
+
+int
+main(int argc, char** argv)
 {
     auto canvas = Canvas::create("My Minko App", 960, 540);
-    canvas->registerWorker<minko::async::NodeJSWorker>("node");
+    canvas->registerWorker<NodeJSWorker>("node");
 
-    std::string path = "index.js";
+    string path = "index.js";
     worker = AbstractCanvas::defaultCanvas()->getWorker("node");
-    worker->start(std::vector<char>(path.begin(), path.end()));
+    worker->start(vector<char>(path.begin(), path.end()));
 
-
-    // auto sceneManager = SceneManager::create(canvas);
-    // auto assets = sceneManager->assets();
-    // auto defaultLoader = sceneManager->assets()->loader();
-    // auto root = scene::Node::create("root")
-    //     ->addComponent(sceneManager);
-    // 
-    // scene::Node::Ptr cube = nullptr;
-    // 
-    // auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
-    // {
-    //     defaultLoader->options()
-    //         ->effect(assets->effect("effect/Phong.effect"));
-    // 
-    //     cube = scene::Node::create("cube")
-    //         ->addComponent(Transform::create())
-    //         ->addComponent(Surface::create(
-    //             geometry::CubeGeometry::create(assets->context()),
-    //             material::Material::create()->set({
-    //                 { "diffuseColor", math::vec4(.5f, .5f, .5f, 1.f) }
-    //             }),
-    //             assets->effect("effect/Phong.effect")
-    //         ));
-    //     root->addChild(cube);
-    // 
-    //     auto camera = scene::Node::create("camera")
-    //         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
-    //         ->addComponent(Renderer::create(0x7f7f7fff))
-    //         ->addComponent(Transform::create(math::inverse(math::lookAt(
-    //             math::vec3(2.f, 1.f, 2.f),
-    //             math::vec3(0.f, 0.f, 0.f),
-    //             math::vec3(0.f, 1.f, 0.f)
-    //         ))));
-    //     root->addChild(camera);
-    // 
-    //     auto lights = scene::Node::create("lights")
-    //         ->addComponent(DirectionalLight::create())
-    //         ->addComponent(AmbientLight::create())
-    //         ->addComponent(Transform::create(math::inverse(math::lookAt(
-    //             math::vec3(0.f, 2.f, 5.f),
-    //             math::vec3(0.f, 0.f, 0.f),
-    //             math::vec3(0.f, 1.f, 0.f)
-    //         ))));
-    //     root->addChild(lights);
-    // });
-    // 
-    // auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
-    // {
-    //     if (cube)
-    //         cube->component<Transform>()->matrix(
-    //             cube->component<Transform>()->matrix()
-    //             * math::rotate(.01f, math::vec3(0.f, 1.f, 0.f))
-    //         );
-    // 
-    //     sceneManager->nextFrame(time, deltaTime);
-    // });
-    // 
-    // fxLoader->load();
+    auto workerMessageSlot = worker->message()->connect([](Worker::Ptr, Worker::Message m) {
+        if (m.type == "ready")
+            callEndpoint("http://localhost:3000/hello");
+    });
 
     canvas->run();
 

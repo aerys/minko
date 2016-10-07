@@ -15,11 +15,13 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	-- plugin
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("nodejs-worker")
+	minko.plugin.enable("http-loader")
 
 	minko.package.assets {
 		['**'] = { 'copy', 'embed' }
 	}
 
-	prelinkcommands {
-		"cd server && npm install && npm run build"
+	removelinks {
+		"minko-plugin-zlib",
+		"curl"
 	}

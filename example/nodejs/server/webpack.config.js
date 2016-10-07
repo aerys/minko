@@ -1,19 +1,23 @@
 const webpack = require('webpack');
+const externals = require('webpack-node-externals');
 
 module.exports = {
     entry: './src/index.js',
     output: {
-        path: '../asset',
+        path: 'bin',
         filename: 'index.js',
     },
     target: 'node',
+    externals: [externals()],
     module: {
         loaders: [{
             test: /\.js$/,
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            exclude: /node_modules/
         }, {
             test: /\.json$/,
-            loader: 'raw-loader'
+            loader: 'raw-loader',
+            exclude: /node_modules/
         }]
     },
     plugins: [

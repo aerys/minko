@@ -1,3 +1,6 @@
+require("source-map-support").install();
+
+const express = require('express');
 const superagent = require('superagent');
 const echo = require('./echo');
 
@@ -11,3 +14,9 @@ superagent
     });
 
 echo.echo("hello world");
+
+let app = express();
+
+app.get('/hello', (req, res) => res.json({ 'success': true }));
+
+app.listen(3000, () => console.log('Example app listening on port 3000!'));
