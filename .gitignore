@@ -37,3 +37,4 @@ plugin/*/bin
 example/*/bin
 test/*/bin
 doc/ref/html
+node_modules
