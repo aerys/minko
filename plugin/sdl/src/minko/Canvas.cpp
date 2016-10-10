@@ -391,6 +391,7 @@ Canvas::step()
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     // Detect new joystick
+    auto invalidJoysticks = 0;
     for (int i = 0; i < SDL_NumJoysticks(); i++)
     {
         if (!SDL_JoystickOpened(i))
@@ -415,11 +416,15 @@ Canvas::step()
                 printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joystick));
 # endif // DEBUG
             }
+            else
+            {
+                invalidJoysticks++;
+            }
         }
     }
 
     // A gamepad has been removed ?
-    if (_joysticks.size() != SDL_NumJoysticks())
+    if (_joysticks.size() != (SDL_NumJoysticks() - invalidJoysticks))
     {
         // We looking for the missing gamepad
         int joystickId = 0;
