@@ -213,8 +213,6 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
     _filenameToNumAttempts.erase(filename);
 
     errorThrown(error);
-
-    finalize();
 }
 
 void
