@@ -49,9 +49,11 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
     eval += "function vrDeviceCallback(vrDisplays) {                                                    \n";
     eval += "    for (var i = 0; i < vrDisplays.length; ++i) {                                          \n";
     eval += "        var vrDisplay = vrDisplays[i];                                                     \n";
-    eval += "        vrDisplay.depthNear = " + std::to_string(_zNear) + "                               \n";
-    eval += "        vrDisplay.depthFar = " + std::to_string(_zFar) +  "                                \n";
+    // eval += "        vrDisplay.depthNear = " + std::to_string(_zNear) + "                               \n";
+    // eval += "        vrDisplay.depthFar = " + std::to_string(_zFar) +  "                                \n";
     eval += "        window.vrDisplay = vrDisplay;                                                      \n";
+    eval += "        if (typeof(VRFrameData) != 'undefined')                                            \n";
+    eval += "            window.vrFrameData = new VRFrameData();                                        \n";
     eval += "        break;                                                                             \n";
     eval += "    }                                                                                      \n";
     eval += "}                                                                                          \n";
@@ -284,145 +286,73 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<sc
     std::string eval = "";
 
     // Get VRDisplay orientation
-    // eval += "var hasVRDisplay = !!window.vrDisplay;                                 \n";
-    // eval += "if (hasVRDisplay) {                                                    \n";
-    // eval += "   var pose = hasVRDisplay ? window.vrDisplay.getPose() : null;        \n";
-    // eval += "   if (!!pose && !!pose.orientation) {                                 \n";
-    // eval += "       pose.orientation.join(' ');                                     \n";
-    // eval += "   }                                                                   \n";
-    // eval += "}                                                                      \n";
+    eval += "var hasVRDisplay = !!window.vrDisplay;                                 \n";
+    eval += "if (hasVRDisplay) {                                                    \n";
+    eval += "   var pose = hasVRDisplay ? window.vrDisplay.getPose() : null;        \n";
+    eval += "   if (!!pose && !!pose.orientation) {                                 \n";
+    eval += "       pose.orientation.join(' ');                                     \n";
+    eval += "   }                                                                   \n";
+    eval += "}                                                                      \n";
 
-    // auto orientationString = std::string(emscripten_run_script_string(eval.c_str()));
+    auto orientationString = std::string(emscripten_run_script_string(eval.c_str()));
 
-    // if (orientationString != "undefined")
-    // {
-    //     std::array<float, 4> orientation;
-    //     std::stringstream ssOrientation(orientationString);
-
-    //     for (auto i = 0; i < 4; i++)
-    //         ssOrientation >> orientation[i];
-
-    //     auto quaternion = math::quat(orientation[3], orientation[0], orientation[1], orientation[2]);
-
-    //     auto matrix = glm::mat4_cast(quaternion);
-    //     target->component<Transform>()->matrix(matrix);
-    // }
-
-    // Get view matrixes
-    eval = "";
-    eval += "var hasVRDisplay = !!window.vrDisplay;                             \n";
-    eval += "if (hasVRDisplay) {                                                \n";
-    eval += "   var frameData = new VRFrameData();                              \n";
-    eval += "   window.vrDisplay.getFrameData(frameData);                       \n";
-    eval += "   if (!!frameData && !!frameData.leftViewMatrix)                  \n";
-    eval += "       frameData.leftViewMatrix.join(' ');                         \n";
-    eval += "}                                                                  \n";
-
-    auto leftViewMatrixString = std::string(emscripten_run_script_string(eval.c_str()));
-
-    if (leftViewMatrixString != "undefined")
+    if (orientationString != "undefined")
     {
-        std::array<float, 16> leftViewMatrix;
-        std::stringstream ssLeftViewMatrix(leftViewMatrixString);
+        std::array<float, 4> orientation;
+        std::stringstream ssOrientation(orientationString);
 
-        for (auto i = 0; i < 16; i++)
-            ssLeftViewMatrix >> leftViewMatrix[i];
+        for (auto i = 0; i < 4; i++)
+            ssOrientation >> orientation[i];
 
-        auto matrix = math::inverse(glm::make_mat4(leftViewMatrix.data()));
+        auto quaternion = math::quat(orientation[3], orientation[0], orientation[1], orientation[2]);
 
-        _leftRenderer->target()->component<Transform>()->matrix(matrix);
-    }
-
-    eval = "";
-    eval += "var hasVRDisplay = !!window.vrDisplay;                             \n";
-    eval += "if (hasVRDisplay) {                                                \n";
-    eval += "   var frameData = new VRFrameData();                              \n";
-    eval += "   window.vrDisplay.getFrameData(frameData);                       \n";
-    eval += "   if (!!frameData && !!frameData.rightViewMatrix)                 \n";
-    eval += "       frameData.rightViewMatrix.join(' ');                        \n";
-    eval += "}                                                                  \n";
-
-    auto rightViewMatrixString = std::string(emscripten_run_script_string(eval.c_str()));
-
-    if (rightViewMatrixString != "undefined")
-    {
-        std::array<float, 16> rightViewMatrix;
-        std::stringstream ssRightViewMatrix(rightViewMatrixString);
-
-        for (auto i = 0; i < 16; i++)
-            ssRightViewMatrix >> rightViewMatrix[i];
-
-        auto matrix = math::inverse(glm::make_mat4(rightViewMatrix.data()));
-
-        _rightRenderer->target()->component<Transform>()->matrix(matrix);
+        auto matrix = glm::mat4_cast(quaternion);
+        target->component<Transform>()->matrix(matrix);
     }
 
     // Get projection matrixes
     eval = "";
-    eval += "var hasVRDisplay = !!window.vrDisplay;                             \n";
-    eval += "if (hasVRDisplay) {                                                \n";
-    eval += "   var frameData = new VRFrameData();                              \n";
-    eval += "   window.vrDisplay.getFrameData(frameData);                       \n";
-    eval += "   if (!!frameData && !!frameData.leftProjectionMatrix)            \n";
-    eval += "       frameData.leftProjectionMatrix.join(' ');                         \n";
-    eval += "}                                                                  \n";
+    eval += "if (!!window.vrDisplay && !!window.vrFrameData) {                                                                      \n";
+    eval += "   window.vrDisplay.getFrameData(window.vrFrameData);                                                                  \n";
+    eval += "   if (!!window.vrFrameData.leftProjectionMatrix && !!window.vrFrameData.rightProjectionMatrix)                        \n";
+    eval += "       window.vrFrameData.leftProjectionMatrix.join(' ') + ' ' + window.vrFrameData.rightProjectionMatrix.join(' ');   \n";
+    eval += "}                                                                                                                      \n";
 
-    auto leftProjectionMatrixString = std::string(emscripten_run_script_string(eval.c_str()));
+    auto projectionMatrixesString = std::string(emscripten_run_script_string(eval.c_str()));
 
-    if (leftProjectionMatrixString != "undefined")
+    if (projectionMatrixesString != "undefined")
     {
         std::array<float, 16> leftProjectionMatrix;
-        std::stringstream ssLeftProjectionMatrix(leftProjectionMatrixString);
-
-        for (auto i = 0; i < 16; i++)
-            ssLeftProjectionMatrix >> leftProjectionMatrix[i];
-
-        auto matrix = glm::make_mat4(leftProjectionMatrix.data());
-
-        std::cout << "Update left camera projection matrix" << std::endl;
-        _leftRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(matrix);
-    }
-
-    eval = "";
-    eval += "var hasVRDisplay = !!window.vrDisplay;                             \n";
-    eval += "if (hasVRDisplay) {                                                \n";
-    eval += "   var frameData = new VRFrameData();                              \n";
-    eval += "   window.vrDisplay.getFrameData(frameData);                       \n";
-    eval += "   if (!!frameData && !!frameData.rightProjectionMatrix)            \n";
-    eval += "       frameData.rightProjectionMatrix.join(' ');                         \n";
-    eval += "}                                                                  \n";
-
-    auto rightProjectionMatrixString = std::string(emscripten_run_script_string(eval.c_str()));
-
-    if (rightProjectionMatrixString != "undefined")
-    {
         std::array<float, 16> rightProjectionMatrix;
-        std::stringstream ssrightProjectionMatrix(rightProjectionMatrixString);
+        std::stringstream ssProjectionMatrixes(projectionMatrixesString);
 
         for (auto i = 0; i < 16; i++)
-            ssrightProjectionMatrix >> rightProjectionMatrix[i];
+            ssProjectionMatrixes >> leftProjectionMatrix[i];
 
-        auto matrix = glm::make_mat4(rightProjectionMatrix.data());
+        for (auto i = 0; i < 16; i++)
+            ssProjectionMatrixes >> rightProjectionMatrix[i];
 
-        std::cout << "Update right camera projection matrix" << std::endl;
-        _rightRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(matrix);
+        auto leftMatrix = glm::make_mat4(leftProjectionMatrix.data());
+        auto rightMatrix = glm::make_mat4(rightProjectionMatrix.data());
+
+        std::cout << "Update camera projection matrixes" << std::endl;
+        _leftRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(leftMatrix);
+        _rightRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(rightMatrix);
     }
 
     // Get position tracking
-    /*
-    eval = "if (window.vrDisplaySensor.getState().position != null) { window.vrDisplaySensor.getState().position.x + ' ' + window.vrDisplaySensor.getState().position.y + ' ' + window.vrDisplaySensor.getState().position.z; }\n";
-    s = std::string(emscripten_run_script_string(eval.c_str()));
+    // eval = "if (window.vrDisplaySensor.getState().position != null) { window.vrDisplaySensor.getState().position.x + ' ' + window.vrDisplaySensor.getState().position.y + ' ' + window.vrDisplaySensor.getState().position.z; }\n";
+    // s = std::string(emscripten_run_script_string(eval.c_str()));
 
-    if (s != "undefined")
-    {
-        std::array<float, 3> position;
-        std::stringstream ssPosition(s);
+    // if (s != "undefined")
+    // {
+    //     std::array<float, 3> position;
+    //     std::stringstream ssPosition(s);
 
-        ssPosition >> position[0];
-        ssPosition >> position[1];
-        ssPosition >> position[2];
+    //     ssPosition >> position[0];
+    //     ssPosition >> position[1];
+    //     ssPosition >> position[2];
 
-        target->component<Transform>()->matrix(math::translate(math::vec3(position[0], position[1], position[2])) * target->component<Transform>()->matrix());
-    }
-    */
+    //     target->component<Transform>()->matrix(math::translate(math::vec3(position[0], position[1], position[2])) * target->component<Transform>()->matrix());
+    // }
 }
