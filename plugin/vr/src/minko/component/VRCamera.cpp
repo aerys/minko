@@ -137,12 +137,12 @@ VRCamera::initialize(int viewportWidth,
     if (leftRenderer != nullptr)
         _leftRenderer = leftRenderer;
     else
-        _leftRenderer = Renderer::create(0xff0000ff);
+        _leftRenderer = Renderer::create(rendererClearColor);
 
     if (rightRenderer != nullptr)
         _rightRenderer = rightRenderer;
     else
-        _rightRenderer = Renderer::create(0x00ff00ff);
+        _rightRenderer = Renderer::create(rendererClearColor);
 
     _rightRenderer->clearBeforeRender(false);
 

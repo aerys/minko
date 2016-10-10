@@ -49,8 +49,6 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
     eval += "function vrDeviceCallback(vrDisplays) {                                                    \n";
     eval += "    for (var i = 0; i < vrDisplays.length; ++i) {                                          \n";
     eval += "        var vrDisplay = vrDisplays[i];                                                     \n";
-    // eval += "        vrDisplay.depthNear = " + std::to_string(_zNear) + "                               \n";
-    // eval += "        vrDisplay.depthFar = " + std::to_string(_zFar) +  "                                \n";
     eval += "        window.vrDisplay = vrDisplay;                                                      \n";
     eval += "        if (typeof(VRFrameData) != 'undefined')                                            \n";
     eval += "            window.vrFrameData = new VRFrameData();                                        \n";
@@ -99,20 +97,18 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
 
     eval += "function onResize () {                                                                     \n";
     eval += "   console.log('onResize');                                                                \n";
-    eval += "   var renderCanvas = document.getElementById('canvas');                                   \n";
-    eval += "   if (window.vrDisplay && window.vrDisplay.isPresenting) {                                \n";
-    eval += "       var leftEye = window.vrDisplay.getEyeParameters('left');                            \n";
-    eval += "       var rightEye = window.vrDisplay.getEyeParameters('right');                          \n";
-    eval += "       console.log('Left eye', leftEye);                                                   \n";
-    eval += "       console.log('Right eye', rightEye);                                                 \n";
-    eval += "       renderCanvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;       \n";
-    eval += "       renderCanvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight);        \n";
-    // eval += "       renderCanvas.width = " + std::to_string(viewportWidth) + ";                         \n";
-    // eval += "       renderCanvas.height = " + std::to_string(viewportHeight) + ";                       \n";
-    eval += "   } else {                                                                                \n";
-    eval += "       renderCanvas.width = renderCanvas.offsetWidth * window.devicePixelRatio;            \n";
-    eval += "       renderCanvas.height = renderCanvas.offsetHeight * window.devicePixelRatio;          \n";
-    eval += "   }                                                                                       \n";
+    // eval += "   var renderCanvas = document.getElementById('canvas');                                   \n";
+    // eval += "   if (window.vrDisplay && window.vrDisplay.isPresenting) {                                \n";
+    // eval += "       var leftEye = window.vrDisplay.getEyeParameters('left');                            \n";
+    // eval += "       var rightEye = window.vrDisplay.getEyeParameters('right');                          \n";
+    // eval += "       console.log('Left eye', leftEye);                                                   \n";
+    // eval += "       console.log('Right eye', rightEye);                                                 \n";
+    // eval += "       renderCanvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;       \n";
+    // eval += "       renderCanvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight);        \n";
+    // eval += "   } else {                                                                                \n";
+    // eval += "       renderCanvas.width = renderCanvas.offsetWidth * window.devicePixelRatio;            \n";
+    // eval += "       renderCanvas.height = renderCanvas.offsetHeight * window.devicePixelRatio;          \n";
+    // eval += "   }                                                                                       \n";
     eval += "}                                                                                          \n";
 
     eval += "window.addEventListener('vrdisplayactivate', onVRRequestPresent, false);                   \n";
@@ -145,10 +141,11 @@ WebVROculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRendere
     _renderingEndSlot = rightRenderer->renderingEnd()->connect([&](std::shared_ptr<minko::component::Renderer> rightRenderer)
     {
         std::string eval = "";
-        eval += "if (!!window.vrDisplay && window.vrDisplay.isPresenting) {                 \n";
-        eval += "   console.log('submitFrame');                                             \n";
-        eval += "   window.vrDisplay.submitFrame();                                         \n";
-        eval += "}                                                                          \n";
+        eval += "if (!!window.vrDisplay && window.vrDisplay.isPresenting) {                             \n";
+        eval += "    if (window.vrDisplay.getPose() && window.vrDisplay.getPose().position) {           \n";
+        eval += "        window.vrDisplay.submitFrame();                                                \n";
+        eval += "    }                                                                                  \n";
+        eval += "}                                                                                      \n";
 
         emscripten_run_script_int(eval.c_str());
     });
@@ -178,75 +175,6 @@ WebVROculus::enable(bool value)
 void
 WebVROculus::updateViewport(int viewportWidth, int viewportHeight)
 {
-    std::cout << "Viewport width: " << viewportWidth << std::endl;
-    std::cout << "Viewport height: " << viewportHeight << std::endl;
-
-    if (!_leftRenderer || !_rightRenderer)
-    {
-        std::cout << "Left or right renderer is null." << std::endl;
-        return;
-    }
-
-    // TODO: Get the viewport values from the VRDisplay
-    // viewportWidth = 2664;
-    // viewportHeight = 1586;
-    std::string eval = "";
-    eval += "var hasVRDisplay = !!window.vrDisplay;                                 \n";
-    eval += "if (hasVRDisplay) {                                                    \n";
-    eval += "   var pose = hasVRDisplay ? window.vrDisplay.getPose() : null;        \n";
-    eval += "   var leftEye = window.vrDisplay.getEyeParameters('left');            \n";
-    eval += "   var rightEye = window.vrDisplay.getEyeParameters('right');          \n";
-    eval += "   if (hasVRDisplay && !!leftEye && !!rightEye) {                      \n";
-    eval += "       leftEye.renderWidth + ' ' + leftEye.renderHeight + ' ' +        \n";
-    eval += "       rightEye.renderWidth + ' ' + rightEye.renderHeight              \n";
-    eval += "   }                                                                   \n";
-    eval += "}                                                                      \n";
-
-    auto viewportString = std::string(emscripten_run_script_string(eval.c_str()));
-
-    if (viewportString != "undefined")
-    {
-        std::array<uint, 4> viewport;
-        std::stringstream ssViewport(viewportString);
-
-        for (auto i = 0; i < 4; i++)
-            ssViewport >> viewport[i];
-
-        viewportWidth = std::max(viewport[0], viewport[2]) * 2.f;
-        viewportHeight = std::max(viewport[1], viewport[3]);
-
-        std::cout << "New viewport value (from VRDisplay): " << viewportWidth << "x" << viewportHeight << std::endl;
-    }
-    else
-    {
-        std::cout << "VRDisplay is not ready yet!" << std::endl;
-    }
-
-    // Update left and right eyes renderer
-    _leftRenderer->viewport(math::vec4(0, 0, viewportWidth / 2.f, viewportHeight));
-    _rightRenderer->viewport(math::vec4(viewportWidth / 2.f, 0, viewportWidth / 2.f, viewportHeight));
-
-    std::cout << "Left renderer viewport: " << std::to_string(math::vec4(0, 0, viewportWidth / 2.f, viewportHeight)) << std::endl;
-    std::cout << "Right renderer viewport: " << std::to_string(math::vec4(viewportWidth / 2.f, 0, viewportWidth / 2.f, viewportHeight)) << std::endl;
-
-    // // Don't forget to update the aspect ratio too
-    // auto aspectRatio = (viewportWidth / 2.f) / viewportHeight;
-
-    // std::cout << "Aspect ratio: " << aspectRatio << std::endl;
-
-    // std::cout << "Left renderer: " << _leftRenderer << std::endl;
-    // std::cout << "Left renderer target: " << _leftRenderer->target() << std::endl;
-
-    // if (_leftRenderer->target() != nullptr)
-    // {
-    //     std::cout << "Update aspect ratio of the left renderer target" << std::endl;
-    //     _leftRenderer->target()->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
-    // }
-    // if (_rightRenderer->target() != nullptr)
-    // {
-    //     std::cout << "Update aspect ratio of the right renderer target" << std::endl;
-    //     _rightRenderer->target()->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
-    // }
 }
 
 bool
@@ -335,7 +263,6 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<sc
         auto leftMatrix = glm::make_mat4(leftProjectionMatrix.data());
         auto rightMatrix = glm::make_mat4(rightProjectionMatrix.data());
 
-        std::cout << "Update camera projection matrixes" << std::endl;
         _leftRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(leftMatrix);
         _rightRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(rightMatrix);
     }
