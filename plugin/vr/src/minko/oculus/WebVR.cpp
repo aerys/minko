@@ -115,19 +115,6 @@ WebVR::WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     eval += "window.addEventListener('vrdisplaypresentchange', onVRPresentChange, false);               \n";
     eval += "window.addEventListener('resize', onResize, false);                                        \n";
 
-    // Put the rendering into the VRDisplay pressing a keyboard key (keycode 70 = "F")
-    eval += "window.addEventListener('keydown', function(e) {                                           \n";
-    eval += "   if (e.keyCode == 70) {                                                                  \n";
-    eval += "       if (!window.MinkoVR.vrDisplay)                                                      \n";
-    eval += "           return;                                                                         \n";
-    eval += "                                                                                           \n";
-    eval += "       if (!window.MinkoVR.vrDisplay.isPresenting)                                         \n";
-    eval += "           onVRRequestPresent();                                                           \n";
-    eval += "       else                                                                                \n";
-    eval += "           onVRExitPresent();                                                              \n";
-    eval += "   }                                                                                       \n";
-    eval += "}, false);                                                                                 \n";
-
     emscripten_run_script(eval.c_str());
 }
 
