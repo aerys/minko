@@ -141,11 +141,12 @@ WebVROculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRendere
     _renderingEndSlot = rightRenderer->renderingEnd()->connect([&](std::shared_ptr<minko::component::Renderer> rightRenderer)
     {
         std::string eval = "";
-        eval += "if (!!window.vrDisplay && window.vrDisplay.isPresenting) {                             \n";
-        eval += "    if (window.vrDisplay.getPose() && window.vrDisplay.getPose().position) {           \n";
-        eval += "        window.vrDisplay.submitFrame();                                                \n";
-        eval += "    }                                                                                  \n";
-        eval += "}                                                                                      \n";
+        eval += "if (!!window.vrDisplay && window.vrDisplay.isPresenting) {                                             \n";
+        // To avoid a crash in Chrome VR
+        eval += "    if (!!window.vrFrameData && !!window.vrFrameData.pose && !!window.vrFrameData.pose.orientation) {  \n";
+        eval += "        window.vrDisplay.submitFrame();                                                                \n";
+        eval += "    }                                                                                                  \n";
+        eval += "}                                                                                                      \n";
 
         emscripten_run_script_int(eval.c_str());
     });
@@ -214,13 +215,10 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<sc
     std::string eval = "";
 
     // Get VRDisplay orientation
-    eval += "var hasVRDisplay = !!window.vrDisplay;                                 \n";
-    eval += "if (hasVRDisplay) {                                                    \n";
-    eval += "   var pose = hasVRDisplay ? window.vrDisplay.getPose() : null;        \n";
-    eval += "   if (!!pose && !!pose.orientation) {                                 \n";
-    eval += "       pose.orientation.join(' ');                                     \n";
-    eval += "   }                                                                   \n";
-    eval += "}                                                                      \n";
+    eval = "";
+    eval += "if (!!window.vrFrameData && !!window.vrFrameData.pose && !!window.vrFrameData.pose.orientation) {      \n";
+    eval += "    window.vrFrameData.pose.orientation.join(' ');                                                     \n";
+    eval += "}                                                                                                      \n";
 
     auto orientationString = std::string(emscripten_run_script_string(eval.c_str()));
 
@@ -268,18 +266,25 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<sc
     }
 
     // Get position tracking
-    // eval = "if (window.vrDisplaySensor.getState().position != null) { window.vrDisplaySensor.getState().position.x + ' ' + window.vrDisplaySensor.getState().position.y + ' ' + window.vrDisplaySensor.getState().position.z; }\n";
-    // s = std::string(emscripten_run_script_string(eval.c_str()));
+    eval = "";
+    eval += "if (!!window.vrFrameData && !!window.vrFrameData.pose && !!window.vrFrameData.pose.position) {     \n";
+    eval += "    window.vrFrameData.pose.position.join(' ');                                                    \n";
+    eval += "}                                                                                                  \n";
 
-    // if (s != "undefined")
-    // {
-    //     std::array<float, 3> position;
-    //     std::stringstream ssPosition(s);
+    auto positionString = std::string(emscripten_run_script_string(eval.c_str()));
 
-    //     ssPosition >> position[0];
-    //     ssPosition >> position[1];
-    //     ssPosition >> position[2];
+    if (positionString != "undefined")
+    {
+        std::array<float, 3> position;
+        std::stringstream ssPosition(positionString);
 
-    //     target->component<Transform>()->matrix(math::translate(math::vec3(position[0], position[1], position[2])) * target->component<Transform>()->matrix());
-    // }
+        ssPosition >> position[0];
+        ssPosition >> position[1];
+        ssPosition >> position[2];
+
+        auto hmdPosition = math::vec3(position[0], position[1], position[2]);
+        auto translation = math::translate(hmdPosition);
+
+        target->component<Transform>()->matrix(translation * target->component<Transform>()->matrix());
+    }
 }
