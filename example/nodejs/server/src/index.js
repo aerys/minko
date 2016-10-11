@@ -16,7 +16,8 @@ superagent
 echo.echo("hello world");
 
 let app = express();
+let counter = 0;
 
-app.get('/hello', (req, res) => res.json({ 'success': true }));
+app.get('/hello', (req, res) => res.json({ 'success': true, 'counter': ++counter }));
 
 app.listen(3000, () => console.log('Example app listening on port 3000!'));

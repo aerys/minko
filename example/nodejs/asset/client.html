@@ -1,7 +1,7 @@
 <html>
-    <div style="font-size: 100"></div>
+    <div style="font-size: 80"></div>
     <script>
-        setTimeout(function() {
+        function callEndpoint() {
             var req = new XMLHttpRequest();
             req.addEventListener("load", function() {
                 console.log("Call from WebView to " + this.responseURL + ": success");
@@ -9,6 +9,10 @@
             });
             req.open("GET", "http://localhost:3000/hello");
             req.send();
-        }, 1000);
+        };
+
+        setTimeout(callEndpoint, 1000);
+
+        document.body.addEventListener('touchstart', callEndpoint);
     </script>
 </html>
