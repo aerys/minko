@@ -123,8 +123,12 @@ WebVR::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std
 {
     _leftRenderer = leftRenderer;
     _rightRenderer = rightRenderer;
+}
 
-    _renderingEndSlot = rightRenderer->renderingEnd()->connect([&](std::shared_ptr<minko::component::Renderer> rightRenderer)
+void
+WebVR::targetAdded()
+{
+    _renderingEndSlot = _rightRenderer->renderingEnd()->connect([&](std::shared_ptr<minko::component::Renderer> rightRenderer)
     {
         std::string eval;
         eval += "if (!!window.MinkoVR.vrDisplay && window.MinkoVR.vrDisplay.isPresenting) {             \n";
@@ -137,11 +141,7 @@ WebVR::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std
 
         emscripten_run_script_int(eval.c_str());
     });
-}
 
-void
-WebVR::targetAdded()
-{
     std::string eval;
     eval += "window.addEventListener('vrdisplayactivate', window.MinkoVR.onVRRequestPresent, false);        \n";
     eval += "window.addEventListener('vrdisplaydeactivate', window.MinkoVR.onVRExitPresent, false);         \n";
@@ -154,6 +154,8 @@ WebVR::targetAdded()
 void
 WebVR::targetRemoved()
 {
+    _renderingEndSlot = nullptr;
+
     std::string eval;
     eval += "window.removeEventListener('vrdisplayactivate', window.MinkoVR.onVRRequestPresent, false);        \n";
     eval += "window.removeEventListener('vrdisplaydeactivate', window.MinkoVR.onVRExitPresent, false);         \n";
