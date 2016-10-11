@@ -81,7 +81,7 @@ Loader::load()
 
         const auto byteRangeRequested = options->seekedLength() > 0;
 
-        if (!byteRangeRequested && (
+        if (!byteRangeRequested && assets && (
             assets->cubeTexture(filename) != nullptr
             || assets->texture(filename) != nullptr
             || assets->geometry(filename) != nullptr
