@@ -21,3 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/net/HTTPOptions.hpp"
 #include "minko/net/HTTPProtocol.hpp"
+
+#if !defined(EMSCRIPTEN)
+# include "minko/net/HTTPWorker.hpp"
+#endif
