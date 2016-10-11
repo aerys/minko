@@ -64,37 +64,11 @@ VRCamera::updateViewport(int viewportWidth, int viewportHeight)
     _viewportWidth = viewportWidth;
     _viewportHeight = viewportHeight;
 
-    // auto aspectRatio = (viewportWidth / 2.f) / viewportHeight;
-    // auto zNear = 0.1f;
-    // auto zFar = 10000.f;
-
-    // if (_VRImpl)
-    // {
-    //     zNear = _VRImpl->zNear();
-    //     zFar = _VRImpl->zFar();
-    // }
-
-    // if (_leftCameraNode)
-    //     _leftCameraNode->component<PerspectiveCamera>()->projection(math::perspective(atan(45), aspectRatio, zNear, zFar));
-
-    // if (_rightCameraNode)
-    //     _rightCameraNode->component<PerspectiveCamera>()->projection(math::perspective(atan(45), aspectRatio, zNear, zFar));
-
     _leftRenderer->viewport(math::ivec4(0, 0, viewportWidth / 2, viewportHeight));
     _rightRenderer->viewport(math::ivec4(viewportWidth / 2, 0, viewportWidth / 2, viewportHeight));
 
     if (_VRImpl)
         _VRImpl->updateViewport(viewportWidth, viewportHeight);
-}
-
-void
-VRCamera::forceRatio(float aspectRatio)
-{
-    // if (_leftCameraNode)
-    //     _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
-
-    // if (_rightCameraNode)
-    //     _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
 }
 
 bool
@@ -168,9 +142,7 @@ VRCamera::targetAdded(NodePtr target)
     findSceneManager();
 
     // Initialize both eyes' cameras
-
     auto aspectRatio = (_viewportWidth / 2.f) / _viewportHeight;
-
     auto zNear = 0.1f;
     auto zFar = 10000.f;
 
@@ -181,21 +153,19 @@ VRCamera::targetAdded(NodePtr target)
     }
 
     auto leftCamera = PerspectiveCamera::create(math::perspective((float)atan(45), aspectRatio, zNear, zFar));
+    auto rightCamera = PerspectiveCamera::create(math::perspective((float)atan(45), aspectRatio, zNear, zFar));
 
-    _leftCameraNode = scene::Node::create("cameraLeftEye")
+    _leftCameraNode = scene::Node::create("VRCameraLeftEye")
         ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(-0.032422490417957306f, 0, 0), math::vec3(-0.032422490417957306f, 0, -1), math::vec3(0, 1, 0)))))
         ->addComponent(leftCamera)
         ->addComponent(_leftRenderer);
 
-    target->addChild(_leftCameraNode);
-
-    auto rightCamera = PerspectiveCamera::create(math::perspective((float)atan(45), aspectRatio, zNear, zFar));
-
-    _rightCameraNode = scene::Node::create("cameraRightEye")
+    _rightCameraNode = scene::Node::create("VRCameraRightEye")
         ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(0.032422490417957306f, 0, 0), math::vec3(0.032422490417957306f, 0, -1), math::vec3(0, 1, 0)))))
         ->addComponent(rightCamera)
         ->addComponent(_rightRenderer);
 
+    target->addChild(_leftCameraNode);
     target->addChild(_rightCameraNode);
 
     if (_VRImpl)
@@ -251,27 +221,15 @@ VRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 
     _frameBeginSlot = sceneManager->frameBegin()->connect([&](SceneMgrPtr sm, float dt, float t)
     {
-        updateCameraOrientation(_leftCameraNode, _rightCameraNode);
+        updateCamera(_leftCameraNode, _rightCameraNode);
     });
-
-    if (_VRImpl)
-        _VRImpl->initialize(_sceneManager);
 }
 
 void
-VRCamera::updateCameraOrientation(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
+VRCamera::updateCamera(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
     if (_VRImpl)
-        _VRImpl->updateCameraOrientation(target(), leftCamera, rightCamera);
+        _VRImpl->updateCamera(target(), leftCamera, rightCamera);
 
     target()->component<Transform>()->updateModelToWorldMatrix();
-}
-
-void
-VRCamera::enable(bool value)
-{
-    if (!_VRImpl)
-        return;
-
-    _VRImpl->enable(value);
 }

@@ -45,13 +45,14 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
 {
     std::string eval = "";
 
-    // Retrieve VRDisplay device and store it into window.vrDisplay
+    // Retrieve VRDisplay device and store it into window.MinkoVR object
+    eval += "window.MinkoVR = {};                                                                       \n";
     eval += "function vrDeviceCallback(vrDisplays) {                                                    \n";
     eval += "    for (var i = 0; i < vrDisplays.length; ++i) {                                          \n";
     eval += "        var vrDisplay = vrDisplays[i];                                                     \n";
-    eval += "        window.vrDisplay = vrDisplay;                                                      \n";
+    eval += "        window.MinkoVR.vrDisplay = vrDisplay;                                              \n";
     eval += "        if (typeof(VRFrameData) != 'undefined')                                            \n";
-    eval += "            window.vrFrameData = new VRFrameData();                                        \n";
+    eval += "            window.MinkoVR.vrFrameData = new VRFrameData();                                \n";
     eval += "        break;                                                                             \n";
     eval += "    }                                                                                      \n";
     eval += "}                                                                                          \n";
@@ -65,7 +66,7 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
     eval += "function onVRRequestPresent() {                                                            \n";
     eval += "   console.log('onVRRequestPresent');                                                      \n";
     eval += "   var renderCanvas = document.getElementById('canvas');                                   \n";
-    eval += "   window.vrDisplay.requestPresent([{ source: renderCanvas }]).then(                       \n";
+    eval += "   window.MinkoVR.vrDisplay.requestPresent([{ source: renderCanvas }]).then(               \n";
     eval += "        function () {                                                                      \n";
     eval += "           console.log('Success: requestPresent succeed.')                                 \n";
     eval += "        },                                                                                 \n";
@@ -78,10 +79,10 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
 
     eval += "function onVRExitPresent () {                                                              \n";
     eval += "   console.log('onVRExitPresent');                                                         \n";
-    eval += "    if (!window.vrDisplay || !window.vrDisplay.isPresenting)                               \n";
+    eval += "    if (!window.MinkoVR.vrDisplay || !window.MinkoVR.vrDisplay.isPresenting)               \n";
     eval += "        return;                                                                            \n";
     eval += "                                                                                           \n";
-    eval += "    window.vrDisplay.exitPresent().then(                                                   \n";
+    eval += "    window.MinkoVR.vrDisplay.exitPresent().then(                                           \n";
     eval += "        function () {                                                                      \n";
     eval += "            console.log('Success: exitPresent succeed.')                                   \n";
     eval += "        },                                                                                 \n";
@@ -98,11 +99,9 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
     eval += "function onResize () {                                                                     \n";
     eval += "   console.log('onResize');                                                                \n";
     // eval += "   var renderCanvas = document.getElementById('canvas');                                   \n";
-    // eval += "   if (window.vrDisplay && window.vrDisplay.isPresenting) {                                \n";
-    // eval += "       var leftEye = window.vrDisplay.getEyeParameters('left');                            \n";
-    // eval += "       var rightEye = window.vrDisplay.getEyeParameters('right');                          \n";
-    // eval += "       console.log('Left eye', leftEye);                                                   \n";
-    // eval += "       console.log('Right eye', rightEye);                                                 \n";
+    // eval += "   if (window.MinkoVR.vrDisplay && window.MinkoVR.vrDisplay.isPresenting) {                \n";
+    // eval += "       var leftEye = window.MinkoVR.vrDisplay.getEyeParameters('left');                    \n";
+    // eval += "       var rightEye = window.MinkoVR.vrDisplay.getEyeParameters('right');                  \n";
     // eval += "       renderCanvas.width = Math.max(leftEye.renderWidth, rightEye.renderWidth) * 2;       \n";
     // eval += "       renderCanvas.height = Math.max(leftEye.renderHeight, rightEye.renderHeight);        \n";
     // eval += "   } else {                                                                                \n";
@@ -119,10 +118,10 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
     // Put the rendering into the VRDisplay pressing a keyboard key (keycode 70 = "F")
     eval += "window.addEventListener('keydown', function(e) {                                           \n";
     eval += "   if (e.keyCode == 70) {                                                                  \n";
-    eval += "       if (!window.vrDisplay)                                                              \n";
+    eval += "       if (!window.MinkoVR.vrDisplay)                                                      \n";
     eval += "           return;                                                                         \n";
     eval += "                                                                                           \n";
-    eval += "       if (!window.vrDisplay.isPresenting)                                                 \n";
+    eval += "       if (!window.MinkoVR.vrDisplay.isPresenting)                                         \n";
     eval += "           onVRRequestPresent();                                                           \n";
     eval += "       else                                                                                \n";
     eval += "           onVRExitPresent();                                                              \n";
@@ -141,36 +140,16 @@ WebVROculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRendere
     _renderingEndSlot = rightRenderer->renderingEnd()->connect([&](std::shared_ptr<minko::component::Renderer> rightRenderer)
     {
         std::string eval = "";
-        eval += "if (!!window.vrDisplay && window.vrDisplay.isPresenting) {                                             \n";
-        // To avoid a crash in Chrome VR
-        eval += "    if (!!window.vrFrameData && !!window.vrFrameData.pose && !!window.vrFrameData.pose.orientation) {  \n";
-        eval += "        window.vrDisplay.submitFrame();                                                                \n";
-        eval += "    }                                                                                                  \n";
-        eval += "}                                                                                                      \n";
+        eval += "if (!!window.MinkoVR.vrDisplay && window.MinkoVR.vrDisplay.isPresenting) {             \n";
+        // Workaround To avoid a crash in Chrome VR
+        eval += "    if (!!window.MinkoVR.vrFrameData && !!window.MinkoVR.vrFrameData.pose &&           \n";
+        eval += "        !!window.MinkoVR.vrFrameData.pose.orientation) {                               \n";
+        eval += "        window.MinkoVR.vrDisplay.submitFrame();                                        \n";
+        eval += "    }                                                                                  \n";
+        eval += "}                                                                                      \n";
 
         emscripten_run_script_int(eval.c_str());
     });
-}
-
-void
-WebVROculus::targetAdded()
-{
-}
-
-
-void
-WebVROculus::targetRemoved()
-{
-}
-
-void
-WebVROculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
-{
-}
-
-void
-WebVROculus::enable(bool value)
-{
 }
 
 void
@@ -203,22 +182,23 @@ WebVROculus::getRightEyeFov()
 {
     // FIXME: Should depend on the VRDisplay
     // Oculus Rift CV1
-    // leftDegrees:35.5747704995392 (0.6208968758567666724)
-    // rightDegrees:43.97737166932644 (0.76754993200111731877)
+    // leftDegrees:43.97737166932644 (0.76754993200111731877)
+    // rightDegrees:35.5747704995392 (0.6208968758567666724)
     // fov = atan(leftDegrees + rightDegrees) = 0.94
     return 0.94f;
 }
 
 void
-WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
+WebVROculus::updateCamera(scene::Node::Ptr target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
     std::string eval = "";
 
     // Get VRDisplay orientation
     eval = "";
-    eval += "if (!!window.vrFrameData && !!window.vrFrameData.pose && !!window.vrFrameData.pose.orientation) {      \n";
-    eval += "    window.vrFrameData.pose.orientation.join(' ');                                                     \n";
-    eval += "}                                                                                                      \n";
+    eval += "if (!!window.MinkoVR.vrFrameData && !!window.MinkoVR.vrFrameData.pose &&               \n";
+    eval += "    !!window.MinkoVR.vrFrameData.pose.orientation) {                                   \n";
+    eval += "    window.MinkoVR.vrFrameData.pose.orientation.join(' ');                             \n";
+    eval += "}                                                                                      \n";
 
     auto orientationString = std::string(emscripten_run_script_string(eval.c_str()));
 
@@ -236,13 +216,40 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<sc
         target->component<Transform>()->matrix(matrix);
     }
 
-    // Get projection matrixes
+    // Get VRDisplay position
     eval = "";
-    eval += "if (!!window.vrDisplay && !!window.vrFrameData) {                                                                      \n";
-    eval += "   window.vrDisplay.getFrameData(window.vrFrameData);                                                                  \n";
-    eval += "   if (!!window.vrFrameData.leftProjectionMatrix && !!window.vrFrameData.rightProjectionMatrix)                        \n";
-    eval += "       window.vrFrameData.leftProjectionMatrix.join(' ') + ' ' + window.vrFrameData.rightProjectionMatrix.join(' ');   \n";
-    eval += "}                                                                                                                      \n";
+    eval += "if (!!window.MinkoVR.vrFrameData && !!window.MinkoVR.vrFrameData.pose &&               \n";
+    eval += "    !!window.MinkoVR.vrFrameData.pose.position) {                                      \n";
+    eval += "    window.MinkoVR.vrFrameData.pose.position.join(' ');                                \n";
+    eval += "}                                                                                      \n";
+
+    auto positionString = std::string(emscripten_run_script_string(eval.c_str()));
+
+    if (positionString != "undefined")
+    {
+        std::array<float, 3> position;
+        std::stringstream ssPosition(positionString);
+
+        ssPosition >> position[0];
+        ssPosition >> position[1];
+        ssPosition >> position[2];
+
+        auto hmdPosition = math::vec3(position[0], position[1], position[2]);
+        auto translation = math::translate(hmdPosition);
+
+        target->component<Transform>()->matrix(translation * target->component<Transform>()->matrix());
+    }
+
+    // Get VRDisplay projection matrixes
+    eval = "";
+    eval += "if (!!window.MinkoVR.vrDisplay && !!window.MinkoVR.vrFrameData) {                      \n";
+    eval += "   window.MinkoVR.vrDisplay.getFrameData(window.MinkoVR.vrFrameData);                  \n";
+    eval += "   if (!!window.MinkoVR.vrFrameData.leftProjectionMatrix &&                            \n";
+    eval += "       !!window.MinkoVR.vrFrameData.rightProjectionMatrix) {                           \n";
+    eval += "       window.MinkoVR.vrFrameData.leftProjectionMatrix.join(' ') + ' ' +               \n";
+    eval += "       window.MinkoVR.vrFrameData.rightProjectionMatrix.join(' ');                     \n";
+    eval += "   }                                                                                   \n";
+    eval += "}                                                                                      \n";
 
     auto projectionMatrixesString = std::string(emscripten_run_script_string(eval.c_str()));
 
@@ -263,28 +270,5 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<sc
 
         _leftRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(leftMatrix);
         _rightRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(rightMatrix);
-    }
-
-    // Get position tracking
-    eval = "";
-    eval += "if (!!window.vrFrameData && !!window.vrFrameData.pose && !!window.vrFrameData.pose.position) {     \n";
-    eval += "    window.vrFrameData.pose.position.join(' ');                                                    \n";
-    eval += "}                                                                                                  \n";
-
-    auto positionString = std::string(emscripten_run_script_string(eval.c_str()));
-
-    if (positionString != "undefined")
-    {
-        std::array<float, 3> position;
-        std::stringstream ssPosition(positionString);
-
-        ssPosition >> position[0];
-        ssPosition >> position[1];
-        ssPosition >> position[2];
-
-        auto hmdPosition = math::vec3(position[0], position[1], position[2]);
-        auto translation = math::translate(hmdPosition);
-
-        target->component<Transform>()->matrix(translation * target->component<Transform>()->matrix());
     }
 }

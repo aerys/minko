@@ -55,11 +55,6 @@ Cardboard::Cardboard(int viewportWidth, int viewportHeight, float zNear, float z
 }
 
 void
-Cardboard::initialize(std::shared_ptr<component::SceneManager> sceneManager)
-{
-}
-
-void
 Cardboard::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window)
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
@@ -69,11 +64,6 @@ Cardboard::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer,
 
     _attitude->startTracking();
 #endif
-}
-
-void
-Cardboard::enable(bool value)
-{
 }
 
 void
@@ -108,7 +98,7 @@ Cardboard::getRightEyeFov()
 }
 
 void
-Cardboard::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
+Cardboard::updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     auto rotationMatrix = _attitude->rotationMatrix();

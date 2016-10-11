@@ -33,15 +33,7 @@ namespace minko
         public:
             virtual
             void
-            initialize(std::shared_ptr<component::SceneManager> sceneManager) = 0;
-
-            virtual
-            void
             initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr) = 0;
-
-            virtual
-            void
-            enable(bool value) = 0;
 
             virtual
             void
@@ -57,7 +49,7 @@ namespace minko
 
             virtual
             void
-            updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera) = 0;
+            updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera) = 0;
 
             virtual
             float
