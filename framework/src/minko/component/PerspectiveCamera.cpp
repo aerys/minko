@@ -129,26 +129,21 @@ PerspectiveCamera::updateWorldToScreenMatrix()
 std::shared_ptr<math::Ray>
 PerspectiveCamera::unproject(float x, float y)
 {
-    //auto fovDiv2 = _fov * .5f;
-    //auto dx = tanf(fovDiv2) * x * _aspectRatio;
-    //auto dy = -tanf(fovDiv2) * y;
+    // Should take normalized X and Y coordinates (between -1 and 1)
+    const auto viewport = math::vec4(-1.f, -1.f, 2.f, 2.f);
 
-    //auto origin = math::vec3(dx * _zNear, dy * _zNear, -_zNear);
-    //auto direction = math::normalize(math::vec3(dx * _zNear, dy * _zNear, -_zNear));
+    // GLM unProject function expect coordinates with the origin at the lower left corner 
+    const auto unprojectedWorldPosition = math::unProject(
+        math::vec3(x, -y, 0.f),
+        _view,
+        _projection,
+        viewport
+    );
 
-    //auto t = target()->component<Transform>();
+    const auto rayWorldOrigin = math::vec3(target()->component<Transform>()->modelToWorldMatrix() * math::vec4(0.f, 0.f, 0.f, 1.f));
+    const auto rayWorldDirection = math::normalize(unprojectedWorldPosition - rayWorldOrigin);
 
-    //if (t)
-    //{
-    //      auto tModelToWorld = t->modelToWorldMatrix();
-    //      origin = math::vec3(tModelToWorld * math::vec4(origin, 1));
-    //      direction = math::normalize(math::mat3(tModelToWorld) * direction).xyz();
-    //}
-
-    //return math::Ray::create(origin, direction);
-
-    // TODO: Fix the unproject result using GLM unProject function
-    return math::Ray::create(math::vec3(0.f), math::vec3(0.f));
+    return math::Ray::create(rayWorldOrigin, rayWorldDirection);
 }
 
 math::vec3
