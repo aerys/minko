@@ -20,13 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/async/NodeJSWorker.hpp"
 #include "minko/log/Logger.hpp"
 
-#include "v8.h"
-#include "uv.h"
 #include "node.h"
 
-#include "SDL.h"
-
-#include "jni.h"
+#include <unistd.h>
 
 using namespace minko;
 using namespace minko::async;
@@ -65,60 +61,12 @@ namespace minko
         }
 
         static
-        std::string
-        copyAsset(const std::string& path, const std::string& tempDir)
-        {
-            std::string newPath = tempDir + "/" + path;
-
-            SDL_RWops* srcFile = SDL_RWFromFile(path.c_str(), "rb");
-            SDL_RWops* destFile = SDL_RWFromFile(newPath.c_str(), "w");
-
-            Sint64 bufferSize = SDL_RWsize(srcFile);
-            char* buffer = new char[bufferSize + 1];
-
-            Sint64 size = 1;
-            while ((size = SDL_RWread(srcFile, buffer, 1, bufferSize)) != 0)
-                SDL_RWwrite(destFile, buffer, 1, size);
-
-            delete buffer;
-
-            SDL_RWclose(srcFile);
-            SDL_RWclose(destFile);
-
-            return newPath;
-        }
-
-        static
-        std::string
-        createAndroidTemporaryDirectory()
-        {
-            auto env = (JNIEnv*) SDL_AndroidGetJNIEnv();
-            jobject sdlActivity = (jobject) SDL_AndroidGetActivity();
-            jclass sdlActivityClass = env->GetObjectClass(sdlActivity);
-
-            jmethodID getCacheDir = env->GetMethodID(sdlActivityClass, "getCacheDir", "()Ljava/io/File;");
-            jobject cacheDir = env->CallObjectMethod(sdlActivity, getCacheDir);
-
-            jclass fileClass = env->FindClass("java/io/File");
-            jmethodID getPath = env->GetMethodID(fileClass, "getPath", "()Ljava/lang/String;");
-            jstring pathString = (jstring) env->CallObjectMethod(cacheDir, getPath);
-
-            const char* pathChars = env->GetStringUTFChars(pathString, nullptr);
-            std::string path(pathChars);
-
-            env->ReleaseStringUTFChars(pathString, pathChars);
-
-            return path;
-        }
-
-        static
         void
         startNode(const std::string& path)
         {
-            std::string tempDir = createAndroidTemporaryDirectory();
-            std::string newPath = copyAsset(path, tempDir);
+            chdir(path.c_str());
 
-            const char* args[] = { "node" , newPath.c_str(), nullptr };
+            const char* args[] = { "node" , "index.js", nullptr };
 
             int argc = 2;
             char** argv = makeArgvCopy(argc, args);
@@ -131,10 +79,6 @@ namespace minko
             std::string path(input.begin(), input.end());
 
             startNode(path);
-
-            std::this_thread::sleep_for(std::chrono::seconds(1));
-
-            post({ "ready" });
         });
     }
 }

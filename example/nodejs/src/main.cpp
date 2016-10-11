@@ -90,9 +90,10 @@ main(int argc, char** argv)
     auto canvas = Canvas::create("My Minko App", 960, 540);
     canvas->registerWorker<NodeJSWorker>("node");
 
-    string path = "index.js";
+    std::string extractDir = AndroidUnzip::extractFromAsset("server.zip");
+
     worker = AbstractCanvas::defaultCanvas()->getWorker("node");
-    worker->start(vector<char>(path.begin(), path.end()));
+    worker->start(vector<char>(extractDir.begin(), extractDir.end()));
 
     auto workerMessageSlot = worker->message()->connect([](Worker::Ptr, Worker::Message m) {
         if (m.type == "ready")
