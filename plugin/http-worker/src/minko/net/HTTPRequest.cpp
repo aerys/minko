@@ -152,7 +152,7 @@ disposeCurl(CURL* curl, curl_slist* curlHeaderList)
 void
 HTTPRequest::run()
 {
-	progress()->execute(0.0f);
+    progress()->execute(0.0f);
 
     const auto url = _url;
 
@@ -169,13 +169,13 @@ HTTPRequest::run()
         return;
     }
 
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
-	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
-	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
 
-	CURLcode res = curl_easy_perform(curl);
+    CURLcode res = curl_easy_perform(curl);
 
     auto responseCode = 0l;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
@@ -186,21 +186,21 @@ HTTPRequest::run()
         res == CURLE_OK &&
         (responseCode == 200 || responseCode == 206);
 
-	if (!requestSucceeded)
-	{
+    if (!requestSucceeded)
+    {
         const auto errorMessage =
             "status: " + std::to_string(responseCode) +
             (res != CURLE_OK ? ", error: " + std::string(curlErrorBuffer) : "");
 
         LOG_ERROR(errorMessage);
 
-		error()->execute(responseCode, errorMessage);
-	}
-	else
-	{
-		progress()->execute(1.0f);
-		complete()->execute(_output);
-	}
+        error()->execute(responseCode, errorMessage);
+    }
+    else
+    {
+        progress()->execute(1.0f);
+        complete()->execute(_output);
+    }
 }
 
 size_t

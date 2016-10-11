@@ -84,7 +84,7 @@ HTTPProtocol::completeHandler(void* data, unsigned int size)
 {
     if (_status == Options::FileStatus::Aborted)
         return;
-    
+
     this->data().assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
 
     progress()->execute(shared_from_this(), 1.0);

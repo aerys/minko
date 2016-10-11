@@ -103,7 +103,7 @@ namespace minko
         private:
             Level                                                   _level;
             Sink::Ptr                                               _sink;
-                                    
+
             static Ptr                                              _default;
         };
     }
