@@ -66,11 +66,15 @@ namespace minko
         {
             chdir(path.c_str());
 
-            const char* args[] = { "node" , "index.js", nullptr };
+            std::string binary = "node";
+            std::string scriptPath = path + "/" + "index.js";
+
+            const char* args[] = { binary.c_str() , scriptPath.c_str(), nullptr };
 
             int argc = 2;
             char** argv = makeArgvCopy(argc, args);
 
+            LOG_DEBUG("Start node on " << scriptPath);
             node::Start(argc, argv);
         }
 

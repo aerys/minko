@@ -102,6 +102,8 @@ main(int argc, char** argv)
 
     std::string extractDir = AndroidUnzip::extractFromAsset("server.zip");
 
+    LOG_INFO("Source extracted to " << extractDir);
+
     worker = AbstractCanvas::defaultCanvas()->getWorker("node");
     worker->start(vector<char>(extractDir.begin(), extractDir.end()));
 
