@@ -21,12 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoHTTP.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoNodeJS.hpp"
+#include "minko/MinkoHtmlOverlay.hpp"
 
 #include "json/json.h"
 
 using namespace minko;
 using namespace minko::async;
 using namespace minko::component;
+using namespace minko::dom;
 using namespace minko::file;
 using namespace minko::net;
 
@@ -81,9 +83,7 @@ callEndpoint(const string& url)
                               root))
             {
                 if (root["success"].asBool())
-                    LOG_INFO("Call to " << url << ": success");
-                else
-                    LOG_INFO("Call to " << url << ": failure");
+                    LOG_INFO("Call from C++ to " << url << ": success");
             }
         }
     });
@@ -94,6 +94,8 @@ callEndpoint(const string& url)
 int
 main(int argc, char** argv)
 {
+    auto overlay = HtmlOverlay::create(argc, argv);
+
     auto canvas = Canvas::create("Minko Example - NodeJS");
     canvas->registerWorker<NodeJSWorker>("node");
     canvas->registerWorker<HTTPWorker>("http");
@@ -117,7 +119,8 @@ main(int argc, char** argv)
     sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
 
     auto root = scene::Node::create("root")
-        ->addComponent(sceneManager);
+        ->addComponent(sceneManager)
+        ->addComponent(overlay);
 
     auto mesh = scene::Node::create("mesh")
         ->addComponent(Transform::create());
@@ -161,6 +164,8 @@ main(int argc, char** argv)
 
         sceneManager->nextFrame(time, deltaTime);
     });
+
+    overlay->load("client.html");
 
     sceneManager->assets()->loader()->load();
     canvas->run();

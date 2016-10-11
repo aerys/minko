@@ -16,6 +16,7 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("nodejs-worker")
 	minko.plugin.enable("http-loader")
+	minko.plugin.enable("html-overlay")
 
 	minko.package.assets {
 		['**'] = { 'copy', 'embed' }

@@ -1,0 +1,14 @@
+<html>
+    <div style="font-size: 100"></div>
+    <script>
+        setTimeout(function() {
+            var req = new XMLHttpRequest();
+            req.addEventListener("load", function() {
+                console.log("Call from WebView to " + this.responseURL + ": success");
+                document.querySelector('div').innerHTML = this.responseText;
+            });
+            req.open("GET", "http://localhost:3000/hello");
+            req.send();
+        }, 1000);
+    </script>
+</html>
