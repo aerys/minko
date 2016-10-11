@@ -7,7 +7,7 @@
   "repository": "",
   "scripts": {
     "build": "bash script/build.sh",
-    "start": "node ../asset/index.js"
+    "start": "node src/index.js"
   },
   "author": "Aerys",
   "license": "ISC",
@@ -23,6 +23,7 @@
   "dependencies": {
     "babel-polyfill": "^6.16.0",
     "express": "^4.14.0",
+    "nedb": "^1.8.0",
     "source-map-support": "^0.4.3",
     "superagent": "^2.3.0"
   }
