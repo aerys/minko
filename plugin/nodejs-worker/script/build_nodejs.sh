@@ -26,7 +26,7 @@ NODE_VERSION="6.x"
     mv lib/node-${NODE_VERSION} lib/node
     rm -f node-${NODE_VERSION}.zip
 
-    sed -i 's/#define HAVE_GETSERVBYPORT_R 1//g' lib/node/deps/cares/config/android/ares_config.h
+    sed -i 's/.*HAVE_GETSERVBYPORT_R.*//g' lib/node/deps/cares/config/android/ares_config.h
 }
 
 pushd lib/node

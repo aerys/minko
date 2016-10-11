@@ -31,5 +31,5 @@ minko.project.worker("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	postbuildcommands {
-		"bash script/merge_static_libraries.sh > /dev/null"
+		"bash script/merge_static_libraries.sh"
 	}

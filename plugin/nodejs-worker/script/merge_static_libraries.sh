@@ -21,7 +21,7 @@ AR=${TOOLCHAIN}/bin/${SUFFIX}-ar
 for LIB in ${LIBS}; do
     LIB_NAME=$(basename ${LIB})
     mkdir -p ${TARGET_DIR}/tmp/${LIB_NAME}
-    ${AR} t ${LIB} | xargs ${AR} rvs ${TARGET_DIR}/tmp/${LIB_NAME}/${LIB_NAME}
+    ${AR} t ${LIB} | xargs ${AR} rvs ${TARGET_DIR}/tmp/${LIB_NAME}/${LIB_NAME} > /dev/null
     pushd ${TARGET_DIR}/tmp/${LIB_NAME} > /dev/null
     ${AR} x ${LIB_NAME}
     rm ${LIB_NAME}
