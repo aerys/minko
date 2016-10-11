@@ -22,6 +22,5 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	}
 
 	removelinks {
-		"minko-plugin-zlib",
-		"curl"
+		"minko-plugin-zlib"
 	}
