@@ -43,7 +43,7 @@ WebVR::WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     _zFar(zFar),
     _initialized(false)
 {
-    std::string eval = "";
+    std::string eval;
 
     // Retrieve VRDisplay device and store it into window.MinkoVR object
     eval += "window.MinkoVR = {};                                                                       \n";
@@ -62,8 +62,8 @@ WebVR::WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     eval += "    navigator.getVRDisplays().then(vrDeviceCallback);                                      \n";
     eval += "}                                                                                          \n";
 
-    // VRDisplay callbacks
-    eval += "function onVRRequestPresent() {                                                            \n";
+    // Define VRDisplay callbacks
+    eval += "window.MinkoVR.onVRRequestPresent = function() {                                           \n";
     eval += "   console.log('onVRRequestPresent');                                                      \n";
     eval += "   var renderCanvas = document.getElementById('canvas');                                   \n";
     eval += "   window.MinkoVR.vrDisplay.requestPresent([{ source: renderCanvas }]).then(               \n";
@@ -77,7 +77,7 @@ WebVR::WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     eval += " };                                                                                        \n";
     eval += "                                                                                           \n";
 
-    eval += "function onVRExitPresent () {                                                              \n";
+    eval += "window.MinkoVR.onVRExitPresent = function() {                                              \n";
     eval += "   console.log('onVRExitPresent');                                                         \n";
     eval += "    if (!window.MinkoVR.vrDisplay || !window.MinkoVR.vrDisplay.isPresenting)               \n";
     eval += "        return;                                                                            \n";
@@ -96,7 +96,7 @@ WebVR::WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     eval += "    onResize();                                                                            \n";
     eval += "}                                                                                          \n";
 
-    eval += "function onResize () {                                                                     \n";
+    eval += "window.MinkoVR.onResize = function() {                                                    \n";
     eval += "   console.log('onResize');                                                                \n";
     // eval += "   var renderCanvas = document.getElementById('canvas');                                   \n";
     // eval += "   if (window.MinkoVR.vrDisplay && window.MinkoVR.vrDisplay.isPresenting) {                \n";
@@ -109,11 +109,6 @@ WebVR::WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     // eval += "       renderCanvas.height = renderCanvas.offsetHeight * window.devicePixelRatio;          \n";
     // eval += "   }                                                                                       \n";
     eval += "}                                                                                          \n";
-
-    eval += "window.addEventListener('vrdisplayactivate', onVRRequestPresent, false);                   \n";
-    eval += "window.addEventListener('vrdisplaydeactivate', onVRExitPresent, false);                    \n";
-    eval += "window.addEventListener('vrdisplaypresentchange', onVRPresentChange, false);               \n";
-    eval += "window.addEventListener('resize', onResize, false);                                        \n";
 
     emscripten_run_script(eval.c_str());
 }
@@ -131,7 +126,7 @@ WebVR::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std
 
     _renderingEndSlot = rightRenderer->renderingEnd()->connect([&](std::shared_ptr<minko::component::Renderer> rightRenderer)
     {
-        std::string eval = "";
+        std::string eval;
         eval += "if (!!window.MinkoVR.vrDisplay && window.MinkoVR.vrDisplay.isPresenting) {             \n";
         // Workaround To avoid a crash in Chrome VR
         eval += "    if (!!window.MinkoVR.vrFrameData && !!window.MinkoVR.vrFrameData.pose &&           \n";
@@ -147,11 +142,25 @@ WebVR::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std
 void
 WebVR::targetAdded()
 {
+    std::string eval;
+    eval += "window.addEventListener('vrdisplayactivate', window.MinkoVR.onVRRequestPresent, false);        \n";
+    eval += "window.addEventListener('vrdisplaydeactivate', window.MinkoVR.onVRExitPresent, false);         \n";
+    eval += "window.addEventListener('vrdisplaypresentchange', window.MinkoVR.onVRPresentChange, false);    \n";
+    eval += "window.addEventListener('resize', window.MinkoVR.onResize, false);                             \n";
+
+    emscripten_run_script(eval.c_str());
 }
 
 void
 WebVR::targetRemoved()
 {
+    std::string eval;
+    eval += "window.removeEventListener('vrdisplayactivate', window.MinkoVR.onVRRequestPresent, false);        \n";
+    eval += "window.removeEventListener('vrdisplaydeactivate', window.MinkoVR.onVRExitPresent, false);         \n";
+    eval += "window.removeEventListener('vrdisplaypresentchange', window.MinkoVR.onVRPresentChange, false);    \n";
+    eval += "window.removeEventListener('resize', window.MinkoVR.onResize, false);                             \n";
+
+    emscripten_run_script(eval.c_str());
 }
 
 void
@@ -193,7 +202,7 @@ WebVR::getRightEyeFov()
 void
 WebVR::updateCamera(scene::Node::Ptr target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
-    std::string eval = "";
+    std::string eval;
 
     // Get VRDisplay orientation
     eval = "";

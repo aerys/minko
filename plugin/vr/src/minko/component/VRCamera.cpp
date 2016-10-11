@@ -175,6 +175,9 @@ VRCamera::targetAdded(NodePtr target)
 void
 VRCamera::targetRemoved(NodePtr target)
 {
+    _leftRenderer->enabled(false);
+    _rightRenderer->enabled(false);
+
     _leftCameraNode->removeComponent(_leftRenderer);
     _rightCameraNode->removeComponent(_rightRenderer);
 

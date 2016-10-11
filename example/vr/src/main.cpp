@@ -95,27 +95,27 @@ main(int argc, char** argv)
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
 
-		camera = scene::Node::create("camera")
-			->addComponent(Transform::create());
+        camera = scene::Node::create("camera")
+            ->addComponent(Transform::create());
 
-		auto HMDDetected = VRCamera::detected();
+        auto HMDDetected = VRCamera::detected();
 
-		if (HMDDetected)
-			camera->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 1000.0f));
-		else
-		{
-			camera
-				->addComponent(Camera::create(math::perspective(1.0f, canvas->aspectRatio(), 0.1f, 1000.f)))
-				->addComponent(Renderer::create(0x050514ff));
-		}
+        if (HMDDetected)
+            camera->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 1000.0f));
+        else
+        {
+            camera
+                ->addComponent(Camera::create(math::perspective(1.0f, canvas->aspectRatio(), 0.1f, 1000.f)))
+                ->addComponent(Renderer::create(0x050514ff));
+        }
 
         spheres = createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, sceneManager->assets(), spheresAnimData);
         quads = createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);
 
-		auto cubeMaterial = material::BasicMaterial::create();
+        auto cubeMaterial = material::BasicMaterial::create();
         cubeMaterial->diffuseColor(0xffffffff);
-		cubeMaterial->data()->set("diffuseCubeMap", sceneManager->assets()->cubeTexture(CUBE_TEXTURE)->sampler());
-		cubeMaterial->triangleCulling(render::TriangleCulling::FRONT);
+        cubeMaterial->data()->set("diffuseCubeMap", sceneManager->assets()->cubeTexture(CUBE_TEXTURE)->sampler());
+        cubeMaterial->triangleCulling(render::TriangleCulling::FRONT);
 
         auto cube = scene::Node::create("cube")
             ->addComponent(Transform::create(
@@ -160,13 +160,40 @@ main(int argc, char** argv)
                 std::cout << "Right renderer enabled? => " << newValue << std::endl;
             }
         }
+        else if (k->keyIsDown(input::Keyboard::SPACE))
+        {
+            if (VRCamera::detected())
+            {
+                // Switch camera
+                if (camera->hasComponent<VRCamera>())
+                {
+                    camera->removeComponent(camera->component<VRCamera>());
+
+                    auto renderer = Renderer::create(0x050514ff);
+                    renderer->viewport(math::ivec4(0, 0, canvas->width(), canvas->height()));
+
+                    camera->addComponent(Camera::create(math::perspective(1.0f, canvas->aspectRatio(), 0.1f, 1000.f)));
+                    camera->addComponent(renderer);
+
+                }
+                else
+                {
+                    camera->component<Renderer>()->enabled(false);
+
+                    camera->removeComponent(camera->component<Camera>());
+                    camera->removeComponent(camera->component<Renderer>());
+
+                    camera->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 1000.0f));
+                }
+            }
+        }
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr c, uint width, uint height)
     {
-		if (camera->hasComponent<VRCamera>())
-			camera->component<VRCamera>()->updateViewport(width, height);
-		else if (camera->hasComponent<Camera>())
+        if (camera->hasComponent<VRCamera>())
+            camera->component<VRCamera>()->updateViewport(width, height);
+        else if (camera->hasComponent<Camera>())
         {
             camera->component<Camera>()->projectionMatrix(math::perspective(1.0f, float(width) / float(height), 0.1f, 1000.f));
         }
