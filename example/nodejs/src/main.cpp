@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoHTTP.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoNodeJSWorker.hpp"
+#include "minko/MinkoNodeJS.hpp"
 
 #include "json/json.h"
 
@@ -44,20 +44,22 @@ callEndpoint(const string& url)
 
     options
         ->verifyPeer(false)
-        ->loadAsynchronously(true)
+        ->loadAsynchronously(false)
         ->parserFunction([](const string& extension){ return nullptr; })
-        ->storeDataIfNotParsed(false);
+        ->storeDataIfNotParsed(false)
+        ->registerProtocol<net::HTTPProtocol>("http")
+        ->registerProtocol<net::HTTPProtocol>("https");
 
     loader->options(options);
 
     requestErrorSlot = loader->error()->connect(
         [](Loader::Ptr loaderThis, const Error& error) -> void
     {
-        LOG_WARNING(error.type() << ": " << error.what());
+        LOG_ERROR(error.type() << ": " << error.what());
     });
 
     requestCompleteSlot = loader->complete()->connect(
-        [](Loader::Ptr loaderThis) -> void
+        [url](Loader::Ptr loaderThis) -> void
     {
         auto& files = loaderThis->files();
 
@@ -76,7 +78,10 @@ callEndpoint(const string& url)
                               reinterpret_cast<const char*>(data.data()) + data.size(),
                               root))
             {
-                cout << "success: " << root["success"].asBool() << endl;
+                if (root["success"].asBool())
+                    LOG_INFO("Call to " << url << ": success");
+                else
+                    LOG_INFO("Call to " << url << ": failure");
             }
         }
     });
@@ -89,16 +94,17 @@ main(int argc, char** argv)
 {
     auto canvas = Canvas::create("My Minko App", 960, 540);
     canvas->registerWorker<NodeJSWorker>("node");
+    canvas->registerWorker<HTTPWorker>("http");
 
     std::string extractDir = AndroidUnzip::extractFromAsset("server.zip");
 
     worker = AbstractCanvas::defaultCanvas()->getWorker("node");
     worker->start(vector<char>(extractDir.begin(), extractDir.end()));
 
-    auto workerMessageSlot = worker->message()->connect([](Worker::Ptr, Worker::Message m) {
-        if (m.type == "ready")
-            callEndpoint("http://localhost:3000/hello");
-    });
+    std::thread([]() {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        callEndpoint("http://127.0.0.1:3000/hello");
+    }).detach();
 
     canvas->run();
 
