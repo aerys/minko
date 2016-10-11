@@ -105,7 +105,7 @@ main(int argc, char** argv)
 		else
 		{
 			camera
-				->addComponent(PerspectiveCamera::create(math::perspective(1.0f, canvas->aspectRatio(), 0.1f, 1000.f)))
+				->addComponent(Camera::create(math::perspective(1.0f, canvas->aspectRatio(), 0.1f, 1000.f)))
 				->addComponent(Renderer::create(0x050514ff));
 		}
 
@@ -166,9 +166,9 @@ main(int argc, char** argv)
     {
 		if (camera->hasComponent<VRCamera>())
 			camera->component<VRCamera>()->updateViewport(width, height);
-		else if (camera->hasComponent<PerspectiveCamera>())
+		else if (camera->hasComponent<Camera>())
         {
-            camera->component<PerspectiveCamera>()->projectionMatrix(math::perspective(1.0f, float(width) / float(height), 0.1f, 1000.f));
+            camera->component<Camera>()->projectionMatrix(math::perspective(1.0f, float(width) / float(height), 0.1f, 1000.f));
         }
     });
 

@@ -222,7 +222,7 @@ main(int argc, char** argv)
     // camera init
     camera = scene::Node::create("camera")
         ->addComponent(Renderer::create())
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)))
         ->addComponent(Transform::create(
             math::lookAt(math::vec3(0.f, 2.f, 0.f), math::vec3(10.f, 10.f, 10.f), math::vec3(0.f, 1.f, 0.f))
         ));
@@ -230,7 +230,7 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int w, unsigned int h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
     auto yaw        = 0.f;
