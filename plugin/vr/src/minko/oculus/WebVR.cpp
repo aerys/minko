@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/oculus/WebVROculus.hpp"
+#include "minko/oculus/WebVR.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
@@ -38,7 +38,7 @@ using namespace minko::component;
 using namespace minko::math;
 using namespace minko::oculus;
 
-WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, float zFar) :
+WebVR::WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     _zNear(zNear),
     _zFar(zFar),
     _initialized(false)
@@ -132,7 +132,7 @@ WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, flo
 }
 
 void
-WebVROculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window)
+WebVR::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window)
 {
     _leftRenderer = leftRenderer;
     _rightRenderer = rightRenderer;
@@ -153,12 +153,22 @@ WebVROculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRendere
 }
 
 void
-WebVROculus::updateViewport(int viewportWidth, int viewportHeight)
+WebVR::targetAdded()
+{
+}
+
+void
+WebVR::targetRemoved()
+{
+}
+
+void
+WebVR::updateViewport(int viewportWidth, int viewportHeight)
 {
 }
 
 bool
-WebVROculus::detected()
+WebVR::detected()
 {
     auto eval = std::string("if (navigator.getVRDisplays != undefined) (1); else (0);");
     bool result = emscripten_run_script_int(eval.c_str()) != 0;
@@ -167,7 +177,7 @@ WebVROculus::detected()
 }
 
 float
-WebVROculus::getLeftEyeFov()
+WebVR::getLeftEyeFov()
 {
     // FIXME: Should depend on the VRDisplay
     // Oculus Rift CV1
@@ -178,7 +188,7 @@ WebVROculus::getLeftEyeFov()
 }
 
 float
-WebVROculus::getRightEyeFov()
+WebVR::getRightEyeFov()
 {
     // FIXME: Should depend on the VRDisplay
     // Oculus Rift CV1
@@ -189,7 +199,7 @@ WebVROculus::getRightEyeFov()
 }
 
 void
-WebVROculus::updateCamera(scene::Node::Ptr target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
+WebVR::updateCamera(scene::Node::Ptr target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
     std::string eval = "";
 

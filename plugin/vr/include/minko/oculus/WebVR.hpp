@@ -29,10 +29,10 @@ namespace minko
 {
     namespace oculus
     {
-        class WebVROculus : public VRImpl
+        class WebVR : public VRImpl
         {
         public:
-            typedef std::shared_ptr<WebVROculus> Ptr;
+            typedef std::shared_ptr<WebVR> Ptr;
 
         private:
             std::shared_ptr<file::AssetLibrary>     _assetLibrary;
@@ -93,15 +93,15 @@ namespace minko
             Ptr
             create(int viewportWidth, int viewportHeight, float zNear, float zFar)
             {
-                LOG_INFO("Create a WebVROculus instance.");
+                LOG_INFO("Create a WebVR instance.");
 
-                auto ptr = std::shared_ptr<WebVROculus>(new WebVROculus(viewportWidth, viewportHeight, zNear, zFar));
+                auto ptr = std::shared_ptr<WebVR>(new WebVR(viewportWidth, viewportHeight, zNear, zFar));
 
                 return ptr;
             }
 
         private:
-            WebVROculus(int viewportWidth, int viewportHeight, float zNear, float zFar);
+            WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar);
         };
     }
 }

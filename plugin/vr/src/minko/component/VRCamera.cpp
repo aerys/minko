@@ -28,7 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "minko/oculus/Cardboard.hpp"
 #else
 # if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-#  include "minko/oculus/WebVROculus.hpp"
+#  include "minko/oculus/WebVR.hpp"
 #  include "minko/oculus/Cardboard.hpp"
 # else
 #  include "minko/oculus/NativeOculus.hpp"
@@ -75,7 +75,7 @@ bool
 VRCamera::detected()
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    return WebVROculus::detected() || (system::Platform::isMobile() && sensors::Attitude::getInstance()->isSupported());
+    return WebVR::detected() || (system::Platform::isMobile() && sensors::Attitude::getInstance()->isSupported());
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     return true;
 #else
@@ -99,8 +99,8 @@ VRCamera::initialize(int viewportWidth,
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     _VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    if (WebVROculus::detected())
-        _VRImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
+    if (WebVR::detected())
+        _VRImpl = WebVR::create(viewportWidth, viewportHeight, zNear, zFar);
     else if (sensors::Attitude::getInstance()->isSupported())
         _VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
 #elif MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
