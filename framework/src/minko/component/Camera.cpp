@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 
 #include "minko/scene/Node.hpp"
 #include "minko/data/Provider.hpp"
@@ -31,7 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-PerspectiveCamera::PerspectiveCamera(const math::mat4&    projection,
+Camera::Camera(const math::mat4&    projection,
                                      const math::mat4&    postProjection) :
     _data(data::Provider::create()),
     _view(math::mat4(1.f)),
@@ -50,7 +50,7 @@ PerspectiveCamera::PerspectiveCamera(const math::mat4&    projection,
 
 // TODO #Clone
 /*
-PerspectiveCamera::PerspectiveCamera(const PerspectiveCamera& camera, const CloneOption& option) :
+Camera::Camera(const Camera& camera, const CloneOption& option) :
   _data(camera._data->clone()),
   _fov(camera._fov),
   _aspectRatio(camera._aspectRatio),
@@ -65,22 +65,22 @@ PerspectiveCamera::PerspectiveCamera(const PerspectiveCamera& camera, const Clon
 }
 
 AbstractComponent::Ptr
-PerspectiveCamera::clone(const CloneOption& option)
+Camera::clone(const CloneOption& option)
 {
-  auto ctrl = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(*this, option));
+  auto ctrl = std::shared_ptr<Camera>(new Camera(*this, option));
 
   return ctrl;
 }
 */
 
 void
-PerspectiveCamera::targetAdded(NodePtr target)
+Camera::targetAdded(NodePtr target)
 {
   target->data().addProvider(_data);
 
     _modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(std::bind(
-      &PerspectiveCamera::localToWorldChangedHandler,
-    std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
+      &Camera::localToWorldChangedHandler,
+    std::static_pointer_cast<Camera>(shared_from_this()),
       std::placeholders::_1
     ));
 
@@ -89,19 +89,19 @@ PerspectiveCamera::targetAdded(NodePtr target)
 }
 
 void
-PerspectiveCamera::targetRemoved(NodePtr target)
+Camera::targetRemoved(NodePtr target)
 {
   target->data().removeProvider(_data);
 }
 
 void
-PerspectiveCamera::localToWorldChangedHandler(data::Store& data)
+Camera::localToWorldChangedHandler(data::Store& data)
 {
     updateMatrices(data.get<math::mat4>("modelToWorldMatrix"));
 }
 
 void
-PerspectiveCamera::updateMatrices(const math::mat4& modelToWorldMatrix)
+Camera::updateMatrices(const math::mat4& modelToWorldMatrix)
 {
     _position = (modelToWorldMatrix * math::vec4(0.f, 0.f, 0.f, 1.f)).xyz();
     _direction = math::normalize(math::mat3(modelToWorldMatrix) * math::vec3(0.f, 0.f, 1.f));
@@ -116,7 +116,7 @@ PerspectiveCamera::updateMatrices(const math::mat4& modelToWorldMatrix)
 }
 
 void
-PerspectiveCamera::updateWorldToScreenMatrix()
+Camera::updateWorldToScreenMatrix()
 {
     _projection = _postProjection * _projection;
     _viewProjection = _projection * _view;
@@ -127,12 +127,12 @@ PerspectiveCamera::updateWorldToScreenMatrix()
 }
 
 std::shared_ptr<math::Ray>
-PerspectiveCamera::unproject(float x, float y)
+Camera::unproject(float x, float y)
 {
     // Should take normalized X and Y coordinates (between -1 and 1)
     const auto viewport = math::vec4(-1.f, -1.f, 2.f, 2.f);
 
-    // GLM unProject function expect coordinates with the origin at the lower left corner 
+    // GLM unProject function expect coordinates with the origin at the lower left corner
     const auto unprojectedWorldPosition = math::unProject(
         math::vec3(x, -y, 0.f),
         _view,
@@ -147,7 +147,7 @@ PerspectiveCamera::unproject(float x, float y)
 }
 
 math::vec3
-PerspectiveCamera::project(const math::vec3& worldPosition) const
+Camera::project(const math::vec3& worldPosition) const
 {
     auto context = target()->root()->component<SceneManager>()->assets()->context();
 
@@ -161,7 +161,7 @@ PerspectiveCamera::project(const math::vec3& worldPosition) const
 }
 
 math::vec3
-PerspectiveCamera::project(const math::vec3&   worldPosition,
+Camera::project(const math::vec3&   worldPosition,
                            unsigned int        viewportWidth,
                            unsigned int        viewportHeight,
                            const math::mat4&   viewMatrix,

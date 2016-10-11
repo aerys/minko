@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Renderer.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/geometry/QuadGeometry.hpp"
 #include "minko/scene/Node.hpp"
@@ -116,6 +116,11 @@ WebVR::WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     eval += "window.addEventListener('resize', onResize, false);                                        \n";
 
     emscripten_run_script(eval.c_str());
+}
+
+void
+WebVR::initialize(std::shared_ptr<component::SceneManager> sceneManager)
+{
 }
 
 void
@@ -265,7 +270,7 @@ WebVR::updateCamera(scene::Node::Ptr target, std::shared_ptr<scene::Node> leftCa
         auto leftMatrix = glm::make_mat4(leftProjectionMatrix.data());
         auto rightMatrix = glm::make_mat4(rightProjectionMatrix.data());
 
-        _leftRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(leftMatrix);
-        _rightRenderer->target()->component<PerspectiveCamera>()->projectionMatrix(rightMatrix);
+        _leftRenderer->target()->component<Camera>()->projectionMatrix(leftMatrix);
+        _rightRenderer->target()->component<Camera>()->projectionMatrix(rightMatrix);
     }
 }

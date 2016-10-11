@@ -68,10 +68,10 @@ namespace minko
             typedef std::shared_ptr<NativeOculus> Ptr;
 
             void
-            initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr) override;
+            initialize(std::shared_ptr<component::SceneManager> sceneManager) override;
 
             void
-            enable(bool value) override;
+            initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr) override;
 
             void
             targetAdded() override;
@@ -80,7 +80,7 @@ namespace minko
             targetRemoved() override;
 
             void
-            updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera) override;
+            updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera) override;
 
             void
             updateViewport(int viewportWidth, int viewportHeight) override;

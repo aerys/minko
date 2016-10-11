@@ -34,7 +34,7 @@ TEST_F(CanvasTest, CanvasAlpha)
 
     auto camera = Node::create()
         ->addComponent(Renderer::create(0x10203050))
-        ->addComponent(PerspectiveCamera::create(aspectRatio));
+        ->addComponent(Camera::create(math::perspective(.785f, aspectRatio, 0.1f, 1000.f)));
 
     root->addChild(camera);
 

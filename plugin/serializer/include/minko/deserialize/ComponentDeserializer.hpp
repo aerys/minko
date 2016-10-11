@@ -55,6 +55,13 @@ namespace minko
 
             static
             AbsComponentPtr
+            deserializeCamera(file::SceneVersion    sceneVersion,
+                              std::string&	serializedCameraData,
+                              AssetLibraryPtr assetLibrary,
+                              DependencyPtr   dependencies);
+
+            static
+            AbsComponentPtr
             deserializeImageBasedLight(file::SceneVersion   sceneVersion,
                                        std::string&	        serializedImageBasedLight,
                                        AssetLibraryPtr      assetLibrary,

@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractSerializerParser.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Transform.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/component/ImageBasedLight.hpp"
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
@@ -80,13 +80,31 @@ ComponentDeserializer::deserializeProjectionCamera(file::SceneVersion sceneVersi
 												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 												   std::shared_ptr<file::Dependency>	dependencies)
 {
-	std::string				dst;
+	std::string dst;
 
     unpack(dst, packed.data(), packed.size() - 1);
 
 	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-	return component::PerspectiveCamera::create(math::perspective(dstContent[1], dstContent[0], dstContent[2], dstContent[3]));
+	return component::Camera::create(math::perspective(dstContent[1], dstContent[0], dstContent[2], dstContent[3]));
+}
+
+std::shared_ptr<component::AbstractComponent>
+ComponentDeserializer::deserializeCamera(file::SceneVersion                     sceneVersion,
+                                         std::string&                           packed,
+                                         std::shared_ptr<file::AssetLibrary>	assetLibrary,
+                                         std::shared_ptr<file::Dependency>	    dependencies)
+{
+    msgpack::type::tuple<uint, std::string> dst;
+
+    minko::deserialize::unpack(dst, packed.data(), packed.size() - 1);
+    uint& _0 = dst.get<0>();
+    std::string& _1 = dst.get<1>();
+    std::tuple<uint, std::string&> serializedMatrixTuple(_0, _1);
+
+    math::mat4 projectionMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+
+    return component::Camera::create(projectionMatrix);
 }
 
 component::AbstractComponent::Ptr

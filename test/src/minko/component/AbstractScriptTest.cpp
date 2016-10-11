@@ -14,7 +14,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR auto renderer = Renderer::create();
 auto root = scene::Node::create()
     ->addComponent(SceneManager::create(MinkoTests::canvas()))
-    ->addComponent(PerspectiveCamera::create(1.f))
+    ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
     ->addComponent(renderer);PURPOSE AND
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
@@ -52,7 +52,7 @@ TEST_F(AbstractScriptTest, RemoveChildImpliesScriptStopThatRemovesSurface)
 {
     auto root = scene::Node::create()
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(Renderer::create());
 
     auto node = scene::Node::create()

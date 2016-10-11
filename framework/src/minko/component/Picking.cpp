@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/SceneManager.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/input/Mouse.hpp"
@@ -300,7 +300,7 @@ Picking::targetAdded(NodePtr target)
 	target->addComponent(_renderer);
     target->addComponent(_depthRenderer);
 
-	auto perspectiveCamera = _camera->component<component::PerspectiveCamera>();
+	auto perspectiveCamera = _camera->component<component::Camera>();
 
 	target->data().addProvider(_pickingProvider);
 	target->data().addProvider(perspectiveCamera->data());
@@ -650,7 +650,7 @@ Picking::updatePickingProjection()
 	const auto mouseX = static_cast<float>(_mouse->x());
 	const auto mouseY = static_cast<float>(_mouse->y());
 
-	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
+	auto perspectiveCamera	= _camera->component<component::Camera>();
 	auto projection	= perspectiveCamera->projectionMatrix();
 
 	projection[2][0] = mouseX / _context->viewportWidth() * 2.f;
@@ -662,7 +662,7 @@ Picking::updatePickingProjection()
 void
 Picking::updatePickingOrigin()
 {
-	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
+	auto perspectiveCamera	= _camera->component<component::Camera>();
 
     const auto normalizedMouseX = _mouse->normalizedX();
     const auto normalizedMouseY = _mouse->normalizedY();

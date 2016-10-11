@@ -51,7 +51,7 @@ MouseManager::targetAdded(scene::Node::Ptr target)
     _mouseMoveSlot = _mouse->move()->connect([&](MousePtr m, int dx, int dy)
     {
         // FIXME: should unproject from properties stored in data()
-        auto cam = target->component<PerspectiveCamera>();
+        auto cam = target->component<Camera>();
 
         if (cam)
             pick(_ray = cam->unproject(m->normalizedX(), m->normalizedY()));

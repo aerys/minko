@@ -28,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/Texture.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/SceneManager.hpp"
 
 #include "minko/log/Logger.hpp"
@@ -52,6 +51,11 @@ Cardboard::Cardboard(int viewportWidth, int viewportHeight, float zNear, float z
     _uvScaleOffset[0].second = math::vec2();
     _uvScaleOffset[1].first = math::vec2();
     _uvScaleOffset[1].second = math::vec2();
+}
+
+void
+Cardboard::initialize(std::shared_ptr<component::SceneManager> sceneManager)
+{
 }
 
 void

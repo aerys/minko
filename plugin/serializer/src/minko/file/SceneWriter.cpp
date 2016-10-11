@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Animation.hpp"
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/component/BoundingBox.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
@@ -50,9 +50,9 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 	_magicNumber = MINKO_SCENE_MAGIC_NUMBER;
 
 	registerComponent(
-		&typeid(component::PerspectiveCamera),
+		&typeid(component::Camera),
 		std::bind(
-			&serialize::ComponentSerializer::serializePerspectiveCamera,
+			&serialize::ComponentSerializer::serializeCamera,
 			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
 		)
 	);

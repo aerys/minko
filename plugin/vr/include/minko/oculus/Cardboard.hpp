@@ -53,6 +53,9 @@ namespace minko
             typedef std::shared_ptr<Cardboard> Ptr;
 
             void
+            initialize(std::shared_ptr<component::SceneManager> sceneManager) override;
+
+            void
             initializeVRDevice(
                 std::shared_ptr<component::Renderer> leftRenderer,
                 std::shared_ptr<component::Renderer> rightRenderer,

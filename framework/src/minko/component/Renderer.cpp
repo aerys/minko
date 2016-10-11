@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/component/SceneManager.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/DrawCallPool.hpp"
 #include "minko/data/AbstractFilter.hpp"
@@ -304,7 +304,7 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
     auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
-    auto perspectiveCamera = std::dynamic_pointer_cast<PerspectiveCamera>(ctrl);
+    auto perspectiveCamera = std::dynamic_pointer_cast<Camera>(ctrl);
 
 	if (surfaceCtrl)
         _toCollect.insert(surfaceCtrl);
@@ -328,7 +328,7 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 {
 	auto surface = std::dynamic_pointer_cast<Surface>(cmp);
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(cmp);
-    auto perspectiveCamera = std::dynamic_pointer_cast<PerspectiveCamera>(cmp);
+    auto perspectiveCamera = std::dynamic_pointer_cast<Camera>(cmp);
 
 	if (surface)
 	{

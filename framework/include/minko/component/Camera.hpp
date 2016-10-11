@@ -31,11 +31,11 @@ namespace minko
 {
     namespace component
     {
-        class PerspectiveCamera :
+        class Camera :
             public AbstractComponent
         {
         public:
-            typedef std::shared_ptr<PerspectiveCamera> Ptr;
+            typedef std::shared_ptr<Camera> Ptr;
 
         private:
             typedef std::shared_ptr<AbstractComponent>  AbsCtrlPtr;
@@ -62,7 +62,7 @@ namespace minko
             create(const math::mat4&    projection,
                    const math::mat4&    postProjection  = math::mat4(1.f))
             {
-                return std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(
+                return std::shared_ptr<Camera>(new Camera(
                     projection, postProjection
                 ));
             }
@@ -109,7 +109,7 @@ namespace minko
                 updateWorldToScreenMatrix();
             }
 
-            ~PerspectiveCamera()
+            ~Camera()
             {
             }
 
@@ -135,10 +135,10 @@ namespace minko
             targetRemoved(NodePtr target);
 
         private:
-            PerspectiveCamera(const math::mat4& projection,
+            Camera(const math::mat4& projection,
                               const math::mat4& postProjection);
 
-            PerspectiveCamera(const PerspectiveCamera& camera, const CloneOption& option);
+            Camera(const Camera& camera, const CloneOption& option);
 
             void
             localToWorldChangedHandler(data::Store& data);

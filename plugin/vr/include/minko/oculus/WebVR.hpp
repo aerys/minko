@@ -51,6 +51,9 @@ namespace minko
         public:
 
             void
+            initialize(std::shared_ptr<component::SceneManager> sceneManager) override;
+
+            void
             initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr) override;
 
             void

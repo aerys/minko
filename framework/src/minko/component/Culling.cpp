@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/NodeSet.hpp"
 #include "minko/scene/Layout.hpp"
 #include "minko/math/OctTree.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Renderer.hpp"
