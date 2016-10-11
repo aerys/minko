@@ -36,6 +36,8 @@ async::Worker::Ptr worker;
 Signal<Loader::Ptr>::Slot requestCompleteSlot;
 Signal<Loader::Ptr, const Error&>::Slot requestErrorSlot;
 
+const std::string EFFECT_FILENAME = "effect/Basic.effect";
+
 void
 callEndpoint(const string& url)
 {
@@ -92,7 +94,7 @@ callEndpoint(const string& url)
 int
 main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("My Minko App", 960, 540);
+    auto canvas = Canvas::create("Minko Example - NodeJS");
     canvas->registerWorker<NodeJSWorker>("node");
     canvas->registerWorker<HTTPWorker>("http");
 
@@ -106,6 +108,61 @@ main(int argc, char** argv)
         callEndpoint("http://127.0.0.1:3000/hello");
     }).detach();
 
+    auto sceneManager = SceneManager::create(canvas);
+
+    sceneManager->assets()->loader()
+        ->queue(EFFECT_FILENAME);
+
+    auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
+    sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
+
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager);
+
+    auto mesh = scene::Node::create("mesh")
+        ->addComponent(Transform::create());
+
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x7f7f7fff))
+        ->addComponent(Transform::create(
+            math::inverse(
+                math::lookAt(
+                    math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0, 1, 0)
+                )
+            )
+        ))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
+    root->addChild(mesh);
+    root->addChild(camera);
+
+    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    {
+        auto material = material::BasicMaterial::create();
+        material->diffuseColor(0xff0000ff);
+
+        mesh->addComponent(Surface::create(
+            sceneManager->assets()->geometry("cubeGeometry"),
+            material,
+            sceneManager->assets()->effect(EFFECT_FILENAME)
+        ));
+    });
+
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+    });
+
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    {
+        mesh->component<Transform>()->matrix(
+            mesh->component<Transform>()->matrix() * math::rotate(0.01f, math::vec3(0, 1, 0))
+        );
+
+        sceneManager->nextFrame(time, deltaTime);
+    });
+
+    sceneManager->assets()->loader()->load();
     canvas->run();
 
     return 0;
