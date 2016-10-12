@@ -18,7 +18,7 @@ Minko.bindJsErrors = function()
 		if (debugElement)
 			debugElement.innerHTML += message + " line " + linenumber + " " + url + "</br>";
 		else
-			console.log('[Minko HTML Overlay] Javascript error: ' + message + ' on line ' + linenumber + ' for ' + url);
+			console.error('JavaScript error: ' + message + ' on line ' + linenumber + ' for ' + url);
 	}
 }
 
@@ -69,13 +69,7 @@ Minko.loadedHandler = function(event)
 		return false;
 	};
 
-	if (!Minko.onmessage)
-	{
-		Minko.onmessage = function(message)
-		{
-			console.log('[Minko HTML Overlay] message received: ' + message);
-		}
-	}
+	Minko.onmessage = Minko.onmessage || function (message) { };
 
 	if (Minko.platform != "androidWebView")
 	{
@@ -89,8 +83,6 @@ Minko.loadedHandler = function(event)
 
 	if (Minko.platform == "emscripten")
 		Minko.bindRedispatchEvents();
-
-	console.log("[Minko HTML Overlay] loaded page " + Minko.window.location.href);
 
 	Minko.bindJsErrors();
 
@@ -593,8 +585,6 @@ Minko.androidEventHandler = function(event)
 	if (event.ignoreOnMinko)
 		return;
 
-	console.log('JS Event: ' + event.type + ' (' + event.currentTarget.minkoName + ')');
-	
 	// Workaround for API 19 to properly fire touchmove
 	if (!event.dontPreventDefault && (event.type == "touchstart" || event.type == "touchend"))	
 		event.preventDefault();
@@ -637,11 +627,8 @@ Minko.androidEventHandler = function(event)
 			eventData.changedTouches[i].identifier = event.changedTouches[i].identifier;
 		}
 	}
-	
-	var jsonStringify = JSON.stringify(eventData);
-	console.log(jsonStringify);
-	
-	MinkoNativeInterface.onEvent(event.currentTarget.minkoName, jsonStringify);
+
+	MinkoNativeInterface.onEvent(event.currentTarget.minkoName, JSON.stringify(eventData));
 }
 
 Minko.addListenerAndroid = function(accessor, type)
@@ -675,8 +662,6 @@ Minko.init = function(platform)
 	}
 	else if (platform == "androidWebView")
 	{
-		console.log("Init android!");
-		
 		Minko.sendMessage = function(message)
 		{
 			MinkoNativeInterface.onMessage(message);
