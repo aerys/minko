@@ -108,7 +108,11 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
     Json::Reader reader;
 
     if (!reader.parse(nativeEvent.data(), root, false))
-        LOG_INFO(reader.getFormattedErrorMessages().c_str());
+    {
+        LOG_ERROR(reader.getFormattedErrorMessages().c_str());
+
+        return;
+    }
 
     auto type = root.get("type", "unknown").asString();
     auto target = AndroidWebViewDOMElement::getDOMElement(nativeAccessor, AndroidWebViewDOMEngine::currentEngine);
@@ -228,13 +232,11 @@ AndroidWebViewDOMEngine::AndroidWebViewDOMEngine() :
     {
         _webViewInitialized = true;
         updateWebViewResolution(_canvas->width(), _canvas->height());
-        LOG_INFO("WebView initialized");
     });
 
     _onWebViewPageLoadedSlot = onWebViewPageLoaded->connect([&]()
     {
         _webViewPageLoaded = true;
-        LOG_INFO("WebView has finished to load the page");
     });
 }
 
@@ -243,8 +245,6 @@ AndroidWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Pt
 {
 	_canvas = canvas;
 	_sceneManager = sceneManager;
-
-    LOG_INFO("Canvas size: " << _canvas->width() << "x" << _canvas->height());
 
     // JNI
 
@@ -349,7 +349,6 @@ AndroidWebViewDOMEngine::enterFrame(float time)
             for(int i = 0; i < l; ++i)
             {
                 auto message = AndroidWebViewDOMEngine::messages[i];
-                LOG_INFO("onMessage: " + message);
 
                 _currentDOM->onmessage()->execute(_currentDOM, message);
                 _onmessage->execute(_currentDOM, message);
@@ -447,7 +446,6 @@ AndroidWebViewDOMEngine::load(std::string uri)
         auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
         // Call URL loading method
-        LOG_INFO("Try to load this URL:" << uri);
         env->CallVoidMethod(_initWebViewTask, _loadUrlMethod, env->NewStringUTF(uri.c_str()));
     }
 
@@ -504,8 +502,6 @@ AndroidWebViewDOMEngine::registerDomEvents()
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
 
-        LOG_INFO("Mouse down (" << x << ", " << y << ")");
-
         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
 
@@ -531,8 +527,6 @@ AndroidWebViewDOMEngine::registerDomEvents()
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
 
-        LOG_INFO("Mouse move (" << x << ", " << y << "|" << oldX << ", " << oldY << ")");
-
         _canvas->mouse()->move()->execute(_canvas->mouse(), x - oldX, y - oldY);
     });
 
@@ -549,8 +543,6 @@ AndroidWebViewDOMEngine::registerDomEvents()
         sdlEvent.tfinger.y = y / _canvas->height();
 
         SDL_PushEvent(&sdlEvent);
-
-        LOG_INFO("Touch start (" << x << ", " << y << ")");
     });
 
     _ontouchendSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchend()->connect([&](AbstractDOMTouchEvent::Ptr event)
@@ -566,8 +558,6 @@ AndroidWebViewDOMEngine::registerDomEvents()
         sdlEvent.tfinger.y = y / _canvas->height();
 
         SDL_PushEvent(&sdlEvent);
-
-        LOG_INFO("Touch end (" << x << ", " << y << ")");
     });
 
     _ontouchmoveSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchmove()->connect([&](AbstractDOMTouchEvent::Ptr event)
@@ -593,8 +583,6 @@ AndroidWebViewDOMEngine::registerDomEvents()
         sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
 
         SDL_PushEvent(&sdlEvent);
-
-        LOG_INFO("Touch move (" << x << ", " << y << "|" << oldX << ", " << oldY << ")");
     });
 }
 
