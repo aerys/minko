@@ -22,8 +22,11 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.16.0",
+    "bluebird": "^3.4.6",
     "express": "^4.14.0",
-    "nedb": "^1.8.0",
+    "nedb": "warrenseine/nedb",
+    "mongoose-nedb": "warrenseine/mongoose-nedb",
+    "mongoose": "^4.6.3",
     "source-map-support": "^0.4.3",
     "superagent": "^2.3.0"
   }
