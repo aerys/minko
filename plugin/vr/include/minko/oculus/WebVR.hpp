@@ -35,17 +35,10 @@ namespace minko
             typedef std::shared_ptr<WebVR> Ptr;
 
         private:
-            std::shared_ptr<file::AssetLibrary>     _assetLibrary;
-
-            uint                                    _renderTargetWidth;
-            uint                                    _renderTargetHeight;
-
-            float                                   _zNear;
-            float                                   _zFar;
-            bool                                    _initialized;
-
             Signal<std::shared_ptr<minko::component::Renderer>>::Slot   _renderingEndSlot;
 
+            float _zNear;
+            float _zFar;
             std::shared_ptr<minko::component::Renderer> _leftRenderer;
             std::shared_ptr<minko::component::Renderer> _rightRenderer;
         public:

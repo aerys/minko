@@ -32,11 +32,11 @@ using namespace minko;
 using namespace minko::component;
 
 Camera::Camera(const math::mat4&    projection,
-                                     const math::mat4&    postProjection) :
+               const math::mat4&    postProjection) :
     _data(data::Provider::create()),
     _view(math::mat4(1.f)),
     _position(),
-    _direction(0., 0., 1.f),
+    _direction(0.f, 0.f, 1.f),
     _postProjection(postProjection)
 {
     _data
@@ -76,13 +76,13 @@ Camera::clone(const CloneOption& option)
 void
 Camera::targetAdded(NodePtr target)
 {
-  target->data().addProvider(_data);
+    target->data().addProvider(_data);
 
-    _modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(std::bind(
-      &Camera::localToWorldChangedHandler,
-    std::static_pointer_cast<Camera>(shared_from_this()),
-      std::placeholders::_1
-    ));
+    _modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(
+    [&](data::Store& data, data::Provider::Ptr, const data::Provider::PropertyName&)
+    {
+        localToWorldChangedHandler(data);
+    });
 
     if (target->data().hasProperty("modelToWorldMatrix"))
         updateMatrices(target->data().get<math::mat4>("modelToWorldMatrix"));
@@ -91,7 +91,7 @@ Camera::targetAdded(NodePtr target)
 void
 Camera::targetRemoved(NodePtr target)
 {
-  target->data().removeProvider(_data);
+    target->data().removeProvider(_data);
 }
 
 void
@@ -107,12 +107,12 @@ Camera::updateMatrices(const math::mat4& modelToWorldMatrix)
     _direction = math::normalize(math::mat3(modelToWorldMatrix) * math::vec3(0.f, 0.f, 1.f));
     _view = math::inverse(modelToWorldMatrix);
 
-  _data
-    ->set("eyeDirection", _direction)
-    ->set("eyePosition", _position)
-    ->set("viewMatrix", _view);
+    _data
+        ->set("eyeDirection", _direction)
+        ->set("eyePosition", _position)
+        ->set("viewMatrix", _view);
 
-  updateWorldToScreenMatrix();
+    updateWorldToScreenMatrix();
 }
 
 void
@@ -140,7 +140,9 @@ Camera::unproject(float x, float y)
         viewport
     );
 
-    const auto rayWorldOrigin = math::vec3(target()->component<Transform>()->modelToWorldMatrix() * math::vec4(0.f, 0.f, 0.f, 1.f));
+    const auto rayWorldOrigin =
+        math::vec3(target()->component<Transform>()->modelToWorldMatrix() *
+        math::vec4(0.f, 0.f, 0.f, 1.f));
     const auto rayWorldDirection = math::normalize(unprojectedWorldPosition - rayWorldOrigin);
 
     return math::Ray::create(rayWorldOrigin, rayWorldDirection);
@@ -162,10 +164,10 @@ Camera::project(const math::vec3& worldPosition) const
 
 math::vec3
 Camera::project(const math::vec3&   worldPosition,
-                           unsigned int        viewportWidth,
-                           unsigned int        viewportHeight,
-                           const math::mat4&   viewMatrix,
-                           const math::mat4&   viewProjectionMatrix)
+                unsigned int        viewportWidth,
+                unsigned int        viewportHeight,
+                const math::mat4&   viewMatrix,
+                const math::mat4&   viewProjectionMatrix)
 {
     const auto width = viewportWidth;
     const auto height = viewportHeight;
@@ -175,8 +177,8 @@ Camera::project(const math::vec3&   worldPosition,
     vector /= vector.w;
 
     return math::vec3(
-       width * ((vector.x + 1.0f) * .5f),
-     height * ((1.0f - ((vector.y + 1.0f) * .5f))),
-       -(viewMatrix * pos).z
+        width * ((vector.x + 1.0f) * .5f),
+        height * ((1.0f - ((vector.y + 1.0f) * .5f))),
+        -(viewMatrix * pos).z
     );
 }

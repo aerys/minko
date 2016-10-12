@@ -40,8 +40,7 @@ using namespace minko::oculus;
 
 WebVR::WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     _zNear(zNear),
-    _zFar(zFar),
-    _initialized(false)
+    _zFar(zFar)
 {
     std::string eval;
 
