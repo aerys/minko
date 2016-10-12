@@ -5,14 +5,46 @@ set -e
 
 # we save the project's current directory location
 CWD=`pwd`
+TARGET=$1
 
-ANDROID_KEYSTORE_PATH="${ANDROID_KEYSTORE_PATH}"
-ANDROID_KEYSTORE_ALIAS="${ANDROID_KEYSTORE_ALIAS}"
-ANDROID_KEYSTORE_PASSWORD="${ANDROID_KEYSTORE_PASSWORD}"
+[[ -z ${TARGET} ]] && {
+	echo "usage: build_android.sh target" > /dev/stderr
+	exit 1
+}
+
+[[ -z ${ANDROID_KEYSTORE_PATH} ]] && {
+	echo "Missing environment variable ANDROID_KEYSTORE_PATH" > /dev/stderr
+	exit 1
+}
+
+[[ -z ${ANDROID_KEYSTORE_ALIAS} ]] && {
+	echo "Missing environment variable ANDROID_KEYSTORE_ALIAS" > /dev/stderr
+	exit 1
+}
+
+[[ -z ${ANDROID_KEYSTORE_PASSWORD} ]] && {
+	echo "Missing environment variable ANDROID_KEYSTORE_PASSWORD" > /dev/stderr
+	exit 1
+}
+
+[[ -z ${ANDROID_HOME} ]] && {
+	echo "Missing environment variable ANDROID_HOME" > /dev/stderr
+	exit 1
+}
+
 ANDROID="${ANDROID_HOME}"
-
 ADB="${ANDROID_HOME}/platform-tools/adb"
 ZIPALIGN="${ANDROID_HOME}/tools/zipalign"
+
+[[ -x ${ADB} ]] && {
+	echo "${ADB} is not executable" > /dev/stderr
+	exit 1
+}
+
+[[ -x ${ZIPALIGN} ]] && {
+	echo "${ZIPALIGN} is not executable" > /dev/stderr
+	exit 1
+}
 
 VERSION_CODE="1"
 
@@ -26,7 +58,6 @@ if [ ${OSTYPE} == "cygwin" ]; then
 fi
 
 #RSYNC_OPTIONS="--ignore-existing"
-TARGET=$1
 TARGET_NAME=$(basename ${TARGET})
 TARGET_DIR=$(dirname ${TARGET})
 CONFIG=$(basename ${TARGET_DIR})
@@ -66,6 +97,7 @@ if [[ "${CONFIG}" == "debug" ]]; then
 else
 	UNSIGNED_APK_PATH="bin/${APP_NAME}-${CONFIG}-unsigned.apk"
 fi
+
 ARTIFACT_PATH="bin/${ARTIFACT_NAME}-${CONFIG}.apk"
 
 DEVICE_STATE=$("${ADB}" get-state | sed 's/\r$//')
