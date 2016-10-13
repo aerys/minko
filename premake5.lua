@@ -104,7 +104,7 @@ solution "minko"
 			['html-overlay']		= true,
 			['http']				= true,
 			['jobs']				= false,
-			['joystick']			= false,
+			['joystick']			= true,
 			['keyboard']			= false,
 			['leap-motion']			= false,
 			['light']				= true,
