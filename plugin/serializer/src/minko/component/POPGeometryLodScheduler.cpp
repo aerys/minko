@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/component/POPGeometryLodScheduler.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"

@@ -40,7 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Surface.hpp"
 #include "minko/component/Skinning.hpp"
 #include "minko/component/MasterAnimation.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/component/AbstractAnimation.hpp"
 #include "minko/component/Animation.hpp"
 #include "minko/component/Metadata.hpp"
@@ -778,11 +778,13 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 				* aiCamera->mAspect);
 
             cameraNode
-			    ->addComponent(PerspectiveCamera::create(
-				    aiCamera->mAspect,
-				    half_fovy,
-				    aiCamera->mClipPlaneNear,
-				    aiCamera->mClipPlaneFar
+			    ->addComponent(Camera::create(
+                    math::perspective(
+                        half_fovy,
+    				    aiCamera->mAspect,
+    				    aiCamera->mClipPlaneNear,
+    				    aiCamera->mClipPlaneFar
+                    )
 			    ));
 			if (!cameraNode->hasComponent<Transform>())
 				cameraNode->addComponent(Transform::create());

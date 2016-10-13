@@ -123,7 +123,7 @@ main(int argc, char** argv)
 
     auto camera = Node::create("camera")
         ->addComponent(Renderer::create(generateHexColor()))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)))
         ->addComponent(Transform::create());
 
     camera->component<Transform>()->matrix(

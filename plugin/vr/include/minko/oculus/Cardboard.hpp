@@ -53,43 +53,43 @@ namespace minko
             typedef std::shared_ptr<Cardboard> Ptr;
 
             void
-            initialize(std::shared_ptr<component::SceneManager> sceneManager);
+            initialize(std::shared_ptr<component::SceneManager> sceneManager) override;
 
             void
             initializeVRDevice(
-                std::shared_ptr<component::Renderer> leftRenderer, 
-                std::shared_ptr<component::Renderer> rightRenderer, 
-                void* window = nullptr);
+                std::shared_ptr<component::Renderer> leftRenderer,
+                std::shared_ptr<component::Renderer> rightRenderer,
+                void* window = nullptr) override;
 
             void
-            targetAdded();
+            targetAdded() override;
 
             void
-            targetRemoved();
+            targetRemoved() override;
 
             void
-            updateCameraOrientation(
-                std::shared_ptr<scene::Node> target, 
-                std::shared_ptr<scene::Node> leftCamera, 
-                std::shared_ptr<scene::Node> rightCamera);
+            updateCamera(
+                std::shared_ptr<scene::Node> target,
+                std::shared_ptr<scene::Node> leftCamera,
+                std::shared_ptr<scene::Node> rightCamera) override;
 
             void
-            updateViewport(int viewportWidth, int viewportHeight);
+            updateViewport(int viewportWidth, int viewportHeight) override;
 
             float
-            getLeftEyeFov();
+            getLeftEyeFov() override;
 
             float
-            getRightEyeFov();
+            getRightEyeFov() override;
 
             float
-            zNear()
+            zNear() override
             {
                 return _zNear;
             }
 
             float
-            zFar()
+            zFar() override
             {
                 return _zFar;
             }

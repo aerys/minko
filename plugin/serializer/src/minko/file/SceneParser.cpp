@@ -56,6 +56,13 @@ SceneParser::SceneParser()
         std::placeholders::_3,
         std::placeholders::_4));
 
+    registerComponent(serialize::CAMERA,
+        std::bind(&deserialize::ComponentDeserializer::deserializeCamera,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
+
     registerComponent(serialize::TRANSFORM,
         std::bind(&deserialize::ComponentDeserializer::deserializeTransform,
         std::placeholders::_1,

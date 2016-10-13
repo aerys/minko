@@ -28,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/Texture.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/SceneManager.hpp"
 
 #include "minko/log/Logger.hpp"
@@ -103,7 +102,7 @@ Cardboard::getRightEyeFov()
 }
 
 void
-Cardboard::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
+Cardboard::updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     auto rotationMatrix = _attitude->rotationMatrix();
