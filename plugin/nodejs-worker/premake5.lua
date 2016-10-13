@@ -22,10 +22,6 @@ minko.project.worker("minko-plugin-" .. PROJECT_NAME)
 		"lib/node/src"
 	}
 
-	libdirs {
-		"lib/node/out/Release/obj.target"
-	}
-
 	prebuildcommands {
 		"bash script/build_nodejs.sh"
 	}
