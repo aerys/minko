@@ -46,11 +46,11 @@ minko.project.library = function(name)
 			"_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS"		-- disable "<hash_map> is deprecated and will be REMOVED" error
 		}
 		flags {
-			"NoMinimalRebuild"
+			-- "NoMinimalRebuild"
 		}
 		buildoptions {
 			"/wd4503",				-- remove warnings about too long type names
-			"/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
+			-- "/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
 		}
 
 	configuration { "vs*", "release" }
