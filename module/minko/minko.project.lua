@@ -272,6 +272,10 @@ minko.project.application = function(name)
 		cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=0'
 		-- demangling C++ symbols
 		cmd = cmd .. ' -s DEMANGLE_SUPPORT=1'
+
+		cmd = cmd .. ' -s NO_EXIT_RUNTIME=1'
+		cmd = cmd .. ' -s EXPORTED_FUNCTIONS="[\'_main\', \'_minkoRunPlayer\']"'
+
 		-- use a separate *.mem file to initialize the app memory
 		cmd = cmd .. ' --memory-init-file 1'
 		-- set the app (or the sdk) template.html
