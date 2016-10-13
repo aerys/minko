@@ -36,12 +36,12 @@ ANDROID="${ANDROID_HOME}"
 ADB="${ANDROID_HOME}/platform-tools/adb"
 ZIPALIGN="${ANDROID_HOME}/tools/zipalign"
 
-[[ -x ${ADB} ]] && {
+[[ -x ${ADB} ]] || {
 	echo "${ADB} is not executable" > /dev/stderr
 	exit 1
 }
 
-[[ -x ${ZIPALIGN} ]] && {
+[[ -x ${ZIPALIGN} ]] || {
 	echo "${ZIPALIGN} is not executable" > /dev/stderr
 	exit 1
 }
