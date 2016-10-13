@@ -152,16 +152,16 @@ VRCamera::targetAdded(NodePtr target)
         zFar = _VRImpl->zFar();
     }
 
-    auto leftCamera = Camera::create(math::perspective((float)atan(45), aspectRatio, zNear, zFar));
-    auto rightCamera = Camera::create(math::perspective((float)atan(45), aspectRatio, zNear, zFar));
+    auto leftCamera = Camera::create(math::perspective(atan(45.f), aspectRatio, zNear, zFar));
+    auto rightCamera = Camera::create(math::perspective(atan(45.f), aspectRatio, zNear, zFar));
 
     _leftCameraNode = scene::Node::create("VRCameraLeftEye")
-        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(-0.032422490417957306f, 0, 0), math::vec3(-0.032422490417957306f, 0, -1), math::vec3(0, 1, 0)))))
+        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(-0.03f, 0, 0), math::vec3(-0.03f, 0, -1), math::vec3(0, 1, 0)))))
         ->addComponent(leftCamera)
         ->addComponent(_leftRenderer);
 
     _rightCameraNode = scene::Node::create("VRCameraRightEye")
-        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(0.032422490417957306f, 0, 0), math::vec3(0.032422490417957306f, 0, -1), math::vec3(0, 1, 0)))))
+        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(0.03f, 0, 0), math::vec3(0.03f, 0, -1), math::vec3(0, 1, 0)))))
         ->addComponent(rightCamera)
         ->addComponent(_rightRenderer);
 
