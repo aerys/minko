@@ -61,7 +61,10 @@ Transform::targetAdded(scene::Node::Ptr	target)
     {
         addedOrRemovedHandler(n, t, p);
     });
-	//_removedSlot = target->removed()->connect(callback);
+	_removedSlot = target->removed().connect([=](scene::Node::Ptr n, scene::Node::Ptr t, scene::Node::Ptr p)
+    {
+        addedOrRemovedHandler(n, t, p);
+    });
 
 	addedOrRemovedHandler(nullptr, target, target->parent());
 }
