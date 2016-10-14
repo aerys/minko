@@ -70,7 +70,7 @@ main(int argc, char** argv)
 
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
+        ->addComponent(Camera::create(canvas->aspectRatio()))
         ->addComponent(Transform::create(
             math::inverse(
                 math::lookAt(
@@ -125,7 +125,8 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, minko::uint w, minko::uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        auto aspectRatio = float(w) / float(h);
+        camera->component<Camera>()->projection(math::perspective(fov, );
     });
 
     auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr ac, float t, float dt)

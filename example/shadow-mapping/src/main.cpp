@@ -96,7 +96,7 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(
             math::inverse(math::lookAt(math::vec3(0.f, 8.f, 8.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
         )))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio(), .785f, .1f, 100.f));
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), .1f, 100.f)));
 
     root->addChild(camera);
     root->addChild(debugNode);
@@ -148,7 +148,7 @@ int main(int argc, char** argv)
 
         initializeShadowMapping(root, sceneManager->assets());
 
-        auto perspective = camera->component<PerspectiveCamera>();
+        auto perspective = camera->component<Camera>();
         camera->component<Transform>()->updateModelToWorldMatrix();
         directionalLight->target()->component<Transform>()->updateModelToWorldMatrix();
         directionalLight->computeShadowProjection(perspective->viewMatrix(), perspective->projectionMatrix());
@@ -170,7 +170,7 @@ int main(int argc, char** argv)
         }
         if (k->keyIsDown(input::Keyboard::Key::C))
         {
-            auto p = camera->component<PerspectiveCamera>();
+            auto p = camera->component<Camera>();
 
             if (debugNode->hasComponent(frustums[4]))
                 debugNode->removeComponent(frustums[4]);
@@ -182,7 +182,7 @@ int main(int argc, char** argv)
         }
         if (k->keyIsDown(input::Keyboard::Key::L))
         {
-            auto p = camera->component<PerspectiveCamera>();
+            auto p = camera->component<Camera>();
             std::array<math::vec4, 4> colors = {
                 math::vec4(1.f, 0.f, 0.f, .1f),
                 math::vec4(0.f, 1.f, 0.f, .1f),
@@ -234,7 +234,7 @@ int main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
         cameraMoved = true;
     });
 
@@ -305,7 +305,7 @@ int main(int argc, char** argv)
                 pitch = minPitch;
         }
 
-        auto p = camera->component<PerspectiveCamera>();
+        auto p = camera->component<Camera>();
         directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
         directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
 

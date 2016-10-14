@@ -80,7 +80,7 @@ main(int argc, char** argv)
             ->addComponent(Transform::create(math::inverse(
                 math::lookAt(math::vec3(6.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
             )))
-            ->addComponent(PerspectiveCamera::create(canvas->aspectRatio(), 0.785f, .1f, 20.f));
+            ->addComponent(Camera::create(math::perspective(0.785f, canvas->aspectRatio(), .1f, 20.f)));
         root->addChild(camera);
 
         auto groundMaterial = material::PhongMaterial::create(material);
@@ -162,7 +162,7 @@ main(int argc, char** argv)
 
         auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
         {
-            camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+            camera->component<Camera>()->projectionMatrix(math::perspective(0.785f, float(w) / float(h), .1f, 20.f));
         });
 
         auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float dt)

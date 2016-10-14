@@ -62,6 +62,7 @@ namespace minko
             PARTICLES                   = 60,
 			METADATA  				    = 70,
             MASTER_ANIMATION            = 90,
+            CAMERA                      = 91,
             COMPONENT_ID_EXTENSION      = 111
 		};
 

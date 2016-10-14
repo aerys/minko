@@ -31,6 +31,7 @@ namespace minko
             public std::enable_shared_from_this<VRImpl>
         {
         public:
+
             virtual
             void
             initialize(std::shared_ptr<component::SceneManager> sceneManager) = 0;
@@ -53,7 +54,7 @@ namespace minko
 
             virtual
             void
-            updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera) = 0;
+            updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera) = 0;
 
             virtual
             float

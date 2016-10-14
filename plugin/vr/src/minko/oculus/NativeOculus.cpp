@@ -33,7 +33,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/Texture.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/component/SceneManager.hpp"
 
 using namespace minko;
@@ -243,7 +243,7 @@ NativeOculus::targetRemoved()
 void
 NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
 {
-    // Renderer viewports and aspect ratio are updated into VRCamera, 
+    // Renderer viewports and aspect ratio are updated into VRCamera,
     // for Oculus we need a specific viewport given by SDK
     auto aspectRatio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
 
@@ -255,9 +255,9 @@ NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
         if (_leftRendererViewport.z > 0 && _leftRendererViewport.w > 0)
             _leftRenderer->viewport(_leftRendererViewport);
 
-        auto leftCamera = _leftRenderer->target()->component<PerspectiveCamera>();
-        leftCamera->aspectRatio(aspectRatio);
-        leftCamera->fieldOfView(getLeftEyeFov() * M_PI_2);
+        auto leftCamera = _leftRenderer->target()->component<Camera>();
+        //leftCamera->aspectRatio(aspectRatio);
+        //leftCamera->fieldOfView(getLeftEyeFov() * M_PI_2);
 
         auto root = _leftRenderer->target()->root();
         if (root->data().hasProperty("viewport"))
@@ -270,10 +270,10 @@ NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
     {
         if (_rightRendererViewport.z > 0 && _rightRendererViewport.w > 0)
             _rightRenderer->viewport(_rightRendererViewport);
-     
-        auto rightCamera = _rightRenderer->target()->component<PerspectiveCamera>();
-        rightCamera->aspectRatio(aspectRatio);
-        rightCamera->fieldOfView(getRightEyeFov() * M_PI_2);
+
+        auto rightCamera = _rightRenderer->target()->component<Camera>();
+        //rightCamera->aspectRatio(aspectRatio);
+        //rightCamera->fieldOfView(getRightEyeFov() * M_PI_2);
     }
 
     _ppRenderer->viewport(math::ivec4(0, 0, viewportWidth, viewportHeight));
@@ -348,7 +348,7 @@ NativeOculus::getRightEyeFov()
 }
 
 void
-NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
+NativeOculus::updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
     static ovrPosef eyeRenderPose[2];
     const static float BodyYaw(0.f);

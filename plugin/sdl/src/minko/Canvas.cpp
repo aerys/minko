@@ -28,7 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/Transform.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5 && MINKO_PLATFORM != MINKO_PLATFORM_ANDROID
 # include "minko/file/FileProtocolWorker.hpp"
@@ -296,13 +296,13 @@ Canvas::createScene()
 		->addComponent(Transform::create(
 			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0.f, 1.f, 0.f)))
 		))
-		->addComponent(PerspectiveCamera::create(shared_from_this()->aspectRatio()));
+		->addComponent(Camera::create(math::perspective(.785f, shared_from_this()->aspectRatio(), 0.1f, 1000.f)));
 
     root->addChild(_camera);
 
     _resizedSlot = _resized->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		_camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        _camera->component<Camera>()->projectionMatrix(math::perspective(.785f, float(w) / float(h), 0.1f, 1000.f));
 	});
 
     return root;
@@ -391,6 +391,7 @@ Canvas::step()
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     // Detect new joystick
+    auto invalidJoysticks = 0;
     for (int i = 0; i < SDL_NumJoysticks(); i++)
     {
         if (!SDL_JoystickOpened(i))
@@ -415,11 +416,15 @@ Canvas::step()
                 printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joystick));
 # endif // DEBUG
             }
+            else
+            {
+                invalidJoysticks++;
+            }
         }
     }
 
     // A gamepad has been removed ?
-    if (_joysticks.size() != SDL_NumJoysticks())
+    if (_joysticks.size() != (SDL_NumJoysticks() - invalidJoysticks))
     {
         // We looking for the missing gamepad
         int joystickId = 0;

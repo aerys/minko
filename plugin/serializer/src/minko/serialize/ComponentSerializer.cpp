@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Animation.hpp"
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Transform.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/component/ImageBasedLight.hpp"
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
@@ -70,27 +70,22 @@ ComponentSerializer::serializeTransform(NodePtr			        node,
 }
 
 std::string
-ComponentSerializer::serializePerspectiveCamera(NodePtr			        node,
-                                                AbstractComponentPtr    component,
-                                                AssetLibraryPtr         assetLibrary,
-												DependencyPtr	        dependencies)
+ComponentSerializer::serializeCamera(NodePtr			    node,
+                                     AbstractComponentPtr   component,
+                                     AssetLibraryPtr        assetLibrary,
+									 DependencyPtr	        dependencies)
 {
-	int8_t              type = serialize::PROJECTION_CAMERA;
-	auto                perspectiveCamera = std::static_pointer_cast<component::PerspectiveCamera>(component);
-	std::stringstream   buffer;
-	std::vector<float>  data;
 
-	data.push_back(perspectiveCamera->aspectRatio());
-	data.push_back(perspectiveCamera->fieldOfView());
-	data.push_back(perspectiveCamera->zNear());
-	data.push_back(perspectiveCamera->zFar());
+    int8_t										type = serialize::CAMERA;
+    auto		                                camera = std::static_pointer_cast<component::Camera>(component);
+    std::stringstream							buffer;
+    std::tuple<uint, std::string>				serialized = serialize::TypeSerializer::serializeMatrix4x4(camera->projectionMatrix());
+    msgpack::type::tuple<uint, std::string>		src(std::get<0>(serialized), std::get<1>(serialized));
 
-	std::string src = serialize::TypeSerializer::serializeVector<float>(data);
+    msgpack::pack(buffer, src);
+    msgpack::pack(buffer, type);
 
-	msgpack::pack(buffer, src);
-	msgpack::pack(buffer, type);
-
-	return buffer.str();
+    return buffer.str();
 }
 
 std::string

@@ -78,7 +78,7 @@ main(int argc, char** argv)
         ->addComponent(Transform::create(
             math::inverse(math::lookAt(math::vec3(0), math::vec3(0, 0, 3), math::vec3(0, 1, 0)))
         ))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
 
     auto sky = scene::Node::create("sky")
         ->addComponent(Transform::create(
@@ -119,7 +119,7 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
     auto yaw = 0.f;

@@ -33,7 +33,7 @@ TEST_F(RendererTest, AddAndRemoveSurfaces)
     auto renderer = Renderer::create();
     auto root = scene::Node::create()
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(renderer);
 
     auto material = material::BasicMaterial::create();
@@ -79,7 +79,7 @@ TEST_F(RendererTest, AddAndRemoveSurfaceBubbleUp)
     auto renderer = Renderer::create();
     auto root = scene::Node::create()
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(renderer);
 
     auto surfaceNode = scene::Node::create();
@@ -110,7 +110,7 @@ TEST_F(RendererTest, OneSurfaceLayoutMaskFail)
     auto renderer = Renderer::create();
     auto root = scene::Node::create()
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(renderer);
 
     auto surfaceNode = scene::Node::create();
@@ -139,7 +139,7 @@ TEST_F(RendererTest, OneSurfaceLayoutMaskPass)
     auto renderer = Renderer::create();
     auto root = scene::Node::create()
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(renderer);
 
     auto surfaceNode = scene::Node::create();
@@ -168,7 +168,7 @@ TEST_F(RendererTest, DeferredPassDrawCallCount)
     auto renderer = Renderer::create();
     auto root = scene::Node::create()
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(renderer);
 
     auto material = material::BasicMaterial::create();
@@ -214,7 +214,7 @@ TEST_F(RendererTest, RendererLayoutMaskChanged)
     auto renderer = Renderer::create();
     auto root = scene::Node::create()
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(renderer);
 
     auto material = material::BasicMaterial::create();
@@ -282,7 +282,7 @@ TEST_F(RendererTest, SetEffect)
     auto sceneManager = SceneManager::create(MinkoTests::canvas());
     auto root = scene::Node::create()
         ->addComponent(sceneManager)
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(renderer);
 
     auto material = material::BasicMaterial::create();

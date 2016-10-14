@@ -62,7 +62,7 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(math::inverse(
 			math::lookAt(math::vec3(1.f, 1.f, 0.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
 		)))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, 0.785f, 0.1f, 50.f));
+		->addComponent(Camera::create(math::perspective(0.785f, 800.f / 600.f, 0.1f, 50.f)));
     root->addChild(camera);
 
     auto light = scene::Node::create("light")
@@ -196,8 +196,8 @@ int main(int argc, char** argv)
             )));
 
             light->component<DirectionalLight>()->computeShadowProjection(
-                camera->component<PerspectiveCamera>()->viewMatrix(),
-                camera->component<PerspectiveCamera>()->projectionMatrix()
+                camera->component<Camera>()->viewMatrix(),
+                camera->component<Camera>()->projectionMatrix()
             );
 
             sceneManager->nextFrame(time, deltaTime);
@@ -208,7 +208,7 @@ int main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+		camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
 	});
 
 	sceneManager->assets()->loader()->load();

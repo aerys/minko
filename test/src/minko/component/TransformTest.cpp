@@ -614,3 +614,22 @@ TEST_F(TransformTest, EmptyAncestorPath)
     ASSERT_EQ(n100->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(4.f, 0.f, 0.f)));
     ASSERT_EQ(n101->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(6.f, 0.f, 0.f)));
 }
+
+TEST_F(TransformTest, UpdateModelToWorldMatrixDuringRemovedSignalPropagation)
+{
+    auto sceneManager = SceneManager::create(MinkoTests::canvas());
+
+    auto root = Node::create("root")
+        ->addComponent(sceneManager)
+        ->addComponent(Transform::create());
+
+    auto n0 = Node::create("n0")
+        ->addComponent(Transform::create())
+        ->addComponent(std::make_shared<UpdateTransformWhenStoppedScript>());
+
+    root->addChild(n0);
+
+    sceneManager->nextFrame(0.f, 0.f);
+
+    root->removeChild(n0);
+}

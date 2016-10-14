@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 #include "minko/log/Logger.hpp"
 
 #include "VRImpl.hpp"
@@ -28,48 +29,43 @@ namespace minko
 {
     namespace oculus
     {
-        class WebVROculus : public VRImpl
+        class WebVR : public VRImpl
         {
         public:
-            typedef std::shared_ptr<WebVROculus> Ptr;
+            typedef std::shared_ptr<WebVR> Ptr;
 
         private:
-            std::shared_ptr<file::AssetLibrary>     _assetLibrary;
+            Signal<std::shared_ptr<minko::component::Renderer>>::Slot   _renderingEndSlot;
 
-            uint                                    _renderTargetWidth;
-            uint                                    _renderTargetHeight;
-
-            float                                   _zNear;
-            float                                   _zFar;
-            bool                                    _initialized;
+            float _zNear;
+            float _zFar;
+            std::shared_ptr<minko::component::Renderer> _leftRenderer;
+            std::shared_ptr<minko::component::Renderer> _rightRenderer;
         public:
 
             void
-            initialize(std::shared_ptr<component::SceneManager> sceneManager);
+            initialize(std::shared_ptr<component::SceneManager> sceneManager) override;
 
             void
-            initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr);
+            initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr) override;
 
             void
-            targetAdded();
+            targetAdded() override;
 
             void
-            targetRemoved();
-
-            std::array<std::shared_ptr<geometry::Geometry>, 2>
-            createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
+            targetRemoved() override;
 
             float
-            getLeftEyeFov();
+            getLeftEyeFov() override;
 
             float
-            getRightEyeFov();
+            getRightEyeFov() override;
 
             void
-            updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera);
+            updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera) override;
 
             void
-            updateViewport(int viewportWidth, int viewportHeight);
+            updateViewport(int viewportWidth, int viewportHeight) override;
 
             static
             bool
@@ -77,14 +73,14 @@ namespace minko
 
             inline
             float
-            zNear()
+            zNear() override
             {
                 return _zNear;
             }
 
             inline
             float
-            zFar()
+            zFar() override
             {
                 return _zFar;
             }
@@ -93,15 +89,15 @@ namespace minko
             Ptr
             create(int viewportWidth, int viewportHeight, float zNear, float zFar)
             {
-                LOG_INFO("Create a WebVROculus instance.");
+                LOG_INFO("Create a WebVR instance.");
 
-                auto ptr = std::shared_ptr<WebVROculus>(new WebVROculus(viewportWidth, viewportHeight, zNear, zFar));
+                auto ptr = std::shared_ptr<WebVR>(new WebVR(viewportWidth, viewportHeight, zNear, zFar));
 
                 return ptr;
             }
 
         private:
-            WebVROculus(int viewportWidth, int viewportHeight, float zNear, float zFar);
+            WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar);
         };
     }
 }

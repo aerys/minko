@@ -57,8 +57,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "not html5" }
 		excludes {
-			"include/minko/oculus/WebVROculus.hpp",
-			"src/minko/oculus/WebVROculus.cpp",
+			"include/minko/oculus/WebVR.hpp",
+			"src/minko/oculus/WebVR.cpp",
 		}
 
 	configuration { "not android", "not ios", "not html5" }

@@ -28,7 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "minko/oculus/Cardboard.hpp"
 #else
 # if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-#  include "minko/oculus/WebVROculus.hpp"
+#  include "minko/oculus/WebVR.hpp"
 #  include "minko/oculus/Cardboard.hpp"
 # else
 #  include "minko/oculus/NativeOculus.hpp"
@@ -63,14 +63,6 @@ VRCamera::updateViewport(int viewportWidth, int viewportHeight)
 {
     _viewportWidth = viewportWidth;
     _viewportHeight = viewportHeight;
-    
-    auto aspectRatio = (viewportWidth / 2.f) / viewportHeight;
-
-    if (_leftCameraNode)
-        _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
-
-    if (_rightCameraNode)
-        _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
 
     _leftRenderer->viewport(math::ivec4(0, 0, viewportWidth / 2, viewportHeight));
     _rightRenderer->viewport(math::ivec4(viewportWidth / 2, 0, viewportWidth / 2, viewportHeight));
@@ -79,46 +71,36 @@ VRCamera::updateViewport(int viewportWidth, int viewportHeight)
         _VRImpl->updateViewport(viewportWidth, viewportHeight);
 }
 
-void
-VRCamera::forceRatio(float aspectRatio)
-{
-    if (_leftCameraNode)
-        _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
-
-    if (_rightCameraNode)
-        _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
-}
-
 bool
 VRCamera::detected()
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-	return WebVROculus::detected() || (system::Platform::isMobile() && sensors::Attitude::getInstance()->isSupported());
+    return WebVR::detected() || (system::Platform::isMobile() && sensors::Attitude::getInstance()->isSupported());
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     return true;
 #else
-	return NativeOculus::detected();
+    return NativeOculus::detected();
 #endif
 }
 
 void
-VRCamera::initialize(int viewportWidth, 
-                     int viewportHeight, 
-                     float zNear, 
-                     float zFar, 
-                     minko::uint rendererClearColor, 
+VRCamera::initialize(int viewportWidth,
+                     int viewportHeight,
+                     float zNear,
+                     float zFar,
+                     minko::uint rendererClearColor,
                      void* window,
                      Renderer::Ptr leftRenderer,
                      Renderer::Ptr rightRenderer)
 {
     if (!detected())
         return;
-    
+
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     _VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    if (WebVROculus::detected())
-        _VRImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
+    if (WebVR::detected())
+        _VRImpl = WebVR::create(viewportWidth, viewportHeight, zNear, zFar);
     else if (sensors::Attitude::getInstance()->isSupported())
         _VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
 #elif MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
@@ -138,10 +120,10 @@ VRCamera::initialize(int viewportWidth,
 
     _rightRenderer->clearBeforeRender(false);
 
-    updateViewport(viewportWidth, viewportHeight);
-
     if (_VRImpl)
         _VRImpl->initializeVRDevice(_leftRenderer, _rightRenderer, window);
+
+    updateViewport(viewportWidth, viewportHeight);
 }
 
 void
@@ -160,9 +142,7 @@ VRCamera::targetAdded(NodePtr target)
     findSceneManager();
 
     // Initialize both eyes' cameras
-
     auto aspectRatio = (_viewportWidth / 2.f) / _viewportHeight;
-
     auto zNear = 0.1f;
     auto zFar = 10000.f;
 
@@ -172,32 +152,20 @@ VRCamera::targetAdded(NodePtr target)
         zFar = _VRImpl->zFar();
     }
 
-    auto leftCamera = PerspectiveCamera::create(
-        aspectRatio,
-        atan(45),
-        zNear,
-        zFar
-    );
+    auto leftCamera = Camera::create(math::perspective(atan(45.f), aspectRatio, zNear, zFar));
+    auto rightCamera = Camera::create(math::perspective(atan(45.f), aspectRatio, zNear, zFar));
 
-    _leftCameraNode = scene::Node::create("cameraLeftEye")
+    _leftCameraNode = scene::Node::create("VRCameraLeftEye")
         ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(-0.03f, 0, 0), math::vec3(-0.03f, 0, -1), math::vec3(0, 1, 0)))))
         ->addComponent(leftCamera)
         ->addComponent(_leftRenderer);
 
-    target->addChild(_leftCameraNode);
-
-    auto rightCamera = PerspectiveCamera::create(
-        aspectRatio,
-        atan(45),
-        zNear,
-        zFar
-    );
-
-    _rightCameraNode = scene::Node::create("cameraRightEye")
+    _rightCameraNode = scene::Node::create("VRCameraRightEye")
         ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(0.03f, 0, 0), math::vec3(0.03f, 0, -1), math::vec3(0, 1, 0)))))
         ->addComponent(rightCamera)
         ->addComponent(_rightRenderer);
 
+    target->addChild(_leftCameraNode);
     target->addChild(_rightCameraNode);
 
     if (_VRImpl)
@@ -207,11 +175,14 @@ VRCamera::targetAdded(NodePtr target)
 void
 VRCamera::targetRemoved(NodePtr target)
 {
+    _leftRenderer->enabled(false);
+    _rightRenderer->enabled(false);
+
     _leftCameraNode->removeComponent(_leftRenderer);
     _rightCameraNode->removeComponent(_rightRenderer);
 
-    _leftCameraNode->removeComponent(_leftCameraNode->component<PerspectiveCamera>());
-    _rightCameraNode->removeComponent(_rightCameraNode->component<PerspectiveCamera>());
+    _leftCameraNode->removeComponent(_leftCameraNode->component<Camera>());
+    _rightCameraNode->removeComponent(_rightCameraNode->component<Camera>());
 
     target->removeChild(_leftCameraNode);
     target->removeChild(_rightCameraNode);
@@ -253,18 +224,18 @@ VRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 
     _frameBeginSlot = sceneManager->frameBegin()->connect([&](SceneMgrPtr sm, float dt, float t)
     {
-        updateCameraOrientation(_leftCameraNode, _rightCameraNode);
+        updateCamera(_leftCameraNode, _rightCameraNode);
     });
 
     if (_VRImpl)
-        _VRImpl->initialize(_sceneManager);
+        _VRImpl->initialize(sceneManager);
 }
 
 void
-VRCamera::updateCameraOrientation(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
+VRCamera::updateCamera(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
     if (_VRImpl)
-        _VRImpl->updateCameraOrientation(target(), leftCamera, rightCamera);
+        _VRImpl->updateCamera(target(), leftCamera, rightCamera);
 
     target()->component<Transform>()->updateModelToWorldMatrix();
 }

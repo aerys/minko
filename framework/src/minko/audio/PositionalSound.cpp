@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/Transform.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 
 using namespace minko;
 using namespace minko::audio;

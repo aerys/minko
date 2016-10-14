@@ -157,7 +157,7 @@ namespace minko
     	class Transform;
 		class Surface;
 		class Renderer;
-		class PerspectiveCamera;
+		class Camera;
 		class Culling;
 		class Picking;
 		class JobManager;
