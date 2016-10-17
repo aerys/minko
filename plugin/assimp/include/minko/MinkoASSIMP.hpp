@@ -52,7 +52,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/SMDParser.hpp"
 #include "minko/file/BlenderParser.hpp"
 #include "minko/file/IRRParser.hpp"
-#include "minko/file/PLYParser.hpp"
 #include "minko/file/UnrealParser.hpp"
 #include "minko/file/ColladaParser.hpp"
 #include "minko/file/MD3Parser.hpp"
