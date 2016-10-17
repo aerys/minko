@@ -68,6 +68,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 				"lib/crnlib/crnlib/lzham_win32_threading.cpp",
 				"lib/crnlib/crnlib/lzham_timer.h",
 				"lib/crnlib/crnlib/lzham_timer.cpp",
+				"lib/crnlib/crnlib/crn_jpgd.cpp",
 				"lib/crnlib/crnlib/crn_winhdr.h"
 			}
 
