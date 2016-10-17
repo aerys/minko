@@ -162,6 +162,13 @@ Canvas::initializeInputs()
 void
 Canvas::initializeWindow()
 {
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    // SDL_SetHint() function MUST be called before SDL_Init()
+
+    // Android accelerometer will not be considered as a joystick anymore
+    SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
+#endif
+
     int initFlags = 0;
 
 #if !defined(MINKO_PLUGIN_OFFSCREEN)
