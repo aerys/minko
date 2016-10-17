@@ -24,7 +24,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/devil/lib/libjpeg/jpegtran.c",
 		"lib/devil/lib/libjpeg/djpeg.c",
 		"lib/devil/lib/libjpeg/cjpeg.c",
-		"lib/devil/lib/libjpeg/ckconfig.c"
+		"lib/devil/lib/libjpeg/ckconfig.c",
+		"lib/devil/lib/libjpeg/example.c",
+		"lib/devil/lib/libjpeg/rdjpgcom.c"
 	}
 
 	includedirs {
