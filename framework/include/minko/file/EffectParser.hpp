@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/FileProtocol.hpp"
+#include "minko/file/JSON.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/scene/Layout.hpp"
@@ -33,10 +34,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/States.hpp"
 #include "minko/render/SamplerStates.hpp"
 
-namespace Json {
-    class Value;
-}
-
 namespace minko
 {
     namespace file
@@ -45,17 +42,17 @@ namespace minko
             public AbstractParser
         {
         public:
-            typedef std::shared_ptr<EffectParser>	Ptr;
+            typedef std::shared_ptr<EffectParser>    Ptr;
 
             static const float UNSET_PRIORITY_VALUE;
 
         private:
-            typedef std::shared_ptr<render::AbstractTexture>	            AbstractTexturePtr;
-            typedef std::shared_ptr<Loader>								    LoaderPtr;
-            typedef std::shared_ptr<render::Effect>						    EffectPtr;
-            typedef std::shared_ptr<render::Pass>						    PassPtr;
-            typedef std::shared_ptr<render::Shader>						    ShaderPtr;
-            typedef std::shared_ptr<file::Options>						    OptionsPtr;
+            typedef std::shared_ptr<render::AbstractTexture>                AbstractTexturePtr;
+            typedef std::shared_ptr<Loader>                                 LoaderPtr;
+            typedef std::shared_ptr<render::Effect>                         EffectPtr;
+            typedef std::shared_ptr<render::Pass>                           PassPtr;
+            typedef std::shared_ptr<render::Shader>                         ShaderPtr;
+            typedef std::shared_ptr<file::Options>                          OptionsPtr;
             typedef std::unordered_map<std::string, AbstractTexturePtr>     TexturePtrMap;
             typedef Signal<LoaderPtr, const Error&>::Slot                   LoaderErrorSlot;
             typedef std::vector<PassPtr>                                    Technique;
@@ -64,16 +61,18 @@ namespace minko
             typedef std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>  LoaderCompleteSlotMap;
             typedef std::unordered_map<LoaderPtr, LoaderErrorSlot>          LoaderErrorSlotMap;
 
+            typedef minko::file::JSON::Value                                JSONValue;
+
             enum class GLSLBlockType
             {
                 TEXT,
                 FILE
             };
 
-            typedef std::pair<GLSLBlockType, std::string>           GLSLBlock;
-            typedef std::forward_list<GLSLBlock> 			        GLSLBlockList;
-            typedef std::shared_ptr<GLSLBlockList>			        GLSLBlockListPtr;
-            typedef std::unordered_map<ShaderPtr, GLSLBlockListPtr> ShaderToGLSLBlocks;
+            typedef std::pair<GLSLBlockType, std::string>                   GLSLBlock;
+            typedef std::forward_list<GLSLBlock>                            GLSLBlockList;
+            typedef std::shared_ptr<GLSLBlockList>                          GLSLBlockListPtr;
+            typedef std::unordered_map<ShaderPtr, GLSLBlockListPtr>         ShaderToGLSLBlocks;
 
             template <typename T>
             struct Block
@@ -164,26 +163,26 @@ namespace minko
             static const std::string    EXTRA_PROPERTY_STENCIL_Z_FAIL_OP;
             static const std::string    EXTRA_PROPERTY_STENCIL_Z_PASS_OP;
 
-            static const std::unordered_map<std::string, unsigned int>				_blendingSourceMap;
-            static const std::unordered_map<std::string, unsigned int>				_blendingDestinationMap;
-            static const std::unordered_map<std::string, unsigned int>				_blendingModeMap;
-            static const std::unordered_map<std::string, render::CompareMode>		_compareFuncMap;
-            static const std::unordered_map<std::string, render::TriangleCulling>	_triangleCullingMap;
-            static const std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
-            static const std::unordered_map<std::string, float>					    _priorityMap;
-            static const std::array<std::string, 2>                                 _extraStateNames;
+            static const std::unordered_map<std::string, unsigned int>               _blendingSourceMap;
+            static const std::unordered_map<std::string, unsigned int>               _blendingDestinationMap;
+            static const std::unordered_map<std::string, unsigned int>               _blendingModeMap;
+            static const std::unordered_map<std::string, render::CompareMode>        _compareFuncMap;
+            static const std::unordered_map<std::string, render::TriangleCulling>    _triangleCullingMap;
+            static const std::unordered_map<std::string, render::StencilOperation>   _stencilOpMap;
+            static const std::unordered_map<std::string, float>                      _priorityMap;
+            static const std::array<std::string, 2>                                  _extraStateNames;
 
-            std::string						_filename;
-            std::string						_resolvedFilename;
-            std::shared_ptr<file::Options>	_options;
+            std::string                     _filename;
+            std::string                     _resolvedFilename;
+            std::shared_ptr<file::Options>  _options;
             std::shared_ptr<render::Effect> _effect;
-            std::string						_effectName;
-            std::shared_ptr<AssetLibrary>	_assetLibrary;
+            std::string                     _effectName;
+            std::shared_ptr<AssetLibrary>   _assetLibrary;
 
             Scope                           _globalScope;
             ShaderToGLSLBlocks              _shaderToGLSL;
-            unsigned int					_numDependencies;
-            unsigned int					_numLoadedDependencies;
+            unsigned int                    _numDependencies;
+            unsigned int                    _numLoadedDependencies;
             std::shared_ptr<data::Provider> _effectData;
 
             LoaderCompleteSlotMap           _loaderCompleteSlots;
@@ -212,11 +211,11 @@ namespace minko
             }
 
             void
-            parse(const std::string&				filename,
-                  const std::string&                resolvedFilename,
-                  std::shared_ptr<Options>          options,
-                  const std::vector<unsigned char>&	data,
-                  std::shared_ptr<AssetLibrary>		assetLibrary);
+            parse(const std::string&                   filename,
+                  const std::string&                   resolvedFilename,
+                  std::shared_ptr<Options>             options,
+                  const std::vector<unsigned char>&    data,
+                  std::shared_ptr<AssetLibrary>        assetLibrary);
 
         private:
             EffectParser();
@@ -225,19 +224,19 @@ namespace minko
             getPriorityValue(const std::string& name);
 
             void
-            parseGlobalScope(const Json::Value& node, Scope& scope);
+            parseGlobalScope(const JSONValue& node, Scope& scope);
 
             bool
-            parseConfiguration(const Json::Value& node);
+            parseConfiguration(const JSONValue& node);
 
             void
             fixMissingPassPriorities(std::vector<PassPtr>& passes);
 
             void
-            parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques);
+            parseTechniques(const JSONValue& node, Scope& scope, Techniques& techniques);
 
             std::shared_ptr<render::Pass>
-            getPassToExtend(const Json::Value& extendNode);
+            getPassToExtend(const JSONValue& extendNode);
 
             std::shared_ptr<render::Pass>
             findPassFromEffectFilename(const std::string& effectFilename,
@@ -245,211 +244,211 @@ namespace minko
                                        const std::string& passName);
 
             void
-            parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
+            parsePass(const JSONValue& node, Scope& scope, std::vector<PassPtr>& passes);
 
             void
             checkDeferredPassBindings(const Scope& passScope);
 
             void
-            parsePasses(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
+            parsePasses(const JSONValue& node, Scope& scope, std::vector<PassPtr>& passes);
 
             void
-            parseDefaultValue(const Json::Value& node, const Scope& scope);
+            parseDefaultValue(const JSONValue& node, const Scope& scope);
 
             void
-            parseDefaultValue(const Json::Value&    node,
+            parseDefaultValue(const JSONValue&      node,
                               const Scope&          scope,
                               const std::string&    valueName,
                               data::Provider::Ptr   defaultValues);
 
             template<typename T>
             void
-            parseDefaultValueSamplerStates(const Json::Value&    node,
-                                    const Scope&          scope,
-                                    const std::string&    valueName,
-                                    data::Provider::Ptr   defaultValues);
+            parseDefaultValueSamplerStates(const JSONValue&    node,
+                                           const Scope&        scope,
+                                           const std::string&  valueName,
+                                           data::Provider::Ptr defaultValues);
 
             void
-            parseDefaultValueStates(const Json::Value&    node,
+            parseDefaultValueStates(const JSONValue&      node,
                                     const Scope&          scope,
                                     const std::string&    stateName,
                                     data::Provider::Ptr   defaultValues);
 
             void
-            parseDefaultValueVectorArray(const Json::Value&    defaultValueNode,
+            parseDefaultValueVectorArray(const JSONValue&      defaultValueNode,
                                          const Scope&          scope,
                                          const std::string&    valueName,
                                          data::Provider::Ptr   defaultValues);
 
             void
-            parseDefaultValueVectorObject(const Json::Value&    node,
+            parseDefaultValueVectorObject(const JSONValue&      node,
                                           const Scope&          scope,
                                           const std::string&    valueName,
                                           data::Provider::Ptr   defaultValues);
 
             bool
-            parseBinding(const Json::Value& node, const Scope& scope, data::Binding& binding);
+            parseBinding(const JSONValue& node, const Scope& scope, data::Binding& binding);
 
             void
-            parseMacroBinding(const Json::Value& node, const Scope& scope, data::MacroBinding& binding);
+            parseMacroBinding(const JSONValue& node, const Scope& scope, data::MacroBinding& binding);
 
             void
-            parseMacroBindings(const Json::Value& node, const Scope& scope, data::MacroBindingMap& bindings);
+            parseMacroBindings(const JSONValue& node, const Scope& scope, data::MacroBindingMap& bindings);
 
             void
-            parseAttributes(const Json::Value&node, const Scope& scope, AttributeBlock& attributes);
+            parseAttributes(const JSONValue&node, const Scope& scope, AttributeBlock& attributes);
 
             void
-            parseUniforms(const Json::Value& node, const Scope& scope, UniformBlock& uniforms);
+            parseUniforms(const JSONValue& node, const Scope& scope, UniformBlock& uniforms);
 
             void
-            parseMacros(const Json::Value& node, const Scope& scope, MacroBlock& macros);
+            parseMacros(const JSONValue& node, const Scope& scope, MacroBlock& macros);
 
             void
-            parseStates(const Json::Value& node, const Scope& scope, StateBlock& states);
+            parseStates(const JSONValue& node, const Scope& scope, StateBlock& states);
 
             void
-            parseState(const Json::Value& node, const Scope& scope, StateBlock& stateBlock, const std::string& stateProperty);
+            parseState(const JSONValue& node, const Scope& scope, StateBlock& stateBlock, const std::string& stateProperty);
 
             void
-            parsePriority(const Json::Value&    node,
+            parsePriority(const JSONValue&      node,
                           const Scope&          scope,
                           StateBlock&           stateBlock);
 
             void
-            parseBlendingMode(const Json::Value&    node,
+            parseBlendingMode(const JSONValue&      node,
                               const Scope&          scope,
                               StateBlock&           stateBlock);
 
             void
-            parseBlendingSource(const Json::Value&  node,
+            parseBlendingSource(const JSONValue&    node,
                                 const Scope&        scope,
                                 StateBlock&         stateBlock);
 
             void
-            parseBlendingDestination(const Json::Value&  node,
+            parseBlendingDestination(const JSONValue&    node,
                                      const Scope&        scope,
                                      StateBlock&         stateBlock);
 
             void
-            parseZSort(const Json::Value&   node,
+            parseZSort(const JSONValue&     node,
                        const Scope&         scope,
                        StateBlock&          stateBlock);
 
             void
-            parseColorMask(const Json::Value&   node,
+            parseColorMask(const JSONValue&     node,
                            const Scope&         scope,
                            StateBlock&          stateBlock) const;
 
             void
-            parseDepthMask(const Json::Value&	node,
+            parseDepthMask(const JSONValue&     node,
                            const Scope&         scope,
                            StateBlock&          stateBlock);
 
             void
-            parseDepthFunction(const Json::Value&	node,
+            parseDepthFunction(const JSONValue&     node,
                                const Scope&         scope,
                                StateBlock&          stateBlock);
 
             void
-            parseTriangleCulling(const Json::Value&         node,
-                                 const Scope&               scope,
-                                 StateBlock&          stateBlock);
+            parseTriangleCulling(const JSONValue&   node,
+                                 const Scope&       scope,
+                                 StateBlock&        stateBlock);
 
             void
-            parseTarget(const Json::Value&  node,
+            parseTarget(const JSONValue&    node,
                         const Scope&        scope,
                         StateBlock&         stateBlock);
 
             void
-            parseStencilState(const Json::Value&    node,
+            parseStencilState(const JSONValue&      node,
                               const Scope&          scope,
                               StateBlock&           stateBlock);
 
             void
-            parseStencilFunction(const Json::Value&    node,
-                                const Scope&          scope,
-                                StateBlock&           stateBlock);
+            parseStencilFunction(const JSONValue&     node,
+                                 const Scope&         scope,
+                                 StateBlock&          stateBlock);
 
             void
-            parseStencilReference(const Json::Value&    node,
+            parseStencilReference(const JSONValue&    node,
                                   const Scope&          scope,
                                   StateBlock&           stateBlock);
 
             void
-            parseStencilMask(const Json::Value&    node,
+            parseStencilMask(const JSONValue&      node,
                              const Scope&          scope,
                              StateBlock&           stateBlock);
 
             void
-            parseStencilOperations(const Json::Value&   node,
+            parseStencilOperations(const JSONValue&     node,
                                    const Scope&         scope,
                                    StateBlock&          stateBlock);
 
             void
-            parseStencilFailOperation(const Json::Value&   node,
+            parseStencilFailOperation(const JSONValue&     node,
                                       const Scope&         scope,
                                       StateBlock&          stateBlock);
 
             void
-            parseStencilZFailOperation(const Json::Value&   node,
+            parseStencilZFailOperation(const JSONValue&   node,
                                        const Scope&         scope,
                                        StateBlock&          stateBlock);
 
             void
-            parseStencilZPassOperation(const Json::Value&   node,
+            parseStencilZPassOperation(const JSONValue&     node,
                                        const Scope&         scope,
                                        StateBlock&          stateBlock);
 
             void
-            parseScissorTest(const Json::Value&     node,
+            parseScissorTest(const JSONValue&       node,
                              const Scope&           scope,
                              StateBlock&            stateBlock);
 
             void
-            parseScissorBox(const Json::Value&     node,
+            parseScissorBox(const JSONValue&       node,
                             const Scope&           scope,
                             StateBlock&            stateBlock);
 
             void
-            parseSamplerStates(const Json::Value& node,
-                               const Scope& scope,
-                               const std::string uniformName,
+            parseSamplerStates(const JSONValue&    node,
+                               const Scope&        scope,
+                               const std::string   uniformName,
                                data::Provider::Ptr defaultValues,
-                               data::BindingMap& bindings);
+                               data::BindingMap&   bindings);
 
             ShaderPtr
-            parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type);
+            parseShader(const JSONValue& node, const Scope& scope, render::Shader::Type type);
 
             void
             parseGLSL(const std::string&        glsl,
-                      OptionsPtr         		options,
-                      GLSLBlockListPtr		    blocks,
-                      GLSLBlockList::iterator	insertIt);
+                      OptionsPtr                options,
+                      GLSLBlockListPtr          blocks,
+                      GLSLBlockList::iterator   insertIt);
 
             void
-            loadGLSLDependencies(GLSLBlockListPtr		    blocks,
+            loadGLSLDependencies(GLSLBlockListPtr           blocks,
                                  GLSLBlockList::iterator    begin,
                                  GLSLBlockList::iterator    end,
                                  OptionsPtr                 options);
 
             void
             dependencyErrorHandler(std::shared_ptr<Loader>  loader,
-                                   const Error&       		error,
+                                   const Error&             error,
                                    const std::string&       filename);
 
             void
-            glslIncludeCompleteHandler(LoaderPtr 			    loader,
-                                       GLSLBlockListPtr 		blocks,
-                                       GLSLBlockList::iterator 	blockIt,
+            glslIncludeCompleteHandler(LoaderPtr                loader,
+                                       GLSLBlockListPtr         blocks,
+                                       GLSLBlockList::iterator  blockIt,
                                        const std::string&       filename);
 
             std::string
             concatenateGLSLBlocks(GLSLBlockListPtr blocks);
 
             void
-            loadTexture(const std::string&  textureFilename,
-                        const std::string&  uniformName,
+            loadTexture(const std::string&      textureFilename,
+                        const std::string&      uniformName,
                         data::Provider::Ptr     defaultValues);
 
             std::shared_ptr<render::States>
