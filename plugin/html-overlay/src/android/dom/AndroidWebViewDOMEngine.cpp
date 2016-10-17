@@ -22,13 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/file/JSON.hpp"
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/input/Touch.hpp"
 #include "minko/log/Logger.hpp"
 
 #include "SDL.h"
-#include "json/json.h"
 
 #include "android/dom/AndroidWebViewDOMEngine.hpp"
 #include "android/dom/AndroidWebViewDOMMouseEvent.hpp"
@@ -37,6 +37,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 using namespace minko::dom;
+using namespace minko::file;
 using namespace android;
 using namespace android::dom;
 
@@ -104,8 +105,8 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
     if (nativeEventIsCopy)
         env->ReleaseStringUTFChars(eventData, rawNativeEvent);
 
-    Json::Value root;
-    Json::Reader reader;
+    JSON::Value root;
+    JSON::Reader reader;
 
     if (!reader.parse(nativeEvent.data(), root, false))
     {
