@@ -112,6 +112,7 @@ solution "minko"
 			['line-geometry']		= false,
 			['lua-scripts']			= minko.plugin.requested('lua'),
 			['multi-surfaces']		= false,
+			['nodejs']				= minko.plugin.requested('nodejs-worker'),
 			['offscreen']			= minko.plugin.requested('offscreen'),
 			['particles']			= minko.plugin.requested('particles'),
 			['physics']				= true,

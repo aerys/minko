@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,9 +19,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/net/HTTPOptions.hpp"
-#include "minko/net/HTTPProtocol.hpp"
+#include <string>
 
-#if !defined(EMSCRIPTEN)
-# include "minko/net/HTTPWorker.hpp"
-#endif
+namespace minko
+{
+    namespace file
+    {
+        class AndroidUnzip
+        {
+        public:
+            static
+            std::string
+            extractFromAsset(const std::string& path);
+        };
+    }
+}

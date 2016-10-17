@@ -25,6 +25,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::net;
 
+// From http://stackoverflow.com/questions/36746904/android-linker-undefined-reference-to-bsd-signal
+#if (__ANDROID_API__ > 19)
+# include <android/api-level.h>
+# include <android/log.h>
+# include <signal.h>
+# include <dlfcn.h>
+
+extern "C"
+{
+    typedef __sighandler_t (*bsd_signal_func_t)(int, __sighandler_t);
+    bsd_signal_func_t bsd_signal_func = NULL;
+
+    __sighandler_t bsd_signal(int s, __sighandler_t f)
+    {
+        if (bsd_signal_func == NULL)
+        {
+            // For now (up to Android 7.0) this is always available.
+            bsd_signal_func = (bsd_signal_func_t) dlsym(RTLD_DEFAULT, "bsd_signal");
+
+            if (bsd_signal_func == NULL)
+            {
+                // You may try dlsym(RTLD_DEFAULT, "signal") or dlsym(RTLD_NEXT, "signal") here
+                // Make sure you add a comment here in StackOverflow
+                // if you find a device that doesn't have "bsd_signal" in its libc.so!!!
+
+                __android_log_assert("", "bsd_signal_wrapper", "bsd_signal symbol not found!");
+            }
+        }
+
+        return bsd_signal_func(s, f);
+      }
+}
+#endif
+
 HTTPRequest::HTTPRequest(const std::string& url,
                          const std::string& username,
                          const std::string& password,
@@ -152,7 +186,7 @@ disposeCurl(CURL* curl, curl_slist* curlHeaderList)
 void
 HTTPRequest::run()
 {
-	progress()->execute(0.0f);
+    progress()->execute(0.0f);
 
     const auto url = _url;
 
@@ -169,13 +203,13 @@ HTTPRequest::run()
         return;
     }
 
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
-	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
-	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
+    curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
 
-	CURLcode res = curl_easy_perform(curl);
+    CURLcode res = curl_easy_perform(curl);
 
     auto responseCode = 0l;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
@@ -186,21 +220,21 @@ HTTPRequest::run()
         res == CURLE_OK &&
         (responseCode == 200 || responseCode == 206);
 
-	if (!requestSucceeded)
-	{
+    if (!requestSucceeded)
+    {
         const auto errorMessage =
             "status: " + std::to_string(responseCode) +
             (res != CURLE_OK ? ", error: " + std::string(curlErrorBuffer) : "");
 
         LOG_ERROR(errorMessage);
 
-		error()->execute(responseCode, errorMessage);
-	}
-	else
-	{
-		progress()->execute(1.0f);
-		complete()->execute(_output);
-	}
+        error()->execute(responseCode, errorMessage);
+    }
+    else
+    {
+        progress()->execute(1.0f);
+        complete()->execute(_output);
+    }
 }
 
 size_t

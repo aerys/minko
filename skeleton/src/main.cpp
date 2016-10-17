@@ -75,7 +75,7 @@ int main(int argc, char** argv)
         root->addChild(lights);
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         if (cube)
             cube->component<Transform>()->matrix(

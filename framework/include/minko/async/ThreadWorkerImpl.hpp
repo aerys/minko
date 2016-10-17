@@ -35,8 +35,6 @@ namespace minko
             void
             start(const std::vector<char>& input)
             {
-                //std::cout << "ThreadWorkerImpl::start()" << std::endl;;
-
                 _input = input;
 
                 std::thread(&Worker::run, _that->shared_from_this(), std::ref(_input)).detach();
@@ -45,13 +43,10 @@ namespace minko
             void
             poll()
             {
-                // std::cout << "ThreadWorkerImpl::poll()" << std::endl;;
-
                 std::lock_guard<std::mutex> lock(_mutex);
 
                 while (!_messages.empty())
                 {
-                    //std::cout << "ThreadWorkerImpl::poll(): message execute" << std::endl;
                     _message->execute(_that->shared_from_this(), _messages.front());
                     _messages.pop();
                 }
@@ -60,10 +55,8 @@ namespace minko
             void
             post(Message message)
             {
-                //std::cout << "ThreadWorkerImpl::post(): " << message.type << std::endl;
                 std::lock_guard<std::mutex> lock(_mutex);
 
-                // FIXME: Optimize here (useless copy).
                 _messages.push(message);
             }
 
@@ -75,7 +68,6 @@ namespace minko
 
             ~WorkerImpl()
             {
-                //std::cout << "ThreadWorkerImpl::~ThreadWorkerImpl()" << std::endl;
             }
 
             WorkerImpl(Worker* that, const std::string& name) :
@@ -83,7 +75,6 @@ namespace minko
                 _name(name),
                 _message(Signal<Ptr, Message>::create())
             {
-                //std::cout << "ThreadWorkerImpl::ThreadWorkerImpl()" << std::endl;
             }
 
         private:

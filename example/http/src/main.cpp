@@ -22,10 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoHTTP.hpp"
 
-#if !defined(EMSCRIPTEN) // FIXME: Automate this in the HTTPLoader
-# include "minko/net/HTTPWorker.hpp"
-#endif
-
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;

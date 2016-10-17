@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.Set;
 import org.libsdl.app.*;
 
-
 /**
 ** Minko Activity, Java entry point
 */
@@ -22,7 +21,7 @@ public class MinkoActivity extends SDLActivity
 	protected static MinkoActivity _minkoActivitySingleton;
 
 	public static void initialize() {
-		Log.v("minko-java", "[MinkoActivity] initialize()");
+		Log.v("Minko/Java", "[MinkoActivity] initialize()");
 
         // The static nature of the singleton and Android quirkyness force us to initialize everything here
         // Otherwise, when exiting the app and returning to it, these variables *keep* their pre exit values
@@ -32,9 +31,9 @@ public class MinkoActivity extends SDLActivity
 	// Setup
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.v("minko-java", "[MinkoActivity] onCreate():" + _minkoActivitySingleton);
+        Log.v("Minko/Java", "[MinkoActivity] onCreate():" + _minkoActivitySingleton);
         super.onCreate(savedInstanceState);
-        
+
         MinkoActivity.initialize();
 
         // So we can call stuff from static callbacks
@@ -48,7 +47,7 @@ public class MinkoActivity extends SDLActivity
 	// Open an URL in the default browser
     public void openURL(String url)
     {
-        Log.i("minko-java", "Open URL: "/* + url*/);
+        Log.i("Minko/Java", "Open URL: "/* + url*/);
 
         try {
             if (!url.startsWith("https://") && !url.startsWith("http://")) {

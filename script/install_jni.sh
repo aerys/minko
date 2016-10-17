@@ -32,9 +32,9 @@
 
 set -e
 
-ANDROID_SDK_VERSION="android-19"
+ANDROID_ARCH="arm"
+ANDROID_API="21"
 ANDROID_TOOLCHAIN="arm-linux-androideabi-4.9"
-ANDROID_SYSTEM="linux-x86_64"
 
 if [[ -z "${ANDROID_HOME}" ]]; then
 	if [[ -z "${ANDROID}" ]]; then
@@ -43,13 +43,6 @@ if [[ -z "${ANDROID_HOME}" ]]; then
 	else
 		ANDROID_HOME="${ANDROID}"
 	fi
-fi
-
-if [[ $OSTYPE == cygwin* ]]; then
-	ANDROID_HOME=`cygpath -u "${ANDROID_HOME}"`
-	ANDROID_SYSTEM="windows"
-elif [[ $OSTYPE == darwin* ]]; then
-	ANDROID_SYSTEM="darwin-x86_64"
 fi
 
 if [[ ! -e "${ANDROID_HOME}/tools/lib/sdk-common.jar" ]]; then
@@ -68,11 +61,11 @@ ANDROID_NDK_HOME="${ANDROID_HOME}/toolchains/${ANDROID_TOOLCHAIN}"
 
 # Build a standalone toolchain
 pushd "${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" > /dev/null
-if [[ ! -x ${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make-standalone-toolchain.sh ]]; then
+if [[ ! -x ${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make_standalone_toolchain.py ]]; then
 	echo "Invalid NDK path: ${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" > /dev/stderr
 	exit 1
 fi
-${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make-standalone-toolchain.sh --platform=${ANDROID_SDK_VERSION} --toolchain=${ANDROID_TOOLCHAIN} --install-dir=${ANDROID_NDK_HOME} --system=${ANDROID_SYSTEM}
+${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make_standalone_toolchain.py --arch ${ANDROID_ARCH} --api ${ANDROID_API} --install-dir ${ANDROID_NDK_HOME}
 popd > /dev/null
 
 # Link default NDK.
