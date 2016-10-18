@@ -21,8 +21,8 @@ if [[ `uname -s` != "Darwin" || "${BIN}" != "g++" ]]; then
 	# supported on OS X (it's the default behavior).
 
 	if [[ ! -z "${STATIC_LIBS}" || ! -z "${SHARED_LIBS}" ]]; then
-		START_GROUP="-Wl,--start-group -Wl,--whole-archive"
-		END_GROUP="-Wl,--no-whole-archive -Wl,--end-group"
+		START_GROUP="-Wl,--start-group"
+		END_GROUP="-Wl,--end-group"
 	fi
 fi
 
