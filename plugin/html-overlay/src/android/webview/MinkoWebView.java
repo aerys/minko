@@ -62,6 +62,17 @@ public class MinkoWebView extends WebView
         // Dispatch the key events on the SDL canvas (including joystick buttons)
         SurfaceView surfaceView = (SurfaceView)SDLActivity.getLayout().getChildAt(0);
 
+        if (event.getKeyCode() == KeyEvent.KEYCODE_BACK)
+        {
+            // FIXME Find out why 'surfaceView.dispatchKeyEvent(event)' returns true
+            // while it should not.
+            // See Bug https://projects.aerys.in/issues/6838.
+
+            surfaceView.dispatchKeyEvent(event);
+
+            return super.dispatchKeyEvent(event);
+        }
+
         return surfaceView.dispatchKeyEvent(event);
     }
 
