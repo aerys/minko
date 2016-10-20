@@ -1,6 +1,6 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
-if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64", "ios", "android" } then
+if not minko.platform.supports { "android" } then
 	return
 end
 
