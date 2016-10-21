@@ -65,9 +65,6 @@ UnusedVertexCleaner::process(Node::Ptr& node, AssetLibrary::Ptr assetLibrary)
         {
             _progressRate = geometryIndex / float(geometrySet.size());
 
-            if (statusChanged() && statusChanged()->numCallbacks() > 0u)
-                statusChanged()->execute(shared_from_this(), "UnusedVertexCleaner: processing geometry with " + std::to_string(geometry->numVertices()) + " vertices");
-
             processGeometry(geometry, assetLibrary);
 
             ++geometryIndex;
