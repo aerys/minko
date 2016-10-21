@@ -105,6 +105,7 @@ public class InitWebViewTask implements Runnable
         }
 
         _webView.getSettings().setDomStorageEnabled(true);
+        _webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
         // Allow remote WebView debugging with Chrome DevTools for Android > 4.4
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) 
