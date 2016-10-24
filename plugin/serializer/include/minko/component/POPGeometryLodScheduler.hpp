@@ -33,7 +33,7 @@ namespace minko
 
         private:
             typedef std::shared_ptr<scene::Node>                NodePtr;
-        
+
             typedef std::shared_ptr<AbstractComponent>          AbstractComponentPtr;
             typedef std::shared_ptr<SceneManager>               SceneManagerPtr;
             typedef std::shared_ptr<Renderer>                   RendererPtr;
@@ -160,9 +160,6 @@ namespace minko
             rendererSet(RendererPtr renderer);
 
             void
-            masterLodSchedulerSet(MasterLodSchedulerPtr masterLodScheduler);
-
-            void
             surfaceAdded(SurfacePtr surface);
 
             void
@@ -200,7 +197,8 @@ namespace minko
                              SurfaceInfo&               surfaceInfo,
                              int                        previousLod,
                              int                        lod,
-                             float                      requiredPrecisionLevel);
+                             float                      requiredPrecisionLevel,
+                             float                      time);
 
             int
             computeRequiredLod(const POPGeometryResourceInfo&   resource,
@@ -235,23 +233,6 @@ namespace minko
             void
             requiredPrecisionLevelChanged(const POPGeometryResourceInfo&    resource,
                                           SurfaceInfo&                      surfaceInfo);
-
-            void
-            updateBlendingLod(const POPGeometryResourceInfo&    resource,
-                              SurfaceInfo&                      surfaceInfo);
-
-            bool
-            blendingIsActive(const POPGeometryResourceInfo&    resource,
-                             SurfaceInfo&                      surfaceInfo);
-
-            void
-            blendingRangeChanged(const POPGeometryResourceInfo&    resource,
-                                 SurfaceInfo&                      surfaceInfo,
-                                 float                             blendingRange);
-
-            float
-            blendingLod(const POPGeometryResourceInfo&    resource,
-                        SurfaceInfo&                      surfaceInfo) const;
 		};
 	}
 }

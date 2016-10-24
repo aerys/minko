@@ -71,15 +71,6 @@ POPGeometryLodScheduler::rendererSet(Renderer::Ptr renderer)
 }
 
 void
-POPGeometryLodScheduler::masterLodSchedulerSet(MasterLodSchedulerPtr masterLodScheduler)
-{
-    AbstractLodScheduler::masterLodSchedulerSet(masterLodScheduler);
-
-    if (masterLodScheduler != nullptr)
-        blendingRange(masterLodScheduler->streamingOptions()->popGeometryBlendingRange());
-}
-
-void
 POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 {
 	AbstractLodScheduler::surfaceAdded(surface);
@@ -196,9 +187,6 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
     surface->numIndices(0u);
     surface->data()->set("popLod", 0.f);
     surface->data()->set("popLodEnabled", true);
-
-    if (blendingIsActive(*resource, *surfaceInfo))
-        blendingRangeChanged(*resource, *surfaceInfo, _blendingRange);
 }
 
 void
@@ -324,7 +312,7 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
         {
             surfaceInfo.activeLod = activeLod;
 
-            activeLodChanged(popGeometryResource, surfaceInfo, previousActiveLod, activeLod, requiredPrecisionLevel);
+            activeLodChanged(popGeometryResource, surfaceInfo, previousActiveLod, activeLod, requiredPrecisionLevel, time);
         }
 
         if (surfaceInfo.requiredPrecisionLevel != requiredPrecisionLevel)
@@ -333,9 +321,6 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
 
             requiredPrecisionLevelChanged(popGeometryResource, surfaceInfo);
         }
-
-        if (blendingIsActive(popGeometryResource, surfaceInfo))
-            updateBlendingLod(popGeometryResource, surfaceInfo);
 
         maxRequiredLod = std::max(requiredLod, maxRequiredLod);
 
@@ -365,18 +350,48 @@ POPGeometryLodScheduler::activeLodChanged(POPGeometryResourceInfo&   resource,
                              			  SurfaceInfo&               surfaceInfo,
                              			  int                        previousLod,
                              			  int                        lod,
-                                          float                      requiredPrecisionLevel)
+                                          float                      requiredPrecisionLevel,
+                                          float                      time)
 {
 	auto provider = resource.base->data;
 
-	const auto& activeLod = resource.availableLods->at(lod);
+	const auto& activeLod = *resource.lodToClosestValidLod.at(lod);
 
 	const auto numIndices = static_cast<unsigned int>(
 		(activeLod._indexOffset + activeLod._indexCount)
 	);
 
+    const auto previousTargetPrecisionLevel = surfaceInfo.surface->data()->hasProperty("popLod")
+        ? surfaceInfo.surface->data()->get<float>("popLod")
+        : 0.f;
+
+    const auto targetPrecisionLevel = float(activeLod._precisionLevel);
+
     surfaceInfo.surface->numIndices(numIndices);
-    surfaceInfo.surface->data()->set("popLod", float(activeLod._precisionLevel));
+    surfaceInfo.surface->data()->set("popLod", targetPrecisionLevel);
+
+    if (masterLodScheduler()->streamingOptions()->popGeometryLodBlendingEnabled())
+    {
+        auto popLodBlendingActive = false;
+
+        if (surfaceInfo.surface->data()->hasProperty("popPreviousLod"))
+        {
+            const auto previousSourcePrecisionLevel = surfaceInfo.surface->data()->get<float>("popPreviousLod");
+            const auto oldPopLodBlendingTime = surfaceInfo.surface->data()->get<float>("popLodBlendingTime");
+
+            const auto popLodBlendingDuration = masterLodScheduler()->streamingOptions()->popGeometryLodBlendingPeriod() * (previousTargetPrecisionLevel - previousSourcePrecisionLevel);
+
+            popLodBlendingActive = (time - oldPopLodBlendingTime) < popLodBlendingDuration;
+        }
+
+        if (!popLodBlendingActive)
+        {
+            const auto& previousLodInfo = *resource.lodToClosestValidLod.at(math::max(previousLod, resource.minLod));
+
+            surfaceInfo.surface->data()->set("popPreviousLod", float(previousLodInfo._precisionLevel));
+            surfaceInfo.surface->data()->set("popLodBlendingTime", time);
+        }
+    }
 }
 
 int
@@ -474,7 +489,7 @@ POPGeometryLodScheduler::computeLodPriority(const POPGeometryResourceInfo& 	reso
     return requiredLod - activeLod;
 }
 
-bool 
+bool
 POPGeometryLodScheduler::findClosestValidLod(const POPGeometryResourceInfo&         resource,
 											 int 							        lod,
 											 const ProgressiveOrderedMeshLodInfo*&  result) const
@@ -522,7 +537,7 @@ POPGeometryLodScheduler::findClosestLodByPrecisionLevel(const POPGeometryResourc
     for (const auto& precisionLevelToLodPair : lods)
     {
         const auto& lod = precisionLevelToLodPair.second;
-        
+
         if (lod._precisionLevel >= precisionLevel)
         {
             result = &lod;
@@ -574,72 +589,4 @@ void
 POPGeometryLodScheduler::requiredPrecisionLevelChanged(const POPGeometryResourceInfo&    resource,
                                                        SurfaceInfo&                      surfaceInfo)
 {
-}
-
-bool
-POPGeometryLodScheduler::blendingIsActive(const POPGeometryResourceInfo&    resource,
-                                          SurfaceInfo&                      surfaceInfo)
-{
-    return _blendingRange > 0.f;
-}
-
-void
-POPGeometryLodScheduler::updateBlendingLod(const POPGeometryResourceInfo&    resource,
-                                           SurfaceInfo&                      surfaceInfo)
-{
-    surfaceInfo.surface->data()->set("popBlendingLod", blendingLod(resource, surfaceInfo));
-}
-
-void
-POPGeometryLodScheduler::blendingRange(float value)
-{
-    if (_blendingRange == value)
-        return;
-
-    _blendingRange = value;
-
-    for (auto& uuidToResourcePair : _popGeometryResources)
-    {
-        auto& resource = uuidToResourcePair.second;
-
-        for (auto& surfaceInfo : resource.surfaceInfoCollection)
-        {
-            blendingRangeChanged(resource, surfaceInfo, _blendingRange);
-        }
-    }
-}
-
-void
-POPGeometryLodScheduler::blendingRangeChanged(const POPGeometryResourceInfo&    resource,
-                                              SurfaceInfo&                      surfaceInfo,
-                                              float                             blendingRange)
-{
-    if (_blendingRange > 0.f)
-    {
-        surfaceInfo.surface->data()->set("popBlendingLod", blendingLod(resource, surfaceInfo));
-        surfaceInfo.surface->data()->set("popBlendingEnabled", true);
-    }
-    else
-    {
-        surfaceInfo.surface->data()->unset("popBlendingEnabled");
-    }
-}
-
-float
-POPGeometryLodScheduler::blendingLod(const POPGeometryResourceInfo&    resource,
-                                     SurfaceInfo&                      surfaceInfo) const
-{
-    const auto requiredPrecisionLevel = surfaceInfo.requiredPrecisionLevel;
-
-    auto blendingLod = requiredPrecisionLevel >= float(resource.maxLod + 1)
-        ? resource.fullPrecisionLod
-        : requiredPrecisionLevel;
-
-    blendingLod = math::clamp(
-        blendingLod,
-        float(surfaceInfo.activeLod - 1),
-        float(surfaceInfo.activeLod)
-    );
-
-    return blendingLod;
 }
