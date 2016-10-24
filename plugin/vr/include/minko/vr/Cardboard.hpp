@@ -25,53 +25,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "VRImpl.hpp"
 
-extern "C"
-{
-    struct ovrHmdDesc_;
-    typedef const ovrHmdDesc_* ovrHmd;
-}
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+#include "minko/sensors/Attitude.hpp"
+#endif
 
 namespace minko
 {
-    namespace oculus
+    namespace vr
     {
-        class NativeOculus : public VRImpl
+        class Cardboard : public VRImpl
         {
         private:
-            static ovrHmd                                       _hmd;
             std::shared_ptr<scene::Node>                        _ppScene;
-            std::shared_ptr<component::Renderer>                _ppRenderer;
             uint                                                _renderTargetWidth;
             uint                                                _renderTargetHeight;
             std::shared_ptr<render::Texture>                    _renderTarget;
             std::array<std::pair<math::vec2, math::vec2>, 2>    _uvScaleOffset;
-            Signal<std::shared_ptr<component::SceneManager>, uint, std::shared_ptr<render::AbstractTexture>>::Slot      _renderEndSlot;
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID || MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+            std::shared_ptr<sensors::Attitude>                  _attitude;
+#endif
+
             float                                               _zNear;
             float                                               _zFar;
 
-            std::shared_ptr<component::Renderer>                _leftRenderer;
-            std::shared_ptr<component::Renderer>                _rightRenderer;
-            math::ivec4                                         _leftRendererViewport;
-            math::ivec4                                         _rightRendererViewport;
-
-            void
-            initializePostProcessingRenderer(std::shared_ptr<component::SceneManager> sceneManager);
-
-            void
-            renderEndHandler(
-                std::shared_ptr<component::SceneManager> sceneManager,
-                uint frameId,
-                std::shared_ptr<render::AbstractTexture> renderTarget
-            );
-
         public:
-            typedef std::shared_ptr<NativeOculus> Ptr;
+            typedef std::shared_ptr<Cardboard> Ptr;
 
             void
             initialize(std::shared_ptr<component::SceneManager> sceneManager) override;
 
             void
-            initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr) override;
+            initializeVRDevice(
+                std::shared_ptr<component::Renderer> leftRenderer,
+                std::shared_ptr<component::Renderer> rightRenderer,
+                void* window = nullptr) override;
 
             void
             targetAdded() override;
@@ -80,7 +68,10 @@ namespace minko
             targetRemoved() override;
 
             void
-            updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera) override;
+            updateCamera(
+                std::shared_ptr<scene::Node> target,
+                std::shared_ptr<scene::Node> leftCamera,
+                std::shared_ptr<scene::Node> rightCamera) override;
 
             void
             updateViewport(int viewportWidth, int viewportHeight) override;
@@ -91,40 +82,31 @@ namespace minko
             float
             getRightEyeFov() override;
 
-            inline
             float
             zNear() override
             {
                 return _zNear;
             }
 
-            inline
             float
             zFar() override
             {
                 return _zFar;
             }
 
-            static
-            bool
-            detected();
-
             inline static
             Ptr
             create(int viewportWidth, int viewportHeight, float zNear, float zFar)
             {
-                LOG_INFO("Create a NativeOculus instance.");
+                LOG_INFO("Create a Cardboard instance.");
 
-                auto ptr = std::shared_ptr<NativeOculus>(new NativeOculus(viewportWidth, viewportHeight, zNear, zFar));
+                auto ptr = std::shared_ptr<Cardboard>(new Cardboard(viewportWidth, viewportHeight, zNear, zFar));
 
                 return ptr;
             }
 
         private:
-            NativeOculus(int viewportWidth, int viewportHeight, float zNear, float zFar);
-
-            std::array<std::shared_ptr<geometry::Geometry>, 2>
-            createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
+            Cardboard(int viewportWidth, int viewportHeight, float zNear, float zFar);
         };
     }
 }

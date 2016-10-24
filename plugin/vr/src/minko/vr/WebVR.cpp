@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/oculus/WebVR.hpp"
+#include "minko/vr/WebVR.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
@@ -36,7 +36,7 @@ using namespace minko::file;
 using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
-using namespace minko::oculus;
+using namespace minko::vr;
 
 WebVR::WebVR(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     _zNear(zNear),
@@ -182,7 +182,7 @@ float
 WebVR::getLeftEyeFov()
 {
     // FIXME: Should depend on the VRDisplay
-    // Oculus Rift CV1
+    // vr Rift CV1
     // leftDegrees:43.97737166932644 (0.76754993200111731877)
     // rightDegrees:35.5747704995392 (0.6208968758567666724)
     // fov = atan(leftDegrees + rightDegrees) = 0.94
@@ -193,7 +193,7 @@ float
 WebVR::getRightEyeFov()
 {
     // FIXME: Should depend on the VRDisplay
-    // Oculus Rift CV1
+    // vr Rift CV1
     // leftDegrees:43.97737166932644 (0.76754993200111731877)
     // rightDegrees:35.5747704995392 (0.6208968758567666724)
     // fov = atan(leftDegrees + rightDegrees) = 0.94

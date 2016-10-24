@@ -21,12 +21,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/Common.hpp"
-#include "minko/OculusCommon.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
 
 namespace minko
 {
+    namespace vr
+    {
+        class VRImpl;
+    }
+
     namespace component
     {
         class VRCamera :
@@ -48,7 +52,7 @@ namespace minko
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
             Signal<SceneMgrPtr, float, float>::Slot             _frameBeginSlot;
 
-            std::shared_ptr<oculus::VRImpl>                     _VRImpl;
+            std::shared_ptr<vr::VRImpl>                         _VRImpl;
 
             std::shared_ptr<component::Renderer>                _leftRenderer;
             std::shared_ptr<component::Renderer>                _rightRenderer;
