@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "OVR_Stereo.h"
 #include "Kernel/OVR_Math.h"
 
-#include "minko/oculus/NativeOculus.hpp"
+#include "minko/vr/OculusRift.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
@@ -39,14 +39,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
-using namespace minko::oculus;
+using namespace minko::vr;
 using namespace minko::render;
 using namespace minko::file;
 
 ovrHmd
-NativeOculus::_hmd = nullptr;
+OculusRift::_hmd = nullptr;
 
-NativeOculus::NativeOculus(int viewportWidth, int viewportHeight, float zNear, float zFar) :
+OculusRift::OculusRift(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     _ppRenderer(Renderer::create()),
     _renderTargetWidth(32),
     _renderTargetHeight(32),
@@ -61,11 +61,11 @@ NativeOculus::NativeOculus(int viewportWidth, int viewportHeight, float zNear, f
 }
 
 void
-NativeOculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
+OculusRift::initialize(std::shared_ptr<component::SceneManager> sceneManager)
 {
     _renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
-        &NativeOculus::renderEndHandler,
-        std::static_pointer_cast<NativeOculus>(shared_from_this()),
+        &OculusRift::renderEndHandler,
+        std::static_pointer_cast<OculusRift>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
@@ -76,7 +76,7 @@ NativeOculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
 }
 
 bool
-NativeOculus::detected()
+OculusRift::detected()
 {
     if (_hmd)
         return true;
@@ -88,7 +88,7 @@ NativeOculus::detected()
 }
 
 void
-NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window)
+OculusRift::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window)
 {
     _leftRenderer = leftRenderer;
     _rightRenderer = rightRenderer;
@@ -112,8 +112,8 @@ NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRender
     renderTargetSize.w = math::clp2(renderTargetSize.w);
     renderTargetSize.h = math::clp2(renderTargetSize.h);
 
-    renderTargetSize.w = std::min(renderTargetSize.w, MINKO_PLUGIN_OCULUS_MAX_TARGET_SIZE);
-    renderTargetSize.h = std::min(renderTargetSize.h, MINKO_PLUGIN_OCULUS_MAX_TARGET_SIZE);
+    renderTargetSize.w = std::min(renderTargetSize.w, OCULUS_RIFT_MAX_TARGET_SIZE);
+    renderTargetSize.h = std::min(renderTargetSize.h, OCULUS_RIFT_MAX_TARGET_SIZE);
 
     _renderTargetWidth = renderTargetSize.w;
     _renderTargetHeight = renderTargetSize.h;
@@ -179,7 +179,7 @@ NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRender
 }
 
 void
-NativeOculus::initializePostProcessingRenderer(std::shared_ptr<component::SceneManager> sceneManager)
+OculusRift::initializePostProcessingRenderer(std::shared_ptr<component::SceneManager> sceneManager)
 {
     auto context = sceneManager->assets()->context();
 
@@ -223,7 +223,7 @@ NativeOculus::initializePostProcessingRenderer(std::shared_ptr<component::SceneM
 }
 
 void
-NativeOculus::targetAdded()
+OculusRift::targetAdded()
 {
     if (_leftRenderer)
     {
@@ -234,14 +234,14 @@ NativeOculus::targetAdded()
 }
 
 void
-NativeOculus::targetRemoved()
+OculusRift::targetRemoved()
 {
     ovrHmd_Destroy(_hmd);
     ovr_Shutdown();
 }
 
 void
-NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
+OculusRift::updateViewport(int viewportWidth, int viewportHeight)
 {
     // Renderer viewports and aspect ratio are updated into VRCamera,
     // for Oculus we need a specific viewport given by SDK
@@ -280,7 +280,7 @@ NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
 }
 
 std::array<std::shared_ptr<geometry::Geometry>, 2>
-NativeOculus::createDistortionGeometry(std::shared_ptr<render::AbstractContext> context)
+OculusRift::createDistortionGeometry(std::shared_ptr<render::AbstractContext> context)
 {
     auto geometries = std::array<std::shared_ptr<geometry::Geometry>, 2>();
 
@@ -336,19 +336,19 @@ NativeOculus::createDistortionGeometry(std::shared_ptr<render::AbstractContext> 
 }
 
 float
-NativeOculus::getLeftEyeFov()
+OculusRift::getLeftEyeFov()
 {
     return atan(_hmd->DefaultEyeFov[0].LeftTan + _hmd->DefaultEyeFov[0].RightTan);
 }
 
 float
-NativeOculus::getRightEyeFov()
+OculusRift::getRightEyeFov()
 {
     return atan(_hmd->DefaultEyeFov[1].LeftTan + _hmd->DefaultEyeFov[1].RightTan);
 }
 
 void
-NativeOculus::updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
+OculusRift::updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
     static ovrPosef eyeRenderPose[2];
     const static float BodyYaw(0.f);
@@ -401,7 +401,7 @@ NativeOculus::updateCamera(std::shared_ptr<scene::Node> target, std::shared_ptr<
 }
 
 void
-NativeOculus::renderEndHandler(
+OculusRift::renderEndHandler(
     std::shared_ptr<SceneManager>  sceneManager,
     uint                           frameId,
     render::AbstractTexture::Ptr   renderTarget)

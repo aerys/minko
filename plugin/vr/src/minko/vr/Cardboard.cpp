@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/oculus/Cardboard.hpp"
+#include "minko/vr/Cardboard.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
@@ -35,7 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
-using namespace minko::oculus;
+using namespace minko::vr;
 using namespace minko::render;
 using namespace minko::file;
 

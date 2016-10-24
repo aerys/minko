@@ -25,13 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-# include "minko/oculus/Cardboard.hpp"
+# include "minko/vr/Cardboard.hpp"
 #else
 # if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-#  include "minko/oculus/WebVR.hpp"
-#  include "minko/oculus/Cardboard.hpp"
+#  include "minko/vr/WebVR.hpp"
+#  include "minko/vr/Cardboard.hpp"
 # else
-#  include "minko/oculus/NativeOculus.hpp"
+#  include "minko/vr/OculusRift.hpp"
 # endif
 #endif
 
@@ -39,7 +39,7 @@ using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
-using namespace minko::oculus;
+using namespace minko::vr;
 using namespace minko::render;
 
 VRCamera::VRCamera() :
@@ -79,7 +79,7 @@ VRCamera::detected()
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     return true;
 #else
-    return NativeOculus::detected();
+    return OculusRift::detected();
 #endif
 }
 
@@ -104,7 +104,7 @@ VRCamera::initialize(int viewportWidth,
     else if (sensors::Attitude::getInstance()->isSupported())
         _VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
 #elif MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
-    _VRImpl = NativeOculus::create(viewportWidth, viewportHeight, zNear, zFar);
+    _VRImpl = OculusRift::create(viewportWidth, viewportHeight, zNear, zFar);
 #endif
 
     // Initialize both eyes' renderers

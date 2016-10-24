@@ -20,12 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/OculusCommon.hpp"
 #include "minko/Signal.hpp"
 
 namespace minko
 {
-    namespace oculus
+    namespace vr
     {
         class VRImpl :
             public std::enable_shared_from_this<VRImpl>
