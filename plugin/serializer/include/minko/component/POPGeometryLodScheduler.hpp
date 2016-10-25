@@ -225,6 +225,12 @@ namespace minko
             void
             updateClosestLods(POPGeometryResourceInfo& resource);
 
+            const ProgressiveOrderedMeshLodInfo&
+            precisionLevelToClosestLod(const POPGeometryResourceInfo& resource, int precisionLevel) const;
+
+            const ProgressiveOrderedMeshLodInfo&
+            lodToClosestValidLod(const POPGeometryResourceInfo& resource, int lod) const;
+
             float
             distanceFromEye(const POPGeometryResourceInfo&  resource,
                             SurfaceInfo&                    surfaceInfo,
