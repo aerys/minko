@@ -80,6 +80,12 @@ main(int argc, char** argv)
         ))
         ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
 
+    camera->component<Camera>()->data()
+        ->set("fov", .785f)
+        ->set("aspectRatio", canvas->aspectRatio())
+        ->set("zNear", 0.1f)
+        ->set("zFar", 1000.f);
+
     auto sky = scene::Node::create("sky")
         ->addComponent(Transform::create(
             math::scale(math::mat4(1.f), math::vec3(100.f))
@@ -93,17 +99,23 @@ main(int argc, char** argv)
     auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
         auto assets = sceneManager->assets();
+        
+        auto skyboxMaterial = material::BasicMaterial::create();
 
+        skyboxMaterial->set({
+            { "diffuseLatLongMap", assets->texture(SKYBOX_TEXTURE)->sampler() }
+        });
+        
+        skyboxMaterial->priority(render::Priority::FIRST);
+        
         sky->addComponent(Surface::create(
-                geometry::SphereGeometry::create(assets->context(), 16, 16),
-                material::Material::create()->set({
-                    { "diffuseLatLongMap", assets->texture(SKYBOX_TEXTURE)->sampler() }
-                }),
+                geometry::QuadGeometry::create(assets->context()),
+            skyboxMaterial,
                 assets->effect("effect/Skybox/Skybox.effect")
             ));
 
         assert(NUM_OBJECTS > 0);
-
+        
         const float scale = 1.25f * float(M_PI) / float(NUM_OBJECTS);
         const float dAngle = 2.0f * float(M_PI) / float(NUM_OBJECTS);
 
@@ -120,6 +132,9 @@ main(int argc, char** argv)
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
         camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
+
+        camera->component<Camera>()->data()
+            ->set("aspectRatio", canvas->aspectRatio());
     });
 
     auto yaw = 0.f;
@@ -178,16 +193,16 @@ main(int argc, char** argv)
             lookAt,
             math::vec3(0.f, 1.f, 0.f)
         )));
-
+        
         auto skyTransform = sky->component<Transform>();
         auto objectsTransform = objects->component<Transform>();
 
         skyTransform->matrix(math::rotate(skyTransform->matrix(), .001f, math::vec3(0.f, 1.f, 0.f)));
         objectsTransform->matrix(math::rotate(objectsTransform->matrix(), -.02f, math::vec3(0.f, 1.f, 0.f)));
-
+        
         sceneManager->nextFrame(time, deltaTime);
     });
-
+    
     loader->load();
     canvas->run();
 }
