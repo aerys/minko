@@ -187,6 +187,13 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
     surface->numIndices(0u);
     surface->data()->set("popLod", 0.f);
     surface->data()->set("popLodEnabled", true);
+
+    if (masterLodScheduler->streamingOptions()->popGeometryLodBlendingEnabled())
+    {
+        surface->data()->set("popLodBlendingEnabled", true);
+        surface->data()->set("popPreviousLod", 0.f);
+        surface->data()->set("popLodBlendingTime", 0.f);
+    }
 }
 
 void
@@ -386,6 +393,12 @@ POPGeometryLodScheduler::activeLodChanged(POPGeometryResourceInfo&   resource,
 
         if (!popLodBlendingActive)
         {
+            const auto minPrecisionLevel = masterLodScheduler()->streamingOptions()->popGeometryLodBlendingMinPrecisionLevel();
+            const auto minPrecisionLevelLodInfo = *resource.precisionLevelToClosestLod.at(math::max(minPrecisionLevel, resource.minLod));
+            
+            previousLod = math::max(previousLod, minPrecisionLevelLodInfo._level);
+            previousLod = math::min(previousLod, resource.maxAvailableLod);
+
             const auto& previousLodInfo = *resource.lodToClosestValidLod.at(math::max(previousLod, resource.minLod));
 
             surfaceInfo.surface->data()->set("popPreviousLod", float(previousLodInfo._precisionLevel));

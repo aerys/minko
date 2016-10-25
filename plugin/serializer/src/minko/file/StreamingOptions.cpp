@@ -46,6 +46,7 @@ StreamingOptions::StreamingOptions() :
     _createStreamedTextureOnTheFly(false),
     _popGeometryLodBlendingEnabled(false),
     _popGeometryLodBlendingPeriod(1000.f),
+    _popGeometryLodBlendingMinPrecisionLevel(0),
     _streamedTextureLodBlendingEnabled(false),
     _streamedTextureLodBlendingPeriod(1000.f),
     _maxNumActiveParsers(40),

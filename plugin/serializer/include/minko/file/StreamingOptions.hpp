@@ -116,6 +116,7 @@ namespace minko
 
             bool                                                    _popGeometryLodBlendingEnabled;
             float                                                   _popGeometryLodBlendingPeriod;
+            int                                                     _popGeometryLodBlendingMinPrecisionLevel;
             bool                                                    _streamedTextureLodBlendingEnabled;
             float                                                   _streamedTextureLodBlendingPeriod;
 
@@ -473,6 +474,22 @@ namespace minko
             popGeometryLodBlendingPeriod(float value)
             {
                 _popGeometryLodBlendingPeriod = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            int
+            popGeometryLodBlendingMinPrecisionLevel() const
+            {
+                return _popGeometryLodBlendingMinPrecisionLevel;
+            }
+
+            inline
+            Ptr
+            popGeometryLodBlendingMinPrecisionLevel(int value)
+            {
+                _popGeometryLodBlendingMinPrecisionLevel = value;
 
                 return shared_from_this();
             }

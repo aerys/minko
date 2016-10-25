@@ -43,8 +43,8 @@
                         "uBoneMatrices[0]"          : "geometry[${geometryUuid}].boneMatrices",
                         "uNumBones"                 : "geometry[${geometryUuid}].numBones",
                         "uPopLod"                   : "surface[${surfaceUuid}].popLod",
-                        "uPopPreviousLod"           : "surface[${surfaceUuid}].popPreviousLod",
-                        "uPopLodBlendingTime"       : "surface[${surfaceUuid}].popLodBlendingTime",
+                        "uPopPreviousLod"           : { "binding" : { "property" : "surface[${surfaceUuid}].popPreviousLod" }, "default" : 0.0 },
+                        "uPopLodBlendingTime"       : { "binding" : { "property" : "surface[${surfaceUuid}].popLodBlendingTime" }, "default" : 0.0 },
                         "uPopFullPrecisionLod"      : "geometry[${geometryUuid}].popFullPrecisionLod",
                         "uPopMinBound"              : "geometry[${geometryUuid}].popMinBound",
                         "uPopMaxBound"              : "geometry[${geometryUuid}].popMaxBound",
@@ -61,7 +61,6 @@
                         "ALPHA_THRESHOLD"           : "material[${materialUuid}].alphaThreshold",
                         "POP_LOD_ENABLED"           : "surface[${surfaceUuid}].popLodEnabled",
                         "POP_LOD_BLENDING_ENABLED"  : { "binding" : { "property" : "popLodBlendingPeriod", "source" : "root" } },
-                        "POP_PREVIOUS_LOD"          : "surface[${surfaceUuid}].popPreviousLod",
                         "VERTEX_POP_PROTECTED"      : "geometry[${geometryUuid}].popProtected"
                     },
                     "vertexShader" : "
