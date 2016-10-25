@@ -184,11 +184,22 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
         }
     );
 
-    surface->numIndices(0u);
-    surface->data()->set("popLod", 0.f);
-    surface->data()->set("popLodEnabled", true);
+    if (!surface->data()->hasProperty("popLodEnabled"))
+    {
+        surface->numIndices(0u);
+        surface->data()->set("popLod", 0.f);
+        surface->data()->set("popLodEnabled", true);
+    }
+    else
+    {
+        const auto precisionLevel = surface->data()->get<float>("popLod");
 
-    if (masterLodScheduler->streamingOptions()->popGeometryLodBlendingEnabled())
+        surfaceInfo->requiredPrecisionLevel = precisionLevel;
+        surfaceInfo->activeLod = resource->precisionLevelToClosestLod.at(precisionLevel)->_level;
+    }
+
+    if (masterLodScheduler->streamingOptions()->popGeometryLodBlendingEnabled() &&
+        !surface->data()->hasProperty("popLodBlendingEnabled"))
     {
         surface->data()->set("popLodBlendingEnabled", true);
         surface->data()->set("popPreviousLod", 0.f);
