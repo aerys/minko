@@ -25,6 +25,8 @@
                     },
                     "uNormalMapMaxAvailableLod"     : "material[${materialUuid}].normalMapMaxAvailableLod",
                     "uNormalMapSize"                : "material[${materialUuid}].normalMapSize",
+                    "uNormalMapLodBlendingStartLod" : "material[${materialUuid}].normalMapLodBlendingStartLod",
+                    "uNormalMapLodBlendingStartTime" : "material[${materialUuid}].normalMapLodBlendingStartTime",
                     "uSpecularMap"                  : {
                         "binding"       : "material[${materialUuid}].specularMap",
                         "wrapMode"      : "repeat",
@@ -33,6 +35,8 @@
                     },
                     "uSpecularMapMaxAvailableLod"   : "material[${materialUuid}].specularMapMaxAvailableLod",
                     "uSpecularMapSize"              : "material[${materialUuid}].specularMapSize",
+                    "uSpecularMapLodBlendingStartLod" : "material[${materialUuid}].specularMapLodBlendingStartLod",
+                    "uSpecularMapLodBlendingStartTime" : "material[${materialUuid}].specularMapLodBlendingStartTime",
                     "uSpecularColor"                : { "binding" : "material[${materialUuid}].specularColor", "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] },
                     "uEnvironmentMap2d"             : {
                         "binding"       : "material[${materialUuid}].environmentMap2d",
@@ -207,8 +211,10 @@
                     "VERTEX_COLOR"              : "geometry[${geometryUuid}].color",
                     "NORMAL_MAP"                : "material[${materialUuid}].normalMap",
                     "NORMAL_MAP_LOD"            : "material[${materialUuid}].normalMapLodEnabled",
+                    "NORMAL_MAP_LOD_BLENDING_ENABLED" : "material[${materialUuid}].diffuseMapLodBlendingEnabled",
                     "SPECULAR_MAP"              : "material[${materialUuid}].specularMap",
                     "SPECULAR_MAP_LOD"          : "material[${materialUuid}].specularMapLodEnabled",
+                    "SPECULAR_MAP_LOD_BLENDING_ENABLED" : "material[${materialUuid}].diffuseMapLodBlendingEnabled",
                     "ENVIRONMENT_MAP_2D"        : "material[${materialUuid}].environmentMap2d",
                     "ENVIRONMENT_CUBE_MAP"      : "material[${materialUuid}].environmentCubemap",
                     "ENVIRONMENT_ALPHA"         : "material[${materialUuid}].environmentAlpha",
