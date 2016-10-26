@@ -13,6 +13,7 @@
     },
 
     "uniforms"   : {
+        "uTime"                 : { "binding" : { "property" : "time", "source" : "root" } },
         "uPickingOrigin"        : { "binding" : { "property" : "pickingOrigin", "source" : "renderer" } },
         "uZFar"                 : { "binding" : { "property" : "zFar", "source" : "renderer" } },
         "uModelToWorldMatrix"   : "modelToWorldMatrix",

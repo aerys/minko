@@ -11,10 +11,11 @@
     },
 
     "uniforms"   : {
-        "uPickingColor"          : "surface[${surfaceUuid}].pickingColor",
-        "uModelToWorldMatrix"    : "modelToWorldMatrix",
-        "uWorldToViewMatrix"     : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
-        "uPickingProjection"     : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
+        "uTime"                 : { "binding" : { "property" : "time", "source" : "root" } },
+        "uPickingColor"         : "surface[${surfaceUuid}].pickingColor",
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToViewMatrix"    : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
+        "uPickingProjection"    : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
 		"uBoneMatrices[0]"		: "geometry[${geometryUuid}].boneMatrices",
 		"numBones"				: "geometry[${geometryUuid}].numBones",
         "uPopLod"               : "surface[${surfaceUuid}].popLod",
