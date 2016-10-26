@@ -145,7 +145,8 @@ namespace minko
             activeLodChanged(TextureResourceInfo&   resource,
                              SurfacePtr             surface,
                              int                    previousLod,
-                             int                    lod);
+                             int                    lod,
+                             float                  time);
 
             int
             computeRequiredLod(const TextureResourceInfo& resource,
