@@ -160,9 +160,6 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager,
 
     if (_started)
         update(target);
-
-	if (!_started)
-        stop(target);
 }
 
 void
