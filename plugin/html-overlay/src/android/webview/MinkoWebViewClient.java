@@ -10,69 +10,69 @@ import android.webkit.JsResult;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class MinkoWebViewClient extends WebViewClient 
+public class MinkoWebViewClient extends WebViewClient
 {
-	// Native functions
-	public native void webViewPageLoaded();
+    // Native functions
+    public native void webViewPageLoaded();
 
-	@Override
-	public boolean shouldOverrideUrlLoading(WebView view, String url) 
-	{
-		view.loadUrl(url);
-		
-		return true;
-	}
-	
-	@Override
-	public void onReceivedError (WebView view, int errorCode, String description, String failingUrl)
-	{
-		Log.i("minko-java", "[MinkoWebViewClient] onReceivedError: " + description);
-	}
-	
-	@Override
+    @Override
+    public boolean shouldOverrideUrlLoading(WebView view, String url)
+    {
+        view.loadUrl(url);
+
+        return true;
+    }
+
+    @Override
+    public void onReceivedError (WebView view, int errorCode, String description, String failingUrl)
+    {
+        Log.i("minko-java", "[MinkoWebViewClient] onReceivedError: " + description);
+    }
+
+    @Override
     public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
-		// FIXME: This is totally unsafe. We should ensure this handler only exists for local builds.
+        // FIXME: This is totally unsafe. We should ensure this handler only exists for local builds.
         handler.proceed(); // Ignore SSL certificate errors
     }
 
-   	@Override
+       @Override
     public void onScaleChanged(WebView view, float oldScale, float newScale)
     {
         view.zoomOut();
     }
-	
-	@Override
-    public void onPageFinished(WebView view, String url) 
-	{
-		if (!url.contains("#"))
-		{
-	        super.onPageFinished(view, url);
 
-			// Inject JS Minko script into the webview
-	        injectScriptFile(view, "script/minko.overlay.js");
-			
+    @Override
+    public void onPageFinished(WebView view, String url)
+    {
+        if (!url.contains("#"))
+        {
+            super.onPageFinished(view, url);
 
-			// Load URL provided inside the webview
-			String evalString = "javascript: Minko.init('androidWebView');";
-			view.loadUrl(evalString);
-			
-			// Call native function to inform C++ code that the page is loaded
-			webViewPageLoaded();
+            // Inject JS Minko script into the webview
+            injectScriptFile(view, "script/minko.overlay.js");
 
-			Log.i("minko-java", "[MinkoWebViewClient] Page has FINISHED to load (url: " + url + ").");
-		}
-		
 
-		
+            // Load URL provided inside the webview
+            String evalString = "javascript: Minko.init('androidWebView');";
+            view.loadUrl(evalString);
+
+            // Call native function to inform C++ code that the page is loaded
+            webViewPageLoaded();
+
+            Log.i("minko-java", "[MinkoWebViewClient] Page has FINISHED to load (url: " + url + ").");
+        }
+
+
+
     }
 
-    private void injectScriptFile(WebView view, String scriptFile) 
-	{
+    private void injectScriptFile(WebView view, String scriptFile)
+    {
         InputStream input;
-		
-        try 
-		{
-			// Get the content of the script file
+
+        try
+        {
+            // Get the content of the script file
             input = view.getContext().getAssets().open(scriptFile);
             byte[] buffer = new byte[input.available()];
             input.read(buffer);
@@ -88,10 +88,10 @@ public class MinkoWebViewClient extends WebViewClient
                     "script.innerHTML = window.atob('" + encoded + "');" +
                     "parent.appendChild(script)" +
                     "})()"
-			);
-        } 
-		catch (IOException e) 
-		{
+            );
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
     }
