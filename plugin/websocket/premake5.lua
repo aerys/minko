@@ -2,6 +2,8 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
+	minko.plugin.enable { "ssl" }
+
 	files {
 		"include/**.hpp",
 		"src/**.cpp",
@@ -46,19 +48,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		defines {
 			"ASIO_STANDALONE",
 		}
-		-- openssl
-		files {
-			"lib/openssl/include/**.h"
-		}
-		includedirs {
-			"lib/openssl/include"
-		}
-
-	configuration { "android" }
-		-- openssl
-		libdirs {
-			"lib/openssl/lib/android"
-		}
 
 	configuration { "windows" }
 		buildoptions {
@@ -71,8 +60,4 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		-- asio
 		defines {
 			"_WIN32_WINNT=0x0501"
-		}
-		-- openssl
-		defines {
-			"OPENSSL_SYSNAME_WIN32"
 		}

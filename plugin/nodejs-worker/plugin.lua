@@ -8,4 +8,6 @@ minko.plugin["nodejs-worker"].enable = function (self)
 
 	configuration { "not html5" }
 		minko.plugin.links { "nodejs-worker" }
+
+		minko.plugin.enable("ssl")
 end
