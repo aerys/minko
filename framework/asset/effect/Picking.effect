@@ -1,6 +1,6 @@
 {
     "name"  	: "picking",
-    
+
     "attributes" : {
         "aPosition"       : "geometry[${geometryUuid}].position",
         "aBoneIdsA"       : "geometry[${geometryUuid}].boneIdsA",
@@ -9,16 +9,19 @@
         "aBoneWeightsB"   : "geometry[${geometryUuid}].boneWeightsB",
         "aPopProtected"   : "geometry[${geometryUuid}].popProtected"
     },
-    
+
     "uniforms"   : {
-        "uPickingColor"          : "surface[${surfaceUuid}].pickingColor",
-        "uModelToWorldMatrix"    : "modelToWorldMatrix",
-        "uWorldToViewMatrix"     : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
-        "uPickingProjection"     : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
+        "uTime"                 : { "binding" : { "property" : "time", "source" : "root" } },
+        "uPickingColor"         : "surface[${surfaceUuid}].pickingColor",
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToViewMatrix"    : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
+        "uPickingProjection"    : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
 		"uBoneMatrices[0]"		: "geometry[${geometryUuid}].boneMatrices",
 		"numBones"				: "geometry[${geometryUuid}].numBones",
         "uPopLod"               : "surface[${surfaceUuid}].popLod",
-        "uPopBlendingLod"       : "surface[${surfaceUuid}].popBlendingLod",
+        "uPopPreviousLod"       : { "binding" : { "property" : "surface[${surfaceUuid}].popPreviousLod" }, "default" : 0.0 },
+        "uPopLodBlendingTime"   : { "binding" : { "property" : "surface[${surfaceUuid}].popLodBlendingTime" }, "default" : 0.0 },
+        "uPopLodBlendingPeriod" : { "binding" : { "property" : "popLodBlendingPeriod", "source" : "root" } },
         "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
         "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
         "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
@@ -30,10 +33,10 @@
         "SKINNING_NUM_BONES"    : { "binding" : "geometry[${geometryUuid}].numBones", "type" : "int" },
         "PICKING_COLOR"         : "surface[${surfaceUuid}].pickingColor",
         "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
-        "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
+        "POP_LOD_BLENDING_ENABLED" : { "binding" : { "property" : "popLodBlendingPeriod", "source" : "root" } },
         "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
     },
-    
+
 	"techniques" : [{
         "name" : "default",
 		"passes"    : [{
