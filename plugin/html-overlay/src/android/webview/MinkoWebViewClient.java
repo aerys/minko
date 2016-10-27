@@ -1,10 +1,12 @@
 package minko.plugin.htmloverlay;
 
+import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.net.http.SslError;
 import android.util.Base64;
-import android.webkit.JsResult;
 import android.util.Log;
+import android.webkit.JsResult;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -28,6 +30,12 @@ public class MinkoWebViewClient extends WebViewClient
 	}
 	
 	@Override
+    public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+		// FIXME: This is totally unsafe. We should ensure this handler only exists for local builds.
+        handler.proceed(); // Ignore SSL certificate errors
+    }
+
+   	@Override
     public void onScaleChanged(WebView view, float oldScale, float newScale)
     {
         view.zoomOut();
