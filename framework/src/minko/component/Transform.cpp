@@ -145,6 +145,12 @@ Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 			std::placeholders::_3
 		), 1000.f);
 
+    if (target->hasComponent<Transform>())
+    {
+        _toAdd.push_back(target);
+        _invalidLists = true;
+    }
+
 	addedHandler(target, target->root(), target->parent());
 }
 
@@ -221,7 +227,7 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
     if (node->root() == this->target() && node != target)
     {
         auto otherRoot = target->component<RootTransform>();
-
+        
         if (otherRoot != nullptr)
         {
             _toAdd.insert(_toAdd.begin(), otherRoot->_nodes.begin(), otherRoot->_nodes.end());
@@ -253,6 +259,9 @@ Transform::RootTransform::updateTransformsList()
 {
     if (_toAdd.empty() && _toRemove.empty())
         return;
+
+    _toAdd.unique();
+    _toRemove.unique();
 
     for (const auto& toRemove : _toRemove)
     {
