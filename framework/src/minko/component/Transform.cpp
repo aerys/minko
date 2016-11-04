@@ -181,10 +181,11 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
         if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
         {
             auto removeIt = std::find(_toRemove.begin(), _toRemove.end(), target);
+            auto addIt = std::find(_toAdd.begin(), _toAdd.end(), target);
 
             if (removeIt != _toRemove.end())
                 _toRemove.erase(removeIt);
-            else
+            else if (addIt == _toAdd.end())
             {
                 _toAdd.push_back(target);
                 _invalidLists = true;
@@ -232,6 +233,10 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
         {
             _toAdd.insert(_toAdd.begin(), otherRoot->_nodes.begin(), otherRoot->_nodes.end());
             _toAdd.insert(_toAdd.begin(), otherRoot->_toAdd.begin(), otherRoot->_toAdd.end());
+
+            _toAdd.unique();
+            _toRemove.unique();
+
             for (const auto& toRemove : _toRemove)
                 _toAdd.remove(toRemove);
             _invalidLists = true;
