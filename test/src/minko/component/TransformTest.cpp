@@ -633,3 +633,27 @@ TEST_F(TransformTest, UpdateModelToWorldMatrixDuringRemovedSignalPropagation)
 
     root->removeChild(n0);
 }
+
+TEST_F(TransformTest, UpdateMatrixAfterRemovingNodeFromRoot)
+{
+    auto sceneManager = SceneManager::create(MinkoTests::canvas());
+
+    auto root = Node::create("root")
+        ->addComponent(sceneManager)
+        ->addComponent(Transform::create());
+
+    auto n0 = Node::create("n0")
+        ->addComponent(Transform::create());
+
+    root->addChild(n0);
+
+    n0->component<Transform>()->matrix(math::translate(math::vec3(1.f)));
+
+    root->removeChild(n0);
+
+    auto matrix = math::translate(math::vec3(2.f));
+
+    n0->component<Transform>()->matrix(matrix);
+
+    ASSERT_EQ(n0->component<Transform>()->matrix(), matrix);
+}
