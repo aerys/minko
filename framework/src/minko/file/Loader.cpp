@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractProtocol.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/AbstractCache.hpp"
 
 #include "minko/log/Logger.hpp"
 
@@ -164,7 +165,15 @@ Loader::load()
                 }
             ));
 
-            protocol->load(filename, resolvedFilename, options);
+            if (options->cache() && byteRangeRequested)
+            {
+                options->cache()->get(protocol->file(), options->seekingOffset(), options->seekedLength());
+                protocol->complete()->execute(protocol);
+            }
+            else
+            {
+                protocol->load(filename, resolvedFilename, options);
+            }
         }
         else
         {
@@ -255,6 +264,11 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     LOG_DEBUG("file '" << protocol->file()->filename() << "' loaded, "
         << _loading.size() << " file(s) still loading, "
         << _filesQueue.size() << " file(s) in the queue");
+
+    const auto byteRangeRequested = protocol->options()->seekedLength() > 0;
+
+    if (protocol->options()->cache() && byteRangeRequested)
+        protocol->options()->cache()->set(protocol->file(), protocol->options()->seekingOffset());
 
     auto parsed = processData(
         filename,

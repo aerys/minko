@@ -78,7 +78,8 @@ Options::Options() :
     _attributeFunction(),
     _fileStatusFunction(),
     _preventLoadingFunction(),
-    _retryOnErrorFunction()
+    _retryOnErrorFunction(),
+    _cache(nullptr)
 {
     auto binaryDir = File::getBinaryDirectory();
 

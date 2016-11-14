@@ -291,7 +291,8 @@ namespace minko
 		class Options;
 		class Loader;
         class AbstractProtocol;
-		class AbstractParser;
+        class AbstractParser;
+        class AbstractCache;
 		class EffectParser;
         class AssetLibrary;
         class AssetLocation;

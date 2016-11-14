@@ -28,6 +28,7 @@ namespace minko
         class File
         {
             friend class AbstractProtocol;
+            friend class AbstractCache;
 
         public:
             typedef std::shared_ptr<File>       Ptr;

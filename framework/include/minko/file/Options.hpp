@@ -46,7 +46,8 @@ namespace minko
 			typedef std::function<AbsParserPtr(void)>                               ParserHandler;
 			typedef std::function<AbsProtocolPtr(void)>		                        ProtocolHandler;
 			typedef Hash<render::TextureFormat>										TextureFormatHash;
-			typedef std::unordered_set<render::TextureFormat, TextureFormatHash>	TextureFormatSet;
+            typedef std::unordered_set<render::TextureFormat, TextureFormatHash>	TextureFormatSet;
+            typedef std::shared_ptr<AbstractCache>                                  AbstractCachePtr;
 
 		public:
 			typedef std::shared_ptr<Options>													Ptr;
@@ -119,7 +120,8 @@ namespace minko
             RetryOnErrorFunction                                        _retryOnErrorFunction;
             int                                                         _seekingOffset;
             int                                                         _seekedLength;
-
+            AbstractCachePtr                                            _cache;
+            
             static std::unordered_map<
                 Flyweight<std::string>,
                 ProtocolHandler
@@ -788,6 +790,22 @@ namespace minko
 			seekedLength(int value)
 			{
 				_seekedLength = value;
+
+				return shared_from_this();
+			}
+
+            inline
+			AbstractCachePtr
+			cache() const
+			{
+				return _cache;
+			}
+
+			inline
+			Ptr
+			cache(AbstractCachePtr value)
+			{
+                _cache = value;
 
 				return shared_from_this();
 			}
