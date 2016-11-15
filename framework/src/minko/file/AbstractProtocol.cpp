@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractProtocol.hpp"
 
 #include "minko/file/Options.hpp"
+#include "minko/file/AbstractCache.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -31,4 +32,19 @@ AbstractProtocol::AbstractProtocol() :
     _progress(Signal<Ptr, float>::create()),
     _error(Signal<Ptr>::create())
 {
+}
+
+void
+AbstractProtocol::load(const std::string&       filename,
+                       const std::string&       resolvedFilename,
+                       std::shared_ptr<Options> options)
+{
+    _options = options;
+    _file->_filename = filename;
+    _file->_resolvedFilename = resolvedFilename;
+
+    if (options->seekedLength() > 0 && options->cache() && options->cache()->get(_file, options->seekingOffset(), options->seekedLength()))
+        _complete->execute(shared_from_this());
+    else
+        load();
 }

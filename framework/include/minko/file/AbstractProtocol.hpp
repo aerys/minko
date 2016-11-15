@@ -91,18 +91,10 @@ namespace minko
                 return _error;
             }
 
-            inline
             void
             load(const std::string&         filename,
                  const std::string&         resolvedFilename,
-                 std::shared_ptr<Options>   options)
-            {
-                _options = options;
-                _file->_filename = filename;
-                _file->_resolvedFilename = resolvedFilename;
-
-                load();
-            }
+                 std::shared_ptr<Options>   options);
 
             virtual
             void

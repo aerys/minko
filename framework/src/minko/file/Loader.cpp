@@ -165,10 +165,7 @@ Loader::load()
                 }
             ));
 
-            if (byteRangeRequested && options->cache() && options->cache()->get(protocol->file(), options->seekingOffset(), options->seekedLength()))
-                protocol->complete()->execute(protocol);
-            else
-                protocol->load(filename, resolvedFilename, options);
+            protocol->load(filename, resolvedFilename, options);
         }
         else
         {
