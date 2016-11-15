@@ -32,6 +32,9 @@ namespace minko
             typedef std::shared_ptr<AbstractParser>     Ptr;
 
             virtual
+            ~AbstractCache() = default;
+
+            virtual
             void
             set(std::shared_ptr<File> file, int offset = 0) = 0;
 
