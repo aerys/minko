@@ -38,6 +38,7 @@ namespace minko
 
             std::vector<unsigned char>          _data;
             std::string                         _resolvedFilename;
+            bool                                _loadedFromCache;
 
         public:
             inline static
@@ -66,6 +67,13 @@ namespace minko
             data()
             {
                 return _data;
+            }
+
+            inline
+            const bool
+            loadedFromCache()
+            {
+                return _loadedFromCache;
             }
 
             static

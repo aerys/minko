@@ -42,8 +42,9 @@ AbstractProtocol::load(const std::string&       filename,
     _options = options;
     _file->_filename = filename;
     _file->_resolvedFilename = resolvedFilename;
+    _file->_loadedFromCache = options->seekedLength() > 0 && options->cache() && options->cache()->get(_file, options->seekingOffset(), options->seekedLength());
 
-    if (options->seekedLength() > 0 && options->cache() && options->cache()->get(_file, options->seekingOffset(), options->seekedLength()))
+    if (_file->_loadedFromCache)
         _complete->execute(shared_from_this());
     else
         load();

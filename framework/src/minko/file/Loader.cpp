@@ -259,7 +259,7 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
 
     const auto byteRangeRequested = protocol->options()->seekedLength() > 0;
 
-    if (protocol->options()->cache() && byteRangeRequested)
+    if (!protocol->file()->loadedFromCache() && protocol->options()->cache() && byteRangeRequested)
         protocol->options()->cache()->set(protocol->file(), protocol->options()->seekingOffset());
 
     auto parsed = processData(
