@@ -41,6 +41,15 @@ namespace minko
             virtual
             bool
             get(std::shared_ptr<File> file, int offset, int length) = 0;
+
+        protected:
+
+            inline
+            std::vector<unsigned char>&
+            fileData(std::shared_ptr<File> file)
+            {
+                return file->_data;
+            }
         };
     }
 }
