@@ -156,10 +156,7 @@ StreamedAssetParserScheduler::priority()
 void
 StreamedAssetParserScheduler::step()
 {
-    for (auto entry : _entriesToRemove)
-        removeEntry(entry);
-
-    _entriesToRemove.clear();
+    clearEntriesToRemove();
 
     while (hasPendingRequest() && _activeEntries.size() < _parameters.maxNumActiveParsers)
     {
@@ -178,6 +175,8 @@ StreamedAssetParserScheduler::step()
         entryActivated(entry, numActiveEntries, previousNumActiveEntries);
 
         executeRequest(entry);
+
+        clearEntriesToRemove();
     }
 
     for (auto entry : _pendingDataEntries)
@@ -221,6 +220,18 @@ StreamedAssetParserScheduler::popHeadingParser()
     _entries.erase(entryIt);
 
     return entry;
+}
+
+void
+StreamedAssetParserScheduler::clearEntriesToRemove()
+{
+    if (_entriesToRemove.empty())
+        return;
+
+    for (auto entry : _entriesToRemove)
+        removeEntry(entry);
+
+    _entriesToRemove.clear();
 }
 
 void

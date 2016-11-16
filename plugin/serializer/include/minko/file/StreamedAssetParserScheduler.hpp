@@ -192,6 +192,9 @@ namespace minko
             popHeadingParser();
 
             void
+            clearEntriesToRemove();
+
+            void
             removeEntry(ParserEntryPtr entry);
 
             void
