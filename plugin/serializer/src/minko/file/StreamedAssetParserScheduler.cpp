@@ -57,27 +57,14 @@ StreamedAssetParserScheduler::~StreamedAssetParserScheduler()
 void
 StreamedAssetParserScheduler::clear()
 {
-    auto toRemove = std::list<ParserEntryPtr>();
+    _entriesToRemove.insert(_activeEntries.begin(), _activeEntries.end());
+    _entriesToRemove.insert(_entries.begin(), _entries.end());
 
-    for (auto entry : _entriesToRemove)
-        toRemove.push_back(entry);
-
-    for (auto entry : _activeEntries)
-        toRemove.push_back(entry);
-
-    for (auto entry : _entries)
-        toRemove.push_back(entry);
-
-    while (!toRemove.empty())
-    {
-        removeEntry(toRemove.front());
-        toRemove.pop_front();
-    }
+    clearEntriesToRemove();
 
     _entries.clear();
     _activeEntries.clear();
     _pendingDataEntries.clear();
-    _entriesToRemove.clear();
 
     _active = nullptr;
     _inactive = nullptr;
