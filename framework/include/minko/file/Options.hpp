@@ -121,6 +121,7 @@ namespace minko
             int                                                         _seekingOffset;
             int                                                         _seekedLength;
             AbstractCachePtr                                            _cache;
+            bool                                                        _buffered;
             
             static std::unordered_map<
                 Flyweight<std::string>,
@@ -806,6 +807,22 @@ namespace minko
 			cache(AbstractCachePtr value)
 			{
                 _cache = value;
+
+				return shared_from_this();
+			}
+
+            inline
+			bool
+			buffered() const
+			{
+				return _buffered;
+			}
+
+			inline
+			Ptr
+			buffered(bool value)
+			{
+                _buffered = value;
 
 				return shared_from_this();
 			}

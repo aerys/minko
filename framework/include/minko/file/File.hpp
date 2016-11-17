@@ -37,6 +37,7 @@ namespace minko
             std::string                         _filename;
 
             std::vector<unsigned char>          _data;
+            std::vector<unsigned char>          _buffer;
             std::string                         _resolvedFilename;
             bool                                _loadedFromCache;
 
@@ -67,6 +68,13 @@ namespace minko
             data()
             {
                 return _data;
+            }
+
+            inline
+            const std::vector<unsigned char>&
+            buffer()
+            {
+                return _buffer;
             }
 
             inline

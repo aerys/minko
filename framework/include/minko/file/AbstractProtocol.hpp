@@ -40,6 +40,7 @@ namespace minko
 
             std::shared_ptr<Signal<Ptr, float>>         _progress;
             std::shared_ptr<Signal<Ptr>>                _complete;
+            std::shared_ptr<Signal<Ptr>>                _buffer;
             std::shared_ptr<Signal<Ptr>>                _error;
 
         public:
@@ -86,6 +87,13 @@ namespace minko
 
             inline
             std::shared_ptr<Signal<Ptr>>
+            buffer()
+            {
+                return _buffer;
+            }
+
+            inline
+            std::shared_ptr<Signal<Ptr>>
             error()
             {
                 return _error;
@@ -123,6 +131,13 @@ namespace minko
             data()
             {
                 return _file->_data;
+            }
+
+            inline
+            std::vector<unsigned char>&
+            fileBuffer()
+            {
+                return _file->_buffer;
             }
         };
 

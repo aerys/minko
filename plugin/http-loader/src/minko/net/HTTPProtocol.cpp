@@ -94,6 +94,18 @@ HTTPProtocol::completeHandler(void* data, unsigned int size)
 }
 
 void
+HTTPProtocol::bufferHandler(void* data, unsigned int size)
+{
+    if (_status == Options::FileStatus::Aborted)
+        return;
+
+    this->fileBuffer().clear();
+    this->fileBuffer().assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
+
+    buffer()->execute(shared_from_this());
+}
+
+void
 HTTPProtocol::errorHandler(int code, const char * message)
 {
     LOG_ERROR(message);
@@ -119,6 +131,7 @@ HTTPProtocol::load()
     auto password = std::string();
     auto additionalHeaders = std::unordered_map<std::string, std::string>();
     auto verifyPeer = true;
+    auto buffered = _options->buffered();
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
@@ -249,6 +262,10 @@ HTTPProtocol::load()
             {
                 errorHandler();
             }
+            else if (message.type == "buffer")
+            {
+                bufferHandler(&*message.data.begin(), message.data.size());
+            }
         }));
 
         const auto offset = _options->seekingOffset();
@@ -296,6 +313,7 @@ HTTPProtocol::load()
         }
 
         inputStream.write(reinterpret_cast<const char*>(&verifyPeer), 1);
+        inputStream.write(reinterpret_cast<const char*>(&buffered), 1);
 
         auto inputString = inputStream.str();
 
@@ -306,6 +324,7 @@ HTTPProtocol::load()
         HTTPRequest request(resolvedFilename(), username, password, &additionalHeaders);
 
         request.verifyPeer(verifyPeer);
+        request.verifyPeer(buffered);
 
         auto requestIsSuccessfull = true;
 
@@ -316,8 +335,12 @@ HTTPProtocol::load()
             this->error()->execute(shared_from_this());
         });
 
-        auto requestProgressSlot = request.progress()->connect([&](float p){
+        auto requestProgressSlot = request.progress()->connect([&](float p) {
             progressHandler(int(p * 100.f), 100);
+        });
+
+        auto bufferSlot = request.bufferSignal()->connect([&](const std::vector<char>& buffer) {
+            bufferHandler(&buffer.begin(), buffer.size());
         });
 
         request.run();

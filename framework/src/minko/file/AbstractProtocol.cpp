@@ -29,6 +29,7 @@ AbstractProtocol::AbstractProtocol() :
     _file(File::create()),
     _options(Options::create()),
     _complete(Signal<Ptr>::create()),
+    _buffer(Signal<Ptr>::create()),
     _progress(Signal<Ptr, float>::create()),
     _error(Signal<Ptr>::create())
 {

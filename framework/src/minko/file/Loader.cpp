@@ -32,6 +32,7 @@ using namespace minko::file;
 Loader::Loader() :
     _options(Options::create()),
     _complete(Signal<Loader::Ptr>::create()),
+    _buffer(Signal<Loader::Ptr>::create()),
     _progress(Signal<Loader::Ptr, float>::create()),
     _parsingProgress(Signal<Loader::Ptr, float>::create()),
     _error(Signal<Loader::Ptr, const Error&>::create()),
@@ -152,9 +153,17 @@ Loader::load()
             _protocolCompleteSlots.emplace(
                 protocol,
                 protocol->complete()->connect([that](AbstractProtocol::Ptr protocol)
-                {
-                    that->protocolCompleteHandler(protocol);
-                }
+            {
+                that->protocolCompleteHandler(protocol);
+            }
+            ));
+
+            _protocolBufferSlots.emplace(
+                protocol,
+                protocol->buffer()->connect([that](AbstractProtocol::Ptr protocol)
+            {
+                that->protocolBufferHandler(protocol);
+            }
             ));
 
             _protocolProgressSlots.emplace(
@@ -193,6 +202,7 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 
     _protocolErrorSlots.erase(protocol);
     _protocolCompleteSlots.erase(protocol);
+    _protocolBufferSlots.erase(protocol);
     _protocolProgressSlots.erase(protocol);
 
     auto error = Error(
@@ -233,6 +243,12 @@ Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, floa
         std::dynamic_pointer_cast<Loader>(shared_from_this()),
         newTotalProgress
     );
+}
+
+void
+Loader::protocolBufferHandler(std::shared_ptr<AbstractProtocol> protocol)
+{
+    _buffer->execute(std::dynamic_pointer_cast<Loader>(shared_from_this()));
 }
 
 void
