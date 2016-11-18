@@ -32,7 +32,7 @@ namespace minko
                         const std::string& username = "",
                         const std::string& password = "",
                         const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr);
-            
+
             inline
             void
             verifyPeer(bool value)
@@ -63,7 +63,7 @@ namespace minko
             }
 
             void
-            buffer(std::vector<char>& value)
+            buffer(const std::vector<char>& value)
             {
                 _buffer = value;
             }
@@ -122,7 +122,7 @@ namespace minko
             Signal<int, const std::string&>::Ptr _error;
             Signal<const std::vector<char>&>::Ptr _complete;
             Signal<const std::vector<char>&>::Ptr _bufferSignal;
-            
+
             std::string _username;
             std::string _password;
             std::unordered_map<std::string, std::string> _additionalHeaders;

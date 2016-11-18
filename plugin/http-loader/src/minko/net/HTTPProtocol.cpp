@@ -94,13 +94,13 @@ HTTPProtocol::completeHandler(void* data, unsigned int size)
 }
 
 void
-HTTPProtocol::bufferHandler(void* data, unsigned int size)
+HTTPProtocol::bufferHandler(const void* data, unsigned int size)
 {
     if (_status == Options::FileStatus::Aborted)
         return;
 
     this->fileBuffer().clear();
-    this->fileBuffer().assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
+    this->fileBuffer().assign(reinterpret_cast<const unsigned char*>(data), reinterpret_cast<const unsigned char*>(data) + size);
 
     buffer()->execute(shared_from_this());
 }
@@ -264,7 +264,7 @@ HTTPProtocol::load()
             }
             else if (message.type == "buffer")
             {
-                bufferHandler(&*message.data.begin(), message.data.size());
+                bufferHandler(message.data.data(), message.data.size());
             }
         }));
 
@@ -340,7 +340,7 @@ HTTPProtocol::load()
         });
 
         auto bufferSlot = request.bufferSignal()->connect([&](const std::vector<char>& buffer) {
-            bufferHandler(&buffer.begin(), buffer.size());
+            bufferHandler(buffer.data(), buffer.size());
         });
 
         request.run();

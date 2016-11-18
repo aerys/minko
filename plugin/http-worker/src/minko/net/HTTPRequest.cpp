@@ -244,7 +244,7 @@ HTTPRequest::curlWriteHandler(void* data, size_t size, size_t chunks, void* arg)
     HTTPRequest* request = static_cast<HTTPRequest*>(arg);
 
     size *= chunks;
-    
+
     char* source = reinterpret_cast<char*>(data);
 
     if (request->buffered())
@@ -255,7 +255,7 @@ HTTPRequest::curlWriteHandler(void* data, size_t size, size_t chunks, void* arg)
         std::copy(source, source + size, buffer.begin());
 
         request->bufferSignal()->execute(buffer);
-        
+
         request->buffer(std::vector<char>());
     }
     else
@@ -280,9 +280,9 @@ HTTPRequest::curlProgressHandler(void* arg, double total, double current, double
     HTTPRequest* request = static_cast<HTTPRequest*>(arg);
 
     double ratio = current / total;
-    
+
     request->progress()->execute(float(ratio));
-    
+
     return 0;
 }
 
