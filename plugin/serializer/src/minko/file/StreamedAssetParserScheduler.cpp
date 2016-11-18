@@ -143,9 +143,13 @@ StreamedAssetParserScheduler::priority()
 void
 StreamedAssetParserScheduler::step()
 {
+    auto numExecutedRequests = 0;
+
     clearEntriesToRemove();
 
-    while (hasPendingRequest() && _activeEntries.size() < _parameters.maxNumActiveParsers)
+    while (hasPendingRequest() &&
+           _activeEntries.size() < _parameters.maxNumActiveParsers &&
+           numExecutedRequests < _parameters.maxNumActiveParsers)
     {
         auto entry = headingParser();
 
@@ -161,6 +165,7 @@ StreamedAssetParserScheduler::step()
 
         entryActivated(entry, numActiveEntries, previousNumActiveEntries);
 
+        ++numExecutedRequests;
         executeRequest(entry);
 
         clearEntriesToRemove();
