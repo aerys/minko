@@ -33,7 +33,7 @@
 set -e
 
 ANDROID_ARCH="arm"
-ANDROID_API="21"
+ANDROID_API="19"
 ANDROID_TOOLCHAIN="arm-linux-androideabi-4.9"
 
 if [[ -z "${ANDROID_HOME}" ]]; then
@@ -65,7 +65,7 @@ if [[ ! -x ${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make_standalon
 	echo "Invalid NDK path: ${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" > /dev/stderr
 	exit 1
 fi
-${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make_standalone_toolchain.py --arch ${ANDROID_ARCH} --api ${ANDROID_API} --install-dir ${ANDROID_NDK_HOME}
+${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}/build/tools/make_standalone_toolchain.py --arch ${ANDROID_ARCH} --api ${ANDROID_API} --install-dir ${ANDROID_NDK_HOME} --force
 popd > /dev/null
 
 # Link default NDK.
