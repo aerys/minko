@@ -229,6 +229,9 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 void
 Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float progress)
 {
+    if (_protocolToProgress[protocol] == progress)
+        return;
+
     _protocolToProgress[protocol] = progress;
 
     float newTotalProgress = 0.f;

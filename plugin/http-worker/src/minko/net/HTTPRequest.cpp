@@ -207,6 +207,7 @@ HTTPRequest::run()
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
     curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
 
@@ -233,6 +234,12 @@ HTTPRequest::run()
     }
     else
     {
+        if (buffered() && buffer().size())
+        {
+            bufferSignal()->execute(buffer());
+            buffer(std::vector<char>());
+        }
+
         progress()->execute(1.0f);
         complete()->execute(_output);
     }
@@ -247,21 +254,27 @@ HTTPRequest::curlWriteHandler(void* data, size_t size, size_t chunks, void* arg)
 
     char* source = reinterpret_cast<char*>(data);
 
+    std::vector<char>& output = request->output();
+
     if (request->buffered())
     {
-        std::vector<char>& buffer = request->output();
-        buffer.resize(size);
+        std::vector<char>& buffer = request->buffer();
+        size_t bufferPosition = buffer.size();
 
-        std::copy(source, source + size, buffer.begin());
+        buffer.resize(bufferPosition + size);
+        output.resize(size);
 
-        request->bufferSignal()->execute(buffer);
+        std::copy(source, source + size, buffer.begin() + bufferPosition);
 
-        request->buffer(std::vector<char>());
+        if (buffer.size() > (4 * 1024 * 1024))
+        {
+            request->bufferSignal()->execute(buffer);
+
+            request->buffer(std::vector<char>());
+        }
     }
     else
     {
-        std::vector<char>& output = request->output();
-
         size_t outputPosition = output.size();
 
         // Resizing to the new size.
@@ -277,6 +290,9 @@ HTTPRequest::curlWriteHandler(void* data, size_t size, size_t chunks, void* arg)
 int
 HTTPRequest::curlProgressHandler(void* arg, double total, double current, double, double)
 {
+    if (total <= 0.)
+        return 0;
+
     HTTPRequest* request = static_cast<HTTPRequest*>(arg);
 
     double ratio = current / total;

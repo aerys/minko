@@ -256,7 +256,7 @@ HTTPProtocol::load()
             else if (message.type == "progress")
             {
                 float ratio = *reinterpret_cast<float*>(&*message.data.begin());
-                progressHandler(int(ratio * 100.f), 100);
+                progressHandler(int(ratio * 10000.f), 10000);
             }
             else if (message.type == "error")
             {
