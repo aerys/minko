@@ -14,6 +14,7 @@ minko.project.application "minko-test"
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("serializer")
 	minko.plugin.enable("websocket")
+	minko.plugin.enable("http-loader")
 
 	-- googletest framework
 	links { "googletest" }

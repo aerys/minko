@@ -97,6 +97,7 @@ local plugins = {
 	['particles'] = false,
 	['png'] = true,
 	['sdl'] = true,
+	['ssl'] = true,
 	['sensors'] = true,
 	['serializer'] = true,
 	['video-camera'] = true,

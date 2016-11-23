@@ -1,4 +1,4 @@
---[[
+/*
 Copyright (c) 2016 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -15,17 +15,8 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-]]--
+*/
 
--- websocket plugin
-minko.plugin["websocket"] = {}
+#pragma once
 
-minko.plugin["websocket"].enable = function()
-    minko.plugin.enable { "ssl" }
-
-    minko.plugin.links { "websocket" }
-
-    includedirs { minko.plugin.path("websocket") .. "/include" }
-
-    defines { "MINKO_PLUGIN_WEBSOCKET" }
-end
+#include "openssl/ssl.h"

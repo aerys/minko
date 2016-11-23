@@ -2,6 +2,19 @@
 
 # set -x
 
+while test $# -gt 0
+do
+    case "$1" in
+        --use-prebuilt) USE_PREBUILT=1
+            ;;
+        --*) echo "bad option $1"
+            ;;
+        *) echo "argument $1"
+            ;;
+    esac
+    shift
+done
+
 NODE_VERSION="6.x"
 
 [[ -r lib/node/out/Release/obj.target/libnode.a ]] && {
@@ -29,6 +42,13 @@ NODE_VERSION="6.x"
     # getservbyport_r is not defined in Android NDK libc.
     sed -i 's/.*HAVE_GETSERVBYPORT_R.*//g' lib/node/deps/cares/config/android/ares_config.h
 }
+
+[[ -z $USE_PREBUILT ]] || {
+    echo "Using pre-built version."
+    exit 0
+}
+
+PLUGIN_DIR="${PWD}"
 
 pushd lib/node
 if [ -z "$2" ]; then
@@ -79,7 +99,9 @@ export GYP_DEFINES
     --without-snapshot \
     --without-intl \
     --without-inspector \
-    --openssl-no-asm \
+    --shared-openssl \
+    --shared-openssl-includes="${PLUGIN_DIR}/../ssl/lib/openssl/include" \
+    --shared-openssl-libpath="${PLUGIN_DIR}/../ssl/lib/openssl/lib/android" \
     --enable-static
 popd
 
