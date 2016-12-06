@@ -21,7 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin["websocket"] = {}
 
 minko.plugin["websocket"].enable = function()
-    minko.plugin.enable { "ssl" }
+    configuration { "not html5" }
+        minko.plugin.enable { "ssl" }
+
+    configuration { }
 
     minko.plugin.links { "websocket" }
 
