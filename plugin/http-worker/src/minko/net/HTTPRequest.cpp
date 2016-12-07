@@ -84,7 +84,7 @@ encodeUrl(const std::string& url)
 {
     static const auto authorizedCharacters = std::set<char>
     {
-         '/', ':', '~', '-', '.', '_', '?', '&'
+         '/', ':', '~', '-', '.', '_', '?', '&', '='
     };
 
     std::stringstream encodedUrlStream;
