@@ -84,7 +84,7 @@ encodeUrl(const std::string& url)
 {
     static const auto authorizedCharacters = std::set<char>
     {
-         '/', ':', '~', '-', '.', '_'
+         '/', ':', '~', '-', '.', '_', '?', '&'
     };
 
     std::stringstream encodedUrlStream;
@@ -102,7 +102,7 @@ encodeUrl(const std::string& url)
             continue;
         }
 
-        if (::isalnum(c) || authorizedCharacters.find(c) != authorizedCharacters.end())
+        if (::isalnum(c) ||authorizedCharacters.find(c) != authorizedCharacters.end())
         {
             encodedUrlStream << c;
         }
@@ -131,6 +131,8 @@ createCurl(const std::string&                                   url,
         return nullptr;
 
     const auto encodedUrl = encodeUrl(url);
+
+    //const auto encodedUrl = curl_easy_escape(curl, url.c_str(), url.size());
 
     curl_easy_setopt(curl, CURLOPT_URL, encodedUrl.c_str());
 
