@@ -36,7 +36,7 @@ namespace minko
         {
         public:
             void
-            connect(const std::string& uri) override;
+            connect(const std::string& uri, const std::string& cookie) override;
 
             void
             disconnect() override;
