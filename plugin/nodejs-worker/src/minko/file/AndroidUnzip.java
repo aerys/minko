@@ -30,7 +30,7 @@ public class AndroidUnzip
         AssetManager assetManager = _context.getAssets();
 
         ZipInputStream zip = new ZipInputStream(new BufferedInputStream(assetManager.open(archivePath)));
-        File targetDirectory = _context.getCacheDir();
+        File targetDirectory = _context.getFilesDir();
 
         try
         {
