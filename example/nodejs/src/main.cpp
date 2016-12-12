@@ -23,8 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoNodeJS.hpp"
 #include "minko/MinkoHtmlOverlay.hpp"
 
-#include "json/json.h"
-
 using namespace minko;
 using namespace minko::async;
 using namespace minko::component;
@@ -73,8 +71,8 @@ callEndpoint(const string& url)
             auto result = p.second;
             auto& data = result->data();
 
-            auto reader = Json::Reader();
-            auto root = Json::Value();
+            auto reader = JSON::Reader();
+            auto root = JSON::Value();
 
             auto parsingError = false;
 

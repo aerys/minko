@@ -57,27 +57,14 @@ StreamedAssetParserScheduler::~StreamedAssetParserScheduler()
 void
 StreamedAssetParserScheduler::clear()
 {
-    auto toRemove = std::list<ParserEntryPtr>();
+    _entriesToRemove.insert(_activeEntries.begin(), _activeEntries.end());
+    _entriesToRemove.insert(_entries.begin(), _entries.end());
 
-    for (auto entry : _entriesToRemove)
-        toRemove.push_back(entry);
-
-    for (auto entry : _activeEntries)
-        toRemove.push_back(entry);
-
-    for (auto entry : _entries)
-        toRemove.push_back(entry);
-
-    while (!toRemove.empty())
-    {
-        removeEntry(toRemove.front());
-        toRemove.pop_front();
-    }
+    clearEntriesToRemove();
 
     _entries.clear();
     _activeEntries.clear();
     _pendingDataEntries.clear();
-    _entriesToRemove.clear();
 
     _active = nullptr;
     _inactive = nullptr;
@@ -156,12 +143,13 @@ StreamedAssetParserScheduler::priority()
 void
 StreamedAssetParserScheduler::step()
 {
-    for (auto entry : _entriesToRemove)
-        removeEntry(entry);
+    auto numExecutedRequests = 0;
 
-    _entriesToRemove.clear();
+    clearEntriesToRemove();
 
-    while (hasPendingRequest() && _activeEntries.size() < _parameters.maxNumActiveParsers)
+    while (hasPendingRequest() &&
+           _activeEntries.size() < _parameters.maxNumActiveParsers &&
+           numExecutedRequests < _parameters.maxNumActiveParsers)
     {
         auto entry = headingParser();
 
@@ -177,7 +165,10 @@ StreamedAssetParserScheduler::step()
 
         entryActivated(entry, numActiveEntries, previousNumActiveEntries);
 
+        ++numExecutedRequests;
         executeRequest(entry);
+
+        clearEntriesToRemove();
     }
 
     for (auto entry : _pendingDataEntries)
@@ -221,6 +212,18 @@ StreamedAssetParserScheduler::popHeadingParser()
     _entries.erase(entryIt);
 
     return entry;
+}
+
+void
+StreamedAssetParserScheduler::clearEntriesToRemove()
+{
+    if (_entriesToRemove.empty())
+        return;
+
+    for (auto entry : _entriesToRemove)
+        removeEntry(entry);
+
+    _entriesToRemove.clear();
 }
 
 void

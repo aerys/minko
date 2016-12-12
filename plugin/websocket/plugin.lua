@@ -18,62 +18,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ]]--
 
 -- websocket plugin
-minko.plugin.websocket = {}
+minko.plugin["websocket"] = {}
 
-function minko.plugin.websocket:enable()
-	minko.plugin.links { "websocket" }
+minko.plugin["websocket"].enable = function()
+    configuration { "not html5" }
+        minko.plugin.enable { "ssl" }
 
-	includedirs { minko.plugin.path("websocket") .. "/include" }
+    configuration { }
 
-	defines { "MINKO_PLUGIN_WEBSOCKET" }
+    minko.plugin.links { "websocket" }
 
-	configuration { "linux" }
-		links {
-			"ssl",
-			"crypto"
-		}
+    includedirs { minko.plugin.path("websocket") .. "/include" }
 
-	configuration { "ios" }
-		libdirs {
-			minko.plugin.path("websocket") .. "/lib/openssl/lib/ios"
-		}
-		links {
-			"ssl",
-			"crypto"
-		}
-
-	configuration { "android" }
-		libdirs {
-			minko.plugin.path("websocket") .. "/lib/openssl/lib/android"
-		}
-		links {
-			"ssl",
-			"crypto"
-		}
-
-	configuration { "osx64" }
-		links {
-			"ssl",
-			"crypto"
-		}
-
-	configuration { "windows32" }
-		links {
-			minko.plugin.path("websocket") .. "/lib/openssl/lib/windows32/ssleay32",
-			minko.plugin.path("websocket") .. "/lib/openssl/lib/windows32/libeay32"
-		}
-		prelinkcommands {
-			minko.action.copy(minko.plugin.path("websocket") .. "/lib/openssl/lib/windows32/ssleay32.dll"),
-			minko.action.copy(minko.plugin.path("websocket") .. "/lib/openssl/lib/windows32/libeay32.dll")
-		}
-
-	configuration { "windows64" }
-		links {
-			minko.plugin.path("websocket") .. "/lib/openssl/lib/windows64/ssleay32",
-			minko.plugin.path("websocket") .. "/lib/openssl/lib/windows64/libeay32"
-		}
-		prelinkcommands {
-			minko.action.copy(minko.plugin.path("websocket") .. "/lib/openssl/lib/windows64/ssleay32.dll"),
-			minko.action.copy(minko.plugin.path("websocket") .. "/lib/openssl/lib/windows64/libeay32.dll")
-		}
+    defines { "MINKO_PLUGIN_WEBSOCKET" }
 end

@@ -74,6 +74,9 @@ namespace minko
             completeHandler(void* data, unsigned int size);
 
             void
+            bufferHandler(const void* data, unsigned int size);
+
+            void
             errorHandler(int code = 0, const char* message = "");
 
             void

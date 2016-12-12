@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin["http-worker"] = {}
 
 minko.plugin["http-worker"].enable = function (self)
---function minko.plugin.["http-worker"]:enable()
 	includedirs { minko.plugin.path("http-worker") .. "/include" }
 	defines { "MINKO_PLUGIN_HTTP_WORKER" }
 
@@ -29,6 +28,8 @@ minko.plugin["http-worker"].enable = function (self)
 
 	configuration { "not html5" }
 		minko.plugin.links { "http-worker" }
+
+		minko.plugin.enable("ssl")
 
 	configuration { "windows32 or windows64" }
 		links { "libcurl" }

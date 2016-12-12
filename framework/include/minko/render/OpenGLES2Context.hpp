@@ -221,10 +221,10 @@ namespace minko
 			createIndexBuffer(const uint size) override;
 
 			void
-			uploaderIndexBufferData(const uint 	indexBuffer,
-									const uint 	offset,
-									const uint 	size,
-									void*		data) override;
+			uploadIndexBufferData(const uint 	indexBuffer,
+							      const uint 	offset,
+							      const uint 	size,
+							      void*		    data) override;
 
 			void
 			deleteIndexBuffer(const uint indexBuffer) override;

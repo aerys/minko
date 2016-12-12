@@ -36,7 +36,7 @@ namespace minko
         {
         public:
             void
-            connect(const std::string& uri) override;
+            connect(const std::string& uri, const std::string &cookie = "") override;
 
             void
             disconnect() override;
@@ -62,7 +62,7 @@ namespace minko
 
         private:
             void
-            tlsConnect(const std::string& uri);
+            tlsConnect(const std::string& uri, const std::string& cookie = "");
 
             void
             pushCallback(std::function<void(std::weak_ptr<WebSocket>)> callback);
