@@ -117,6 +117,10 @@ namespace minko
                 ParserEntryPtr
             >                           _entriesToRemove;
 
+            std::unordered_set<
+                ParserEntryPtr
+            >                           _abortedRequests;
+
             Parameters                  _parameters;
 
             bool                        _complete;
