@@ -65,10 +65,12 @@ namespace minko
             std::shared_ptr<Signal<Ptr, float>>                 _progress;
             std::shared_ptr<Signal<Ptr, float>>                 _parsingProgress;
             std::shared_ptr<Signal<Ptr>>                        _complete;
+            std::shared_ptr<Signal<Ptr>>                        _buffer;
             std::shared_ptr<Signal<Ptr, const Error&>>          _error;
 
             ProtocolSlots                                       _protocolErrorSlots;
             ProtocolSlots                                       _protocolCompleteSlots;
+            ProtocolSlots                                       _protocolBufferSlots;
             ProtocolProgressSlots                               _protocolProgressSlots;
             ParserProgressSlots                                 _parserProgressSlots;
             ParserCompleteSlots                                 _parserCompleteSlots;
@@ -136,6 +138,13 @@ namespace minko
             }
 
             inline
+            std::shared_ptr<Signal<Ptr>>
+            buffer()
+            {
+                return _buffer;
+            }
+
+            inline
             std::shared_ptr<Signal<Ptr, float>>
             progress()
             {
@@ -194,6 +203,9 @@ namespace minko
 
             void
             protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol);
+
+            void
+            protocolBufferHandler(std::shared_ptr<AbstractProtocol> protocol);
 
             void
             protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float);

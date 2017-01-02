@@ -137,6 +137,14 @@ namespace minko
         }
 
         template <typename ValueType>
+        static bool
+        hasType(Any& operand)
+        {
+            typedef typename RemoveReference<ValueType>::Type NonRef;
+            return cast<NonRef>(&operand) != 0;
+        }
+
+        template <typename ValueType>
         static inline const ValueType*
         cast(const Any* operand)
         {

@@ -1,6 +1,6 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
-if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64", "ios", "android" } then
+if not minko.platform.supports { "android" } then
 	return
 end
 
@@ -22,9 +22,16 @@ minko.project.worker("minko-plugin-" .. PROJECT_NAME)
 		"lib/node/src"
 	}
 
-	prebuildcommands {
-		"bash script/build_nodejs.sh"
-	}
+	if os.is("windows") then
+		prebuildcommands {
+			"bash script/build_nodejs.sh --use-prebuilt"
+		}
+	else
+		prebuildcommands {
+			"bash -c \"rm -rf lib/node/bin/android/release/*.a\"",
+			"bash script/build_nodejs.sh"
+		}
+	end
 
 	postbuildcommands {
 		"bash script/merge_static_libraries.sh"

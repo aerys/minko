@@ -77,7 +77,7 @@ EmscriptenWebSocketImpl::hostnameToIp(const char* hostname , char* ip)
 }
 
 void
-EmscriptenWebSocketImpl::connect(const std::string& uri)
+EmscriptenWebSocketImpl::connect(const std::string& uri, const std::string& cookie)
 {
     _connected = false;
 

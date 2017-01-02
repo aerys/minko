@@ -78,7 +78,9 @@ Options::Options() :
     _attributeFunction(),
     _fileStatusFunction(),
     _preventLoadingFunction(),
-    _retryOnErrorFunction()
+    _retryOnErrorFunction(),
+    _cache(nullptr),
+    _buffered(false)
 {
     auto binaryDir = File::getBinaryDirectory();
 
@@ -137,7 +139,9 @@ Options::Options(const Options& copy) :
     _retryOnErrorFunction(copy._retryOnErrorFunction),
     _loadAsynchronously(copy._loadAsynchronously),
     _seekingOffset(copy._seekingOffset),
-    _seekedLength(copy._seekedLength)
+    _seekedLength(copy._seekedLength),
+    _cache(copy._cache),
+    _buffered(copy._buffered)
 {
 }
 

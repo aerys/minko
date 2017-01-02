@@ -70,11 +70,11 @@ WebSocket::messageReceived()
 }
 
 void
-WebSocket::connect(const std::string& uri)
+WebSocket::connect(const std::string& uri, const std::string& cookie)
 {
     startPollingOnEnterFrame();
 
-    _impl->connect(uri);
+    _impl->connect(uri, cookie);
 }
 
 bool

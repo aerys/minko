@@ -40,6 +40,13 @@ namespace minko
                 _verifyPeer = value;
             }
 
+            inline
+            void
+            buffered(bool value)
+            {
+                _buffered = value;
+            }
+
             void
             run();
 
@@ -47,6 +54,24 @@ namespace minko
             output()
             {
                 return _output;
+            }
+
+            std::vector<char>&
+            buffer()
+            {
+                return _buffer;
+            }
+
+            void
+            buffer(const std::vector<char>& value)
+            {
+                _buffer = value;
+            }
+
+            bool
+            buffered()
+            {
+                return _buffered;
             }
 
             Signal<float>::Ptr
@@ -65,6 +90,12 @@ namespace minko
             complete()
             {
                 return _complete;
+            }
+
+            Signal<const std::vector<char>&>::Ptr
+            bufferSignal()
+            {
+                return _bufferSignal;
             }
 
             static
@@ -86,14 +117,17 @@ namespace minko
         private:
             std::string _url;
             std::vector<char> _output;
+            std::vector<char> _buffer;
             Signal<float>::Ptr _progress;
             Signal<int, const std::string&>::Ptr _error;
             Signal<const std::vector<char>&>::Ptr _complete;
-            
+            Signal<const std::vector<char>&>::Ptr _bufferSignal;
+
             std::string _username;
             std::string _password;
             std::unordered_map<std::string, std::string> _additionalHeaders;
             bool _verifyPeer;
+            bool _buffered;
         };
     }
 }

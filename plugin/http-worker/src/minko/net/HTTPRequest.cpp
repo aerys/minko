@@ -67,6 +67,7 @@ HTTPRequest::HTTPRequest(const std::string& url,
     _progress(Signal<float>::create()),
     _error(Signal<int, const std::string&>::create()),
     _complete(Signal<const std::vector<char>&>::create()),
+    _bufferSignal(Signal<const std::vector<char>&>::create()),
     _username(username),
     _password(password),
     _verifyPeer(true)
@@ -83,7 +84,7 @@ encodeUrl(const std::string& url)
 {
     static const auto authorizedCharacters = std::set<char>
     {
-         '/', ':', '~', '-', '.', '_'
+         '/', ':', '~', '-', '.', '_', '?', '&', '='
     };
 
     std::stringstream encodedUrlStream;
@@ -206,6 +207,7 @@ HTTPRequest::run()
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
+    curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0);
     curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
     curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
 
@@ -232,6 +234,12 @@ HTTPRequest::run()
     }
     else
     {
+        if (buffered() && buffer().size())
+        {
+            bufferSignal()->execute(buffer());
+            buffer(std::vector<char>());
+        }
+
         progress()->execute(1.0f);
         complete()->execute(_output);
     }
@@ -244,17 +252,37 @@ HTTPRequest::curlWriteHandler(void* data, size_t size, size_t chunks, void* arg)
 
     size *= chunks;
 
-    std::vector<char>& output = request->output();
-
-    size_t position = output.size();
-
-    // Resizing to the new size.
-    output.resize(position + size);
-
     char* source = reinterpret_cast<char*>(data);
 
-    // Adding the chunk to the end of the vector.
-    std::copy(source, source + size, output.begin() + position);
+    std::vector<char>& output = request->output();
+
+    if (request->buffered())
+    {
+        std::vector<char>& buffer = request->buffer();
+        size_t bufferPosition = buffer.size();
+
+        buffer.resize(bufferPosition + size);
+        output.resize(size);
+
+        std::copy(source, source + size, buffer.begin() + bufferPosition);
+
+        if (buffer.size() > (4 * 1024 * 1024))
+        {
+            request->bufferSignal()->execute(buffer);
+
+            request->buffer(std::vector<char>());
+        }
+    }
+    else
+    {
+        size_t outputPosition = output.size();
+
+        // Resizing to the new size.
+        output.resize(outputPosition + size);
+
+        // Adding the chunk to the end of the vector.
+        std::copy(source, source + size, output.begin() + outputPosition);
+    }
 
     return size;
 }
@@ -262,6 +290,9 @@ HTTPRequest::curlWriteHandler(void* data, size_t size, size_t chunks, void* arg)
 int
 HTTPRequest::curlProgressHandler(void* arg, double total, double current, double, double)
 {
+    if (total <= 0.)
+        return 0;
+
     HTTPRequest* request = static_cast<HTTPRequest*>(arg);
 
     double ratio = current / total;

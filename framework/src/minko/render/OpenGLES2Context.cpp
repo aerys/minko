@@ -642,10 +642,10 @@ OpenGLES2Context::createIndexBuffer(const uint size)
 }
 
 void
-OpenGLES2Context::uploaderIndexBufferData(const uint 	indexBuffer,
-										  const uint 	offset,
-										  const uint 	size,
-										  void*					data)
+OpenGLES2Context::uploadIndexBufferData(const uint 	indexBuffer,
+										const uint 	offset,
+										const uint 	size,
+										void*	    data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 

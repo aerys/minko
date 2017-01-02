@@ -44,7 +44,7 @@ namespace minko
             messageReceived();
 
             void
-            connect(const std::string& uri);
+            connect(const std::string& uri, const std::string& cookie = "");
 
             bool
             poll();
