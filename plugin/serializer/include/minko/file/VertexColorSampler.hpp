@@ -25,11 +25,11 @@ namespace minko
 {
     namespace file
     {
-        class StreamedTextureWriterPreprocessor :
+        class VertexColorSampler :
             public AbstractWriterPreprocessor<std::shared_ptr<scene::Node>>
         {
         public:
-            typedef std::shared_ptr<StreamedTextureWriterPreprocessor>  Ptr;
+            typedef std::shared_ptr<VertexColorSampler>  Ptr;
 
         private:
             typedef std::shared_ptr<scene::Node>                                NodePtr;
@@ -39,14 +39,14 @@ namespace minko
             StatusChangedSignal::Ptr    _statusChanged;
 
         public:
-            ~StreamedTextureWriterPreprocessor() = default;
+            ~VertexColorSampler() = default;
 
             inline
             static
             Ptr
             create()
             {
-                auto instance = Ptr(new StreamedTextureWriterPreprocessor());
+                auto instance = Ptr(new VertexColorSampler());
 
                 return instance;
             }
@@ -69,7 +69,24 @@ namespace minko
             process(NodePtr& node, AssetLibraryPtr assetLibrary);
 
         private:
-            StreamedTextureWriterPreprocessor();
+            VertexColorSampler();
+
+            void
+            computeVertexColorAttributes(NodePtr            node,
+                                         AssetLibraryPtr    assetLibrary);
+
+            void
+            computeVertexColorAttributes(std::shared_ptr<geometry::Geometry>    geometry,
+                                         std::shared_ptr<material::Material>    material,
+                                         AssetLibraryPtr                        assetLibrary);
+
+            void
+            sampleColor(unsigned int                       width,
+                        unsigned int                       height,
+                        unsigned int                       numComponents,
+                        const std::vector<unsigned char>&  textureData,
+                        const math::vec2&                  uv,
+                        math::vec4&                        color);
         };
     }
 }
