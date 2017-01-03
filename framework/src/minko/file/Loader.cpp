@@ -268,6 +268,7 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
 
     _protocolErrorSlots.erase(protocol);
     _protocolCompleteSlots.erase(protocol);
+    _protocolBufferSlots.erase(protocol);
     _protocolProgressSlots.erase(protocol);
 
     _numFilesToParse++;
@@ -389,6 +390,7 @@ Loader::finalize()
     {
         _protocolErrorSlots.clear();
         _protocolCompleteSlots.clear();
+        _protocolBufferSlots.clear();
         _protocolProgressSlots.clear();
         _parserErrorSlots.clear();
         _filenameToOptions.clear();
