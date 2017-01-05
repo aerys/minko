@@ -205,10 +205,9 @@ DegeneratePrimitiveCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPt
             "DegeneratePrimitiveCleaner: removing " + std::to_string(numDegeneratePrimitives) + " degenerate primitives"
         );
 
-    const auto newNumIndices = numIndices - numDegeneratePrimitives * primitiveSize;
     auto newIndexBuffer = IndexBuffer::Ptr();
 
-    if (newNumIndices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
+    if (numVertices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
     {
         newIndexBuffer = createIndexBuffer<unsigned short>(
             indices,
