@@ -17,40 +17,38 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/component/bullet/TriangleMeshShape.hpp"
+#include "btBulletDynamicsCommon.h"
 
-#include "minko/Common.hpp"
+#include "minko/render/AbstractContext.hpp"
+#include "minko/geometry/LineGeometry.hpp"
 
-namespace minko
+using namespace minko;
+using namespace minko::component;
+using namespace minko::geometry;
+
+LineGeometry::Ptr
+bullet::TriangleMeshShape::getGeometry(render::AbstractContext::Ptr context) const
 {
-    namespace component
+    auto lines = LineGeometry::create(context);
+
+    const auto numTriangles = _indexData.size() / 3;
+
+    for (auto i = 0; i < numTriangles; ++i)
     {
-        namespace bullet
-        {
-            class Collider;
-            class ColliderData;
-            class ColliderDebug;
+        auto p0 = math::make_vec3(&_vertexData.at(_indexData.at(i * 3)));
+        auto p1 = math::make_vec3(&_vertexData.at(_indexData.at(i * 3 + 1)));
+        auto p2 = math::make_vec3(&_vertexData.at(_indexData.at(i * 3 + 2)));
 
-            class PhysicsWorld;
+        lines->moveTo(p0);
+        lines->lineTo(p1);
 
-            class AbstractPhysicsShape;
-            class BoxShape;
-            class ConeShape;
-            class CylinderShape;
-            class SphereShape;
-            class ConvexHullShape;
-			class CapsuleShape;
-			class TriangleMeshShape;
-        }
+        lines->moveTo(p0);
+        lines->lineTo(p2);
+
+        lines->moveTo(p1);
+        lines->lineTo(p2);
     }
 
-    namespace extension
-    {
-        class PhysicsExtension;
-    }
-
-    namespace lua
-    {
-        class BulletLuaBindingsCollection;
-    }
+    return lines;
 }

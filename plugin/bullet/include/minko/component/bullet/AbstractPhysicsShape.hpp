@@ -42,7 +42,8 @@ namespace minko
                     CONE,
                     CYLINDER,
                     CONVEXHULL,
-					CAPSULE
+					CAPSULE,
+                    TRIANGLE_MESH
                 };
 
             private:

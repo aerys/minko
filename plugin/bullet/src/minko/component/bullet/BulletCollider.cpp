@@ -31,6 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/component/bullet/ConeShape.hpp>
 #include <minko/component/bullet/CylinderShape.hpp>
 #include <minko/component/bullet/CapsuleShape.hpp>
+#include <minko/component/bullet/TriangleMeshShape.hpp>
 
 using namespace minko;
 using namespace minko::component;
@@ -80,27 +81,31 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbstractPhysicsSh
     switch(shape->type())
     {
     case AbstractPhysicsShape::SPHERE:
-        bulletShape = initializeSphereShape(std::dynamic_pointer_cast<SphereShape>(shape));
+        bulletShape = initializeSphereShape(std::static_pointer_cast<SphereShape>(shape));
         break;
 
     case AbstractPhysicsShape::BOX:
-        bulletShape = initializeBoxShape(std::dynamic_pointer_cast<BoxShape>(shape));
+        bulletShape = initializeBoxShape(std::static_pointer_cast<BoxShape>(shape));
         break;
 
     case AbstractPhysicsShape::CONE:
-        bulletShape = initializeConeShape(std::dynamic_pointer_cast<ConeShape>(shape));
+        bulletShape = initializeConeShape(std::static_pointer_cast<ConeShape>(shape));
         break;
 
     case AbstractPhysicsShape::CYLINDER:
-        bulletShape = initializeCylinderShape(std::dynamic_pointer_cast<CylinderShape>(shape));
+        bulletShape = initializeCylinderShape(std::static_pointer_cast<CylinderShape>(shape));
         break;
 
     case AbstractPhysicsShape::CONVEXHULL:
-        bulletShape = initializeConvexHullShape(std::dynamic_pointer_cast<ConvexHullShape>(shape));
+        bulletShape = initializeConvexHullShape(std::static_pointer_cast<ConvexHullShape>(shape));
         break;
 
 	case AbstractPhysicsShape::CAPSULE:
-		bulletShape = initializeCapsuleShape(std::dynamic_pointer_cast<CapsuleShape>(shape));
+		bulletShape = initializeCapsuleShape(std::static_pointer_cast<CapsuleShape>(shape));
+		break;
+
+	case AbstractPhysicsShape::TRIANGLE_MESH:
+		bulletShape = initializeTriangleMeshShape(std::static_pointer_cast<TriangleMeshShape>(shape));
 		break;
 
     default:
@@ -177,6 +182,12 @@ std::shared_ptr<btCollisionShape>
 bullet::PhysicsWorld::BulletCollider::initializeCapsuleShape(CapsuleShape::Ptr capsule) const
 {
 	return std::shared_ptr<btCapsuleShape>(new btCapsuleShape(capsule->radius(), capsule->height()));
+}
+
+std::shared_ptr<btCollisionShape>
+bullet::PhysicsWorld::BulletCollider::initializeTriangleMeshShape(TriangleMeshShape::Ptr triangleMesh) const
+{
+    return triangleMesh->getBtShape();
 }
 
 std::shared_ptr<btMotionState>
