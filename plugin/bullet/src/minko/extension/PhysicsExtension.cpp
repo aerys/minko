@@ -236,30 +236,51 @@ PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 
     if (shapetype == 5)//ConvexHull
     {
         auto convexHull = std::static_pointer_cast<component::bullet::ConvexHullShape>(shape);
-        auto geometry = convexHull->geometry();
-
-        auto vertexBuffer = geometry->vertexBuffer("position"); 
-        uint vertexBufferSize = vertexBuffer->numVertices();
-
-        auto attr = vertexBuffer->attribute("position");
-        auto offset = vertexBuffer->attribute("position").offset;
 
         std::vector<char> points;
-        points.resize(vertexBufferSize * 3 * sizeof (float));
 
-        float* data = reinterpret_cast<float*>(points.data());
-
-        auto vertexSize = vertexBuffer->vertexSize();
-
-        for (uint i = 0; i < vertexBufferSize; ++i)
+        if (convexHull->geometry())
         {
-            float x = vertexBuffer->data()[i * vertexSize + offset];
-            float y = vertexBuffer->data()[i * vertexSize + offset + 1];
-            float z = vertexBuffer->data()[i * vertexSize + offset + 2];
+            auto geometry = convexHull->geometry();
+            auto vertexBuffer = geometry->vertexBuffer("position"); 
+            uint vertexBufferSize = vertexBuffer->numVertices();
+
+            auto attr = vertexBuffer->attribute("position");
+            auto offset = vertexBuffer->attribute("position").offset;
+
+            points.resize(vertexBufferSize * 3 * sizeof (float));
+            float* pointsData = reinterpret_cast<float*>(points.data());
+
+            auto vertexSize = vertexBuffer->vertexSize();
+
+            for (uint i = 0; i < vertexBufferSize; ++i)
+            {
+                float x = vertexBuffer->data()[i * vertexSize + offset];
+                float y = vertexBuffer->data()[i * vertexSize + offset + 1];
+                float z = vertexBuffer->data()[i * vertexSize + offset + 2];
         
-            data[i*3 + 0] = x;
-            data[i*3 + 1] = y;
-            data[i*3 + 2] = z;
+                pointsData[i*3 + 0] = x;
+                pointsData[i*3 + 1] = y;
+                pointsData[i*3 + 2] = z;
+            }
+        }
+        else if (convexHull->getBtShape())
+        {
+            auto shape = convexHull->getBtShape();
+            const auto shapePoints = shape->getPoints();
+            const auto shapeNumPoints = shape->getNumPoints();
+
+            points.resize(shapeNumPoints * 3 * sizeof (float));
+            float* pointsData = reinterpret_cast<float*>(points.data());
+
+            for (auto i = 0; i < shape->getNumPoints(); ++i)
+            {
+                const auto shapePoint = shapePoints[i];
+
+                pointsData[i*3 + 0] = shapePoint.x();
+                pointsData[i*3 + 1] = shapePoint.y();
+                pointsData[i*3 + 2] = shapePoint.z();
+            }
         }
 
        serializedPointsString.assign(points.data(), points.size());
