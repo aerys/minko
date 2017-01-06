@@ -100,8 +100,6 @@ SceneTreeFlattener::collapseNode(Node::Ptr                      node,
             ? math::mat4()
             : transforms.front()->matrix();
 
-        auto nodeTransform = transforms.front();
-
         for (auto& retargetedSurface : retargetedSurfaces)
         {
             retargetedSurface.matrix = localTransformMatrix * retargetedSurface.matrix;
