@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/bullet/ConeShape.hpp"
 #include "minko/component/bullet/CylinderShape.hpp"
 #include "minko/component/bullet/ConvexHullShape.hpp"
+#include "minko/component/bullet/TriangleMeshShape.hpp"
 #include "minko/serialize/TypeSerializer.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/Any.hpp"
@@ -79,15 +80,12 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
     msgpack::zone mempool;
     msgpack::object deserialized;
 
-    // shape type, shape data, delta transform, <density, friction, restit>, dynamic, trigger, filterGroup, filterMask, convexhull geometry points
-    msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, std::string, bool, bool, uint, uint, std::string> dst;
-    
+    // shape type, shape data, delta transform, <density, friction, restit>, dynamic, trigger, filterGroup, filterMask, convexhull geometry points, triangle mesh geometry index
+    msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, std::string, bool, bool, uint, uint, std::string, std::string> dst;
 
     //unpack(serializedCollider.data(), serializedCollider.size() - 1, nullptr, &mempool, &deserialized);
 	unpack(dst, serializedCollider.data(), serializedCollider.size() - 1);
 
-//    deserialized.convert(&dst);
-    
     uint shapeType = dst.get<0>();
     std::vector<float> shapeData;
     const char* serializedConvexHull;
@@ -100,13 +98,13 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
     std::vector<float> physicsData = deserialize::TypeDeserializer::deserializeVector<float>(dst.get<3>());
 
 	// TODO: Replace constant integer by Enum
-    if (shapeType == 1) // Ball
+    if (shapeType == minko::component::bullet::AbstractPhysicsShape::SPHERE)
     {
         deserializedShape = component::bullet::SphereShape::create(
             shapeData[0]
         );
     }
-    else if (shapeType == 2) // Box
+    else if (shapeType == minko::component::bullet::AbstractPhysicsShape::BOX)
     {
         deserializedShape = component::bullet::BoxShape::create(
             shapeData[0],
@@ -114,7 +112,7 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
             shapeData[2]
         );
     }
-    else if (shapeType == 3) // Cylinder
+    else if (shapeType == minko::component::bullet::AbstractPhysicsShape::CYLINDER)
     {
         deserializedShape = component::bullet::CylinderShape::create(
             shapeData[1],
@@ -122,14 +120,14 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
             shapeData[1]
         );
     }
-    else if (shapeType == 4) // Cone
+    else if (shapeType == minko::component::bullet::AbstractPhysicsShape::CONE)
     {
         deserializedShape = component::bullet::ConeShape::create(
             shapeData[1],
             shapeData[0]
         );
     }
-    else if (shapeType == 5) // ConvexHull
+    else if (shapeType == minko::component::bullet::AbstractPhysicsShape::CONVEXHULL)
     {
         std::string serializedPointsString = dst.get<8>();
         
@@ -150,6 +148,33 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
         deserializedShape = component::bullet::ConvexHullShape::create(            
             btShape
         );
+    }
+    else if (shapeType == minko::component::bullet::AbstractPhysicsShape::TRIANGLE_MESH)
+    {
+        const auto& serializedPointsString = dst.get<8>();
+        const auto& serializedIndicesString = dst.get<9>();
+
+        auto btShape = std::shared_ptr<btBvhTriangleMeshShape>();
+        auto triangleMeshShape = component::bullet::TriangleMeshShape::create(btShape);
+
+        triangleMeshShape->vertexData() = deserialize::TypeDeserializer::deserializeVector<float>(serializedPointsString);
+        triangleMeshShape->indexData() = deserialize::TypeDeserializer::deserializeVector<unsigned int>(serializedIndicesString);
+
+        const auto numVertices = triangleMeshShape->vertexData().size() / 3;
+        const auto numIndices = triangleMeshShape->indexData().size();
+
+        btTriangleIndexVertexArray* btTriangleMesh = new ::btTriangleIndexVertexArray(
+            numIndices / 3,
+            const_cast<int*> (reinterpret_cast<const int*> (triangleMeshShape->indexData().data())),
+            3 * sizeof (int),
+            numVertices,
+            triangleMeshShape->vertexData().data(),
+            3 * sizeof (float)
+        );
+
+        triangleMeshShape->btShape(std::make_shared<btBvhTriangleMeshShape>(btTriangleMesh, false));
+
+        deserializedShape = triangleMeshShape;
     }
 
     std::tuple<uint, std::string&> serializedMatrixTuple(dst.get<2>().get<0>(), dst.get<2>().get<1>());
@@ -207,62 +232,123 @@ PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 
     physicsData[1] = collider->colliderData()->friction();//friction
     physicsData[2] = collider->colliderData()->restitution();//restitution
 
-    std::string serializedPointsString;//only for convex hull
+    std::string serializedPointsString;//only for convex hull and triangle mesh
+    std::string serializedIndicesString;
 
-    if (shapetype == 1)//Ball
+    if (shapetype == minko::component::bullet::AbstractPhysicsShape::SPHERE)
     {
         shapeData[0] = std::static_pointer_cast<component::bullet::SphereShape>(shape)->radius();
     }
 
-    if (shapetype == 2)//Box
+    if (shapetype == minko::component::bullet::AbstractPhysicsShape::BOX)
     {
         shapeData[0] = std::static_pointer_cast<component::bullet::BoxShape>(shape)->halfExtentX();
         shapeData[1] = std::static_pointer_cast<component::bullet::BoxShape>(shape)->halfExtentY();
         shapeData[2] = std::static_pointer_cast<component::bullet::BoxShape>(shape)->halfExtentZ();
     }
 
-    if (shapetype == 3)//Cylinder
+    if (shapetype == minko::component::bullet::AbstractPhysicsShape::CYLINDER)
     {
         shapeData[0] = std::static_pointer_cast<component::bullet::CylinderShape>(shape)->halfExtentY() * 2;
         shapeData[1] = std::static_pointer_cast<component::bullet::CylinderShape>(shape)->halfExtentX();
     }
 
-    if (shapetype == 4)//Cone
+    if (shapetype == minko::component::bullet::AbstractPhysicsShape::CONE)
     {
         shapeData[0] = std::static_pointer_cast<component::bullet::ConeShape>(shape)->height();
         shapeData[1] = std::static_pointer_cast<component::bullet::ConeShape>(shape)->radius();
     }
 
-    if (shapetype == 5)//ConvexHull
+    if (shapetype == minko::component::bullet::AbstractPhysicsShape::CONVEXHULL)
     {
         auto convexHull = std::static_pointer_cast<component::bullet::ConvexHullShape>(shape);
-        auto geometry = convexHull->geometry();
-
-        auto vertexBuffer = geometry->vertexBuffer("position"); 
-        uint vertexBufferSize = vertexBuffer->numVertices();
-
-        auto attr = vertexBuffer->attribute("position");
-        auto offset = vertexBuffer->attribute("position").offset;
 
         std::vector<char> points;
-        points.resize(vertexBufferSize * 3 * sizeof (float));
 
-        float* data = reinterpret_cast<float*>(points.data());
-
-        auto vertexSize = vertexBuffer->vertexSize();
-
-        for (uint i = 0; i < vertexBufferSize; ++i)
+        if (convexHull->geometry())
         {
-            float x = vertexBuffer->data()[i * vertexSize + offset];
-            float y = vertexBuffer->data()[i * vertexSize + offset + 1];
-            float z = vertexBuffer->data()[i * vertexSize + offset + 2];
+            auto geometry = convexHull->geometry();
+            auto vertexBuffer = geometry->vertexBuffer("position"); 
+            uint vertexBufferSize = vertexBuffer->numVertices();
+
+            auto attr = vertexBuffer->attribute("position");
+            auto offset = vertexBuffer->attribute("position").offset;
+
+            points.resize(vertexBufferSize * 3 * sizeof (float));
+            float* pointsData = reinterpret_cast<float*>(points.data());
+
+            auto vertexSize = vertexBuffer->vertexSize();
+
+            for (uint i = 0; i < vertexBufferSize; ++i)
+            {
+                float x = vertexBuffer->data()[i * vertexSize + offset];
+                float y = vertexBuffer->data()[i * vertexSize + offset + 1];
+                float z = vertexBuffer->data()[i * vertexSize + offset + 2];
         
-            data[i*3 + 0] = x;
-            data[i*3 + 1] = y;
-            data[i*3 + 2] = z;
+                pointsData[i*3 + 0] = x;
+                pointsData[i*3 + 1] = y;
+                pointsData[i*3 + 2] = z;
+            }
+        }
+        else if (convexHull->getBtShape())
+        {
+            auto shape = convexHull->getBtShape();
+            const auto shapePoints = shape->getPoints();
+            const auto shapeNumPoints = shape->getNumPoints();
+
+            points.resize(shapeNumPoints * 3 * sizeof (float));
+            float* pointsData = reinterpret_cast<float*>(points.data());
+
+            for (auto i = 0; i < shape->getNumPoints(); ++i)
+            {
+                const auto shapePoint = shapePoints[i];
+
+                pointsData[i*3 + 0] = shapePoint.x();
+                pointsData[i*3 + 1] = shapePoint.y();
+                pointsData[i*3 + 2] = shapePoint.z();
+            }
         }
 
-       serializedPointsString.assign(points.data(), points.size());
+        serializedPointsString.assign(points.data(), points.size());
+    }
+    else if (shapetype == minko::component::bullet::AbstractPhysicsShape::TRIANGLE_MESH)
+    {
+        auto triangleMeshShape = std::static_pointer_cast<component::bullet::TriangleMeshShape>(shape);
+        std::vector<char> vertexByteArray;
+        std::vector<char> indexByteArray;
+
+        auto vertexData = std::vector<float>();
+        auto indexData = std::vector<unsigned int>();
+
+        if (triangleMeshShape->geometry())
+        {
+            auto geometry = triangleMeshShape->geometry();
+            auto vertexBuffer = geometry->vertexBuffer("position");
+            auto positionAttribute = vertexBuffer->attribute("position");
+            auto offset = vertexBuffer->attribute("position").offset;
+            const float* vertexBufferData = vertexBuffer->data().data();
+
+            const auto u16IndexData = geometry->indices()->dataPointer<unsigned short>();
+            const auto u32IndexData = geometry->indices()->dataPointer<unsigned int>();
+
+            if (u16IndexData)
+                indexData.assign(u16IndexData->begin(), u16IndexData->end());
+            else
+                indexData = *u32IndexData;
+
+            vertexData.resize(vertexBuffer->numVertices() * 3);
+            for (auto i = 0; i < vertexBuffer->numVertices(); ++i)
+                for (auto j = 0; j < 3; ++j)
+                    vertexData[i * 3 + j] = vertexBufferData[i * *positionAttribute.vertexSize + positionAttribute.offset + j];
+        }
+        else if (triangleMeshShape->getBtShape())
+        {
+            indexData = triangleMeshShape->indexData();
+            vertexData = triangleMeshShape->vertexData();
+        }
+
+        serializedPointsString = serialize::TypeSerializer::serializeVector<float>(vertexData);
+        serializedIndicesString = serialize::TypeSerializer::serializeVector<unsigned int>(indexData);
     }
 
     bool isdynamic = collider->colliderData()->mass() != 0.0f;
@@ -274,8 +360,8 @@ PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 
 
     std::stringstream sbuf;
 
-    // shape type, shape data, delta transform, <density, friction, restit>, dynamic, trigger, filterGroup, filterMask, convexhull geometry points
-    msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, std::string, bool, bool, uint, uint, std::string> dst(
+    // shape type, shape data, delta transform, <density, friction, restit>, dynamic, trigger, filterGroup, filterMask, convexhull geometry points, triangle mesh geometry index
+    msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, std::string, bool, bool, uint, uint, std::string, std::string> dst(
         shapetype,
         serialize::TypeSerializer::serializeVector<float>(shapeData),
         transform,
@@ -284,8 +370,9 @@ PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 
         true,
         0,
         collider->layoutMask(),
-        serializedPointsString
-        );
+        serializedPointsString,
+        serializedIndicesString
+    );
     
     int8_t type = serialize::COLLIDER;
 
