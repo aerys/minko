@@ -30,9 +30,9 @@ using namespace minko::geometry;
 LineGeometry::Ptr
 bullet::TriangleMeshShape::getGeometry(render::AbstractContext::Ptr context) const
 {
-    auto lines = LineGeometry::create(context);
-
     const auto numTriangles = _indexData.size() / 3;
+
+    auto lines = LineGeometry::create(context, numTriangles * 3);
 
     for (auto i = 0; i < numTriangles; ++i)
     {
