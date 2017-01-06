@@ -154,29 +154,27 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
         const auto& serializedPointsString = dst.get<8>();
         const auto& serializedIndicesString = dst.get<9>();
 
-        const auto numVertices = serializedPointsString.size() / (3 * sizeof (float));
-        const auto numIndices = serializedIndicesString.size() / (sizeof (unsigned int));
+        auto btShape = std::shared_ptr<btBvhTriangleMeshShape>();
+        auto triangleMeshShape = component::bullet::TriangleMeshShape::create(btShape);
 
-        const float* vertexByteArrayPointer = reinterpret_cast<const float*> (serializedPointsString.data());
-        const unsigned int* indexByteArrayPointer = reinterpret_cast<const unsigned int*> (serializedIndicesString.data());
+        triangleMeshShape->vertexData() = deserialize::TypeDeserializer::deserializeVector<float>(serializedPointsString);
+        triangleMeshShape->indexData() = deserialize::TypeDeserializer::deserializeVector<unsigned int>(serializedIndicesString);
 
-        auto btVertexData = std::vector<btScalar>();
-        btVertexData.assign(vertexByteArrayPointer, vertexByteArrayPointer + numVertices * 3);
+        const auto numVertices = triangleMeshShape->vertexData().size() / 3;
+        const auto numIndices = triangleMeshShape->indexData().size();
 
         btTriangleIndexVertexArray* btTriangleMesh = new ::btTriangleIndexVertexArray(
             numIndices / 3,
-            const_cast<int*> (reinterpret_cast<const int*> (indexByteArrayPointer)),
+            const_cast<int*> (reinterpret_cast<const int*> (triangleMeshShape->indexData().data())),
             3 * sizeof (int),
             numVertices,
-            btVertexData.data(),
-            3 * sizeof (btScalar)
+            triangleMeshShape->vertexData().data(),
+            3 * sizeof (float)
         );
 
-        auto triangleMeshShape = component::bullet::TriangleMeshShape::create(std::make_shared<btBvhTriangleMeshShape>(btTriangleMesh, false));
-        deserializedShape = triangleMeshShape;
+        triangleMeshShape->btShape(std::make_shared<btBvhTriangleMeshShape>(btTriangleMesh, false));
 
-        triangleMeshShape->vertexData().assign(vertexByteArrayPointer, vertexByteArrayPointer + numVertices * 3);
-        triangleMeshShape->indexData().assign(indexByteArrayPointer, indexByteArrayPointer + numIndices);
+        deserializedShape = triangleMeshShape;
     }
 
     std::tuple<uint, std::string&> serializedMatrixTuple(dst.get<2>().get<0>(), dst.get<2>().get<1>());
@@ -311,7 +309,7 @@ PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 
             }
         }
 
-       serializedPointsString.assign(points.data(), points.size());
+        serializedPointsString.assign(points.data(), points.size());
     }
     else if (shapetype == minko::component::bullet::AbstractPhysicsShape::TRIANGLE_MESH)
     {
@@ -349,24 +347,8 @@ PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 
             vertexData = triangleMeshShape->vertexData();
         }
 
-        const auto numVertices = vertexData.size() / 3;
-        const auto numIndices = indexData.size();
-
-        vertexByteArray.resize(numVertices * 3 * sizeof (float));
-        indexByteArray.resize(numIndices * sizeof(unsigned int));
-
-        float* vertexByteArrayPointer = reinterpret_cast<float*>(vertexByteArray.data());
-        unsigned int* indexByteArrayPointer = reinterpret_cast<unsigned int*>(indexByteArray.data());
-
-        for (auto i = 0; i < numVertices; ++i)
-            for (auto j = 0; j < 3; ++j)
-                vertexByteArrayPointer[i * 3 + j] = vertexData[i * 3 + j];
-
-        for (auto i = 0; i < numIndices; ++i)
-            indexByteArrayPointer[i] = indexData[i];
-
-       serializedPointsString.assign(vertexByteArray.data(), vertexByteArray.size());
-       serializedIndicesString.assign(indexByteArray.data(), indexByteArray.size());
+        serializedPointsString = serialize::TypeSerializer::serializeVector<float>(vertexData);
+        serializedIndicesString = serialize::TypeSerializer::serializeVector<unsigned int>(indexData);
     }
 
     bool isdynamic = collider->colliderData()->mass() != 0.0f;

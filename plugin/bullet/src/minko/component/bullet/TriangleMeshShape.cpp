@@ -36,9 +36,9 @@ bullet::TriangleMeshShape::getGeometry(render::AbstractContext::Ptr context) con
 
     for (auto i = 0; i < numTriangles; ++i)
     {
-        auto p0 = math::make_vec3(&_vertexData.at(_indexData.at(i * 3)));
-        auto p1 = math::make_vec3(&_vertexData.at(_indexData.at(i * 3 + 1)));
-        auto p2 = math::make_vec3(&_vertexData.at(_indexData.at(i * 3 + 2)));
+        auto p0 = math::make_vec3(&_vertexData.at(_indexData.at(i * 3) * 3));
+        auto p1 = math::make_vec3(&_vertexData.at(_indexData.at(i * 3 + 1) * 3));
+        auto p2 = math::make_vec3(&_vertexData.at(_indexData.at(i * 3 + 2) * 3));
 
         lines->moveTo(p0);
         lines->lineTo(p1);
