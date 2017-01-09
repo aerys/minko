@@ -48,7 +48,8 @@ StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr         
     _active(Signal<Ptr>::create()),
     _inactive(Signal<Ptr>::create()),
     _numBytesLoaded(0),
-    _numPrimitivesLoaded(0)
+    _numPrimitivesLoaded(0),
+    _numRequestsExecuted(0)
 {
 }
 
@@ -77,6 +78,7 @@ StreamedAssetParserScheduler::clear()
 
     _numBytesLoaded = 0;
     _numPrimitivesLoaded = 0;
+    _numRequestsExecuted = 0;
 }
 
 void
@@ -267,6 +269,8 @@ void
 StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
 {
     stopListeningToEntry(entry);
+
+    ++_numRequestsExecuted;
 
     auto parser = entry->parser;
 

@@ -131,6 +131,7 @@ namespace minko
             Signal<Ptr>::Ptr            _inactive;
             std::size_t                 _numBytesLoaded;
             std::size_t                 _numPrimitivesLoaded;
+            int                         _numRequestsExecuted;
 
         public:
             ~StreamedAssetParserScheduler();
@@ -178,6 +179,20 @@ namespace minko
             numPrimitivesLoaded() const
             {
                 return _numPrimitivesLoaded;
+            }
+
+            inline
+            std::size_t
+            numRequestsExecuted() const
+            {
+                return _numRequestsExecuted;
+            }
+
+            inline
+            int
+            numActiveParsers() const
+            {
+                return _activeEntries.size();
             }
 
             void

@@ -141,6 +141,12 @@ namespace minko
             std::size_t
             numPrimitivesLoaded() const;
 
+            int
+            numRequestsExecuted() const;
+
+            int
+            numActiveParsers() const;
+
 			msgpack::type::tuple<uint, short, std::string>
 			serializePOPGeometry(std::shared_ptr<file::Dependency>      dependency,
 								 std::shared_ptr<file::AssetLibrary>	assetLibrary,

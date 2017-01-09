@@ -263,6 +263,18 @@ StreamingExtension::numPrimitivesLoaded() const
     return _parserScheduler ? _parserScheduler->numPrimitivesLoaded() : 0;
 }
 
+int
+StreamingExtension::numRequestsExecuted() const
+{
+    return _parserScheduler ? _parserScheduler->numRequestsExecuted() : 0;
+}
+
+int
+StreamingExtension::numActiveParsers() const
+{
+    return _parserScheduler ? _parserScheduler->numActiveParsers() : 0;
+}
+
 msgpack::type::tuple<uint, short, std::string>
 StreamingExtension::serializePOPGeometry(Dependency::Ptr                dependency,
                                          AssetLibrary::Ptr              assetLibrary,
