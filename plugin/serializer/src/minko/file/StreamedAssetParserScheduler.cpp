@@ -46,7 +46,9 @@ StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr         
     _parameters(parameters),
     _complete(false),
     _active(Signal<Ptr>::create()),
-    _inactive(Signal<Ptr>::create())
+    _inactive(Signal<Ptr>::create()),
+    _numBytesLoaded(0),
+    _numPrimitivesLoaded(0)
 {
 }
 
@@ -72,6 +74,9 @@ StreamedAssetParserScheduler::clear()
     _inactive = nullptr;
 
     _options = nullptr;
+
+    _numBytesLoaded = 0;
+    _numPrimitivesLoaded = 0;
 }
 
 void
@@ -350,9 +355,13 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
 void
 StreamedAssetParserScheduler::requestComplete(ParserEntryPtr entry, const std::vector<unsigned char>& data)
 {
+    _numBytesLoaded += data.size();
+
     entry->parserLodRequestCompleteSlot = entry->parser->lodRequestComplete()->connect(
         [this, entry](AbstractStreamedAssetParser::Ptr parser)
         {
+            _numPrimitivesLoaded += parser->lodRequestNumPrimitivesLoaded();
+
             requestDisposed(entry);
         }
     );

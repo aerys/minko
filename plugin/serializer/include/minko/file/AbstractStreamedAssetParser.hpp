@@ -222,6 +222,13 @@ namespace minko
                 return _lodRequestComplete;
             }
 
+            virtual
+            std::size_t
+            lodRequestNumPrimitivesLoaded()
+            {
+                return 0;
+            }
+
             inline
             Signal<Ptr>::Ptr
             ready() const

@@ -135,6 +135,12 @@ namespace minko
                 return _sceneStreamingInactive;
             }
 
+            std::size_t
+            numBytesLoaded() const;
+
+            std::size_t
+            numPrimitivesLoaded() const;
+
 			msgpack::type::tuple<uint, short, std::string>
 			serializePOPGeometry(std::shared_ptr<file::Dependency>      dependency,
 								 std::shared_ptr<file::AssetLibrary>	assetLibrary,
