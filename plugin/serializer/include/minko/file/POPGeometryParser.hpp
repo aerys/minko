@@ -94,6 +94,8 @@ namespace minko
 
             std::shared_ptr<geometry::Geometry>                                         _geometry;
 
+            std::size_t                                                                 _lodRequestNumPrimitivesLoaded;
+
         public:
             inline
             static
@@ -102,6 +104,9 @@ namespace minko
             {
                 return Ptr(new POPGeometryParser());
             }
+
+            std::size_t
+            lodRequestNumPrimitivesLoaded() override;
 
         protected:
             bool

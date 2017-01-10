@@ -50,9 +50,16 @@ POPGeometryParser::POPGeometryParser() :
     _vertexAttributes(),
     _lods(),
     _geometryIndexOffset(0),
-    _geometryVertexOffset(0)
+    _geometryVertexOffset(0),
+    _lodRequestNumPrimitivesLoaded(0)
 {
     assetExtension(0x00000056);
+}
+
+std::size_t
+POPGeometryParser::lodRequestNumPrimitivesLoaded()
+{
+    return _lodRequestNumPrimitivesLoaded;
 }
 
 bool
@@ -412,6 +419,8 @@ POPGeometryParser::lodParsed(int                                 previousLod,
     const auto lodInfoRangeEndIt = _lods.lower_bound(currentLod);
     const auto lodInfoRangeUpperBoundIt = _lods.upper_bound(currentLod);
 
+    _lodRequestNumPrimitivesLoaded = 0;
+
     auto availableLods = this->data()
         ? this->data()->get<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods")
         : std::map<int, ProgressiveOrderedMeshLodInfo>();
@@ -496,6 +505,8 @@ POPGeometryParser::lodParsed(int                                 previousLod,
             geometryIndexOffset,
             lodInfo.indexCount
         );
+
+        _lodRequestNumPrimitivesLoaded += lodInfo.indexCount / 3;
     }
 
     if (this->data())

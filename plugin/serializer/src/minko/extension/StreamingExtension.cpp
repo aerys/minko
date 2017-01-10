@@ -251,6 +251,30 @@ StreamingExtension::parserScheduler(Options::Ptr options, std::list<JobManager::
     return _parserScheduler;
 }
 
+std::size_t
+StreamingExtension::numBytesLoaded() const
+{
+    return _parserScheduler ? _parserScheduler->numBytesLoaded() : 0;
+}
+
+std::size_t
+StreamingExtension::numPrimitivesLoaded() const
+{
+    return _parserScheduler ? _parserScheduler->numPrimitivesLoaded() : 0;
+}
+
+int
+StreamingExtension::numRequestsExecuted() const
+{
+    return _parserScheduler ? _parserScheduler->numRequestsExecuted() : 0;
+}
+
+int
+StreamingExtension::numActiveParsers() const
+{
+    return _parserScheduler ? _parserScheduler->numActiveParsers() : 0;
+}
+
 msgpack::type::tuple<uint, short, std::string>
 StreamingExtension::serializePOPGeometry(Dependency::Ptr                dependency,
                                          AssetLibrary::Ptr              assetLibrary,
