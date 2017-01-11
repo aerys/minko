@@ -141,6 +141,9 @@ namespace minko
             std::size_t
             numPrimitivesLoaded() const;
 
+            std::size_t
+            numVerticesLoaded() const;
+
             int
             numRequestsExecuted() const;
 

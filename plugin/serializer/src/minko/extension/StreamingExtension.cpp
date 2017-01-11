@@ -263,6 +263,12 @@ StreamingExtension::numPrimitivesLoaded() const
     return _parserScheduler ? _parserScheduler->numPrimitivesLoaded() : 0;
 }
 
+std::size_t
+StreamingExtension::numVerticesLoaded() const
+{
+    return _parserScheduler ? _parserScheduler->numVerticesLoaded() : 0;
+}
+
 int
 StreamingExtension::numRequestsExecuted() const
 {
