@@ -229,6 +229,13 @@ namespace minko
                 return 0;
             }
 
+            virtual
+            std::size_t
+            lodRequestNumVerticesLoaded()
+            {
+                return 0;
+            }
+
             inline
             Signal<Ptr>::Ptr
             ready() const

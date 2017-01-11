@@ -131,6 +131,7 @@ namespace minko
             Signal<Ptr>::Ptr            _inactive;
             std::size_t                 _numBytesLoaded;
             std::size_t                 _numPrimitivesLoaded;
+            std::size_t                 _numVerticesLoaded;
             int                         _numRequestsExecuted;
 
         public:
@@ -179,6 +180,12 @@ namespace minko
             numPrimitivesLoaded() const
             {
                 return _numPrimitivesLoaded;
+            }
+
+            std::size_t
+            numVerticesLoaded() const
+            {
+                return _numVerticesLoaded;
             }
 
             inline

@@ -95,6 +95,7 @@ namespace minko
             std::shared_ptr<geometry::Geometry>                                         _geometry;
 
             std::size_t                                                                 _lodRequestNumPrimitivesLoaded;
+            std::size_t                                                                 _lodRequestNumVerticesLoaded;
 
         public:
             inline
@@ -107,6 +108,9 @@ namespace minko
 
             std::size_t
             lodRequestNumPrimitivesLoaded() override;
+
+            std::size_t
+            lodRequestNumVerticesLoaded() override;
 
         protected:
             bool
