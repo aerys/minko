@@ -212,6 +212,10 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
     msgpack::type::tuple<int, std::string> deserializedTexture;
     unpack(deserializedTexture, data, data.size());
 
+    auto parsingOptions = options->parserFunction()
+        ? options->clone()->parserFunction(nullptr)
+        : options;
+
     auto imageFormat = static_cast<ImageFormat>(deserializedTexture.get<0>());
 
     auto parser = AbstractParser::Ptr();
@@ -219,7 +223,11 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
     switch (imageFormat)
     {
     case ImageFormat::PNG:
-        parser = PNGParser::create();
+        parser = parsingOptions->getParser("png");
+        break;
+
+    case ImageFormat::JPEG:
+        parser = parsingOptions->getParser("jpg");
         break;
 
     default:
@@ -229,7 +237,7 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
     parser->parse(
         fileName,
         fileName,
-        options,
+        parsingOptions,
         std::vector<unsigned char>(deserializedTexture.get<1>().begin(), deserializedTexture.get<1>().end()),
         assetLibrary
     );

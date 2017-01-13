@@ -312,30 +312,49 @@ StreamedTextureParser::extractLodData(TextureFormat                        forma
     if (TextureFormatInfo::isCompressed(format))
         return false;
 
+    auto parsingOptions = options->clone()
+        ->disposeTextureAfterLoading(false)
+        ->parserFunction(nullptr);
+
     switch (format)
     {
     case TextureFormat::RGB:
     case TextureFormat::RGBA:
     {
         auto localAssetLibrary = AssetLibrary::create(assetLibrary->context());
-        auto parser = PNGParser::create();
 
-        auto parserOptions = options->clone()
-            ->disposeTextureAfterLoading(false);
+        auto parsers = std::vector<AbstractParser::Ptr> {
+            parsingOptions->getParser("jpg"),
+            parsingOptions->getParser("png")
+        };
 
-        parser->parse(
-            filename,
-            filename,
-            parserOptions,
-            std::vector<unsigned char>(lodData.data + lodData.offset, lodData.data + lodData.size),
-            localAssetLibrary
-        );
+        for (auto i = 0; i < parsers.size(); ++i)
+        {
+            auto errorEncountered = false;
+            auto parser = parsers.at(i);
 
-        auto mipLevelTexture = localAssetLibrary->texture(filename);
+            auto errorSlot = parser->error()->connect([&errorEncountered](AbstractParser::Ptr parser, const Error& error)
+            {
+                errorEncountered = true;
+            });
 
-        extractedLodData = mipLevelTexture->data();
+            parser->parse(
+                filename,
+                filename,
+                parsingOptions,
+                std::vector<unsigned char>(lodData.data + lodData.offset, lodData.data + lodData.size),
+                localAssetLibrary
+            );
 
-        mipLevelTexture->dispose();
+            if (errorEncountered)
+                continue;
+
+            auto mipLevelTexture = localAssetLibrary->texture(filename);
+
+            extractedLodData = mipLevelTexture->data();
+
+            mipLevelTexture->dispose();
+        }
 
         break;
     }

@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/CRNTranscoder.hpp"
+#include "minko/file/JPEGWriter.hpp"
 #include "minko/file/LinkedAsset.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/PNGWriter.hpp"
@@ -262,6 +263,7 @@ StreamedTextureWriter::writeRGBATexture(AbstractTexture::Ptr                    
 
     const auto baseWidth = texture->width();
     const auto baseHeight = texture->height();
+    const auto numComponents = textureFormat == TextureFormat::RGB ? 3 : 4;
 
     auto mipLevelTemplate = Texture::create(
         texture->context(),
@@ -291,9 +293,27 @@ StreamedTextureWriter::writeRGBATexture(AbstractTexture::Ptr                    
 
         auto mipLevelData = std::vector<unsigned char>();
 
-        auto writer = PNGWriter::create();
+        switch (imageFormat)
+        {
+        case minko::serialize::ImageFormat::PNG:
+        {
+            auto writer = PNGWriter::create();
 
-        writer->writeToStream(mipLevelData, mipLevelTemplate->data(), mipLevelWidth, mipLevelHeight);
+            writer->writeToStream(mipLevelData, mipLevelTemplate->data(), mipLevelWidth, mipLevelHeight);
+
+            break;
+        }
+        case minko::serialize::ImageFormat::JPEG:
+        {
+            auto writer = JPEGWriter::create();
+
+            writer->encode(mipLevelData, mipLevelTemplate->data(), mipLevelWidth, mipLevelHeight, numComponents);
+
+            break;
+        }
+        default:
+            return false;
+        }
 
         blob.write(reinterpret_cast<const char*>(mipLevelData.data()), mipLevelData.size());
 
