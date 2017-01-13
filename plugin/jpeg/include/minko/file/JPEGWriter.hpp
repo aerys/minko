@@ -54,7 +54,8 @@ namespace minko
                    const std::vector<unsigned char>& in,
                    minko::uint                       width,
                    minko::uint                       height,
-                   minko::uint                       numComponents);
+                   minko::uint                       numComponents,
+                   float                             quality);
 
         private:
             JPEGWriter();

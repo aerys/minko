@@ -257,7 +257,7 @@ StreamedTextureWriter::writeRGBATexture(AbstractTexture::Ptr                    
 {
     const auto textureFormat = TextureFormat::RGBA;
 
-    auto imageFormat = writerOptions->imageFormat();
+    auto imageFormat = writerOptions->imageFormat(textureType);
 
     auto texture = std::static_pointer_cast<Texture>(abstractTexture);
 
@@ -307,7 +307,7 @@ StreamedTextureWriter::writeRGBATexture(AbstractTexture::Ptr                    
         {
             auto writer = JPEGWriter::create();
 
-            writer->encode(mipLevelData, mipLevelTemplate->data(), mipLevelWidth, mipLevelHeight, numComponents);
+            writer->encode(mipLevelData, mipLevelTemplate->data(), mipLevelWidth, mipLevelHeight, numComponents, writerOptions->jpegImageQualityFactor(textureType));
 
             break;
         }

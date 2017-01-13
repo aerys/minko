@@ -34,7 +34,8 @@ JPEGWriter::encode(std::vector<unsigned char>&       out,
                    const std::vector<unsigned char>& in,
                    minko::uint                       width,
                    minko::uint                       height,
-                   minko::uint                       numComponents)
+                   minko::uint                       numComponents,
+                   float                             quality)
 {
     static const auto minBufferSize = 1024;
 
@@ -42,7 +43,7 @@ JPEGWriter::encode(std::vector<unsigned char>&       out,
     out.resize(bufferSize);
 
     auto params = jpge::params();
-    params.m_quality = 90;
+    params.m_quality = static_cast<int>(quality * 100);
 
     const auto success = jpge::compress_image_to_jpeg_file_in_memory(
         out.data(),

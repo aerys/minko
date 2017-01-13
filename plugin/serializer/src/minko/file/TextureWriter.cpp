@@ -230,7 +230,7 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr    abstractTexture,
                                 WriterOptions::Ptr      writerOptions,
                                 std::stringstream&      blob)
 {
-    auto imageFormat = writerOptions->imageFormat();
+    auto imageFormat = writerOptions->imageFormat(textureType);
 
     auto texture = std::static_pointer_cast<Texture>(abstractTexture);
 
@@ -255,7 +255,8 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr    abstractTexture,
             texture->data(),
             texture->width(),
             texture->height(),
-            texture->format() == TextureFormat::RGB ? 3 : 4
+            texture->format() == TextureFormat::RGB ? 3 : 4,
+            writerOptions->jpegImageQualityFactor(textureType)
         );
 
         break;
