@@ -19,5 +19,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/file/JPEGParser.hpp"
-#include "minko/file/JPEGWriter.hpp"
+#include "minko/Common.hpp"
+#include "minko/Signal.hpp"
+
+namespace minko
+{
+    namespace file
+    {
+        class JPEGWriter :
+            public std::enable_shared_from_this<JPEGWriter>
+        {
+        public:
+            typedef std::shared_ptr<JPEGWriter> Ptr;
+
+        private:
+            Signal<Ptr, const Error&>::Ptr _error;
+
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<JPEGWriter>(new JPEGWriter());
+            }
+
+            Signal<Ptr, const Error&>::Ptr
+            error()
+            {
+                return _error;
+            }
+
+            void
+            encode(std::vector<unsigned char>&       out,
+                   const std::vector<unsigned char>& in,
+                   minko::uint                       width,
+                   minko::uint                       height,
+                   minko::uint                       numComponents);
+
+        private:
+            JPEGWriter();
+        };
+    }
+}

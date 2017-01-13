@@ -17,7 +17,49 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
-
-#include "minko/file/JPEGParser.hpp"
 #include "minko/file/JPEGWriter.hpp"
+
+#include "jpge.h"
+
+using namespace minko;
+using namespace minko::file;
+
+JPEGWriter::JPEGWriter() :
+    _error(Signal<Ptr, const Error&>::create())
+{
+}
+
+void
+JPEGWriter::encode(std::vector<unsigned char>&       out,
+                   const std::vector<unsigned char>& in,
+                   minko::uint                       width,
+                   minko::uint                       height,
+                   minko::uint                       numComponents)
+{
+    static const auto minBufferSize = 1024;
+
+    int bufferSize = math::max<int>(width * height * numComponents, minBufferSize);
+    out.resize(bufferSize);
+
+    auto params = jpge::params();
+    params.m_quality = 90;
+
+    const auto success = jpge::compress_image_to_jpeg_file_in_memory(
+        out.data(),
+        bufferSize,
+        width,
+        height,
+        numComponents,
+        in.data(),
+        params
+    );
+
+    if (!success)
+    {
+        error()->execute(shared_from_this(), Error("ParseError", "Failed to encode image to JPEG"));
+
+        return;
+    }
+
+    out.resize(bufferSize);
+}
