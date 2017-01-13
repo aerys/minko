@@ -39,7 +39,8 @@ using namespace minko::scene;
 
 VertexColorSampler::VertexColorSampler() :
     AbstractWriterPreprocessor<Node::Ptr>(),
-    _statusChanged(StatusChangedSignal::create())
+    _statusChanged(StatusChangedSignal::create()),
+    _gammaCorrection(1.f)
 {
 }
 
@@ -73,11 +74,18 @@ VertexColorSampler::computeVertexColorAttributes(Node::Ptr           node,
     }
 }
 
-static
 float
-packColor(const math::vec3& color)
+VertexColorSampler::packColor(const math::vec3& color)
 {
     return math::dot(color, math::vec3(1.f, 1.f / 255.f, 1.f / 65025.f));
+}
+
+math::vec3
+VertexColorSampler::sRGBToRGB(const math::vec3& color, float gammaCorrection)
+{
+    auto rgbColor = math::pow(color, math::vec3(gammaCorrection));
+
+    return math::floor(rgbColor * 255.f) / 255.f;
 }
 
 void
@@ -153,6 +161,8 @@ VertexColorSampler::computeVertexColorAttributes(Geometry::Ptr       geometry,
         auto color = math::vec4(0.f, 0.f, 0.f, 1.f);
 
         sampleColor(diffuseMap->width(), diffuseMap->height(), numComponents, textureData, uv, color);
+
+        color = math::vec4(sRGBToRGB(color.rgb(), _gammaCorrection), color.a);
 
         auto packedColor = math::fvec1(packColor(math::vec3(color)));
 

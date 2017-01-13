@@ -38,6 +38,8 @@ namespace minko
         private:
             StatusChangedSignal::Ptr    _statusChanged;
 
+            float                       _gammaCorrection;
+
         public:
             ~VertexColorSampler() = default;
 
@@ -49,6 +51,20 @@ namespace minko
                 auto instance = Ptr(new VertexColorSampler());
 
                 return instance;
+            }
+
+            float
+            gammaCorrection() const
+            {
+                return _gammaCorrection;
+            }
+
+            Ptr
+            gammaCorrection(float value)
+            {
+                _gammaCorrection = value;
+
+                return std::static_pointer_cast<VertexColorSampler>(shared_from_this());
             }
 
             inline
@@ -87,6 +103,14 @@ namespace minko
                         const std::vector<unsigned char>&  textureData,
                         const math::vec2&                  uv,
                         math::vec4&                        color);
+
+            static
+            float
+            packColor(const math::vec3& color);
+
+            static
+            math::vec3
+            sRGBToRGB(const math::vec3& color, float gammaCorrection);
         };
     }
 }
