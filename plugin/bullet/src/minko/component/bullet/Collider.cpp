@@ -356,7 +356,7 @@ bullet::Collider::raycast(const math::vec3& direction, float maxDist, float* dis
 
         auto pos = math::vec3(_graphicsTransform->modelToWorldMatrix()[3]);
 
-        if (_physicsWorld->raycast(pos, direction, maxDist, hit));
+        if (_physicsWorld->raycast(pos, direction, maxDist, hit))
         {
             distance[0] = math::distance(pos, hit);
             return true;
