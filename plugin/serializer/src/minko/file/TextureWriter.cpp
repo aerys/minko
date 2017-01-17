@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/CRNTranscoder.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/file/JPEGWriter.hpp"
 #include "minko/file/PNGWriter.hpp"
 #include "minko/file/PVRTranscoder.hpp"
 #include "minko/file/QTranscoder.hpp"
@@ -229,7 +230,7 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr    abstractTexture,
                                 WriterOptions::Ptr      writerOptions,
                                 std::stringstream&      blob)
 {
-    auto imageFormat = writerOptions->imageFormat();
+    auto imageFormat = writerOptions->imageFormat(textureType);
 
     auto texture = std::static_pointer_cast<Texture>(abstractTexture);
 
@@ -242,6 +243,21 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr    abstractTexture,
         auto writer = PNGWriter::create();
 
         writer->writeToStream(textureData, texture->data(), texture->width(), texture->height());
+
+        break;
+    }
+    case serialize::ImageFormat::JPEG:
+    {
+        auto writer = JPEGWriter::create();
+
+        writer->encode(
+            textureData,
+            texture->data(),
+            texture->width(),
+            texture->height(),
+            texture->format() == TextureFormat::RGB ? 3 : 4,
+            writerOptions->jpegImageQualityFactor(textureType)
+        );
 
         break;
     }
