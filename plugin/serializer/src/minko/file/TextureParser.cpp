@@ -36,6 +36,8 @@ using namespace minko::render;
 using namespace minko::serialize;
 using namespace minko::deserialize;
 
+const int TextureParser::TEXTURE_HEADER_SIZE_BYTE_SIZE = 2;
+
 std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction, Hash<TextureFormat>> TextureParser::_formatParserFunctions =
 {
     { TextureFormat::RGB, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
@@ -75,18 +77,18 @@ TextureParser::parse(const std::string&                filename,
 
     if (_textureHeaderSize == 0)
     {
-        const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2 + 2;
-        const auto textureHeaderSizeOffset = assetHeaderSize - 2;
+        const auto assetHeaderSize = MINKO_SCENE_DEPENDENCY_OFFSET + TEXTURE_HEADER_SIZE_BYTE_SIZE;
+        const auto textureHeaderSizeOffset = assetHeaderSize - TEXTURE_HEADER_SIZE_BYTE_SIZE;
 
         std::stringstream headerDataStream(std::string(
             data.begin() + textureHeaderSizeOffset,
-            data.begin() + textureHeaderSizeOffset + 2
+            data.begin() + textureHeaderSizeOffset + TEXTURE_HEADER_SIZE_BYTE_SIZE
         ));
 
-        headerDataStream.read(reinterpret_cast<char*>(&_textureHeaderSize), 2u);
+        headerDataStream.read(reinterpret_cast<char*>(&_textureHeaderSize), TEXTURE_HEADER_SIZE_BYTE_SIZE);
     }
 
-    auto textureHeaderOffset = _headerSize + _dependencySize + 2;
+    auto textureHeaderOffset = _headerSize + _dependencySize + TEXTURE_HEADER_SIZE_BYTE_SIZE;
     auto textureBlobOffset = textureHeaderOffset + _textureHeaderSize;
 
     typedef msgpack::type::tuple<

@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/SerializerCommon.hpp"
 #include "minko/file/AbstractParser.hpp"
+#include "minko/file/Dependency.hpp"
 #include "minko/component/JobManager.hpp"
 #include "minko/deserialize/Unpacker.hpp"
 
@@ -40,14 +41,13 @@ namespace minko
             public AbstractParser
         {
         public:
-            typedef std::shared_ptr<AbstractSerializerParser>               Ptr;
-            typedef msgpack::type::tuple<unsigned int, short, std::string>  SerializedAsset;
-            typedef std::shared_ptr<AssetLibrary>                           AssetLibraryPtr;
-            typedef std::shared_ptr<Options>                                OptionsPtr;
+            typedef std::shared_ptr<AbstractSerializerParser>                               Ptr;
+            typedef std::shared_ptr<AssetLibrary>                                           AssetLibraryPtr;
+            typedef std::shared_ptr<Options>                                                OptionsPtr;
 
         private:
-            typedef std::shared_ptr<component::JobManager::Job>             JobPtr;
-            typedef std::shared_ptr<Dependency>                             DependencyPtr;
+            typedef std::shared_ptr<component::JobManager::Job>                             JobPtr;
+            typedef std::shared_ptr<Dependency>                                             DependencyPtr;
             typedef std::function<void(
                 unsigned short,
                 AssetLibraryPtr,
@@ -55,9 +55,9 @@ namespace minko
                 const std::string&,
                 const std::vector<unsigned char>&,
                 DependencyPtr,
-                short,
+                DependencyId,
                 std::list<JobPtr>&
-            )>                                                              AssetDeserializeFunction;
+            )>                                                                              AssetDeserializeFunction;
 
         protected:
             DependencyPtr                       _dependency;
@@ -114,10 +114,10 @@ namespace minko
             AbstractSerializerParser();
 
             void
-            deserializeAsset(SerializedAsset&                           asset,
-                              AssetLibraryPtr                           assetLibrary,
-                              std::shared_ptr<Options>                  options,
-                              std::string&                              assetFilePath);
+            deserializeAsset(Dependency::SerializedAsset&              asset,
+                             AssetLibraryPtr                           assetLibrary,
+                             std::shared_ptr<Options>                  options,
+                             std::string&                              assetFilePath);
 
             std::string
             extractFolderPath(const std::string& filepath);
@@ -167,13 +167,13 @@ namespace minko
             }
 
             void
-            deserializeTexture(unsigned short metaData,
+            deserializeTexture(unsigned short                           metaData,
                                AssetLibraryPtr                          assetLibrary,
-                               OptionsPtr           options,
-                               const std::string&   assetCompletePath,
-                               const std::vector<unsigned char>& data,
+                               OptionsPtr                               options,
+                               const std::string&                       assetCompletePath,
+                               const std::vector<unsigned char>&        data,
                                DependencyPtr                            dependency,
-                               short                                    assetId,
+                               DependencyId                             assetId,
                                std::list<JobPtr>&                       jobs);
         };
     }

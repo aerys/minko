@@ -49,9 +49,9 @@ std::unordered_map<uint, std::function<void(
     const std::string&,
     const std::vector<unsigned char>&,
 	std::shared_ptr<Dependency>,
-	short,
+	DependencyId,
     std::list<std::shared_ptr<component::JobManager::Job>>&
-)>> 
+)>>
 AbstractSerializerParser::_assetTypeToFunction;
 
 void
@@ -84,11 +84,11 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 											  std::shared_ptr<Options>				options,
 											  std::string&							assetFilePath)
 {
-	SerializedAsset							serializedAsset;
+	Dependency::SerializedAsset	serializedAsset;
 
-	auto nbDependencies = readShort(data, dataOffset);
+	auto nbDependencies = readUInt(data, dataOffset);
 
-	unsigned int offset = dataOffset + 2;
+	unsigned int offset = dataOffset + sizeof(nbDependencies);
 
 	for (int index = 0; index < nbDependencies; ++index)
 	{
@@ -100,7 +100,7 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 
 		auto assetSize = readUInt(data, offset);
 
-		offset += 4;
+        offset += sizeof(assetSize);
 
         unpack(serializedAsset, data, assetSize, offset);
 
@@ -145,12 +145,12 @@ loadAssetData(const std::string&            resolvedFilename,
 }
 
 void
-AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
-											AssetLibraryPtr				assetLibrary,
-											std::shared_ptr<Options>	options,
-											std::string&				assetFilePath)
+AbstractSerializerParser::deserializeAsset(Dependency::SerializedAsset&	asset,
+										   AssetLibraryPtr				assetLibrary,
+										   std::shared_ptr<Options>	    options,
+										   std::string&				    assetFilePath)
 {
-    if (asset.get<0>() == serialize::AssetType::GEOMETRY_ASSET || 
+    if (asset.get<0>() == serialize::AssetType::GEOMETRY_ASSET ||
         asset.get<0>() == serialize::AssetType::TEXTURE_ASSET ||
         asset.get<0>() == serialize::AssetType::MATERIAL_ASSET ||
         asset.get<0>() == serialize::AssetType::TEXTURE_PACK_ASSET ||
@@ -419,7 +419,7 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
         _error->execute(shared_from_this(), Error("InvalidFile", "Invalid scene file '" + filename + "': magic number mismatch"));
         return false;
     }
-    
+
 	_version.version = readInt(data, 4);
 
     _version.major = int(data[4]);
@@ -436,7 +436,7 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
         auto message = "File " + filename + " doesn't match serializer version (file has v" + fileVersion + " while current version is v" + sceneVersion + ")";
 
         std::cerr << message << std::endl;
-        
+
         _error->execute(shared_from_this(), Error("InvalidFile", message));
         return false;
 	}
@@ -467,7 +467,7 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
                                              const std::string& assetCompletePath,
                                              const std::vector<unsigned char>& data,
                                              DependencyPtr      dependency,
-                                             short              assetId,
+                                             DependencyId       assetId,
                                              std::list<JobPtr>& jobs)
 {
     auto existingTexture = assetLibrary->texture(assetCompletePath);
@@ -479,7 +479,7 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
         return;
     }
 
-    auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2 + 2;
+    auto assetHeaderSize = MINKO_SCENE_DEPENDENCY_OFFSET + TextureParser::TEXTURE_HEADER_SIZE_BYTE_SIZE;
 
     const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
     auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);
@@ -514,11 +514,11 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
             {
                 const auto& headerData = textureHeaderLoaderThis->files().at(assetCompletePath)->data();
 
-                const auto textureHeaderSizeOffset = assetHeaderSize - 2;
+                const auto textureHeaderSizeOffset = assetHeaderSize - TextureParser::TEXTURE_HEADER_SIZE_BYTE_SIZE;
 
                 std::stringstream headerDataStream(std::string(
                     headerData.begin() + textureHeaderSizeOffset,
-                    headerData.begin() + textureHeaderSizeOffset + 2
+                    headerData.begin() + textureHeaderSizeOffset + TextureParser::TEXTURE_HEADER_SIZE_BYTE_SIZE
                 ));
 
                 headerDataStream.read(reinterpret_cast<char*>(&textureHeaderSize), 2u);
