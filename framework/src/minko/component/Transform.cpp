@@ -237,8 +237,12 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
             _toAdd.unique();
             _toRemove.unique();
 
-            for (const auto& toRemove : _toRemove)
-                _toAdd.remove(toRemove);
+            _toAdd.remove_if([this, &otherRoot](scene::Node::Ptr node)
+            {
+                return std::find(_toRemove.begin(), _toRemove.end(), node) != _toRemove.end() &&
+                       std::find(otherRoot->_toAdd.begin(), otherRoot->_toAdd.end(), node) == otherRoot->_toAdd.end();
+            });
+
             _invalidLists = true;
 
             target->removeComponent(otherRoot);
