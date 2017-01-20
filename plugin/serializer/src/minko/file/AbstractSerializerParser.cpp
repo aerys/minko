@@ -42,6 +42,26 @@ using namespace minko::deserialize;
 using namespace minko::file;
 using namespace minko::deserialize;
 
+const std::map<SceneVersion, SceneVersionInfo> SceneVersionInfo::_data = {
+    { SceneVersion{0, 0, 2, 1}, SceneVersionInfo{2} },
+    { SceneVersion{0, 0, 4, 0}, SceneVersionInfo{4} }
+};
+
+const SceneVersionInfo&
+SceneVersionInfo::getInfoByVersion(const SceneVersion& sceneVersion)
+{
+    for (auto it = _data.rbegin(); it != _data.rend(); ++it)
+        if (it->first < sceneVersion || it->first == sceneVersion)
+            return it->second;
+
+    throw std::runtime_error(
+        "No information found for scene version " +
+        std::to_string(sceneVersion.major) + "." +
+        std::to_string(sceneVersion.minor) + "." +
+        std::to_string(sceneVersion.patch) + "."
+    );
+}
+
 std::unordered_map<uint, std::function<void(
     unsigned short,
     AssetLibrary::Ptr,
@@ -86,11 +106,24 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 {
 	Dependency::SerializedAsset	serializedAsset;
 
-	auto nbDependencies = readUInt(data, dataOffset);
+    const auto& sceneVersionInfo = SceneVersionInfo::getInfoByVersion(_version);
 
-	unsigned int offset = dataOffset + sizeof(nbDependencies);
+    auto numDependencies = 0;
 
-	for (int index = 0; index < nbDependencies; ++index)
+    if (sceneVersionInfo.numDependenciesBytes() == 2)
+	    numDependencies = readShort(data, dataOffset);
+    else if (sceneVersionInfo.numDependenciesBytes() == 4)
+	    numDependencies = readInt(data, dataOffset);
+    else
+    {
+        _error->execute(shared_from_this(), Error("DependencyParsingError", "Unknown number of dependencies"));
+
+        return;
+    }
+
+	unsigned int offset = dataOffset + sceneVersionInfo.numDependenciesBytes();
+
+	for (int index = 0; index < numDependencies; ++index)
 	{
 		if (offset >(dataOffset + dependenciesSize))
         {

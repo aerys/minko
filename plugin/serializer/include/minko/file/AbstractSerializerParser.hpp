@@ -37,6 +37,61 @@ namespace minko
             int patch;
         };
 
+        inline
+        bool
+        operator==(const SceneVersion& lhs, const SceneVersion& rhs)
+        {
+            return lhs.major == rhs.major &&
+                   lhs.minor == rhs.minor &&
+                   lhs.patch == rhs.patch;
+        }
+
+        inline
+        bool
+        operator<(const SceneVersion& lhs, const SceneVersion& rhs)
+        {
+            if (lhs.major < rhs.major)
+                return true;
+            if (rhs.major < lhs.major)
+                return false;
+
+            if (lhs.minor < rhs.minor)
+                return true;
+            if (rhs.minor < lhs.minor)
+                return false;
+
+            if (lhs.patch < rhs.patch)
+                return true;
+            if (rhs.patch < lhs.patch)
+                return false;
+
+            return false;
+        }
+
+        class SceneVersionInfo
+        {
+        private:
+            static const std::map<SceneVersion, SceneVersionInfo> _data;
+
+            const int _numDependenciesBytes;
+
+        public:
+            SceneVersionInfo(int numDependenciesBytes) :
+                _numDependenciesBytes(numDependenciesBytes)
+            {
+            }
+
+            int
+            numDependenciesBytes() const
+            {
+                return _numDependenciesBytes;
+            }
+
+            static
+            const SceneVersionInfo&
+            getInfoByVersion(const SceneVersion& sceneVersion);
+        };
+
         class AbstractSerializerParser:
             public AbstractParser
         {

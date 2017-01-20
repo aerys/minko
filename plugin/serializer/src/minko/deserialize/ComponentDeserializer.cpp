@@ -236,7 +236,30 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
 										  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 										  std::shared_ptr<file::Dependency>		dependencies)
 {
+    const auto& versionInfo = file::SceneVersionInfo::getInfoByVersion(sceneVersion);
+
 	msgpack::type::tuple<file::DependencyId, file::DependencyId, file::DependencyId, std::string> dst;
+
+    if (versionInfo.numDependenciesBytes() == 2)
+    {
+	    msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string> ushortDst;
+
+        unpack(ushortDst, packed.data(), packed.size() - 1);
+
+        dst.get<0>() = ushortDst.get<0>();
+        dst.get<1>() = ushortDst.get<1>();
+        dst.get<2>() = ushortDst.get<2>();
+        dst.get<3>() = ushortDst.get<3>();
+    }
+    else if (versionInfo.numDependenciesBytes() == 4)
+    {
+        unpack(dst, packed.data(), packed.size() - 1);
+    }
+    else
+    {
+        return nullptr;
+    }
+
 	msgpack::type::tuple<std::vector<SurfaceExtension>>	ext;
 
     unpack(dst, packed.data(), packed.size() - 1);
