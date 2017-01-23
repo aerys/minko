@@ -512,7 +512,8 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
         return;
     }
 
-    auto assetHeaderSize = MINKO_SCENE_DEPENDENCY_OFFSET + TextureParser::TEXTURE_HEADER_SIZE_BYTE_SIZE;
+    const auto& versionInfo = SceneVersionInfo::getInfoByVersion(_version);
+    auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + versionInfo.numDependenciesBytes() + TextureParser::TEXTURE_HEADER_SIZE_BYTE_SIZE;
 
     const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
     auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);

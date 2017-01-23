@@ -77,7 +77,8 @@ TextureParser::parse(const std::string&                filename,
 
     if (_textureHeaderSize == 0)
     {
-        const auto assetHeaderSize = MINKO_SCENE_DEPENDENCY_OFFSET + TEXTURE_HEADER_SIZE_BYTE_SIZE;
+        const auto& versionInfo = SceneVersionInfo::getInfoByVersion(_version);
+        const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + versionInfo.numDependenciesBytes() + TEXTURE_HEADER_SIZE_BYTE_SIZE;
         const auto textureHeaderSizeOffset = assetHeaderSize - TEXTURE_HEADER_SIZE_BYTE_SIZE;
 
         std::stringstream headerDataStream(std::string(

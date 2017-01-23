@@ -397,7 +397,7 @@ namespace minko
 
                     std::vector<std::string> serializedDependencyBufs;
 
-                    unsigned int dependencySize = MINKO_SCENE_NUM_DEPENDENCY_BYTE_SIZE;
+                    unsigned int dependencySize = sizeof(DependencyId);
 
                     for (auto serializedDependencyEntry : serializedDependency)
                     {
