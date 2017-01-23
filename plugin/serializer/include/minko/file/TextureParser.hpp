@@ -48,6 +48,9 @@ namespace minko
         private:
             typedef std::shared_ptr<render::AbstractTexture> AbstractTexturePtr;
 
+        public:
+            static const int TEXTURE_HEADER_SIZE_BYTE_SIZE;
+
         private:
             static std::unordered_map<render::TextureFormat, FormatParserFunction, Hash<render::TextureFormat>> _formatParserFunctions;
 

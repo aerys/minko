@@ -34,8 +34,8 @@ using namespace minko::serialize;
 
 std::unordered_map<uint, Dependency::GeometryTestFunc>			Dependency::_geometryTestFunctions;
 std::unordered_map<uint, Dependency::GeometryWriterFunction>	Dependency::_geometryWriteFunctions;
-Dependency::TextureWriterFunction	Dependency::_textureWriteFunction;
-Dependency::MaterialWriterFunction	Dependency::_materialWriteFunction;
+Dependency::TextureWriterFunction	                            Dependency::_textureWriteFunction;
+Dependency::MaterialWriterFunction	                            Dependency::_materialWriteFunction;
 
 Dependency::Dependency() :
     _parent()
@@ -84,7 +84,7 @@ Dependency::hasDependency(std::shared_ptr<render::Effect> effect)
 	return _effectDependencies.find(effect) != _effectDependencies.end();
 }
 
-uint
+DependencyId
 Dependency::registerDependency(std::shared_ptr<render::Effect> effect)
 {
 	if (!hasDependency(effect))
@@ -99,7 +99,7 @@ Dependency::hasDependency(std::shared_ptr<geometry::Geometry> geometry)
 	return _geometryDependencies.find(geometry) != _geometryDependencies.end();
 }
 
-uint
+DependencyId
 Dependency::registerDependency(std::shared_ptr<geometry::Geometry> geometry)
 {
 	if (!hasDependency(geometry))
@@ -114,7 +114,7 @@ Dependency::hasDependency(std::shared_ptr<material::Material> material)
 	return _materialDependencies.find(material) != _materialDependencies.end();
 }
 
-uint
+DependencyId
 Dependency::registerDependency(std::shared_ptr<material::Material> material)
 {
 	if (!hasDependency(material))
@@ -129,7 +129,7 @@ Dependency::hasDependency(AbsTexturePtr texture)
 	return _textureDependencies.find(texture) != _textureDependencies.end();
 }
 
-uint
+DependencyId
 Dependency::registerDependency(AbsTexturePtr texture, const std::string& textureType)
 {
     auto dependencyIt = _textureDependencies.find(texture);
@@ -156,7 +156,7 @@ Dependency::hasDependency(std::shared_ptr<scene::Node> subScene)
 	return _subSceneDependencies.find(subScene) != _subSceneDependencies.end();
 }
 
-uint
+DependencyId
 Dependency::registerDependency(std::shared_ptr<scene::Node> subScene)
 {
 	if (!hasDependency(subScene))
@@ -171,7 +171,7 @@ Dependency::hasDependency(std::shared_ptr<LinkedAsset> linkedAsset)
 	return _linkedAssetDependencies.find(linkedAsset) != _linkedAssetDependencies.end();
 }
 
-uint
+DependencyId
 Dependency::registerDependency(std::shared_ptr<LinkedAsset> linkedAsset)
 {
 	if (!hasDependency(linkedAsset))
@@ -181,7 +181,7 @@ Dependency::registerDependency(std::shared_ptr<LinkedAsset> linkedAsset)
 }
 
 std::shared_ptr<geometry::Geometry>
-Dependency::getGeometryReference(uint geometryId)
+Dependency::getGeometryReference(DependencyId geometryId)
 {
     auto referenceIt = _geometryReferences.find(geometryId);
 
@@ -190,13 +190,13 @@ Dependency::getGeometryReference(uint geometryId)
 }
 
 void
-Dependency::registerReference(uint referenceId, std::shared_ptr<geometry::Geometry> geometry)
+Dependency::registerReference(DependencyId referenceId, std::shared_ptr<geometry::Geometry> geometry)
 {
 	_geometryReferences[referenceId] = geometry;
 }
 
 std::shared_ptr<material::Material>
-Dependency::getMaterialReference(uint materialId)
+Dependency::getMaterialReference(DependencyId materialId)
 {
     auto referenceIt = _materialReferences.find(materialId);
 
@@ -205,13 +205,13 @@ Dependency::getMaterialReference(uint materialId)
 }
 
 void
-Dependency::registerReference(uint referenceId, std::shared_ptr<material::Material> material)
+Dependency::registerReference(DependencyId referenceId, std::shared_ptr<material::Material> material)
 {
 	_materialReferences[referenceId] = material;
 }
 
 Dependency::TextureReference*
-Dependency::getTextureReference(uint textureId)
+Dependency::getTextureReference(DependencyId textureId)
 {
     auto referenceIt = _textureReferences.find(textureId);
 
@@ -220,7 +220,7 @@ Dependency::getTextureReference(uint textureId)
 }
 
 void
-Dependency::registerReference(uint referenceId, AbsTexturePtr texture)
+Dependency::registerReference(DependencyId referenceId, AbsTexturePtr texture)
 {
     auto textureReference = _textureReferences.emplace(referenceId, TextureReference());
 
@@ -228,7 +228,7 @@ Dependency::registerReference(uint referenceId, AbsTexturePtr texture)
 }
 
 std::shared_ptr<scene::Node>
-Dependency::getSubsceneReference(uint subSceneId)
+Dependency::getSubsceneReference(DependencyId subSceneId)
 {
     auto referenceIt = _subSceneReferences.find(subSceneId);
 
@@ -237,25 +237,25 @@ Dependency::getSubsceneReference(uint subSceneId)
 }
 
 void
-Dependency::registerReference(uint referenceId, std::shared_ptr<scene::Node> subScene)
+Dependency::registerReference(DependencyId referenceId, std::shared_ptr<scene::Node> subScene)
 {
 	_subSceneReferences[referenceId] = subScene;
 }
 
 void
-Dependency::registerReference(uint referenceId, std::shared_ptr<render::Effect> effect)
+Dependency::registerReference(DependencyId referenceId, std::shared_ptr<render::Effect> effect)
 {
 	_effectReferences[referenceId] = effect;
 }
 
 void
-Dependency::registerReference(uint referenceId, std::shared_ptr<LinkedAsset> linkedAsset)
+Dependency::registerReference(DependencyId referenceId, std::shared_ptr<LinkedAsset> linkedAsset)
 {
 	_linkedAssetReferences[referenceId] = linkedAsset;
 }
 
 std::shared_ptr<render::Effect>
-Dependency::getEffectReference(uint effectId)
+Dependency::getEffectReference(DependencyId effectId)
 {
     auto referenceIt = _effectReferences.find(effectId);
 
@@ -264,7 +264,7 @@ Dependency::getEffectReference(uint effectId)
 }
 
 std::shared_ptr<LinkedAsset>
-Dependency::getLinkedAssetReference(uint referenceId)
+Dependency::getLinkedAssetReference(DependencyId referenceId)
 {
     auto referenceIt = _linkedAssetReferences.find(referenceId);
 
@@ -276,7 +276,7 @@ Dependency::SerializedAsset
 Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
 							  std::shared_ptr<file::AssetLibrary>		assetLibrary,
 							  std::shared_ptr<geometry::Geometry>		geometry,
-							  uint										resourceId,
+							  DependencyId								resourceId,
 							  std::shared_ptr<file::Options>			options,
                               std::shared_ptr<file::WriterOptions>		writerOptions,
 							  std::vector<Dependency::SerializedAsset>&	userDefinedDependency)
@@ -381,7 +381,7 @@ Dependency::SerializedAsset
 Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 							  std::shared_ptr<material::Material>   material,
-							  uint									resourceId,
+							  DependencyId							resourceId,
 							  std::shared_ptr<file::Options>		options,
                               std::shared_ptr<file::WriterOptions>  writerOptions)
 {
@@ -425,7 +425,7 @@ Dependency::SerializedAsset
 Dependency::serializeEffect(std::shared_ptr<Dependency>			    dependency,
                             std::shared_ptr<file::AssetLibrary>	    assetLibrary,
                             std::shared_ptr<render::Effect>         effect,
-                            uint								    resourceId,
+                            DependencyId							resourceId,
                             std::shared_ptr<file::Options>		    options,
                             std::shared_ptr<file::WriterOptions>    writerOptions)
 {
