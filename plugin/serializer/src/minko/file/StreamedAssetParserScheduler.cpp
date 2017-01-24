@@ -42,10 +42,15 @@ StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr         
     _entries(),
     _activeEntries(),
     _entriesToRemove(),
+    _abortedRequests(),
     _parameters(parameters),
     _complete(false),
     _active(Signal<Ptr>::create()),
-    _inactive(Signal<Ptr>::create())
+    _inactive(Signal<Ptr>::create()),
+    _numBytesLoaded(0),
+    _numPrimitivesLoaded(0),
+    _numVerticesLoaded(0),
+    _numRequestsExecuted(0)
 {
 }
 
@@ -65,11 +70,17 @@ StreamedAssetParserScheduler::clear()
     _entries.clear();
     _activeEntries.clear();
     _pendingDataEntries.clear();
+    _abortedRequests.clear();
 
     _active = nullptr;
     _inactive = nullptr;
 
     _options = nullptr;
+
+    _numBytesLoaded = 0;
+    _numPrimitivesLoaded = 0;
+    _numVerticesLoaded = 0;
+    _numRequestsExecuted = 0;
 }
 
 void
@@ -82,6 +93,9 @@ StreamedAssetParserScheduler::addParser(AbstractStreamedAssetParser::Ptr parser)
         [this, entry](AbstractParser::Ptr parser,
                       const Error&        error)
         {
+            if (_abortedRequests.erase(entry) > 0)
+                return;
+
             _entriesToRemove.insert(entry);
         }
     );
@@ -258,6 +272,8 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
 {
     stopListeningToEntry(entry);
 
+    ++_numRequestsExecuted;
+
     auto parser = entry->parser;
 
     auto offset = 0;
@@ -284,30 +300,40 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
         options
             ->fileStatusFunction([this, entry](File::Ptr file, float progress) -> Options::FileStatus
             {
-                if (progress < 1.f && entry->parser->priority() <= 0.f)
-                    return Options::FileStatus::Aborted;
+                auto status = Options::FileStatus::Pending;
 
-                if (progress < _parameters.abortableRequestProgressThreshold)
+                if (progress < 1.f && entry->parser->priority() <= 0.f)
+                {
+                    status = Options::FileStatus::Aborted;
+                }
+                else if (progress < _parameters.abortableRequestProgressThreshold)
                 {
                     if (_priority <= 0.f)
-                        return Options::FileStatus::Aborted;
-
-                    auto priorityRank = 0;
-
-                    for (auto inactiveEntry : _entries)
                     {
-                        if (priorityRank >= _parameters.maxNumActiveParsers ||
-                            inactiveEntry->parser->priority() - entry->parser->priority() < 1e-3f)
-                            break;
-
-                        ++priorityRank;
+                        status = Options::FileStatus::Aborted;
                     }
+                    else
+                    {
+                        auto priorityRank = 0;
 
-                    if (priorityRank >= _parameters.maxNumActiveParsers)
-                        return Options::FileStatus::Aborted;
+                        for (auto inactiveEntry : _entries)
+                        {
+                            if (priorityRank >= _parameters.maxNumActiveParsers ||
+                                inactiveEntry->parser->priority() - entry->parser->priority() < 1e-3f)
+                                break;
+
+                            ++priorityRank;
+                        }
+
+                        if (priorityRank >= _parameters.maxNumActiveParsers)
+                            status = Options::FileStatus::Aborted;
+                    }
                 }
 
-                return Options::FileStatus::Pending;
+                if (status == Options::FileStatus::Aborted)
+                    _abortedRequests.insert(entry);
+
+                return status;
             });
     }
 
@@ -335,9 +361,14 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
 void
 StreamedAssetParserScheduler::requestComplete(ParserEntryPtr entry, const std::vector<unsigned char>& data)
 {
+    _numBytesLoaded += data.size();
+
     entry->parserLodRequestCompleteSlot = entry->parser->lodRequestComplete()->connect(
         [this, entry](AbstractStreamedAssetParser::Ptr parser)
         {
+            _numPrimitivesLoaded += parser->lodRequestNumPrimitivesLoaded();
+            _numVerticesLoaded += parser->lodRequestNumVerticesLoaded();
+
             requestDisposed(entry);
         }
     );

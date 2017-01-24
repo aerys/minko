@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/serialize/SceneParserTest.hpp"
 #include "minko/serialize/TypeSerializer.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
+#include "minko/file/JPEGParser.hpp"
+#include "minko/file/PNGParser.hpp"
 
 using namespace minko;
 using namespace minko::serialize;
@@ -33,6 +35,8 @@ TEST_F(SceneParserTest, SceneDependencyLoadedWithRelativePath)
 
     loader->options()
         ->registerParser<file::SceneParser>("scene")
+        ->registerParser<file::PNGParser>("png")
+        ->registerParser<file::JPEGParser>("jpg")
         ->loadAsynchronously(false);
 
     auto loaderErrorSlot = loader->error()->connect(
@@ -63,6 +67,8 @@ TEST_F(SceneParserTest, SceneDependencyLoadedWithAbsolutePath)
 
     loader->options()
         ->registerParser<file::SceneParser>("scene")
+        ->registerParser<file::PNGParser>("png")
+        ->registerParser<file::JPEGParser>("jpg")
         ->loadAsynchronously(false);
 
     auto loaderErrorSlot = loader->error()->connect(

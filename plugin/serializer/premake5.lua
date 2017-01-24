@@ -2,6 +2,7 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
+    minko.plugin.enable("jpeg")
 	minko.plugin.enable("png")
 
 	files {
@@ -68,7 +69,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 				"lib/crnlib/crnlib/lzham_win32_threading.cpp",
 				"lib/crnlib/crnlib/lzham_timer.h",
 				"lib/crnlib/crnlib/lzham_timer.cpp",
-				"lib/crnlib/crnlib/crn_jpgd.cpp",
+                "lib/crnlib/crnlib/crn_jpgd.cpp",
+				"lib/crnlib/crnlib/crn_jpge.cpp",
 				"lib/crnlib/crnlib/crn_winhdr.h"
 			}
 

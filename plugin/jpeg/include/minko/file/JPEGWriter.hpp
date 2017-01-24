@@ -20,37 +20,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 
 namespace minko
 {
-    namespace component
+    namespace file
     {
-        namespace bullet
+        class JPEGWriter :
+            public std::enable_shared_from_this<JPEGWriter>
         {
-            class Collider;
-            class ColliderData;
-            class ColliderDebug;
+        public:
+            typedef std::shared_ptr<JPEGWriter> Ptr;
 
-            class PhysicsWorld;
+        private:
+            Signal<Ptr, const Error&>::Ptr _error;
 
-            class AbstractPhysicsShape;
-            class BoxShape;
-            class ConeShape;
-            class CylinderShape;
-            class SphereShape;
-            class ConvexHullShape;
-			class CapsuleShape;
-			class TriangleMeshShape;
-        }
-    }
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<JPEGWriter>(new JPEGWriter());
+            }
 
-    namespace extension
-    {
-        class PhysicsExtension;
-    }
+            Signal<Ptr, const Error&>::Ptr
+            error()
+            {
+                return _error;
+            }
 
-    namespace lua
-    {
-        class BulletLuaBindingsCollection;
+            void
+            encode(std::vector<unsigned char>&       out,
+                   const std::vector<unsigned char>& in,
+                   minko::uint                       width,
+                   minko::uint                       height,
+                   minko::uint                       numComponents,
+                   float                             quality);
+
+        private:
+            JPEGWriter();
+        };
     }
 }

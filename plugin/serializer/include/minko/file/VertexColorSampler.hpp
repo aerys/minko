@@ -25,11 +25,11 @@ namespace minko
 {
     namespace file
     {
-        class StreamedTextureWriterPreprocessor :
+        class VertexColorSampler :
             public AbstractWriterPreprocessor<std::shared_ptr<scene::Node>>
         {
         public:
-            typedef std::shared_ptr<StreamedTextureWriterPreprocessor>  Ptr;
+            typedef std::shared_ptr<VertexColorSampler>  Ptr;
 
         private:
             typedef std::shared_ptr<scene::Node>                                NodePtr;
@@ -38,17 +38,33 @@ namespace minko
         private:
             StatusChangedSignal::Ptr    _statusChanged;
 
+            float                       _gammaCorrection;
+
         public:
-            ~StreamedTextureWriterPreprocessor() = default;
+            ~VertexColorSampler() = default;
 
             inline
             static
             Ptr
             create()
             {
-                auto instance = Ptr(new StreamedTextureWriterPreprocessor());
+                auto instance = Ptr(new VertexColorSampler());
 
                 return instance;
+            }
+
+            float
+            gammaCorrection() const
+            {
+                return _gammaCorrection;
+            }
+
+            Ptr
+            gammaCorrection(float value)
+            {
+                _gammaCorrection = value;
+
+                return std::static_pointer_cast<VertexColorSampler>(shared_from_this());
             }
 
             inline
@@ -69,7 +85,32 @@ namespace minko
             process(NodePtr& node, AssetLibraryPtr assetLibrary);
 
         private:
-            StreamedTextureWriterPreprocessor();
+            VertexColorSampler();
+
+            void
+            computeVertexColorAttributes(NodePtr            node,
+                                         AssetLibraryPtr    assetLibrary);
+
+            void
+            computeVertexColorAttributes(std::shared_ptr<geometry::Geometry>    geometry,
+                                         std::shared_ptr<material::Material>    material,
+                                         AssetLibraryPtr                        assetLibrary);
+
+            void
+            sampleColor(unsigned int                       width,
+                        unsigned int                       height,
+                        unsigned int                       numComponents,
+                        const std::vector<unsigned char>&  textureData,
+                        const math::vec2&                  uv,
+                        math::vec4&                        color);
+
+            static
+            float
+            packColor(const math::vec3& color);
+
+            static
+            math::vec3
+            sRGBToRGB(const math::vec3& color, float gammaCorrection);
         };
     }
 }

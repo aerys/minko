@@ -402,7 +402,7 @@ POPGeometryLodScheduler::activeLodChanged(POPGeometryResourceInfo&   resource,
         {
             const auto minPrecisionLevel = masterLodScheduler()->streamingOptions()->popGeometryLodBlendingMinPrecisionLevel();
             const auto minPrecisionLevelLodInfo = precisionLevelToClosestLod(resource, minPrecisionLevel);
-            
+
             previousLod = math::max(previousLod, minPrecisionLevelLodInfo._level);
             previousLod = math::min(previousLod, resource.maxAvailableLod);
 
@@ -427,6 +427,8 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
     const auto worldMaxBound = box->topRight();
 
     const auto targetDistance = distanceFromEye(resource, surfaceInfo, _eyePosition);
+
+    surfaceInfo.surface->data()->set("distanceFromEye", targetDistance);
 
     if (targetDistance <= 0)
     {

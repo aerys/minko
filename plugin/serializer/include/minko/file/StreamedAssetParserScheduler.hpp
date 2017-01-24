@@ -117,6 +117,10 @@ namespace minko
                 ParserEntryPtr
             >                           _entriesToRemove;
 
+            std::unordered_set<
+                ParserEntryPtr
+            >                           _abortedRequests;
+
             Parameters                  _parameters;
 
             bool                        _complete;
@@ -125,6 +129,10 @@ namespace minko
 
             Signal<Ptr>::Ptr            _active;
             Signal<Ptr>::Ptr            _inactive;
+            std::size_t                 _numBytesLoaded;
+            std::size_t                 _numPrimitivesLoaded;
+            std::size_t                 _numVerticesLoaded;
+            int                         _numRequestsExecuted;
 
         public:
             ~StreamedAssetParserScheduler();
@@ -158,6 +166,40 @@ namespace minko
             inactive()
             {
                 return _inactive;
+            }
+
+            inline
+            std::size_t
+            numBytesLoaded() const
+            {
+                return _numBytesLoaded;
+            }
+
+            inline
+            std::size_t
+            numPrimitivesLoaded() const
+            {
+                return _numPrimitivesLoaded;
+            }
+
+            std::size_t
+            numVerticesLoaded() const
+            {
+                return _numVerticesLoaded;
+            }
+
+            inline
+            std::size_t
+            numRequestsExecuted() const
+            {
+                return _numRequestsExecuted;
+            }
+
+            inline
+            int
+            numActiveParsers() const
+            {
+                return _activeEntries.size();
             }
 
             void
