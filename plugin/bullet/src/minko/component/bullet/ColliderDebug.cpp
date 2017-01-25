@@ -76,6 +76,19 @@ bullet::ColliderDebug::clone(const CloneOption& option)
 }
 
 void
+bullet::ColliderDebug::dispose()
+{
+    _surface = nullptr;
+    _physicsTransformChangedSlot = nullptr;
+
+    _addedSlot = nullptr;
+    _removedSlot = nullptr;
+
+    if (_node->parent())
+        _node->parent()->removeChild(_node);
+}
+
+void
 bullet::ColliderDebug::targetAdded(scene::Node::Ptr	target)
 {
 	_addedSlot = target->added().connect(std::bind(
@@ -102,11 +115,7 @@ bullet::ColliderDebug::targetAdded(scene::Node::Ptr	target)
 void
 bullet::ColliderDebug::targetRemoved(Node::Ptr target)
 {
-	_surface = nullptr;
-	_physicsTransformChangedSlot = nullptr;
-
-	_addedSlot = nullptr;
-	_removedSlot = nullptr;
+    dispose();
 }
 
 void
@@ -166,8 +175,12 @@ bullet::ColliderDebug::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr)
 }
 
 void
-bullet::ColliderDebug::removedHandler(Node::Ptr, Node::Ptr, Node::Ptr)
+bullet::ColliderDebug::removedHandler(Node::Ptr, Node::Ptr deletedNode, Node::Ptr)
 {
+    if (deletedNode != target())
+        return;
+
+    dispose();
 }
 
 void

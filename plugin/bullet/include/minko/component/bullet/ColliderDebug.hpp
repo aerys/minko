@@ -30,7 +30,7 @@ namespace minko
 	{
 		namespace bullet
 		{
-			class ColliderDebug: 
+			class ColliderDebug:
 				public AbstractComponent
 			{
 			public:
@@ -78,13 +78,16 @@ namespace minko
 				initializeDisplay();
 
                 void
+                dispose();
+
+                void
                 addRootColliderDebugNode();
 
 				void
-				targetAdded(NodePtr);
+				targetAdded(NodePtr) override;
 
-				void
-				targetRemoved(NodePtr);
+                void
+                targetRemoved(NodePtr) override;
 
 				void
 				addedHandler(NodePtr, NodePtr, NodePtr);
