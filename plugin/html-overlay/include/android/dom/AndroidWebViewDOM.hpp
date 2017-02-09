@@ -31,7 +31,7 @@ namespace android
 	namespace dom
 	{
         class AndroidWebViewDOMEngine;
-        
+
 		class AndroidWebViewDOM : public minko::dom::AbstractDOM,
             public std::enable_shared_from_this<AndroidWebViewDOM>
 		{
@@ -93,26 +93,29 @@ namespace android
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
 			getElementList(const std::string&);
-            
+
             void
             runScript(const std::string& script);
-            
+
             std::string
             runScriptString(const std::string& script);
-            
+
             int
             runScriptInt(const std::string& script);
 
 		private:
+            std::string
+            escapeJsonString(const std::string& input);
+
 			bool _initialized;
 
 			std::string _jsAccessor;
-            
+
             std::shared_ptr<AndroidWebViewDOMEngine> _engine;
-            
+
 			AndroidWebViewDOMElement::Ptr _document;
 			AndroidWebViewDOMElement::Ptr _body;
-            
+
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 		};
