@@ -304,6 +304,7 @@ HTTPRequest::curlProgressHandler(void* arg, double total, double current, double
 
 bool
 HTTPRequest::fileExists(const std::string& filename,
+                        int& fileSize,
                         const std::string& username,
                         const std::string& password,
                         const std::unordered_map<std::string, std::string> *additionalHeaders,
@@ -339,7 +340,11 @@ HTTPRequest::fileExists(const std::string& filename,
     auto status = curl_easy_perform(curl);
 
     auto responseCode = 0l;
+    double contentLength;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+    curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &contentLength);
+
+    fileSize = (int)contentLength;
 
     disposeCurl(curl, curlHeaderList);
 
