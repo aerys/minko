@@ -344,7 +344,7 @@ HTTPRequest::fileExists(const std::string& filename,
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
     curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &contentLength);
 
-    fileSize = (int)contentLength;
+    fileSize = static_cast<int>(contentLength);
 
     disposeCurl(curl, curlHeaderList);
 
