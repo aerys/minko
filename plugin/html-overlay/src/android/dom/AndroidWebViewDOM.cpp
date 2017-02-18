@@ -44,15 +44,34 @@ AndroidWebViewDOM::create(const std::string& jsAccessor, std::shared_ptr<Android
 	return dom;
 }
 
+std::string
+AndroidWebViewDOM::escapeJsonString(const std::string& input)
+{
+    std::ostringstream ss;
+
+    for (auto iter = input.cbegin(); iter != input.cend(); iter++)
+    {
+        switch (*iter) {
+            case '\\': ss << "\\\\"; break;
+            case '"': ss << "\\\""; break;
+            case '/': ss << "\\/"; break;
+            case '\b': ss << " "; break;
+            case '\f': ss << " "; break;
+            case '\n': ss << " "; break;
+            case '\r': ss << " "; break;
+            case '\t': ss << " "; break;
+            default: ss << *iter; break;
+        }
+    }
+
+    return ss.str();
+}
+
 void
 AndroidWebViewDOM::sendMessage(const std::string& message, bool async)
 {
-	auto m = message;
-
-	m = std::replaceAll(m, "\\", "\\\\");
-	m = std::replaceAll(m, "'", "\\'");
-	m = std::replaceAll(m, "\n", " ");
-	m = std::replaceAll(m, "\"", "\\\"");
+    // Escape the message twice to give it to the JS eval function
+    auto m = this->escapeJsonString(this->escapeJsonString(message));
 
 	std::string eval = "if (" + _jsAccessor + ".window.Minko.dispatchMessage) " + _jsAccessor + ".window.Minko.dispatchMessage('" + m + "');";
 
@@ -70,17 +89,17 @@ std::vector<AbstractDOMElement::Ptr>
 AndroidWebViewDOM::getElementList(const std::string& expression)
 {
     std::vector<minko::dom::AbstractDOMElement::Ptr> l;
-    
+
     auto expr = "Minko.tmpElements = " + expression;
-    
+
     runScript(expr);
-    
+
     expr = "(Minko.tmpElements.length)";
     int numElements = runScriptInt(expr.c_str());
-    
+
     for(int i = 0; i < numElements; ++i)
         l.push_back(AndroidWebViewDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]", _engine));
-    
+
     return l;
 }
 
@@ -153,9 +172,9 @@ std::string
 AndroidWebViewDOM::fullUrl()
 {
 	std::string eval = "(document.location.href)";
-    
+
     std::string result = runScriptString(eval);
-    
+
 	return result;
 }
 
@@ -176,7 +195,7 @@ AndroidWebViewDOM::initialized(bool v)
 		eval += _jsAccessor + ".window = Minko.window;";
 		eval += _jsAccessor + ".document = Minko.document;";
 		eval += _jsAccessor + ".body= Minko.document.body;";
-		
+
         runScript(eval);
 
 		_document = AndroidWebViewDOMElement::create(_jsAccessor + ".document", _engine);

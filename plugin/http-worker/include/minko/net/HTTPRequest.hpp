@@ -109,6 +109,7 @@ namespace minko
             static
             bool
             fileExists(const std::string& filename,
+                       int& fileSize,
                        const std::string& username = "",
                        const std::string& password = "",
                        const std::unordered_map<std::string, std::string> *additionalHeaders = nullptr,
