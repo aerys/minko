@@ -74,8 +74,9 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _startTime(std::chrono::high_resolution_clock::now()),
     _framerate(0.f),
     _desiredFramerate(60.f),
+    _desiredEventrate(60.f),
 	_swapBuffersAtEnterFrame(true),
-    _enterFrame(Signal<AbstractCanvas::Ptr, float, float>::create()),
+    _enterFrame(Signal<AbstractCanvas::Ptr, float, float, bool>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
     _fileDropped(Signal<const std::string&>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
@@ -1016,13 +1017,19 @@ Canvas::step()
     auto absoluteTime = std::chrono::high_resolution_clock::now();
 	_relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
     _deltaTime = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
+    _deltaRenderTime  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - _previousRenderTime).count(); // in milliseconds
     _previousTime = absoluteTime;
+
+    auto shouldRender = (_desiredEventrate == _desiredFramerate) || _deltaRenderTime >= (1000.f / _desiredFramerate);
+
+    if (shouldRender)
+        _previousRenderTime = absoluteTime;
 
     if (_enableRendering)
     {
-        _enterFrame->execute(that, _relativeTime, _deltaTime);
+        _enterFrame->execute(that, _relativeTime, _deltaTime, shouldRender);
 
-        if (_swapBuffersAtEnterFrame)
+        if (_swapBuffersAtEnterFrame && shouldRender)
             swapBuffers();
     }
 
@@ -1031,7 +1038,7 @@ Canvas::step()
     // framerate in seconds
     _framerate = 1000.f / _frameDuration;
 
-    auto remainingTime = (1000.f / _desiredFramerate) - _frameDuration;
+    auto remainingTime = (1000.f / _desiredEventrate) - _frameDuration;
 
     if (remainingTime > 0)
     {
@@ -1091,6 +1098,15 @@ void
 Canvas::desiredFramerate(float desiredFramerate)
 {
     _desiredFramerate = desiredFramerate;
+
+    if (_desiredEventrate < _desiredFramerate)
+        _desiredEventrate = desiredFramerate;
+}
+
+void
+Canvas::desiredEventrate(float desiredEventrate)
+{
+    _desiredEventrate = desiredEventrate;
 }
 
 void

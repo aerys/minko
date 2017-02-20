@@ -90,9 +90,12 @@ namespace minko
         float                                                                   _frameDuration;
         float                                                                   _deltaTime;
         time_point                                                              _previousTime;
+        float                                                                   _deltaRenderTime;
+        time_point                                                              _previousRenderTime;
         time_point                                                              _startTime;
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
+        float                                                                   _desiredEventrate;
         bool                                                                    _swapBuffersAtEnterFrame;
 
         std::shared_ptr<audio::SDLAudio>                                        _audio;
@@ -103,7 +106,7 @@ namespace minko
         std::shared_ptr<input::SDLTouch>                                        _touch;
 
         // Signals
-        Signal<AbstractCanvas::Ptr, float, float>::Ptr                          _enterFrame;
+        Signal<AbstractCanvas::Ptr, float, float, bool>::Ptr                    _enterFrame;
         Signal<AbstractCanvas::Ptr, uint, uint>::Ptr                            _resized;
         Signal<AbstractCanvas::Ptr, uint, uint>::Slot                           _resizedSlot;
         // File dropped
@@ -196,7 +199,7 @@ namespace minko
         }
 
         inline
-        Signal<AbstractCanvas::Ptr, float, float>::Ptr
+        Signal<AbstractCanvas::Ptr, float, float, bool>::Ptr
         enterFrame() override
         {
             return _enterFrame;
@@ -326,6 +329,16 @@ namespace minko
 
         void
         desiredFramerate(float desiredFramerate) override;
+
+        inline
+        float
+        desiredEventrate() override
+        {
+            return _desiredEventrate;
+        }
+
+        void
+            desiredEventrate(float desiredEventRate) override;
 
         // Current frame execution time in milliseconds.
         inline

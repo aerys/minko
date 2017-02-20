@@ -81,7 +81,7 @@ namespace minko
             WebSocketImpl* _impl;
             AbstractCanvas::Ptr _canvas;
 
-            Signal<AbstractCanvas::Ptr, float, float>::Slot _enterFrameSlot;
+            Signal<AbstractCanvas::Ptr, float, float, bool>::Slot _enterFrameSlot;
         };
     }
 }
