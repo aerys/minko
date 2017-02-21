@@ -1043,7 +1043,7 @@ Canvas::step()
     if (remainingTime > 0)
     {
         _backend->wait(that, uint(remainingTime));
-		_framerate = _desiredFramerate;
+		_framerate = _desiredEventrate;
     }
 }
 
