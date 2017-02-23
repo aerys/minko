@@ -70,7 +70,7 @@ sudo apt-get install libcurl4-openssl-dev
 sudo apt-get install libudev-dev libxinerama-dev
 
 # HTML overlay (optional) 
-sudo apt-get install libgtk2.0-dev 
+sudo apt-get install libgtk2.0-dev libgtkglextmm-x11-1.2-dev
 
 # Fix for 64-bit Linux
 libgtkglext1-dev libudevpath=$([ \uname -m\ = x86_64 ] && echo "/lib/x86_64-linux-gnu" || echo "/lib/i386-linux-gnu") 
