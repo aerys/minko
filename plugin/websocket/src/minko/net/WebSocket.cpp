@@ -113,7 +113,7 @@ WebSocket::startPollingOnEnterFrame()
 {
     if (!!_canvas)
     {
-        _enterFrameSlot = _canvas->enterFrame()->connect([&](AbstractCanvas::Ptr, float, float)
+        _enterFrameSlot = _canvas->enterFrame()->connect([&](AbstractCanvas::Ptr, float, float, bool)
         {
             poll();
         });
