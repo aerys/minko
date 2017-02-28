@@ -23,6 +23,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	excludes {
+		"lib/bullet2/src/MiniCL/MiniCL.cpp",
 		"lib/bullet2/src/BulletMultiThreaded/*.h",
 		"lib/bullet2/src/BulletMultiThreaded/*.cpp",
 		"lib/bullet2/src/BulletMultiThreaded/GpuSoftBodySolvers/*.h",

@@ -38,6 +38,7 @@ namespace minko
             auto passwordSize = 0;
             auto numAdditionalHeaders = 0;
             auto verifyPeer = true;
+            auto buffered = false;
 
             inputStream.read(reinterpret_cast<char*>(&urlSize), 4);
             auto urlData = std::vector<char>(urlSize);
@@ -89,10 +90,12 @@ namespace minko
             }
 
             inputStream.read(reinterpret_cast<char*>(&verifyPeer), 1);
+            inputStream.read(reinterpret_cast<char*>(&buffered), 1);
 
             HTTPRequest request(url, username, password, additionalHeaders.empty() ? nullptr : &additionalHeaders);
 
             request.verifyPeer(verifyPeer);
+            request.buffered(buffered);
 
             auto _0 = request.progress()->connect([&](float p) {
                 Message message { "progress" };
@@ -105,8 +108,14 @@ namespace minko
             });
 
             auto _2 = request.complete()->connect([&](const std::vector<char>& output) {
-                Message message { "complete" };
+                Message message{ "complete" };
                 message.set(output);
+                post(message);
+            });
+
+            auto _3 = request.bufferSignal()->connect([&](const std::vector<char>& buffer) {
+                Message message{ "buffer" };
+                message.set(buffer);
                 post(message);
             });
 

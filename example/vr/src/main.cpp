@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoOculus.hpp"
+#include "minko/MinkoVR.hpp"
 
 using namespace minko;
 using namespace minko::scene;

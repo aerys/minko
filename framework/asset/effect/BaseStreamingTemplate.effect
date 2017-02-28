@@ -20,8 +20,11 @@
                         "aPopProtected"   : "geometry[${geometryUuid}].popProtected"
                     },
                     "uniforms"   : {
+                        "uTime"                         : { "binding" : { "property" : "time", "source" : "root" } },
                         "uDiffuseMapMaxAvailableLod"    : "material[${materialUuid}].diffuseMapMaxAvailableLod",
                         "uDiffuseMapSize"               : "material[${materialUuid}].diffuseMapSize",
+                        "uDiffuseMapLodBlendingStartLod" : "material[${materialUuid}].diffuseMapLodBlendingStartLod",
+                        "uDiffuseMapLodBlendingStartTime" : "material[${materialUuid}].diffuseMapLodBlendingStartTime",
                         "uLightMap"                     : {
                             "binding"       : "material[${materialUuid}].lightMap",
                             "wrapMode"      : "repeat",
@@ -30,6 +33,8 @@
                         },
                         "uLightMapMaxAvailableLod"  : "material[${materialUuid}].lightMapMaxAvailableLod",
                         "uLightMapSize"             : "material[${materialUuid}].lightMapSize",
+                        "uLightMapLodBlendingStartLod" : "material[${materialUuid}].lightMapLodBlendingStartLod",
+                        "uLightMapLodBlendingStartTime" : "material[${materialUuid}].lightMapLodBlendingStartTime",
                         "uAlphaMap"                 : {
                             "binding"       : "material[${materialUuid}].alphaMap",
                             "wrapMode"      : "repeat",
@@ -38,27 +43,36 @@
                         },
                         "uAlphaMapMaxAvailableLod"  : "material[${materialUuid}].alphaMapMaxAvailableLod",
                         "uAlphaMapSize"             : "material[${materialUuid}].alphaMapSize",
+                        "uAlphaMapLodBlendingStartLod" : "material[${materialUuid}].alphaMapLodBlendingStartLod",
+                        "uAlphaMapLodBlendingStartTime" : "material[${materialUuid}].alphaMapLodBlendingStartTime",
                         "uAlphaThreshold"           : "material[${materialUuid}].alphaThreshold",
                         "uBoneMatrices[0]"          : "geometry[${geometryUuid}].boneMatrices",
                         "uNumBones"                 : "geometry[${geometryUuid}].numBones",
                         "uPopLod"                   : "surface[${surfaceUuid}].popLod",
-                        "uPopBlendingLod"           : "surface[${surfaceUuid}].popBlendingLod",
+                        "uPopPreviousLod"           : { "binding" : { "property" : "surface[${surfaceUuid}].popPreviousLod" }, "default" : 0.0 },
+                        "uPopLodBlendingTime"       : { "binding" : { "property" : "surface[${surfaceUuid}].popLodBlendingTime" }, "default" : 0.0 },
                         "uPopFullPrecisionLod"      : "geometry[${geometryUuid}].popFullPrecisionLod",
                         "uPopMinBound"              : "geometry[${geometryUuid}].popMinBound",
-                        "uPopMaxBound"              : "geometry[${geometryUuid}].popMaxBound"
+                        "uPopMaxBound"              : "geometry[${geometryUuid}].popMaxBound",
+                        "uPopLodBlendingPeriod"     : { "binding" : { "property" : "popLodBlendingPeriod", "source" : "root" } },
+                        "uStreamedTextureLodBlendingPeriod" : { "binding" : { "property" : "streamedTextureLodBlendingPeriod", "source" : "root" } }
                     },
                     "macros" : {
-                        "SKINNING_NUM_BONES"    : { "binding" : "geometry[${geometryUuid}].numBones", "type" : "int" },
-                        "DIFFUSE_MAP_LOD"       : "material[${materialUuid}].diffuseMapLodEnabled",
-                        "LIGHT_MAP"             : "material[${materialUuid}].lightMap",
-                        "LIGHT_MAP_LOD"         : "material[${materialUuid}].lightMapLodEnabled",
-                        "VERTEX_UV1"            : "geometry[${geometryUuid}].uv1",
-                        "ALPHA_MAP"             : "material[${materialUuid}].alphaMap",
-                        "ALPHA_MAP_LOD"         : "material[${materialUuid}].alphaMapLodEnabled",
-                        "ALPHA_THRESHOLD"       : "material[${materialUuid}].alphaThreshold",
-                        "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
-                        "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
-                        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
+                        "SKINNING_NUM_BONES"        : { "binding" : "geometry[${geometryUuid}].numBones", "type" : "int" },
+                        "DIFFUSE_MAP_LOD"           : "material[${materialUuid}].diffuseMapLodEnabled",
+                        "DIFFUSE_MAP_LOD_BLENDING_ENABLED" : "material[${materialUuid}].diffuseMapLodBlendingEnabled",
+                        "LIGHT_MAP"                 : "material[${materialUuid}].lightMap",
+                        "LIGHT_MAP_LOD"             : "material[${materialUuid}].lightMapLodEnabled",
+                        "LIGHT_MAP_LOD_BLENDING_ENABLED" : "material[${materialUuid}].lightMapLodBlendingEnabled",
+                        "VERTEX_UV1"                : "geometry[${geometryUuid}].uv1",
+                        "ALPHA_MAP"                 : "material[${materialUuid}].alphaMap",
+                        "ALPHA_MAP_LOD"             : "material[${materialUuid}].alphaMapLodEnabled",
+                        "ALPHA_MAP_LOD_BLENDING_ENABLED" : "material[${materialUuid}].alphaMapLodBlendingEnabled",
+                        "ALPHA_THRESHOLD"           : "material[${materialUuid}].alphaThreshold",
+                        "POP_LOD_ENABLED"           : "surface[${surfaceUuid}].popLodEnabled",
+                        "POP_LOD_BLENDING_ENABLED"  : { "binding" : { "property" : "popLodBlendingPeriod", "source" : "root" } },
+                        "STREAMED_TEXTURE_LOD_BLENDING_ENABLED" : { "binding" : { "property" : "streamedTextureLodBlendingPeriod", "source" : "root" } },
+                        "VERTEX_POP_PROTECTED"      : "geometry[${geometryUuid}].popProtected"
                     },
                     "vertexShader" : "
                         void main(void)

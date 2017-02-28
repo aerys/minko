@@ -55,7 +55,7 @@ namespace minko
 
             virtual
             void
-            connect(const std::string& uri) = 0;
+            connect(const std::string& uri, const std::string &cookie = "") = 0;
 
             virtual
             void

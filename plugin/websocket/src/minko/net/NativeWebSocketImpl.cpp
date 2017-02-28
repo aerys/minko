@@ -34,7 +34,7 @@ NativeWebSocketImpl::~NativeWebSocketImpl()
 }
 
 void
-NativeWebSocketImpl::tlsConnect(const std::string &uri)
+NativeWebSocketImpl::tlsConnect(const std::string &uri, const std::string& cookie)
 {
     _tlsClient.set_access_channels(websocketpp::log::alevel::none);
     _tlsClient.clear_access_channels(websocketpp::log::alevel::all);
@@ -73,6 +73,9 @@ NativeWebSocketImpl::tlsConnect(const std::string &uri)
         return;
     }
 
+    if (!cookie.empty())
+        _tlsConnection->replace_header("Cookie", cookie);
+
     _tlsConnection->add_subprotocol("binary");
 
     _tlsClient.connect(_tlsConnection);
@@ -81,10 +84,10 @@ NativeWebSocketImpl::tlsConnect(const std::string &uri)
 }
 
 void
-NativeWebSocketImpl::connect(const std::string &uri)
+NativeWebSocketImpl::connect(const std::string &uri, const std::string &cookie)
 {
     if (uri.find("wss") == 0)
-        return tlsConnect(uri);
+        return tlsConnect(uri, cookie);
 
     _client.set_access_channels(websocketpp::log::alevel::none);
     _client.clear_access_channels(websocketpp::log::alevel::all);
@@ -115,6 +118,9 @@ NativeWebSocketImpl::connect(const std::string &uri)
         std::cerr << "could not create connection because: " << ec.message() << std::endl;
         return;
     }
+
+    if (!cookie.empty())
+        _connection->replace_header("Cookie", cookie);
 
     _connection->add_subprotocol("binary");
 

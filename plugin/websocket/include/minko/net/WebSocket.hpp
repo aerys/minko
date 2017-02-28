@@ -44,7 +44,7 @@ namespace minko
             messageReceived();
 
             void
-            connect(const std::string& uri);
+            connect(const std::string& uri, const std::string& cookie = "");
 
             bool
             poll();
@@ -81,7 +81,7 @@ namespace minko
             WebSocketImpl* _impl;
             AbstractCanvas::Ptr _canvas;
 
-            Signal<AbstractCanvas::Ptr, float, float>::Slot _enterFrameSlot;
+            Signal<AbstractCanvas::Ptr, float, float, bool>::Slot _enterFrameSlot;
         };
     }
 }

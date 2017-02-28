@@ -143,7 +143,7 @@ namespace minko
             }
 
             void
-            nextFrame(float time, float deltaTime, AbsTexturePtr target = nullptr);
+            nextFrame(float time, float deltaTime, bool shouldRender = true, AbsTexturePtr target = nullptr);
 
         protected:
             void

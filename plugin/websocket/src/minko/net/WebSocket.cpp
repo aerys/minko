@@ -70,11 +70,11 @@ WebSocket::messageReceived()
 }
 
 void
-WebSocket::connect(const std::string& uri)
+WebSocket::connect(const std::string& uri, const std::string& cookie)
 {
     startPollingOnEnterFrame();
 
-    _impl->connect(uri);
+    _impl->connect(uri, cookie);
 }
 
 bool
@@ -113,7 +113,7 @@ WebSocket::startPollingOnEnterFrame()
 {
     if (!!_canvas)
     {
-        _enterFrameSlot = _canvas->enterFrame()->connect([&](AbstractCanvas::Ptr, float, float)
+        _enterFrameSlot = _canvas->enterFrame()->connect([&](AbstractCanvas::Ptr, float, float, bool)
         {
             poll();
         });

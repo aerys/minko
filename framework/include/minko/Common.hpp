@@ -72,6 +72,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "glm/gtx/matrix_decompose.hpp"
 #include "glm/gtx/color_space.hpp"
 #include "glm/gtx/string_cast.hpp"
+#include "glm/gtx/vector_angle.hpp"
 
 #ifndef MINKO_USE_SPARSE_HASH_MAP
 # ifndef DEBUG
@@ -291,7 +292,8 @@ namespace minko
 		class Options;
 		class Loader;
         class AbstractProtocol;
-		class AbstractParser;
+        class AbstractParser;
+        class AbstractCache;
 		class EffectParser;
         class AssetLibrary;
         class AssetLocation;

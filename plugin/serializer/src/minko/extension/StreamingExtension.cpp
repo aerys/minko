@@ -75,6 +75,8 @@ using namespace minko::render;
 using namespace minko::scene;
 using namespace minko::serialize;
 
+const int StreamingExtension::STREAMED_ASSET_HEADER_SIZE_BYTE_SIZE = 2;
+
 const float StreamingExtension::_parserSchedulerDefaultPriority = 10.f;
 
 StreamingExtension::StreamingExtension() :
@@ -251,7 +253,37 @@ StreamingExtension::parserScheduler(Options::Ptr options, std::list<JobManager::
     return _parserScheduler;
 }
 
-msgpack::type::tuple<uint, short, std::string>
+std::size_t
+StreamingExtension::numBytesLoaded() const
+{
+    return _parserScheduler ? _parserScheduler->numBytesLoaded() : 0;
+}
+
+std::size_t
+StreamingExtension::numPrimitivesLoaded() const
+{
+    return _parserScheduler ? _parserScheduler->numPrimitivesLoaded() : 0;
+}
+
+std::size_t
+StreamingExtension::numVerticesLoaded() const
+{
+    return _parserScheduler ? _parserScheduler->numVerticesLoaded() : 0;
+}
+
+int
+StreamingExtension::numRequestsExecuted() const
+{
+    return _parserScheduler ? _parserScheduler->numRequestsExecuted() : 0;
+}
+
+int
+StreamingExtension::numActiveParsers() const
+{
+    return _parserScheduler ? _parserScheduler->numActiveParsers() : 0;
+}
+
+Dependency::SerializedAsset
 StreamingExtension::serializePOPGeometry(Dependency::Ptr                dependency,
                                          AssetLibrary::Ptr              assetLibrary,
                                          Geometry::Ptr                  geometry,
@@ -323,7 +355,7 @@ StreamingExtension::serializePOPGeometry(Dependency::Ptr                dependen
         {
             std::stringstream contentStream;
 
-            contentStream << static_cast<short>(linkedAssetId);
+            contentStream << linkedAssetId;
 
             content = contentStream.str();
         }
@@ -343,7 +375,7 @@ StreamingExtension::deserializePOPGeometry(unsigned short					metaData,
 										   const std::string&               completePath,
                                            const std::vector<unsigned char>& data,
 										   Dependency::Ptr                  dependencies,
-										   short							assetRef,
+										   DependencyId                     assetRef,
 										   std::list<JobManager::Job::Ptr>&	jobList)
 {
     auto hasHeader = false;
@@ -418,7 +450,7 @@ StreamingExtension::deserializePOPGeometry(unsigned short					metaData,
     _streamingOptions->masterLodScheduler()->registerGeometry(geometry, geometryData);
 }
 
-msgpack::type::tuple<uint, short, std::string>
+Dependency::SerializedAsset
 StreamingExtension::serializeStreamedTexture(std::shared_ptr<file::Dependency>		dependency,
                                              std::shared_ptr<file::AssetLibrary>	assetLibrary,
                                              const Dependency::TextureDependency&   textureDependency,
@@ -426,7 +458,7 @@ StreamingExtension::serializeStreamedTexture(std::shared_ptr<file::Dependency>		
                                              std::shared_ptr<file::WriterOptions>   writerOptions)
 {
     auto texture = textureDependency.texture;
-    const auto dependencyId = static_cast<short>(textureDependency.dependencyId);
+    const auto dependencyId = textureDependency.dependencyId;
 
     const auto assetIsNull = writerOptions->assetIsNull(texture->uuid());
 
@@ -490,7 +522,7 @@ StreamingExtension::serializeStreamedTexture(std::shared_ptr<file::Dependency>		
         {
             std::stringstream contentStream;
 
-            contentStream << static_cast<short>(linkedAssetId);
+            contentStream << linkedAssetId;
 
             content = contentStream.str();
         }
@@ -510,7 +542,7 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
 											   const std::string&										assetCompletePath,
                                                const std::vector<unsigned char>&                        data,
 											   std::shared_ptr<file::Dependency>						dependencies,
-											   short													assetRef,
+											   DependencyId               					            assetRef,
 											   std::list<std::shared_ptr<component::JobManager::Job>>&	jobList)
 {
     auto hasHeader = false;
@@ -703,7 +735,7 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
 
     std::stringstream dataStream(std::string(data.begin(), data.end()));
 
-    short linkedAssetId = 0;
+    DependencyId linkedAssetId = 0;
 
     dataStream >> linkedAssetId;
 
@@ -715,7 +747,7 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
     if (!requireHeader)
         return true;
 
-    const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
+    const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + STREAMED_ASSET_HEADER_SIZE_BYTE_SIZE;
 
     auto linkedAssetResolutionSuccessful = true;
 
@@ -741,7 +773,7 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
             {
                 linkedAsset->filename(linkedAsset->lastResolvedFilename());
 
-                const auto streamedAssetHeaderSizeOffset = assetHeaderSize - 2;
+                const auto streamedAssetHeaderSizeOffset = assetHeaderSize - STREAMED_ASSET_HEADER_SIZE_BYTE_SIZE;
 
                 streamedAssetHeaderSize = assetHeaderSize +
                                           (linkedAssetData[streamedAssetHeaderSizeOffset] << 8) +
@@ -777,7 +809,7 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
     if (!linkedAssetResolutionSuccessful)
         return false;
 
-    linkedAsset->offset(linkedAsset->offset() + streamedAssetHeaderSize + 2);
+    linkedAsset->offset(linkedAsset->offset() + streamedAssetHeaderSize + STREAMED_ASSET_HEADER_SIZE_BYTE_SIZE);
 
     return true;
 }

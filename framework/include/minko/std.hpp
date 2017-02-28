@@ -52,6 +52,14 @@ namespace std
         // FIXME: Deal with pos != nullptr.
         return strtoul(str.c_str(), 0, base);
     }
+
+    inline
+    float
+    stof(const std::string& str, std::size_t* pos = 0)
+    {
+        // FIXME: Deal with pos != nullptr.
+        return atof(str.c_str());
+    }
 #endif
 
 	inline

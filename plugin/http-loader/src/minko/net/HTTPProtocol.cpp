@@ -84,13 +84,25 @@ HTTPProtocol::completeHandler(void* data, unsigned int size)
 {
     if (_status == Options::FileStatus::Aborted)
         return;
-    
+
     this->data().assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
 
     progress()->execute(shared_from_this(), 1.0);
     complete()->execute(shared_from_this());
 
     _httpProtocolReferences.erase(std::static_pointer_cast<HTTPProtocol>(shared_from_this()));
+}
+
+void
+HTTPProtocol::bufferHandler(const void* data, unsigned int size)
+{
+    if (_status == Options::FileStatus::Aborted)
+        return;
+
+    this->fileBuffer().clear();
+    this->fileBuffer().assign(reinterpret_cast<const unsigned char*>(data), reinterpret_cast<const unsigned char*>(data) + size);
+
+    buffer()->execute(shared_from_this());
 }
 
 void
@@ -119,6 +131,7 @@ HTTPProtocol::load()
     auto password = std::string();
     auto additionalHeaders = std::unordered_map<std::string, std::string>();
     auto verifyPeer = true;
+    auto buffered = _options->buffered();
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
@@ -243,11 +256,15 @@ HTTPProtocol::load()
             else if (message.type == "progress")
             {
                 float ratio = *reinterpret_cast<float*>(&*message.data.begin());
-                progressHandler(int(ratio * 100.f), 100);
+                progressHandler(int(ratio * 10000.f), 10000);
             }
             else if (message.type == "error")
             {
                 errorHandler();
+            }
+            else if (message.type == "buffer")
+            {
+                bufferHandler(message.data.data(), message.data.size());
             }
         }));
 
@@ -296,6 +313,7 @@ HTTPProtocol::load()
         }
 
         inputStream.write(reinterpret_cast<const char*>(&verifyPeer), 1);
+        inputStream.write(reinterpret_cast<const char*>(&buffered), 1);
 
         auto inputString = inputStream.str();
 
@@ -306,6 +324,7 @@ HTTPProtocol::load()
         HTTPRequest request(resolvedFilename(), username, password, &additionalHeaders);
 
         request.verifyPeer(verifyPeer);
+        request.verifyPeer(buffered);
 
         auto requestIsSuccessfull = true;
 
@@ -316,8 +335,12 @@ HTTPProtocol::load()
             this->error()->execute(shared_from_this());
         });
 
-        auto requestProgressSlot = request.progress()->connect([&](float p){
+        auto requestProgressSlot = request.progress()->connect([&](float p) {
             progressHandler(int(p * 100.f), 100);
+        });
+
+        auto bufferSlot = request.bufferSignal()->connect([&](const std::vector<char>& buffer) {
+            bufferHandler(buffer.data(), buffer.size());
         });
 
         request.run();
@@ -380,7 +403,8 @@ HTTPProtocol::fileExists(const std::string& filename)
 
     return (status >= 200 && status < 300);
 #else
-    return HTTPRequest::fileExists(filename, username, password, additionalHeaders, false);
+    int fileSize = 0;
+    return HTTPRequest::fileExists(filename, fileSize, username, password, additionalHeaders, false);
 #endif
 }
 

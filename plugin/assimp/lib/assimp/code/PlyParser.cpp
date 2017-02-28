@@ -42,8 +42,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file Implementation of the PLY parser class */
 
 
-#ifndef ASSIMP_BUILD_NO_PLY_IMPORTER
-
 #include "PlyLoader.h"
 #include "fast_atof.h"
 #include "../include/assimp/DefaultLogger.hpp"
@@ -921,5 +919,3 @@ bool PLY::PropertyInstance::ParseValueBinary(
     *pCurOut = pCur;
     return ret;
 }
-
-#endif // !! ASSIMP_BUILD_NO_PLY_IMPORTER

@@ -25,7 +25,7 @@ using namespace minko::math;
 using namespace minko::component;
 
 std::unordered_map<input::Joystick::Ptr, scene::Node::Ptr> joystickToCube;
-std::unordered_map<input::Joystick::Ptr, Signal<input::Joystick::Ptr, int, int, int>::Slot> joystickToButtonDownSlot;
+std::unordered_map<input::Joystick::Ptr, Signal<input::Joystick::Ptr, int, int>::Slot> joystickToButtonDownSlot;
 
 Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickAdded;
 Signal<AbstractCanvas::Ptr, input::Joystick::Ptr>::Slot joystickRemoved;
@@ -34,16 +34,16 @@ void
 joystickButtonDownHandler(input::Joystick::Ptr joystick, int which, int buttonId)
 {
     if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadUp)
-        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, 0.1f);
+        joystickToCube[joystick]->component<Transform>()->matrix(math::translate(math::vec3(0.f, 0.f, 0.1f)) * joystickToCube[joystick]->component<Transform>()->matrix());
 
     if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadDown)
-        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(0.f, 0.f, -0.1f);
+        joystickToCube[joystick]->component<Transform>()->matrix(math::translate(math::vec3(0.f, 0.f, -0.1f)) * joystickToCube[joystick]->component<Transform>()->matrix());
 
     if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadLeft)
-        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(.1f);
+        joystickToCube[joystick]->component<Transform>()->matrix(math::translate(math::vec3(0.1f, 0.f, 0.f)) * joystickToCube[joystick]->component<Transform>()->matrix());
 
     if (static_cast<input::Joystick::Button>(buttonId) == input::Joystick::Button::DPadRight)
-        joystickToCube[joystick]->component<Transform>()->matrix()->appendTranslation(-.1f);
+        joystickToCube[joystick]->component<Transform>()->matrix(math::translate(math::vec3(-0.1f, 0.f, 0.f)) * joystickToCube[joystick]->component<Transform>()->matrix());
 }
 
 int
@@ -70,8 +70,14 @@ main(int argc, char** argv)
 
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
-        ->addComponent(Camera::create(canvas->aspectRatio()))
-        ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(0.f, 0.f, -5.f))));
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)))
+        ->addComponent(Transform::create(
+            math::inverse(
+                math::lookAt(
+                    math::vec3(0.f, 0.f, -5.f), math::vec3(), math::vec3(0, 1, 0)
+                )
+            )
+        ));
 
     root->addChild(camera);
 
@@ -87,10 +93,11 @@ main(int argc, char** argv)
                 ->addComponent(Transform::create())
                 ->addComponent(Surface::create(
                     geometry::CubeGeometry::create(sceneManager->assets()->context()),
-                    material::BasicMaterial::create()->diffuseColor(math::Vector4::create(
+                    material::BasicMaterial::create()->diffuseColor(math::vec4(
                         float(rand()) / float(RAND_MAX),
                         float(rand()) / float(RAND_MAX),
-                        float(rand()) / float(RAND_MAX)
+                        float(rand()) / float(RAND_MAX),
+                        1.f
                     )),
                     sceneManager->assets()->effect("effect/Basic.effect")
                 ));
@@ -99,12 +106,11 @@ main(int argc, char** argv)
             currentJoystickCube = mesh;
 
             joystickToCube[joystick] = mesh;
-            joystickToButtonDownSlot[joystick] = joystick->joystickAxisMotion()->connect(std::bind(
-                &joystickButtonDownHandler,
-                std::placeholders::_1,
-                std::placeholders::_2,
-                std::placeholders::_3
-            ));
+            joystickToButtonDownSlot[joystick] = joystick->joystickButtonDown()->connect(
+            [&](input::Joystick::Ptr joystick, int which, int buttonId)
+            {
+                joystickButtonDownHandler(joystick, which, buttonId);
+            });
 
             root->addChild(mesh);
         });
@@ -117,14 +123,15 @@ main(int argc, char** argv)
         });
     });
 
-    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, minko::uint w, minko::uint h)
     {
         auto aspectRatio = float(w) / float(h);
-        camera->component<Camera>()->projection(math::perspective(fov, );
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, aspectRatio, 0.1f, 1000.f));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float t, float dt)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr ac, float t, float dt)
     {
+        auto canvas = std::dynamic_pointer_cast<Canvas>(ac);
         auto joysticksList = canvas->joysticks();
 
         for (auto it = joysticksList.begin(); it != joysticksList.end(); ++it)
@@ -182,17 +189,31 @@ main(int argc, char** argv)
             if (joy->isButtonDown(input::Joystick::Button::RT))
                 std::cout << "RT pressed !" << std::endl;
 
-            if (canvas->getJoystickAxis(joy, 0) > 8000)
-                joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(-0.1f, 0.f, 0.f);
+            // Left stick axis
+            if (canvas->getJoystickAxis(joy, 0) > 5000.f)
+                joystickToCube[joy]->component<Transform>()->matrix(math::translate(math::vec3(-0.1f, 0.f, 0.f)) * joystickToCube[joy]->component<Transform>()->matrix());
 
-            if (canvas->getJoystickAxis(joy, 0) < -8000)
-                joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(0.1f, 0.f, 0.f);
+            if (canvas->getJoystickAxis(joy, 0) < -5000.f)
+                joystickToCube[joy]->component<Transform>()->matrix(math::translate(math::vec3(0.1f, 0.f, 0.f)) * joystickToCube[joy]->component<Transform>()->matrix());
 
-            if (canvas->getJoystickAxis(joy, 1) > 8000)
-                joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(0.f, -0.1f, 0.f);
+            if (canvas->getJoystickAxis(joy, 1) > 5000.f)
+                joystickToCube[joy]->component<Transform>()->matrix(math::translate(math::vec3(0.f, 0.f, -0.1f)) * joystickToCube[joy]->component<Transform>()->matrix());
 
-            if (canvas->getJoystickAxis(joy, 1) < -8000)
-                joystickToCube[joy]->component<Transform>()->matrix()->appendTranslation(0.f, 0.1f, 0.f);
+            if (canvas->getJoystickAxis(joy, 1) < -5000.f)
+                joystickToCube[joy]->component<Transform>()->matrix(math::translate(math::vec3(0.f, 0.f, 0.1f)) * joystickToCube[joy]->component<Transform>()->matrix());
+
+            // Right stick axis
+            if (canvas->getJoystickAxis(joy, 2) > 5000.f)
+                joystickToCube[joy]->component<Transform>()->matrix(joystickToCube[joy]->component<Transform>()->matrix() * math::rotate(-0.1f, math::vec3(0.f, 1.f, 0.f)));
+
+            else if (canvas->getJoystickAxis(joy, 2) < -5000.f)
+                joystickToCube[joy]->component<Transform>()->matrix(joystickToCube[joy]->component<Transform>()->matrix() * math::rotate(0.1f, math::vec3(0.f, 1.f, 0.f)));
+
+            else if (canvas->getJoystickAxis(joy, 3) > 5000.f)
+                joystickToCube[joy]->component<Transform>()->matrix(joystickToCube[joy]->component<Transform>()->matrix() * math::rotate(-0.1f, math::vec3(0.f, 0.f, 1.f)));
+
+            else if (canvas->getJoystickAxis(joy, 3) < -5000.f)
+                joystickToCube[joy]->component<Transform>()->matrix(joystickToCube[joy]->component<Transform>()->matrix() * math::rotate(0.1f, math::vec3(0.f, 0.f, 1.f)));
         }
 
         sceneManager->nextFrame(t, dt);

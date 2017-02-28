@@ -221,7 +221,7 @@ TextureLodScheduler::textureRegistered(ProviderPtr data)
             resourceBase.uuid(),
             TextureResourceInfo()
         ));
-    
+
         auto& newResource = newResourceIt.first->second;
 
         newResource.base = &resourceBase;
@@ -268,6 +268,13 @@ TextureLodScheduler::textureReady(TextureResourceInfo&                      reso
             *textureType + std::string("LodEnabled"),
             true
         );
+
+        if (masterLodScheduler()->streamingOptions()->streamedTextureLodBlendingEnabled())
+        {
+            materialData->set(*textureType + "LodBlendingEnabled", true);
+            materialData->set(*textureType + "LodBlendingStartLod", 0.f);
+            materialData->set(*textureType + "LodBlendingStartTime", 0.f);
+        }
     }
 }
 
@@ -337,7 +344,7 @@ TextureLodScheduler::lodInfo(ResourceInfo&  resource,
     {
         textureResource.activeLod = activeLod;
 
-        activeLodChanged(textureResource, nullptr, previousActiveLod, activeLod);
+        activeLodChanged(textureResource, nullptr, previousActiveLod, activeLod, time);
     }
 
     lodInfo.requiredLod = requiredLod;
@@ -350,7 +357,8 @@ void
 TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
                                       Surface::Ptr           surface,
                                       int                    previousLod,
-                                      int                    lod)
+                                      int                    lod,
+                                      float                  time)
 {
     auto textureData = resource.base->data;
 
@@ -388,6 +396,31 @@ TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
 */
 
         materialData->set(maxAvailableLodPropertyName, mipLevel);
+
+        if (masterLodScheduler()->streamingOptions()->streamedTextureLodBlendingEnabled())
+        {
+            auto lodBlendingActive = false;
+
+            if (materialData->hasProperty(textureType + "LodBlendingStartLod"))
+            {
+                const auto oldLodBlendingStartLod = materialData->get<float>(textureType + "LodBlendingStartLod");
+                const auto oldLodBlendingStartTime = materialData->get<float>(textureType + "LodBlendingStartTime");
+
+                const auto lodBlendingDuration = masterLodScheduler()->streamingOptions()->streamedTextureLodBlendingPeriod() *
+                    (lod - previousLod);
+
+                lodBlendingActive = (time - oldLodBlendingStartTime) < lodBlendingDuration;
+            }
+
+            if (!lodBlendingActive)
+            {
+                materialData->set(
+                    textureType + "LodBlendingStartLod",
+                    float(lodToMipLevel(previousLod, resource.texture->width(), resource.texture->height()))
+                );
+                materialData->set(textureType + "LodBlendingStartTime", time);
+            }
+        }
     }
 }
 

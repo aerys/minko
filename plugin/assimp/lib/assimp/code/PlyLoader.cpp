@@ -43,8 +43,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @brief Implementation of the PLY importer class
  */
 
-#ifndef ASSIMP_BUILD_NO_PLY_IMPORTER
-
 // internal headers
 #include "PlyLoader.h"
 #include "Macros.h"
@@ -310,7 +308,7 @@ void PLYImporter::ConvertMeshes(std::vector<PLY::Face>* avFaces,
                 iNum += (unsigned int)(*avFaces)[aiSplit[p][i]].mIndices.size();
             }
             p_pcOut->mNumVertices = iNum;
-            if( 0 == iNum ) {     // nothing to do 
+            if( 0 == iNum ) {     // nothing to do
                 delete[] aiSplit; // cleanup
                 return;
             }
@@ -1091,5 +1089,3 @@ void PLYImporter::LoadMaterial(std::vector<aiMaterial*>* pvOut)
         }
     }
 }
-
-#endif // !! ASSIMP_BUILD_NO_PLY_IMPORTER

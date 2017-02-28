@@ -32,5 +32,18 @@ namespace minko
 		{
 
 		};
+
+        class UpdateTransformWhenStoppedScript :
+            public AbstractScript
+        {
+        public:
+            void
+            stop(scene::Node::Ptr target) override
+            {
+                ASSERT_TRUE(target->root()->hasComponent<Transform::RootTransform>());
+
+                target->component<Transform>()->updateModelToWorldMatrix();
+            }
+        };
 	}
 }

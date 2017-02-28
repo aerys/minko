@@ -20,7 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/log/Logger.hpp"
+
 #include <android/log.h>
+#include <cstdio>
+#include <unistd.h>
 
 namespace minko
 {
@@ -51,11 +54,52 @@ namespace minko
                 else if (level == Logger::Level::Error)
                     logLevel = ANDROID_LOG_ERROR;
 
-                __android_log_print(logLevel, "minko-cpp", log.c_str());
+                __android_log_print(logLevel, "Minko/Native", log.c_str());
             }
 
         private:
-            AndroidLogSink() = default;
+            int     _fd[2];
+            char    _buffer[1024];
+
+            AndroidLogSink()
+            {
+                // From https://codelab.wordpress.com/2014/11/03/how-to-use-standard-output-streams-for-logging-in-android-apps/.
+
+                // Make stdout line-buffered and stderr unbuffered.
+                setvbuf(stdout, 0, _IOLBF, 0);
+                setvbuf(stderr, 0, _IONBF, 0);
+
+                // Create the pipe and redirect stdout and stderr.
+                pipe(_fd);
+                dup2(_fd[1], 1);
+                dup2(_fd[1], 2);
+
+                // Spawn the logging thread.
+                std::thread(&AndroidLogSink::run, this).detach();
+            }
+
+            void
+            run()
+            {
+                std::size_t r;
+
+                while ((r = read(_fd[0], _buffer, sizeof _buffer)) > 0)
+                {
+                    int i = 0;
+
+                    for (int j = i; j < r; ++j)
+                    {
+                        if (_buffer[j] == '\n')
+                        {
+                            write(std::string(_buffer + i, j - i), Logger::Level::Debug);
+                            i = j + 1;
+                        }
+                    }
+
+                    if (i < r)
+                        write(std::string(_buffer + i, r - i), Logger::Level::Debug);
+                }
+            }
         };
     }
 }

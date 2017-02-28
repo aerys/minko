@@ -43,7 +43,7 @@ emscriptenMainLoop()
 	auto t = std::chrono::high_resolution_clock::now();
 
 	auto frameTime = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(t - previousFrameTime).count();
-	auto targetFrameTime = (1000.f / (currentCanvas->desiredFramerate())) - 2.0f;
+	auto targetFrameTime = (1000.f / (currentCanvas->desiredEventrate())) - 2.0f;
 
 	if (frameTime < targetFrameTime)
 		return;
@@ -98,7 +98,7 @@ SDLWebGLBackend::run(std::shared_ptr<Canvas> canvas)
     emscripten_set_visibilitychange_callback(0, false, emscriptenVisibilityChangeHandler);
     emscripten_set_focus_callback("#window", 0, false, emscriptenFocusBlurHandler);
     emscripten_set_blur_callback("#window", 0, false, emscriptenFocusBlurHandler);
-    
+
     emscripten_set_main_loop(emscriptenMainLoop, 0, 1);
 }
 

@@ -40,6 +40,7 @@ namespace minko
 
             std::shared_ptr<Signal<Ptr, float>>         _progress;
             std::shared_ptr<Signal<Ptr>>                _complete;
+            std::shared_ptr<Signal<Ptr>>                _buffer;
             std::shared_ptr<Signal<Ptr>>                _error;
 
         public:
@@ -86,23 +87,22 @@ namespace minko
 
             inline
             std::shared_ptr<Signal<Ptr>>
+            buffer()
+            {
+                return _buffer;
+            }
+
+            inline
+            std::shared_ptr<Signal<Ptr>>
             error()
             {
                 return _error;
             }
 
-            inline
             void
             load(const std::string&         filename,
                  const std::string&         resolvedFilename,
-                 std::shared_ptr<Options>   options)
-            {
-                _options = options;
-                _file->_filename = filename;
-                _file->_resolvedFilename = resolvedFilename;
-
-                load();
-            }
+                 std::shared_ptr<Options>   options);
 
             virtual
             void
@@ -131,6 +131,13 @@ namespace minko
             data()
             {
                 return _file->_data;
+            }
+
+            inline
+            std::vector<unsigned char>&
+            fileBuffer()
+            {
+                return _file->_buffer;
             }
         };
 

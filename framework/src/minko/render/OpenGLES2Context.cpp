@@ -642,10 +642,10 @@ OpenGLES2Context::createIndexBuffer(const uint size)
 }
 
 void
-OpenGLES2Context::uploaderIndexBufferData(const uint 	indexBuffer,
-										  const uint 	offset,
-										  const uint 	size,
-										  void*					data)
+OpenGLES2Context::uploadIndexBufferData(const uint 	indexBuffer,
+										const uint 	offset,
+										const uint 	size,
+										void*	    data)
 {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
 
@@ -1984,7 +1984,7 @@ OpenGLES2Context::availableTextureFormats()
     {
         switch (rawFormat)
         {
-#ifdef GL_EXT_texture_compression_dxt1
+#if defined(GL_EXT_texture_compression_dxt1)
         case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
             formats.insert(std::make_pair(TextureFormat::RGB_DXT1, GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
             break;
@@ -1993,7 +1993,7 @@ OpenGLES2Context::availableTextureFormats()
             break;
 #endif
 
-#ifdef GL_EXT_texture_compression_s3tc
+#if defined(GL_EXT_texture_compression_s3tc)
         case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
             formats.insert(std::make_pair(TextureFormat::RGBA_DXT3, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT));
             break;
@@ -2002,7 +2002,7 @@ OpenGLES2Context::availableTextureFormats()
             break;
 #endif
 
-#ifdef GL_IMG_texture_compression_pvrtc
+#if defined(GL_IMG_texture_compression_pvrtc)
         case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
             formats.insert(std::make_pair(TextureFormat::RGB_PVRTC1_2BPP, GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG));
             break;
@@ -2017,7 +2017,7 @@ OpenGLES2Context::availableTextureFormats()
             break;
 #endif
 
-#ifdef GL_IMG_texture_compression_pvrtc2
+#if defined(GL_IMG_texture_compression_pvrtc2) && defined(COMPRESSED_RGBA_PVRTC_2BPPV2_IMG) && defined(COMPRESSED_RGBA_PVRTC_4BPPV2_IMG)
         case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
             formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC2_2BPP, COMPRESSED_RGBA_PVRTC_2BPPV2_IMG));
             break;
@@ -2026,14 +2026,14 @@ OpenGLES2Context::availableTextureFormats()
             break;
 #endif
 
-#ifdef GL_OES_compressed_ETC1_RGB8_texture
+#if defined(GL_OES_compressed_ETC1_RGB8_texture)
         case GL_ETC1_RGB8_OES:
             formats.insert(std::make_pair(TextureFormat::RGB_ETC1, GL_ETC1_RGB8_OES));
             formats.insert(std::make_pair(TextureFormat::RGBA_ETC1, GL_ETC1_RGB8_OES));
             break;
 #endif
 
-#ifdef GL_AMD_compressed_ATC_texture
+#if defined(GL_AMD_compressed_ATC_texture)
         case GL_ATC_RGB_AMD:
             formats.insert(std::make_pair(TextureFormat::RGB_ATITC, GL_ATC_RGB_AMD));
             break;

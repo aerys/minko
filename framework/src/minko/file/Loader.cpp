@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractProtocol.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/AbstractCache.hpp"
 
 #include "minko/log/Logger.hpp"
 
@@ -31,6 +32,7 @@ using namespace minko::file;
 Loader::Loader() :
     _options(Options::create()),
     _complete(Signal<Loader::Ptr>::create()),
+    _buffer(Signal<Loader::Ptr>::create()),
     _progress(Signal<Loader::Ptr, float>::create()),
     _parsingProgress(Signal<Loader::Ptr, float>::create()),
     _error(Signal<Loader::Ptr, const Error&>::create()),
@@ -81,7 +83,7 @@ Loader::load()
 
         const auto byteRangeRequested = options->seekedLength() > 0;
 
-        if (!byteRangeRequested && (
+        if (!byteRangeRequested && assets && (
             assets->cubeTexture(filename) != nullptr
             || assets->texture(filename) != nullptr
             || assets->geometry(filename) != nullptr
@@ -151,9 +153,17 @@ Loader::load()
             _protocolCompleteSlots.emplace(
                 protocol,
                 protocol->complete()->connect([that](AbstractProtocol::Ptr protocol)
-                {
-                    that->protocolCompleteHandler(protocol);
-                }
+            {
+                that->protocolCompleteHandler(protocol);
+            }
+            ));
+
+            _protocolBufferSlots.emplace(
+                protocol,
+                protocol->buffer()->connect([that](AbstractProtocol::Ptr protocol)
+            {
+                that->protocolBufferHandler(protocol);
+            }
             ));
 
             _protocolProgressSlots.emplace(
@@ -192,6 +202,7 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 
     _protocolErrorSlots.erase(protocol);
     _protocolCompleteSlots.erase(protocol);
+    _protocolBufferSlots.erase(protocol);
     _protocolProgressSlots.erase(protocol);
 
     auto error = Error(
@@ -218,6 +229,9 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 void
 Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float progress)
 {
+    if (_protocolToProgress[protocol] == progress)
+        return;
+
     _protocolToProgress[protocol] = progress;
 
     float newTotalProgress = 0.f;
@@ -235,6 +249,12 @@ Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, floa
 }
 
 void
+Loader::protocolBufferHandler(std::shared_ptr<AbstractProtocol> protocol)
+{
+    _buffer->execute(std::dynamic_pointer_cast<Loader>(shared_from_this()));
+}
+
+void
 Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
     _protocolToProgress[protocol] = 1.f;
@@ -248,6 +268,7 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
 
     _protocolErrorSlots.erase(protocol);
     _protocolCompleteSlots.erase(protocol);
+    _protocolBufferSlots.erase(protocol);
     _protocolProgressSlots.erase(protocol);
 
     _numFilesToParse++;
@@ -255,6 +276,11 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     LOG_DEBUG("file '" << protocol->file()->filename() << "' loaded, "
         << _loading.size() << " file(s) still loading, "
         << _filesQueue.size() << " file(s) in the queue");
+
+    const auto byteRangeRequested = protocol->options()->seekedLength() > 0;
+
+    if (!protocol->file()->loadedFromCache() && protocol->options()->cache() && byteRangeRequested)
+        protocol->options()->cache()->set(protocol->file(), protocol->options()->seekingOffset());
 
     auto parsed = processData(
         filename,
@@ -364,6 +390,7 @@ Loader::finalize()
     {
         _protocolErrorSlots.clear();
         _protocolCompleteSlots.clear();
+        _protocolBufferSlots.clear();
         _protocolProgressSlots.clear();
         _parserErrorSlots.clear();
         _filenameToOptions.clear();

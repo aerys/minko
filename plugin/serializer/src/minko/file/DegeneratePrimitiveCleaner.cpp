@@ -80,9 +80,6 @@ DegeneratePrimitiveCleaner::process(Node::Ptr& node, AssetLibrary::Ptr assetLibr
         {
             _progressRate = geometryIndex / float(geometrySet.size());
 
-            if (statusChanged() && statusChanged()->numCallbacks() > 0u)
-                statusChanged()->execute(shared_from_this(), "DegeneratePrimitiveCleaner: processing geometry with index size " + std::to_string(geometry->indices()->numIndices()));
-
             processGeometry(geometry, assetLibrary);
 
             ++geometryIndex;
@@ -100,8 +97,14 @@ DegeneratePrimitiveCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPt
 {
     const auto primitiveSize = 3u;
 
+    const auto numVertices = geometry->numVertices();
+
     auto indices = geometry->indices();
     const auto numIndices = indices->numIndices();
+
+    if (numIndices == 0u || (numIndices % primitiveSize) != 0u)
+        return;
+
     const auto numPrimitives = numIndices / primitiveSize;
 
     const auto* u16Indices = indices->dataPointer<unsigned short>();
@@ -124,6 +127,19 @@ DegeneratePrimitiveCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPt
 
         auto degeneratePrimitive = false;
 
+        for (auto j = 0u; j < primitiveSize; ++j)
+        {
+            if (primitive[j] >= numVertices)
+            {
+                degeneratePrimitive = true;
+                degeneratePrimitives.insert(i);
+                break;
+            }
+        }
+
+        if (degeneratePrimitive)
+            continue;
+
         // find degenerate primitive by index
 
         for (auto j = 0u; j < primitiveSize - 1; ++j)
@@ -145,33 +161,37 @@ DegeneratePrimitiveCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPt
                 break;
         }
 
-        if (!degeneratePrimitive && _options.useMinPrecision)
+        if (degeneratePrimitive)
         {
-            // find degenerate primitive by precision
-
-            _spatialIndex->clear();
-
-            const auto positionVertexBuffer = geometry->vertexBuffer("position");
-            const auto& positionVertexBufferData = positionVertexBuffer->data();
-            const auto& positionVertexAttribute = positionVertexBuffer->attribute("position");
-
-            for (auto j = 0u; j < primitiveSize; ++j)
-            {
-                const auto position = math::make_vec3(
-                    &positionVertexBufferData.at(primitive[j] * *positionVertexAttribute.vertexSize + positionVertexAttribute.offset)
-                );
-
-                ++(*_spatialIndex)[position];
-            }
-
-            if (_spatialIndex->size() < 3u)
-                degeneratePrimitive = true;
+            degeneratePrimitives.insert(i);
+            continue;
         }
 
-        if (!degeneratePrimitive)
+        if (!_options.useMinPrecision)
             continue;
 
-        degeneratePrimitives.insert(i);
+        // find degenerate primitive by precision
+
+        _spatialIndex->clear();
+
+        const auto positionVertexBuffer = geometry->vertexBuffer("position");
+        const auto& positionVertexBufferData = positionVertexBuffer->data();
+        const auto& positionVertexAttribute = positionVertexBuffer->attribute("position");
+
+        for (auto j = 0u; j < primitiveSize; ++j)
+        {
+            const auto position = math::make_vec3(
+                &positionVertexBufferData.at(primitive[j] * *positionVertexAttribute.vertexSize + positionVertexAttribute.offset)
+            );
+
+            ++(*_spatialIndex)[position];
+        }
+
+        if (_spatialIndex->size() < 3u)
+        {
+            degeneratePrimitive = true;
+            degeneratePrimitives.insert(i);
+        }
     }
 
     const auto numDegeneratePrimitives = degeneratePrimitives.size();
@@ -185,10 +205,9 @@ DegeneratePrimitiveCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPt
             "DegeneratePrimitiveCleaner: removing " + std::to_string(numDegeneratePrimitives) + " degenerate primitives"
         );
 
-    const auto newNumIndices = numIndices - numDegeneratePrimitives * primitiveSize;
     auto newIndexBuffer = IndexBuffer::Ptr();
 
-    if (newNumIndices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
+    if (numVertices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
     {
         newIndexBuffer = createIndexBuffer<unsigned short>(
             indices,
