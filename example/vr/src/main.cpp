@@ -199,7 +199,7 @@ main(int argc, char** argv)
         }
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr c, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr c, float time, float deltaTime, bool shouldRender)
     {
         //animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, time, spheresAnimData);
         spheres->component<Transform>()->matrix(math::rotate(.001f, math::vec3(0, 1, 0)) * spheres->component<Transform>()->matrix());
