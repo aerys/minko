@@ -90,6 +90,8 @@ main(int argc, char** argv)
     Node::Ptr quads;
     Node::Ptr camera;
 
+    auto vrCamera = VRCamera::create(canvas->width(), canvas->height(), 0.1f, 1000.0f);
+
     auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr l)
     {
         auto root = scene::Node::create("root")
@@ -98,10 +100,8 @@ main(int argc, char** argv)
         camera = scene::Node::create("camera")
             ->addComponent(Transform::create());
 
-        auto HMDDetected = VRCamera::detected();
-
-        if (HMDDetected)
-            camera->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 1000.0f));
+        if (vrCamera->detected())
+            camera->addComponent(vrCamera);
         else
         {
             camera
@@ -162,7 +162,7 @@ main(int argc, char** argv)
         }
         else if (k->keyIsDown(input::Keyboard::SPACE))
         {
-            if (VRCamera::detected())
+            if (vrCamera->detected())
             {
                 // Switch camera
                 if (camera->hasComponent<VRCamera>())
@@ -183,7 +183,7 @@ main(int argc, char** argv)
                     camera->removeComponent(camera->component<Camera>());
                     camera->removeComponent(camera->component<Renderer>());
 
-                    camera->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 1000.0f));
+                    camera->addComponent(vrCamera);
                 }
             }
         }
