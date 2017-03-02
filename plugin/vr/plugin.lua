@@ -60,7 +60,7 @@ function minko.plugin.vr:enable()
 
     configuration { "html5" }
         minko.package.assets {
-            ['**'] = { 'embed' }
+            ['script/minko.webvr.js'] = { 'embed' }
         }
 end
 
