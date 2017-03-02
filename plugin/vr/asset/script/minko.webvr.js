@@ -26,7 +26,6 @@ if (navigator.getVRDisplays !== undefined) {
 
 // VRDisplay callbacks
 window.MinkoVR.onVRRequestPresent = function() {
-  console.log('onVRRequestPresent');
   var renderCanvas = document.getElementById('canvas');
 
   window.MinkoVR.vrLayer = {
@@ -44,7 +43,6 @@ window.MinkoVR.onVRRequestPresent = function() {
  };
 
 window.MinkoVR.onVRExitPresent = function() {
-  console.log('onVRExitPresent');
   if (!window.MinkoVR.vrDisplay || !window.MinkoVR.vrDisplay.isPresenting)
     return;
 
@@ -94,7 +92,6 @@ window.MinkoVR.submitFrame = function() {
   if (!!window.MinkoVR.vrDisplay && window.MinkoVR.vrDisplay.isPresenting) {
     // Workaround To avoid a crash in Chrome VR
     if (!!window.MinkoVR.vrFrameData && !!window.MinkoVR.vrFrameData.pose && !!window.MinkoVR.vrFrameData.pose.orientation) {
-      console.log('submitFrame');
       window.MinkoVR.vrDisplay.submitFrame();
     }
   }
