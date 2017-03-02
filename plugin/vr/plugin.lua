@@ -42,7 +42,7 @@ function minko.plugin.vr:enable()
     }
 
     prelinkcommands {
-        minko.action.copy(minko.plugin.path("vr") .. "asset")
+        minko.action.copy(path.join(minko.plugin.path("vr"), "asset"))
     }
 
     minko.package.assetdirs {
@@ -57,6 +57,11 @@ function minko.plugin.vr:enable()
 
     configuration { "linux32 or linux64" }
         links { "udev", "Xinerama", "X11", "pthread", "rt", "Xrandr" }
+
+    configuration { "html5" }
+        minko.package.assets {
+            ['**'] = { 'embed' }
+        }
 end
 
 newoption {

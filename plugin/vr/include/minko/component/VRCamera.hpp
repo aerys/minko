@@ -91,7 +91,9 @@ namespace minko
             void
             updateViewport(int viewportWidth, int viewportHeight);
 
-            static
+            void
+            loadScript(std::string filename);
+
             bool
             detected();
 
