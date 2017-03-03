@@ -34,6 +34,7 @@ scene::Node::Ptr debugNode = scene::Node::create("debug", scene::BuiltinLayout::
 DirectionalLight::Ptr directionalLight = DirectionalLight::create(.3f);
 DirectionalLight::Ptr directionalLight2 = DirectionalLight::create(.3f);
 SpotLight::Ptr spotLight = SpotLight::create(.3f);
+SpotLight::Ptr spotLight2 = SpotLight::create(.3f);
 
 std::array<FrustumDisplay::Ptr, 5> frustums;
 
@@ -59,14 +60,6 @@ initializeShadowMapping(scene::Node::Ptr root, file::AssetLibrary::Ptr assets)
 
         lightNode->addComponent(directionalLight);
 
-        if (directionalLight->shadowMappingEnabled())
-        {
-            auto debugDisplay = TextureDebugDisplay::create();
-
-            debugDisplay->initialize(assets, directionalLight->shadowMap());
-            debugNode->addComponent(debugDisplay);
-        }
-
         auto lightNode2 = scene::Node::create()
             ->addComponent(directionalLight2)
             ->addComponent(Transform::create(math::inverse(
@@ -74,18 +67,35 @@ initializeShadowMapping(scene::Node::Ptr root, file::AssetLibrary::Ptr assets)
             )));
 
         root->addChild(lightNode2);
+
+        if (directionalLight->shadowMappingEnabled())
+        {
+            auto debugDisplay = TextureDebugDisplay::create();
+
+            debugDisplay->initialize(assets, directionalLight->shadowMap());
+            debugNode->addComponent(debugDisplay);
+        }
     }
     else
     {
         spotLight->enableShadowMapping(512);
+        spotLight2->enableShadowMapping(256);
 
         lightNode->addComponent(spotLight);
 
-        if (spotLight->shadowMappingEnabled())
+        auto lightNode2 = scene::Node::create()
+            ->addComponent(spotLight2)
+            ->addComponent(Transform::create(math::inverse(
+                math::lookAt(math::vec3(-5.f, 2.f, 0.5f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
+            )));
+
+        root->addChild(lightNode2);
+
+        if (spotLight2->shadowMappingEnabled())
         {
             auto debugDisplay = TextureDebugDisplay::create();
 
-            debugDisplay->initialize(assets, spotLight->shadowMap());
+            debugDisplay->initialize(assets, spotLight2->shadowMap());
             debugNode->addComponent(debugDisplay);
         }
     }
@@ -185,8 +195,17 @@ int main(int argc, char** argv)
         }
         else
         {
-            spotLight->target()->component<Transform>()->updateModelToWorldMatrix();
-            spotLight->computeShadowProjection();
+            if (spotLight->target())
+            {
+                spotLight->target()->component<Transform>()->updateModelToWorldMatrix();
+                spotLight->computeShadowProjection();
+            }
+
+            if (spotLight2->target())
+            {
+                spotLight2->target()->component<Transform>()->updateModelToWorldMatrix();
+                spotLight2->computeShadowProjection();
+            }
         }
     });
 
@@ -276,6 +295,16 @@ int main(int argc, char** argv)
                 else
                 {
                     spotLight->enableShadowMapping();
+                    cameraMoved = true;
+                }
+            }
+            if (k->keyIsDown(input::Keyboard::Key::Z))
+            {
+                if (spotLight2->shadowMappingEnabled())
+                    spotLight2->disableShadowMapping(k->keyIsDown(input::Keyboard::Key::SHIFT));
+                else
+                {
+                    spotLight2->enableShadowMapping();
                     cameraMoved = true;
                 }
             }
