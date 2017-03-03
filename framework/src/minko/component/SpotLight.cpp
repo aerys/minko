@@ -229,8 +229,6 @@ SpotLight::initializeShadowMapping()
 
     _shadowRenderer = renderer;
 
-    computeShadowProjection();
-
     // Create specific shadow projection
     auto zNear = 1.f;
     auto zFar = 40.f;
