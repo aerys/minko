@@ -153,6 +153,15 @@ SpotLight::updateRoot(std::shared_ptr<scene::Node> root)
         initializeShadowMapping();
 }
 
+void
+SpotLight::targetRemoved(minko::scene::Node::Ptr target)
+{
+    AbstractDiscreteLight::targetRemoved(target);
+
+    if (_shadowRenderer && target->hasComponent(_shadowRenderer))
+        target->removeComponent(_shadowRenderer);
+}
+
 bool
 SpotLight::initializeShadowMapping()
 {
@@ -213,7 +222,7 @@ SpotLight::initializeShadowMapping()
     if (smTechnique == ShadowMappingTechnique::Technique::ESM)
         techniqueName += "-esm";
 
-    auto renderer = component::Renderer::create(
+    _shadowRenderer = component::Renderer::create(
         0xffffffff,
         _shadowMap,
         fx,
@@ -221,25 +230,12 @@ SpotLight::initializeShadowMapping()
         render::Priority::FIRST
     );
 
-    renderer->clearBeforeRender(true);
-    renderer->effectVariables().push_back({ "lightUuid", data()->uuid() });
-    // renderer->effectVariables()["shadowProjectionId"] = std::to_string(i);
-    renderer->layoutMask(scene::BuiltinLayout::CAST_SHADOW);
-    target()->addComponent(renderer);
+    _shadowRenderer->clearBeforeRender(true);
+    _shadowRenderer->effectVariables().push_back({ "lightUuid", data()->uuid() });
+    // _shadowRenderer->effectVariables()["shadowProjectionId"] = std::to_string(i);
+    _shadowRenderer->layoutMask(scene::BuiltinLayout::CAST_SHADOW);
 
-    _shadowRenderer = renderer;
-
-    // Create specific shadow projection
-    auto zNear = 1.f;
-    auto zFar = 40.f;
-    auto fov = outerConeAngle() * 2.f;
-    auto aspectRatio = 1.f;
-
-    _shadowProjection = math::perspective(fov, aspectRatio, zNear, zFar);
-
-    data()
-        ->set("zNear", zNear)
-        ->set("zFar", zFar);
+    target()->addComponent(_shadowRenderer);
 
     computeShadowProjection();
 
@@ -249,6 +245,21 @@ SpotLight::initializeShadowMapping()
 void
 SpotLight::computeShadowProjection()
 {
+    // Create specific shadow projection
+    auto zNear = 1.f;
+    auto zFar = 50.f;
+
+    _shadowProjection = math::perspective(
+        outerConeAngle() * 2.f,
+        1.f,
+        zNear,
+        zFar
+    );
+
+    data()
+        ->set("zNear", zNear)
+        ->set("zFar", zFar);
+
     if (target() && target()->data().hasProperty("modelToWorldMatrix"))
         _view = math::inverse(target()->data().get<minko::math::mat4>("modelToWorldMatrix"));
     else

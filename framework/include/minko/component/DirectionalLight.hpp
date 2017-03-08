@@ -127,7 +127,7 @@ namespace minko
             updateRoot(std::shared_ptr<scene::Node> root);
 
             void
-            targetRemoved(std::shared_ptr<scene::Node> target);
+            targetRemoved(std::shared_ptr<scene::Node> target) override;
 
 	    private:
             DirectionalLight(float diffuse, float specular);

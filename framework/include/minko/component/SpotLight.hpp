@@ -172,6 +172,9 @@ namespace minko
             void
             updateRoot(std::shared_ptr<scene::Node> root);
 
+            void
+            targetRemoved(std::shared_ptr<scene::Node> target) override;
+
 		private:
 			SpotLight(float diffuse,
                       float specular,
