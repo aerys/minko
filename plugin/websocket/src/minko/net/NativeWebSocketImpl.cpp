@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "NativeWebSocketImpl.hpp"
 
 #include "minko/AbstractCanvas.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko::net;
 
@@ -50,7 +51,7 @@ NativeWebSocketImpl::tlsConnect(const std::string &uri, const std::string& cooki
 
     _tlsClient.set_tls_init_handler([&](websocketpp::connection_hdl hdl)
     {
-        websocketpp::lib::shared_ptr<asio::ssl::context> ctx(new asio::ssl::context(asio::ssl::context::tlsv12));
+        websocketpp::lib::shared_ptr<asio::ssl::context> ctx(new asio::ssl::context(asio::ssl::context::tlsv1));
 
         return ctx;
     });
@@ -69,7 +70,7 @@ NativeWebSocketImpl::tlsConnect(const std::string &uri, const std::string& cooki
     _tlsConnection = _tlsClient.get_connection(uri, ec);
     if (ec)
     {
-        std::cerr << "could not create connection because: " << ec.message() << std::endl;
+        LOG_ERROR("could not create connection because: " << ec.message());
         return;
     }
 
@@ -115,7 +116,7 @@ NativeWebSocketImpl::connect(const std::string &uri, const std::string &cookie)
     _connection = _client.get_connection(uri, ec);
     if (ec)
     {
-        std::cerr << "could not create connection because: " << ec.message() << std::endl;
+        LOG_ERROR("could not create connection because: " << ec.message());
         return;
     }
 
@@ -173,7 +174,7 @@ NativeWebSocketImpl::sendMessage(const void* payload, size_t s)
         else if (_tlsConnection)
             _tlsClient.send(_tlsConnection, payload, s, websocketpp::frame::opcode::BINARY);
     }
-    catch (std::exception& e)
+    catch (...)
     {
         disconnect();
     }
