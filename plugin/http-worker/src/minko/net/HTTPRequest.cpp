@@ -135,6 +135,8 @@ createCurl(const std::string&                                   url,
     curl_easy_setopt(curl, CURLOPT_URL, encodedUrl.c_str());
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verifyPeer ? 1L : 0L);
+    if (!verifyPeer)
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
