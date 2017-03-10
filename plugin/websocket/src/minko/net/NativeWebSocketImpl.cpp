@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "NativeWebSocketImpl.hpp"
+#include "minko/net/NativeWebSocketImpl.hpp"
 
 #include "minko/AbstractCanvas.hpp"
 #include "minko/log/Logger.hpp"
@@ -25,7 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko::net;
 
 NativeWebSocketImpl::NativeWebSocketImpl()
-    : WebSocketImpl()
+    : WebSocketImpl(),
+    _tlsVersion(TLSVersion::TLS_1_2)
 {
 }
 
@@ -51,7 +52,25 @@ NativeWebSocketImpl::tlsConnect(const std::string &uri, const std::string& cooki
 
     _tlsClient.set_tls_init_handler([&](websocketpp::connection_hdl hdl)
     {
-        websocketpp::lib::shared_ptr<asio::ssl::context> ctx(new asio::ssl::context(asio::ssl::context::tlsv1));
+        auto asioContextMethod = asio::ssl::context::method();
+
+        switch (_tlsVersion)
+        {
+        case minko::net::TLSVersion::TLS_1_0:
+            asioContextMethod = asio::ssl::context::tlsv1;
+            break;
+        case minko::net::TLSVersion::TLS_1_1:
+            asioContextMethod = asio::ssl::context::tlsv11;
+            break;
+        case minko::net::TLSVersion::TLS_1_2:
+            asioContextMethod = asio::ssl::context::tlsv12;
+            break;
+        default:
+            asioContextMethod = asio::ssl::context::tlsv12;
+            break;
+        }
+
+        websocketpp::lib::shared_ptr<asio::ssl::context> ctx(new asio::ssl::context(asioContextMethod));
 
         return ctx;
     });
@@ -82,6 +101,12 @@ NativeWebSocketImpl::tlsConnect(const std::string &uri, const std::string& cooki
     _tlsClient.connect(_tlsConnection);
     _tlsClient.start_perpetual();
     _thread.reset(new websocketpp::lib::thread(&tls_client::run, &_tlsClient));
+}
+
+void
+NativeWebSocketImpl::tlsVersion(TLSVersion tlsVersion)
+{
+    _tlsVersion = tlsVersion;
 }
 
 void
