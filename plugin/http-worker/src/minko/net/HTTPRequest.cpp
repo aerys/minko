@@ -221,17 +221,24 @@ HTTPRequest::run()
 
     disposeCurl(curl, curlHeaderList);
 
-    const auto requestSucceeded =
-        res == CURLE_OK &&
-        (responseCode == 200 || responseCode == 206);
+    const auto validCurlCode = res == CURLE_OK;
+    const auto validStatusCode = responseCode == 200 || responseCode == 206;
+
+    const auto requestSucceeded = validCurlCode && validStatusCode;
 
     if (!requestSucceeded)
     {
-        const auto errorMessage = "status: " + std::to_string(responseCode) + ", error: " + std::string(curlErrorBuffer);
+        if (!validCurlCode)
+            LOG_ERROR("curl status: " + std::to_string(responseCode) + ", error: " + std::string(curlErrorBuffer));
 
-        LOG_ERROR(errorMessage);
+        auto errorResponse = std::string();
 
-        error()->execute(responseCode, std::string(_output.begin(), _output.end()));
+        if (validCurlCode)
+            errorResponse = std::string(_output.begin(), _output.end());
+        else
+            errorResponse = std::string();
+
+        error()->execute(responseCode, errorResponse);
     }
     else
     {
