@@ -196,6 +196,7 @@ HTTPRequest::run()
     curl_slist* curlHeaderList = nullptr;
 
     char curlErrorBuffer[CURL_ERROR_SIZE];
+    memset(curlErrorBuffer, 0, CURL_ERROR_SIZE);
 
     auto curl = createCurl(url, _username, _password, _additionalHeaders, _verifyPeer, curlHeaderList, curlErrorBuffer);
 
@@ -226,13 +227,11 @@ HTTPRequest::run()
 
     if (!requestSucceeded)
     {
-        const auto errorMessage =
-            "status: " + std::to_string(responseCode) +
-            (res != CURLE_OK ? ", error: " + std::string(curlErrorBuffer) : "");
+        const auto errorMessage = "status: " + std::to_string(responseCode) + ", error: " + std::string(curlErrorBuffer);
 
         LOG_ERROR(errorMessage);
 
-        error()->execute(responseCode, errorMessage);
+        error()->execute(responseCode, std::string(_output.begin(), _output.end()));
     }
     else
     {
@@ -317,6 +316,7 @@ HTTPRequest::fileExists(const std::string& filename,
     curl_slist* curlHeaderList = nullptr;
 
     char curlErrorBuffer[CURL_ERROR_SIZE];
+    memset(curlErrorBuffer, 0, CURL_ERROR_SIZE);
 
     auto curl = createCurl(
         url,
