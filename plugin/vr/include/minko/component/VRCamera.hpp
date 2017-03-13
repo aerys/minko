@@ -94,6 +94,10 @@ namespace minko
             void
             loadScript(std::string filename);
 
+            static
+            bool
+            supported();
+
             bool
             detected();
 

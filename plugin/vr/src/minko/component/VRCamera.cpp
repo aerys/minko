@@ -119,6 +119,18 @@ VRCamera::loadScript(std::string filename)
 }
 
 bool
+VRCamera::supported()
+{
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    return (system::Platform::isMobile() && sensors::Attitude::getInstance()->isSupported()) || WebVR::supported();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    return true;
+#else
+    return OculusRift::detected();
+#endif
+}
+
+bool
 VRCamera::detected()
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
