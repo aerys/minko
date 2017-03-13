@@ -106,22 +106,33 @@ float
 WebVR::getLeftEyeFov()
 {
     // FIXME: Should depend on the VRDisplay
-    // vr Rift CV1
-    // leftDegrees:43.97737166932644 (0.76754993200111731877)
-    // rightDegrees:35.5747704995392 (0.6208968758567666724)
-    // fov = atan(leftDegrees + rightDegrees) = 0.94
-    return 0.94f;
+    // Oculus Rift CV1
+    // leftDegrees: 43.97737166932644° (0.76754993200111731877 rad)
+    // rightDegrees: 35.5747704995392° (0.6208968758567666724 rad)
+    // leftDegrees + rightDegrees = 79.5521421689° (1.388446807858484 rad)
+    // upDegrees: 41.65303039550781 (0.72698252383308381575)
+    // downDegrees: 48.00802230834961 (0.83789805664951055864)
+    // upDegrees + downDegrees = 89.6610527039° (1.564880580483337 rad)
+    // horizontal fov = atan(leftDegrees + rightDegrees) = 1.5582266170886 rad (89.279808684346051°)
+    // vetical fov = atan(upDegrees + downDegrees) = 1.5596436745680 rad (89.36100009724332°)
+    return 1.56f;
 }
 
 float
 WebVR::getRightEyeFov()
 {
     // FIXME: Should depend on the VRDisplay
-    // vr Rift CV1
-    // leftDegrees:43.97737166932644 (0.76754993200111731877)
-    // rightDegrees:35.5747704995392 (0.6208968758567666724)
-    // fov = atan(leftDegrees + rightDegrees) = 0.94
-    return 0.94f;
+    // Oculus Rift CV1
+    // leftDegrees: 43.97737166932644° (0.76754993200111731877 rad)
+    // rightDegrees: 35.5747704995392° (0.6208968758567666724 rad)
+    // leftDegrees + rightDegrees = 79.5521421689° (1.388446807858484 rad)
+    // upDegrees: 41.65303039550781 (0.72698252383308381575)
+    // downDegrees: 48.00802230834961 (0.83789805664951055864)
+    // upDegrees + downDegrees = 89.6610527039° (1.564880580483337 rad)
+    // horizontal fov = atan(leftDegrees + rightDegrees) = 1.5582266170886 rad (89.279808684346051°)
+    // vetical fov = atan(upDegrees + downDegrees) = 1.5596436745680 rad (89.36100009724332°)
+
+    return 1.56f;
 }
 
 void

@@ -121,6 +121,12 @@ namespace minko
                 return _rightRenderer->enabled();
             }
 
+            float
+            getLeftEyeFov();
+
+            float
+            getRightEyeFov();
+
         public:
             ~VRCamera();
 

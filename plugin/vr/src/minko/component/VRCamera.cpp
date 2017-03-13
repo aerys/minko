@@ -286,3 +286,21 @@ VRCamera::updateCamera(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<
 
     target()->component<Transform>()->updateModelToWorldMatrix();
 }
+
+float
+VRCamera::getLeftEyeFov()
+{
+    if (!_VRImpl)
+        return 0.78f; // 45°
+
+    return _VRImpl->getLeftEyeFov();
+}
+
+float
+VRCamera::getRightEyeFov()
+{
+if (!_VRImpl)
+        return 0.78f; // 45°
+
+    return _VRImpl->getRightEyeFov();
+}
