@@ -63,6 +63,12 @@ namespace minko
             float
             getRightEyeFov() = 0;
 
+            void
+            disablePositionTracking(bool disable)
+            {
+                _disablePositionTracking = disable;
+            }
+
             virtual
             float
             zNear() = 0;
@@ -71,8 +77,17 @@ namespace minko
             float
             zFar() = 0;
 
+            VRImpl() :
+                _disablePositionTracking(false)
+            {
+            }
+
             virtual
             ~VRImpl() = default;
+
+        protected:
+            bool _disablePositionTracking;
+
         };
     }
 }

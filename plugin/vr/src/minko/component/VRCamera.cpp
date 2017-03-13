@@ -316,3 +316,12 @@ if (!_VRImpl)
 
     return _VRImpl->getRightEyeFov();
 }
+
+void
+VRCamera::disablePositionTracking(bool disable)
+{
+    if (!_VRImpl)
+        return;
+
+    return _VRImpl->disablePositionTracking(disable);
+}

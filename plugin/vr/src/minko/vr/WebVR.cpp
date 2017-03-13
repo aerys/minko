@@ -160,22 +160,27 @@ WebVR::updateCamera(scene::Node::Ptr target, std::shared_ptr<scene::Node> leftCa
         target->component<Transform>()->matrix(matrix);
     }
 
-    // Get VRDisplay position
-    auto positionString = std::string(emscripten_run_script_string("window.MinkoVR.getPosition();"));
-
-    if (positionString != "null")
+    if (!_disablePositionTracking)
     {
-        std::array<float, 3> position;
-        std::stringstream ssPosition(positionString);
+        // Get VRDisplay position
+        auto positionString = std::string(emscripten_run_script_string("window.MinkoVR.getPosition();"));
 
-        ssPosition >> position[0];
-        ssPosition >> position[1];
-        ssPosition >> position[2];
+        if (positionString != "null")
+        {
+            std::array<float, 3> position;
+            std::stringstream ssPosition(positionString);
 
-        auto hmdPosition = math::vec3(position[0], position[1], position[2]);
-        auto translation = math::translate(hmdPosition);
+            ssPosition >> position[0];
+            ssPosition >> position[1];
+            ssPosition >> position[2];
 
-        target->component<Transform>()->matrix(translation * target->component<Transform>()->matrix());
+            // TODO: Position tracking scale should be set on VRCamera component
+            auto scale = 1.f;
+            auto hmdPosition = math::vec3(position[0], position[1], position[2]) * scale;
+            auto translation = math::translate(hmdPosition);
+
+            target->component<Transform>()->matrix(translation * target->component<Transform>()->matrix());
+        }
     }
 
     // Get VRDisplay projection Matrices

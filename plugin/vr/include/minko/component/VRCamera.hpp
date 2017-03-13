@@ -131,6 +131,9 @@ namespace minko
             float
             getRightEyeFov();
 
+            void
+            disablePositionTracking(bool disable);
+
         public:
             ~VRCamera();
 
