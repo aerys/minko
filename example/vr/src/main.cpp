@@ -64,7 +64,7 @@ main(int argc, char** argv)
     auto loader = sceneManager->assets()->loader();
 
     canvas->context()->errorsEnabled(true);
-    canvas->desiredFramerate(120);
+    canvas->desiredFramerate(90);
 
     // setup assets
     loader->options()

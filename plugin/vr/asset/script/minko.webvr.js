@@ -98,16 +98,22 @@ window.MinkoVR.submitFrame = function() {
 }
 
 window.MinkoVR.getOrientation = function() {
-  if (!!window.MinkoVR.vrFrameData && !!window.MinkoVR.vrFrameData.pose && !!window.MinkoVR.vrFrameData.pose.orientation) {
-    return window.MinkoVR.vrFrameData.pose.orientation.join(' ');
+  if (!!window.MinkoVR.vrDisplay && !!window.MinkoVR.vrFrameData) {
+    window.MinkoVR.vrDisplay.getFrameData(window.MinkoVR.vrFrameData);
+    if (!!window.MinkoVR.vrFrameData && !!window.MinkoVR.vrFrameData.pose && !!window.MinkoVR.vrFrameData.pose.orientation) {
+      return window.MinkoVR.vrFrameData.pose.orientation.join(' ');
+    }
   }
 
   return null;
 }
 
 window.MinkoVR.getPosition = function() {
-  if (!!window.MinkoVR.vrFrameData && !!window.MinkoVR.vrFrameData.pose && !!window.MinkoVR.vrFrameData.pose.position) {
-    return window.MinkoVR.vrFrameData.pose.position.join(' ');
+  if (!!window.MinkoVR.vrDisplay && !!window.MinkoVR.vrFrameData) {
+    window.MinkoVR.vrDisplay.getFrameData(window.MinkoVR.vrFrameData);
+    if (!!window.MinkoVR.vrFrameData.pose && !!window.MinkoVR.vrFrameData.pose.position) {
+      return window.MinkoVR.vrFrameData.pose.position.join(' ');
+    }
   }
 
   return null;
