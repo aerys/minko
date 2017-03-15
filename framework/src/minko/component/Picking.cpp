@@ -771,7 +771,7 @@ Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
 void
 Picking::mouseMoveHandler(MousePtr mouse, int dx, int dy)
 {
-	if (_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0)
+	if (_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0 || _mouseMove->numCallbacks() > 0)
 	{
 		_executeMoveHandler = true;
 		enabled(true);
