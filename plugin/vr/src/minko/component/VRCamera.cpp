@@ -86,6 +86,7 @@ VRCamera::updateViewport(int viewportWidth, int viewportHeight)
         _VRImpl->updateViewport(viewportWidth, viewportHeight);
 }
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 void
 VRCamera::loadScript(std::string filename)
 {
@@ -117,6 +118,7 @@ VRCamera::loadScript(std::string filename)
         ->queue(filename)
         ->load();
 }
+#endif
 
 bool
 VRCamera::supported()
