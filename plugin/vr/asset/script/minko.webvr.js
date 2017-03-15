@@ -26,6 +26,11 @@ if (navigator.getVRDisplays !== undefined) {
 
 // VRDisplay callbacks
 window.MinkoVR.onVRRequestPresent = function() {
+  if (!window.MinkoVR.vrDisplay || window.MinkoVR.vrDisplay.isPresenting) {
+    console.log('Warning: The current HMD is already presenting.');
+    return;
+  }
+
   var renderCanvas = document.getElementById('canvas');
 
   window.MinkoVR.vrLayer = {
@@ -79,6 +84,17 @@ window.MinkoVR.bindEvents = function() {
   window.addEventListener('vrdisplaydeactivate', window.MinkoVR.onVRExitPresent, false);
   window.addEventListener('vrdisplaypresentchange', window.MinkoVR.onVRPresentChange, false);
   window.addEventListener('resize', window.MinkoVR.onResize, false);
+
+  window.addEventListener("keydown", function(e) {
+      // F key to present the canvas into the HMD when vrdisplayactivate/vrdisplaydeactivate
+      // events are not triggered (Oculus DK2 for example)
+      if (e.keyCode == 70) {
+        if (!window.MinkoVR.vrDisplay.isPresenting)
+          window.MinkoVR.onVRRequestPresent();
+        else
+          window.MinkoVR.onVRExitPresent();
+      }
+  }, false);
 }
 
 window.MinkoVR.unbindEvents = function() {
@@ -89,10 +105,12 @@ window.MinkoVR.unbindEvents = function() {
 }
 
 window.MinkoVR.submitFrame = function() {
-  if (!!window.MinkoVR.vrDisplay && window.MinkoVR.vrDisplay.isPresenting) {
-    // Workaround To avoid a crash in Chrome VR
-    if (!!window.MinkoVR.vrFrameData && !!window.MinkoVR.vrFrameData.pose && !!window.MinkoVR.vrFrameData.pose.orientation) {
-      window.MinkoVR.vrDisplay.submitFrame();
+  if (!!window.MinkoVR.vrDisplay) {
+    if (!window.MinkoVR.vrDisplay.capabilities.canPresent || window.MinkoVR.vrDisplay.isPresenting) {
+      // Workaround To avoid a crash in Chrome VR
+      if (!!window.MinkoVR.vrFrameData && !!window.MinkoVR.vrFrameData.pose && !!window.MinkoVR.vrFrameData.pose.orientation) {
+        window.MinkoVR.vrDisplay.submitFrame();
+      }
     }
   }
 }
@@ -146,7 +164,7 @@ window.MinkoVR.getLeftEyeFov = function() {
     }
   }
 
-  return 0.78; // 45°
+  return 0.78; // 45Â°
 }
 
 window.MinkoVR.getRightEyeFov = function() {
@@ -164,7 +182,7 @@ window.MinkoVR.getRightEyeFov = function() {
     }
   }
 
-  return 0.78; // 45°
+  return 0.78; // 45Â°
 }
 
 console.log('minko.webvr.js script successfully loaded');
