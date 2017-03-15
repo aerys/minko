@@ -131,4 +131,40 @@ window.MinkoVR.getProjectionMatrices = function() {
   return null;
 }
 
+window.MinkoVR.getLeftEyeFov = function() {
+  if (!!window.MinkoVR.vrDisplay) {
+    var eyeParameters = window.MinkoVR.vrDisplay.getEyeParameters("left");
+
+    if (!!eyeParameters.fieldOfView &&
+        !!eyeParameters.fieldOfView.upDegrees && !!eyeParameters.fieldOfView.downDegrees &&
+        !!eyeParameters.fieldOfView.leftDegrees && !!eyeParameters.fieldOfView.rightDegrees)
+    {
+      return Math.max(
+        Math.atan(eyeParameters.fieldOfView.upDegrees + eyeParameters.fieldOfView.downDegrees),
+        Math.atan(eyeParameters.fieldOfView.leftDegrees + eyeParameters.fieldOfView.rightDegrees)
+      );
+    }
+  }
+
+  return 0.78; // 45°
+}
+
+window.MinkoVR.getRightEyeFov = function() {
+  if (!!window.MinkoVR.vrDisplay) {
+    var eyeParameters = window.MinkoVR.vrDisplay.getEyeParameters("right");
+
+    if (!!eyeParameters.fieldOfView &&
+        !!eyeParameters.fieldOfView.upDegrees && !!eyeParameters.fieldOfView.downDegrees &&
+        !!eyeParameters.fieldOfView.leftDegrees && !!eyeParameters.fieldOfView.rightDegrees)
+    {
+      return Math.max(
+        Math.atan(eyeParameters.fieldOfView.upDegrees + eyeParameters.fieldOfView.downDegrees),
+        Math.atan(eyeParameters.fieldOfView.leftDegrees + eyeParameters.fieldOfView.rightDegrees)
+      );
+    }
+  }
+
+  return 0.78; // 45°
+}
+
 console.log('minko.webvr.js script successfully loaded');
