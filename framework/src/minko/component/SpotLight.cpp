@@ -18,9 +18,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/component/SpotLight.hpp"
+#include "minko/file/AssetLibrary.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/component/Renderer.hpp"
+#include "minko/component/SceneManager.hpp"
+#include "minko/component/ShadowMappingTechnique.hpp"
+#include "minko/component/Transform.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/scene/Layout.hpp"
 
 using namespace minko;
 using namespace minko::component;
+
+const uint SpotLight::MIN_SHADOWMAP_SIZE = 32;
+const uint SpotLight::MAX_SHADOWMAP_SIZE = 1024;
+const uint SpotLight::DEFAULT_SHADOWMAP_SIZE = 512;
 
 SpotLight::SpotLight(float diffuse,
 					 float specular,
@@ -29,7 +41,11 @@ SpotLight::SpotLight(float diffuse,
                      float attenuationConstant,
                      float attenuationLinear,
                      float attenuationQuadratic) :
-	AbstractDiscreteLight("spotLight", diffuse, specular)
+	AbstractDiscreteLight("spotLight", diffuse, specular),
+    _shadowMappingEnabled(false),
+    _shadowMap(nullptr),
+    _shadowMapSize(0),
+    _shadowRenderer()
 {
     updateModelToWorldMatrix(math::mat4(1.f));
 
@@ -39,7 +55,7 @@ SpotLight::SpotLight(float diffuse,
 }
 
 SpotLight::SpotLight(const SpotLight& spotlight, const CloneOption& option) :
-	AbstractDiscreteLight("spotLights", spotlight.diffuse(), spotlight.specular())
+	AbstractDiscreteLight("spotLight", spotlight.diffuse(), spotlight.specular())
 {
     updateModelToWorldMatrix(math::mat4(1.f));
 
@@ -126,4 +142,167 @@ SpotLight::attenuationEnabled() const
 	auto& coef = attenuationCoefficients();
 
 	return !(coef.x < 0.0f || coef.y < 0.0f || coef.z < 0.0f);
+}
+
+void
+SpotLight::updateRoot(std::shared_ptr<scene::Node> root)
+{
+    AbstractRootDataComponent::updateRoot(root);
+
+    if (root && _shadowMappingEnabled && !_shadowMap)
+        initializeShadowMapping();
+}
+
+bool
+SpotLight::initializeShadowMapping()
+{
+    if (!target() || !target()->root()->hasComponent<SceneManager>())
+        return false;
+
+    auto assets = target()->root()->component<SceneManager>()->assets();
+    auto effectName = "effect/SpotLightShadowMap.effect";
+    auto fx = assets->effect(effectName);
+
+    auto smTechnique = target()->root()->hasComponent<ShadowMappingTechnique>()
+        ? target()->root()->data()
+        .get<ShadowMappingTechnique::Technique>("shadowMappingTechnique")
+        : ShadowMappingTechnique::Technique::DEFAULT;
+
+    if (!fx)
+    {
+        auto texture = assets->texture("shadow-map-tmp");
+
+        if (!texture)
+        {
+            // This texture is used only for ESM, but loading SpotLightShadowMap.effect will throw if the asset does not exist.
+            // Thus, we create a dummy texture that we simply don't upload on the GPU.
+            texture = render::Texture::create(assets->context(), _shadowMapSize, _shadowMapSize, false, true);
+            if (smTechnique == ShadowMappingTechnique::Technique::ESM)
+                texture->upload();
+            assets->texture("shadow-map-tmp", texture);
+        }
+
+        texture = assets->texture("shadow-map-tmp-2");
+        if (!texture)
+        {
+            texture = render::Texture::create(assets->context(), _shadowMapSize, _shadowMapSize, false, true);
+            if (smTechnique == ShadowMappingTechnique::Technique::ESM)
+                texture->upload();
+            assets->texture("shadow-map-tmp-2", texture);
+        }
+
+        auto loader = file::Loader::create(assets->loader());
+        // FIXME: support async loading of the ShadowMapping.effect file
+        loader->options()->loadAsynchronously(false);
+        loader->queue(effectName);
+        loader->load();
+        fx = assets->effect(effectName);
+    }
+
+    _shadowMap = render::Texture::create(assets->context(), _shadowMapSize, _shadowMapSize, false, true);
+    _shadowMap->upload();
+
+    data()
+        ->set("shadowMap", _shadowMap->sampler())
+        ->set("shadowMaxDistance", 0.9f)
+        ->set("shadowSpread", 1.f)
+        ->set("shadowBias", -0.001f)
+        ->set("shadowMapSize", static_cast<float>(_shadowMapSize));
+
+    auto techniqueName = std::string("shadow-map-cascade");
+    if (smTechnique == ShadowMappingTechnique::Technique::ESM)
+        techniqueName += "-esm";
+
+    auto renderer = component::Renderer::create(
+        0xffffffff,
+        _shadowMap,
+        fx,
+        techniqueName,
+        render::Priority::FIRST
+    );
+
+    renderer->clearBeforeRender(true);
+    renderer->effectVariables().push_back({ "lightUuid", data()->uuid() });
+    // renderer->effectVariables()["shadowProjectionId"] = std::to_string(i);
+    renderer->layoutMask(scene::BuiltinLayout::CAST_SHADOW);
+    target()->addComponent(renderer);
+
+    _shadowRenderer = renderer;
+
+    computeShadowProjection();
+
+    // Create specific shadow projection
+    auto zNear = 1.f;
+    auto zFar = 40.f;
+    auto fov = outerConeAngle() * 2.f;
+    auto aspectRatio = 1.f;
+
+    _shadowProjection = math::perspective(fov, aspectRatio, zNear, zFar);
+
+    data()
+        ->set("zNear", zNear)
+        ->set("zFar", zFar);
+
+    computeShadowProjection();
+
+    return true;
+}
+
+void
+SpotLight::computeShadowProjection()
+{
+    if (target() && target()->data().hasProperty("modelToWorldMatrix"))
+        _view = math::inverse(target()->data().get<minko::math::mat4>("modelToWorldMatrix"));
+    else
+        _view = math::mat4(1.f);
+
+    data()->set("viewProjection", _shadowProjection * _view);
+}
+
+void
+SpotLight::enableShadowMapping(uint shadowMapSize)
+{
+    if (!_shadowMappingEnabled || shadowMapSize != _shadowMapSize)
+    {
+        if (!_shadowMap || shadowMapSize != _shadowMapSize)
+        {
+            // FIXME: do not completely re-init shadow mapping when just the shadow map size changes
+            _shadowMapSize = shadowMapSize;
+            initializeShadowMapping();
+        }
+        else
+        {
+            if (_shadowRenderer)
+                _shadowRenderer->enabled(true);
+
+            data()->set("shadowMap", _shadowMap->sampler());
+        }
+
+        _shadowMappingEnabled = true;
+    }
+}
+
+void
+SpotLight::disableShadowMapping(bool disposeResources)
+{
+    if (_shadowMappingEnabled)
+    {
+        if (_shadowRenderer)
+            _shadowRenderer->enabled(false);
+
+        data()->unset("shadowMap");
+
+        if (disposeResources)
+        {
+            _shadowMap = nullptr;
+
+            if (_shadowRenderer && target()->hasComponent(_shadowRenderer))
+            {
+                target()->removeComponent(_shadowRenderer);
+                // renderer = nullptr;
+            }
+        }
+
+        _shadowMappingEnabled = false;
+    }
 }
