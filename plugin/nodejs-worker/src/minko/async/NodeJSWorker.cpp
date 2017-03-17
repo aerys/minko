@@ -78,6 +78,7 @@ namespace minko
             const auto path = std::string(pathData.begin(), pathData.end());
 
             inputStream.read(reinterpret_cast<char*>(&argsSize), 4);
+
             auto argsData = std::vector<char>(argsSize);
 
             if (argsSize > 0)
@@ -85,9 +86,15 @@ namespace minko
 
             auto args = std::string(argsData.begin(), argsData.end());
 
+            std::string binary = "node";
+            std::string scriptPath = path + "/" + "index.js";
+
             std::vector<std::string> argsVec;
 
-            std::string token = "";
+            argsVec.push_back(binary);
+            argsVec.push_back(scriptPath);
+
+            std::string token = " ";
             auto i = args.find(token);
 
             while (i != -1)
@@ -103,26 +110,17 @@ namespace minko
 
             chdir(path.c_str());
 
-            std::string binary = "node";
-            std::string scriptPath = path + "/" + "index.js";
-
-            char ** argsList = new char*[argsVec.size() + 3];
-
-            argsList[0] = new char[binary.size() + 1];
-            strcpy(argsList[0], binary.c_str());
-
-            argsList[1] = new char[scriptPath.size() + 1];
-            strcpy(argsList[1], scriptPath.c_str());
+            char ** argsList = new char*[argsVec.size() + 1];
 
             for(size_t i = 0; i < argsVec.size(); i++)
             {
-                argsList[i + 2] = new char[argsVec[i].size() + 1];
-                strcpy(argsList[i + 2], argsVec[i].c_str());
+                argsList[i] = new char[argsVec[i].size() + 1];
+                strcpy(argsList[i], argsVec[i].c_str());
             }
 
-            argsList[argsVec.size() + 2] = nullptr;
+            argsList[argsVec.size()] = nullptr;
 
-            int argc = argsVec.size() + 2;
+            int argc = argsVec.size();
             char** argv = makeArgvCopy(argc, argsList);
 
             LOG_INFO("Start node on " << scriptPath);
