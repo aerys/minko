@@ -24,6 +24,30 @@ minko.plugin["websocket"].enable = function()
     configuration { "not html5" }
         minko.plugin.enable { "ssl" }
 
+
+    configuration { "not html5" }
+        -- websocket++
+        includedirs {
+            minko.plugin.path("websocket") .. "/lib/websocketpp",
+        }
+        -- asio
+        includedirs {
+            minko.plugin.path("websocket") .. "/lib/asio/include"
+        }
+        defines {
+            "ASIO_STANDALONE",
+        }
+
+    configuration { "windows" }
+        -- websocket++
+        defines {
+            "_WEBSOCKETPP_CPP11_INTERNAL_",
+        }
+        -- asio
+        defines {
+            "_WIN32_WINNT=0x0501"
+        }
+
     configuration { }
 
     minko.plugin.links { "websocket" }
