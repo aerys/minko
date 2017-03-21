@@ -110,6 +110,9 @@ public class InitWebViewTask implements Runnable
             WebView.setWebContentsDebuggingEnabled(true);
         }
 
+        // Enable webview local storage
+        _webView.getSettings().setDomStorageEnabled(true);
+
         Log.i("minko-java", "[InitWebViewTask] WebView is now instantiated: " + _webView + ".");
         webViewInitialized();
     }

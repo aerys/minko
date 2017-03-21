@@ -64,9 +64,9 @@ namespace minko
             void
             sendMessage(const void* payload, size_t s);
 
-            WebSocket();
+            WebSocket(WebSocketImpl* impl = nullptr);
 
-            WebSocket(AbstractCanvas::Ptr canvas);
+            WebSocket(AbstractCanvas::Ptr canvas, WebSocketImpl* impl = nullptr);
 
             ~WebSocket();
 
@@ -81,7 +81,7 @@ namespace minko
             WebSocketImpl* _impl;
             AbstractCanvas::Ptr _canvas;
 
-            Signal<AbstractCanvas::Ptr, float, float>::Slot _enterFrameSlot;
+            Signal<AbstractCanvas::Ptr, float, float, bool>::Slot _enterFrameSlot;
         };
     }
 }

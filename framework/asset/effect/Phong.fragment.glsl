@@ -297,6 +297,18 @@ uniform vec3 uSpotLight0_attenuationCoeffs;
 #  ifdef SHININESS
 uniform float uSpotLight0_specular;
 #  endif
+
+#  ifdef SPOT_0_SHADOW_MAP
+uniform sampler2D uSpotLight0_shadowMap;
+uniform mat4 uSpotLight0_viewProjection;
+uniform float uSpotLight0_zNear;
+uniform float uSpotLight0_zFar;
+uniform float uSpotLight0_shadowMaxDistance;
+uniform float uSpotLight0_shadowMapSize;
+uniform float uSpotLight0_shadowSpread;
+uniform float uSpotLight0_shadowBias;
+#  endif
+
 # endif
 
 # if NUM_SPOT_LIGHTS > 1
@@ -310,6 +322,18 @@ uniform vec3 uSpotLight1_attenuationCoeffs;
 #  ifdef SHININESS
 uniform float uSpotLight1_specular;
 #  endif
+
+#  ifdef SPOT_1_SHADOW_MAP
+uniform sampler2D uSpotLight1_shadowMap;
+uniform mat4 uSpotLight1_viewProjection;
+uniform float uSpotLight1_zNear;
+uniform float uSpotLight1_zFar;
+uniform float uSpotLight1_shadowMaxDistance;
+uniform float uSpotLight1_shadowMapSize;
+uniform float uSpotLight1_shadowSpread;
+uniform float uSpotLight1_shadowBias;
+#  endif
+
 # endif
 
 # if NUM_SPOT_LIGHTS > 2
@@ -323,6 +347,18 @@ uniform vec3 uSpotLight2_attenuationCoeffs;
 #  ifdef SHININESS
 uniform float uSpotLight2_specular;
 #  endif
+
+#  ifdef SPOT_2_SHADOW_MAP
+uniform sampler2D uSpotLight2_shadowMap;
+uniform mat4 uSpotLight2_viewProjection;
+uniform float uSpotLight2_zNear;
+uniform float uSpotLight2_zFar;
+uniform float uSpotLight2_shadowMaxDistance;
+uniform float uSpotLight2_shadowMapSize;
+uniform float uSpotLight2_shadowSpread;
+uniform float uSpotLight2_shadowBias;
+#  endif
+
 # endif
 
 # if NUM_SPOT_LIGHTS > 3
@@ -338,6 +374,17 @@ uniform float uSpotLight3_specular;
 #  endif
 # endif
 
+#  ifdef SPOT_3_SHADOW_MAP
+uniform sampler2D uSpotLight3_shadowMap;
+uniform mat4 uSpotLight3_viewProjection;
+uniform float uSpotLight3_zNear;
+uniform float uSpotLight3_zFar;
+uniform float uSpotLight3_shadowMaxDistance;
+uniform float uSpotLight3_shadowMapSize;
+uniform float uSpotLight3_shadowSpread;
+uniform float uSpotLight3_shadowBias;
+#  endif
+
 #endif
 
 varying vec3 vVertexPosition;
@@ -348,15 +395,15 @@ varying vec3 vVertexTangent;
 varying vec4 vVertexScreenPosition;
 varying vec4 vVertexColor;
 
-float getShadow(sampler2D 	shadowMap,
-				mat4 		viewProj[SHADOW_MAPPING_MAX_NUM_CASCADES],
-				float 		zNear[SHADOW_MAPPING_MAX_NUM_CASCADES],
-				float 		zFar[SHADOW_MAPPING_MAX_NUM_CASCADES],
-				vec4		splitNear,
-                vec4        splitFar,
-				float 		size,
-				float 		bias,
-                float       maxDistance)
+float getDirectionalLightShadow(sampler2D 	shadowMap,
+				                mat4 		viewProj[SHADOW_MAPPING_MAX_NUM_CASCADES],
+				                float 		zNear[SHADOW_MAPPING_MAX_NUM_CASCADES],
+				                float 		zFar[SHADOW_MAPPING_MAX_NUM_CASCADES],
+				                vec4		splitNear,
+                                vec4        splitFar,
+				                float 		size,
+				                float 		bias,
+                                float       maxDistance)
 {
 	float shadow = 1.0;
     vec4 weights = shadowMapping_getCascadeWeights(vVertexScreenPosition.z, splitNear, splitFar);
@@ -387,6 +434,42 @@ float getShadow(sampler2D 	shadowMap,
 	}
 
 	return shadow;
+}
+
+float getSpotLightShadow(sampler2D   shadowMap,
+                         mat4        viewProjection,
+                         float       zNear,
+                         float       zFar,
+                         float       size,
+                         float       bias,
+                         float       maxDistance)
+{
+    float shadow = 1.0;
+    float near = zNear;
+    float far = zFar;
+    vec4 vertexLightPosition = viewProjection * vec4(vVertexPosition, 1);
+
+    vertexLightPosition /= vertexLightPosition.w;
+
+    if (shadowMapping_vertexIsInShadowMap(vertexLightPosition.xyz))
+    {
+        float shadowDepth = vertexLightPosition.z + (bias / vertexLightPosition.w);
+        vec2 depthUV = vertexLightPosition.xy / 2.0 + 0.5;
+
+        #if SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_DEFAULT
+            shadow = shadowMapping_texture2DCompare(shadowMap, depthUV, shadowDepth, near, far);
+        #elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF
+            shadow = shadowMapping_PCF(shadowMap, vec2(size), depthUV, shadowDepth, near, far);
+        #elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_ESM
+            shadow = shadowMapping_ESM(shadowMap, depthUV, shadowDepth, near, far, (far - near) * 1.5);
+        #elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF_POISSON
+            shadow = shadowMapping_PCFPoisson(shadowMap, vec2(size), depthUV, shadowDepth, near, far, vec4(vVertexPosition.xy, vVertexNormal.xy));
+        #endif
+
+        shadow = shadowMapping_applyDistanceFade(vVertexScreenPosition.z, zFar, shadow, maxDistance);
+    }
+
+    return shadow;
 }
 
 void main(void)
@@ -557,7 +640,7 @@ void main(void)
 			shadow = 1.0;
 			dir = normalize(-uDirLight0_direction);
 			#ifdef DIRECTIONAL_0_SHADOW_MAP
-				shadow = getShadow(uDirLight0_shadowMap, uDirLight0_viewProjection, uDirLight0_zNear, uDirLight0_zFar, uDirLight0_shadowSplitNear, uDirLight0_shadowSplitFar, uDirLight0_shadowMapSize, uDirLight0_shadowBias, uDirLight0_shadowMaxDistance);
+				shadow = getDirectionalLightShadow(uDirLight0_shadowMap, uDirLight0_viewProjection, uDirLight0_zNear, uDirLight0_zFar, uDirLight0_shadowSplitNear, uDirLight0_shadowSplitFar, uDirLight0_shadowMapSize, uDirLight0_shadowBias, uDirLight0_shadowMaxDistance);
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight0_diffuse * uDirLight0_color;
 			#if defined(SHININESS)
@@ -572,7 +655,7 @@ void main(void)
 			shadow = 1.0;
 			dir = normalize(-uDirLight1_direction);
 			#ifdef DIRECTIONAL_1_SHADOW_MAP
-				shadow = getShadow(uDirLight1_shadowMap, uDirLight1_viewProjection, uDirLight1_zNear, uDirLight1_zFar, uDirLight1_shadowSplitNear, uDirLight1_shadowSplitFar, uDirLight1_shadowMapSize, uDirLight1_shadowBias, uDirLight1_shadowMaxDistance);
+				shadow = getDirectionalLightShadow(uDirLight1_shadowMap, uDirLight1_viewProjection, uDirLight1_zNear, uDirLight1_zFar, uDirLight1_shadowSplitNear, uDirLight1_shadowSplitFar, uDirLight1_shadowMapSize, uDirLight1_shadowBias, uDirLight1_shadowMaxDistance);
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight1_diffuse * uDirLight1_color;
 			#if defined(SHININESS)
@@ -587,7 +670,7 @@ void main(void)
 			shadow = 1.0;
 			dir = normalize(-uDirLight2_direction);
 			#ifdef DIRECTIONAL_2_SHADOW_MAP
-				shadow = getShadow(uDirLight2_shadowMap, uDirLight2_viewProjection, uDirLight2_zNear, uDirLight2_zFar, uDirLight2_shadowSplitNear, uDirLight2_shadowSplitFar, uDirLight2_shadowMapSize, uDirLight2_shadowBias, uDirLight2_shadowMaxDistance);
+				shadow = getDirectionalLightShadow(uDirLight2_shadowMap, uDirLight2_viewProjection, uDirLight2_zNear, uDirLight2_zFar, uDirLight2_shadowSplitNear, uDirLight2_shadowSplitFar, uDirLight2_shadowMapSize, uDirLight2_shadowBias, uDirLight2_shadowMaxDistance);
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight2_diffuse * uDirLight2_color;
 			#if defined(SHININESS)
@@ -602,7 +685,7 @@ void main(void)
 			shadow = 1.0;
 			dir = normalize(-uDirLight3_direction);
 			#ifdef DIRECTIONAL_3_SHADOW_MAP
-				shadow = getShadow(uDirLight3_shadowMap, uDirLight3_viewProjection, uDirLight3_zNear, uDirLight3_zFar, uDirLight3_shadowSplitNear, uDirLight3_shadowSplitFar, uDirLight3_shadowMapSize, uDirLight3_shadowBias, uDirLight3_shadowMaxDistance);
+				shadow = getDirectionalLightShadow(uDirLight3_shadowMap, uDirLight3_viewProjection, uDirLight3_zNear, uDirLight3_zFar, uDirLight3_shadowSplitNear, uDirLight3_shadowSplitFar, uDirLight3_shadowMapSize, uDirLight3_shadowBias, uDirLight3_shadowMaxDistance);
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight3_diffuse * uDirLight3_color;
 			#if defined(SHININESS)
@@ -682,6 +765,7 @@ void main(void)
         float cutoff = 0.;
         #ifdef NUM_SPOT_LIGHTS
     		#if NUM_SPOT_LIGHTS > 0
+                shadow = 1.0;
                 dir = normalize(uSpotLight0_position - vVertexPosition);
                 dist = length(uSpotLight0_position - vVertexPosition);
                 cosSpot = dot(-dir, uSpotLight0_direction);
@@ -692,7 +776,12 @@ void main(void)
                     cutoff = cosSpot < uSpotLight0_cosInnerConeAngle && uSpotLight0_cosOuterConeAngle < uSpotLight0_cosInnerConeAngle
     					? (cosSpot - uSpotLight0_cosOuterConeAngle) / (uSpotLight0_cosInnerConeAngle - uSpotLight0_cosOuterConeAngle)
     					: 1.0;
-                    diffuseAccum += phong_diffuseReflection(normalVector, dir) * uSpotLight0_color * uSpotLight0_diffuse * att * cutoff;
+
+                    #ifdef SPOT_0_SHADOW_MAP
+                        shadow = getSpotLightShadow(uSpotLight0_shadowMap, uSpotLight0_viewProjection, uSpotLight0_zNear, uSpotLight0_zFar, uSpotLight0_shadowMapSize, uSpotLight0_shadowBias, uSpotLight0_shadowMaxDistance);
+                    #endif
+
+                    diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uSpotLight0_color * uSpotLight0_diffuse * att * cutoff;
                     #ifdef SHININESS
     					specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uSpotLight0_color * uSpotLight0_specular * att * cutoff
     						* lightFresnel;
@@ -710,7 +799,12 @@ void main(void)
                     cutoff = cosSpot < uSpotLight1_cosInnerConeAngle && uSpotLight1_cosOuterConeAngle < uSpotLight1_cosInnerConeAngle
     					? (cosSpot - uSpotLight1_cosOuterConeAngle) / (uSpotLight1_cosInnerConeAngle - uSpotLight1_cosOuterConeAngle)
     					: 1.0;
-                    diffuseAccum += phong_diffuseReflection(normalVector, dir) * uSpotLight1_color * uSpotLight1_diffuse * att * cutoff;
+
+                    #ifdef SPOT_1_SHADOW_MAP
+                        shadow = getSpotLightShadow(uSpotLight1_shadowMap, uSpotLight1_viewProjection, uSpotLight1_zNear, uSpotLight1_zFar, uSpotLight1_shadowMapSize, uSpotLight1_shadowBias, uSpotLight1_shadowMaxDistance);
+                    #endif
+
+                    diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uSpotLight1_color * uSpotLight1_diffuse * att * cutoff;
                     #ifdef SHININESS
                         #if defined(FRESNEL)
                             lightFresnel = phong_fresnel(specular.rgb, dir, eyeVector);
@@ -731,7 +825,12 @@ void main(void)
                     cutoff = cosSpot < uSpotLight2_cosInnerConeAngle && uSpotLight2_cosOuterConeAngle < uSpotLight2_cosInnerConeAngle
     					? (cosSpot - uSpotLight2_cosOuterConeAngle) / (uSpotLight2_cosInnerConeAngle - uSpotLight2_cosOuterConeAngle)
     					: 1.0;
-                    diffuseAccum += phong_diffuseReflection(normalVector, dir) * uSpotLight2_color * uSpotLight2_diffuse * att * cutoff;
+
+                    #ifdef SPOT_2_SHADOW_MAP
+                        shadow = getSpotLightShadow(uSpotLight2_shadowMap, uSpotLight2_viewProjection, uSpotLight2_zNear, uSpotLight2_zFar, uSpotLight2_shadowMapSize, uSpotLight2_shadowBias, uSpotLight2_shadowMaxDistance);
+                    #endif
+
+                    diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uSpotLight2_color * uSpotLight2_diffuse * att * cutoff;
                     #ifdef SHININESS
                         #if defined(FRESNEL)
                             lightFresnel = phong_fresnel(specular.rgb, dir, eyeVector);
@@ -752,7 +851,12 @@ void main(void)
                     cutoff = cosSpot < uSpotLight3_cosInnerConeAngle && uSpotLight3_cosOuterConeAngle < uSpotLight3_cosInnerConeAngle
     					? (cosSpot - uSpotLight3_cosOuterConeAngle) / (uSpotLight3_cosInnerConeAngle - uSpotLight3_cosOuterConeAngle)
     					: 1.0;
-                    diffuseAccum += phong_diffuseReflection(normalVector, dir) * uSpotLight3_color * uSpotLight3_diffuse * att * cutoff;
+
+                    #ifdef SPOT_3_SHADOW_MAP
+                        shadow = getSpotLightShadow(uSpotLight3_shadowMap, uSpotLight3_viewProjection, uSpotLight3_zNear, uSpotLight3_zFar, uSpotLight3_shadowMapSize, uSpotLight3_shadowBias, uSpotLight3_shadowMaxDistance);
+                    #endif
+
+                    diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uSpotLight3_color * uSpotLight3_diffuse * att * cutoff;
                     #ifdef SHININESS
                         #if defined(FRESNEL)
                             lightFresnel = phong_fresnel(specular.rgb, dir, eyeVector);

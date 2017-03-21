@@ -32,16 +32,18 @@ namespace minko
 			public std::enable_shared_from_this<Dependency>
 		{
 		public:
-			typedef std::shared_ptr<Dependency>					Ptr;
-            typedef std::weak_ptr<Dependency>                   WeakPtr;
-			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
-			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
-			typedef std::shared_ptr<material::Material>			MaterialPtr;
-            typedef std::shared_ptr<data::Provider>             ProviderPtr;
+			typedef std::shared_ptr<Dependency>					    Ptr;
+            typedef std::weak_ptr<Dependency>                       WeakPtr;
+			typedef std::shared_ptr<render::AbstractTexture>	    AbsTexturePtr;
+			typedef std::shared_ptr<geometry::Geometry>			    GeometryPtr;
+			typedef std::shared_ptr<material::Material>			    MaterialPtr;
+            typedef std::shared_ptr<data::Provider>                 ProviderPtr;
+
+			typedef msgpack::type::tuple<uint, DependencyId, std::string>   SerializedAsset;
 
             struct TextureDependency
             {
-                uint                    dependencyId;
+                DependencyId            dependencyId;
                 AbsTexturePtr    		texture;
                 Flyweight<std::string>  textureType;
 
@@ -68,39 +70,37 @@ namespace minko
             };
 
 		private:
-			typedef msgpack::type::tuple<unsigned int, short, std::string> SerializedAsset;
-
 			typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<geometry::Geometry>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>, std::vector<Dependency::SerializedAsset>&)>		GeometryWriterFunction;
             typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, const TextureDependency&, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>	TextureWriterFunction;
             typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<material::Material>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>			MaterialWriterFunction;
 			typedef std::function<bool(std::shared_ptr<geometry::Geometry>)>			GeometryTestFunc;
 
 		private:
-            WeakPtr                                                         _parent;
+            WeakPtr                                                                 _parent;
 
-			std::unordered_map<AbsTexturePtr, TextureDependency>			_textureDependencies;
-			std::unordered_map<std::shared_ptr<material::Material>, uint>	_materialDependencies;
-			std::unordered_map<std::shared_ptr<scene::Node>, uint>			_subSceneDependencies;
-			std::unordered_map<std::shared_ptr<geometry::Geometry>, uint>	_geometryDependencies;
-			std::unordered_map<std::shared_ptr<render::Effect>, uint>		_effectDependencies;
-			std::unordered_map<std::shared_ptr<LinkedAsset>, uint>		    _linkedAssetDependencies;
+			std::unordered_map<AbsTexturePtr, TextureDependency>			        _textureDependencies;
+			std::unordered_map<std::shared_ptr<material::Material>, DependencyId>	_materialDependencies;
+			std::unordered_map<std::shared_ptr<scene::Node>, DependencyId>			_subSceneDependencies;
+			std::unordered_map<std::shared_ptr<geometry::Geometry>, DependencyId>	_geometryDependencies;
+			std::unordered_map<std::shared_ptr<render::Effect>, DependencyId>		_effectDependencies;
+			std::unordered_map<std::shared_ptr<LinkedAsset>, DependencyId>		    _linkedAssetDependencies;
 
-			std::unordered_map<uint, TextureReference>						_textureReferences;
-			std::unordered_map<uint, std::shared_ptr<material::Material>>	_materialReferences;
-			std::unordered_map<uint, std::shared_ptr<scene::Node>>			_subSceneReferences;
-			std::unordered_map<uint, std::shared_ptr<geometry::Geometry>>	_geometryReferences;
-			std::unordered_map<uint, std::shared_ptr<render::Effect>>		_effectReferences;
-			std::unordered_map<uint, std::shared_ptr<LinkedAsset>>          _linkedAssetReferences;
+			std::unordered_map<DependencyId, TextureReference>						_textureReferences;
+			std::unordered_map<DependencyId, std::shared_ptr<material::Material>>	_materialReferences;
+			std::unordered_map<DependencyId, std::shared_ptr<scene::Node>>			_subSceneReferences;
+			std::unordered_map<DependencyId, std::shared_ptr<geometry::Geometry>>	_geometryReferences;
+			std::unordered_map<DependencyId, std::shared_ptr<render::Effect>>		_effectReferences;
+			std::unordered_map<DependencyId, std::shared_ptr<LinkedAsset>>          _linkedAssetReferences;
 
-			uint															_currentId;
-			std::shared_ptr<Options>										_options;
-			std::shared_ptr<scene::Node>									_loadedRoot;
+			DependencyId															_currentId;
+			std::shared_ptr<Options>										        _options;
+			std::shared_ptr<scene::Node>									        _loadedRoot;
 
-			static std::unordered_map<uint, GeometryWriterFunction>			_geometryWriteFunctions;
-			static std::unordered_map<uint, GeometryTestFunc>				_geometryTestFunctions;
+			static std::unordered_map<uint, GeometryWriterFunction>			        _geometryWriteFunctions;
+			static std::unordered_map<uint, GeometryTestFunc>				        _geometryTestFunctions;
 
-			static TextureWriterFunction									_textureWriteFunction;
-			static MaterialWriterFunction									_materialWriteFunction;
+			static TextureWriterFunction									        _textureWriteFunction;
+			static MaterialWriterFunction									        _materialWriteFunction;
 
 		public:
             static
@@ -152,25 +152,25 @@ namespace minko
 			bool
 			hasDependency(std::shared_ptr<geometry::Geometry> geometry);
 
-			uint
+			DependencyId
 			registerDependency(std::shared_ptr<geometry::Geometry> geometry);
 
 			bool
 			hasDependency(std::shared_ptr<material::Material> material);
 
-			uint
+			DependencyId
 			registerDependency(std::shared_ptr<material::Material> material);
 
 			bool
 			hasDependency(AbsTexturePtr texture);
 
-			uint
+			DependencyId
 			registerDependency(AbsTexturePtr texture, const std::string& textureType);
 
 			bool
 			hasDependency(std::shared_ptr<scene::Node> subScene);
 
-			uint
+			DependencyId
 			registerDependency(std::shared_ptr<scene::Node> subScene);
 
 			bool
@@ -179,47 +179,47 @@ namespace minko
             bool
 			hasDependency(std::shared_ptr<LinkedAsset> linkedAsset);
 
-			uint
+			DependencyId
 			registerDependency(std::shared_ptr<render::Effect> effect);
 
-            uint
+            DependencyId
             registerDependency(std::shared_ptr<LinkedAsset> linkedAsset);
 
 			std::shared_ptr<geometry::Geometry>
-			getGeometryReference(uint geometryId);
+			getGeometryReference(DependencyId geometryId);
 
 			void
-			registerReference(uint referenceId, std::shared_ptr<geometry::Geometry> geometry);
+			registerReference(DependencyId referenceId, std::shared_ptr<geometry::Geometry> geometry);
 
             std::shared_ptr<material::Material>
-			getMaterialReference(uint materialId);
+			getMaterialReference(DependencyId materialId);
 
 			void
-            registerReference(uint referenceId, std::shared_ptr<material::Material> material);
+            registerReference(DependencyId referenceId, std::shared_ptr<material::Material> material);
 
 			TextureReference*
-			getTextureReference(uint textureId);
+			getTextureReference(DependencyId textureId);
 
 			void
-			registerReference(uint referenceId, AbsTexturePtr texture);
+			registerReference(DependencyId referenceId, AbsTexturePtr texture);
 
 			std::shared_ptr<scene::Node>
-			getSubsceneReference(uint subSceneId);
+			getSubsceneReference(DependencyId subSceneId);
 
 			void
-			registerReference(uint referenceId, std::shared_ptr<render::Effect> effect);
+			registerReference(DependencyId referenceId, std::shared_ptr<render::Effect> effect);
 
 			std::shared_ptr<render::Effect>
-			getEffectReference(uint effectId);
+			getEffectReference(DependencyId effectId);
 
 			void
-			registerReference(uint referenceId, std::shared_ptr<scene::Node> subScene);
+			registerReference(DependencyId referenceId, std::shared_ptr<scene::Node> subScene);
 
             void
-            registerReference(uint referenceId, std::shared_ptr<LinkedAsset> linkedAsset);
+            registerReference(DependencyId referenceId, std::shared_ptr<LinkedAsset> linkedAsset);
 
             std::shared_ptr<LinkedAsset>
-            getLinkedAssetReference(uint id);
+            getLinkedAssetReference(DependencyId id);
 
 			std::vector<SerializedAsset>
 			serialize(const std::string&                        parentFilename,
@@ -233,7 +233,7 @@ namespace minko
 			serializeGeometry(std::shared_ptr<file::Dependency>			dependencies,
 							  std::shared_ptr<file::AssetLibrary>		assetLibrary,
 							  std::shared_ptr<geometry::Geometry>		geometry,
-							  uint										resourceId,
+							  DependencyId								resourceId,
 							  std::shared_ptr<file::Options>			options,
                               std::shared_ptr<file::WriterOptions>		writerOptions,
 							  std::vector<Dependency::SerializedAsset>&	includeDependencies);
@@ -251,7 +251,7 @@ namespace minko
 			serializeMaterial(std::shared_ptr<file::Dependency>		dependecies,
 							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
                               std::shared_ptr<material::Material>	material,
-							  uint									resourceId,
+							  DependencyId						    resourceId,
 							  std::shared_ptr<file::Options>		options,
                               std::shared_ptr<file::WriterOptions>  writerOptions);
 
@@ -260,7 +260,7 @@ namespace minko
             serializeEffect(std::shared_ptr<file::Dependency>	    dependecies,
                             std::shared_ptr<file::AssetLibrary>	    assetLibrary,
                             std::shared_ptr<render::Effect>	        effect,
-                            uint								    resourceId,
+                            DependencyId							resourceId,
                             std::shared_ptr<file::Options>		    options,
                             std::shared_ptr<file::WriterOptions>    writerOptions);
 

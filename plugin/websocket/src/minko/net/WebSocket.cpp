@@ -28,20 +28,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::net;
 
-WebSocket::WebSocket() :
+WebSocket::WebSocket(WebSocketImpl* impl) :
 #if defined(EMSCRIPTEN)
-    _impl(new EmscriptenWebSocketImpl()),
+    _impl(impl ? impl : new EmscriptenWebSocketImpl()),
 #else
-    _impl(new NativeWebSocketImpl()),
+    _impl(impl ? impl : new NativeWebSocketImpl()),
 #endif
     _canvas(nullptr)
 {}
 
-WebSocket::WebSocket(AbstractCanvas::Ptr canvas) :
+WebSocket::WebSocket(AbstractCanvas::Ptr canvas, WebSocketImpl* impl) :
 #if defined(EMSCRIPTEN)
-    _impl(new EmscriptenWebSocketImpl()),
+    _impl(impl ? impl : new EmscriptenWebSocketImpl()),
 #else
-    _impl(new NativeWebSocketImpl()),
+    _impl(impl ? impl : new NativeWebSocketImpl()),
 #endif
     _canvas(canvas)
 {}
@@ -113,7 +113,7 @@ WebSocket::startPollingOnEnterFrame()
 {
     if (!!_canvas)
     {
-        _enterFrameSlot = _canvas->enterFrame()->connect([&](AbstractCanvas::Ptr, float, float)
+        _enterFrameSlot = _canvas->enterFrame()->connect([&](AbstractCanvas::Ptr, float, float, bool)
         {
             poll();
         });

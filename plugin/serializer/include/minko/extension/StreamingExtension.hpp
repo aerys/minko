@@ -42,7 +42,7 @@ namespace minko
 		private:
 			typedef unsigned char											uchar;
 			typedef msgpack::type::tuple<std::string, uchar, uchar>			SerializeAttribute;
-			typedef msgpack::type::tuple<unsigned int, short, std::string>	SerializedAsset;
+			typedef file::Dependency::SerializedAsset                       SerializedAsset;
 
             struct ParserEntry
             {
@@ -57,6 +57,9 @@ namespace minko
                 {
                 }
             };
+
+        public:
+            static const int                                                    STREAMED_ASSET_HEADER_SIZE_BYTE_SIZE;
 
 		private:
             static const float                                                  _parserSchedulerDefaultPriority;
@@ -150,11 +153,11 @@ namespace minko
             int
             numActiveParsers() const;
 
-			msgpack::type::tuple<uint, short, std::string>
+			file::Dependency::SerializedAsset
 			serializePOPGeometry(std::shared_ptr<file::Dependency>      dependency,
 								 std::shared_ptr<file::AssetLibrary>	assetLibrary,
 								 std::shared_ptr<geometry::Geometry>	geometry,
-								 uint									resourceId,
+								 file::DependencyId						resourceId,
 								 std::shared_ptr<file::Options>			options,
                                  std::shared_ptr<file::WriterOptions>   writerOptions,
                                  std::vector<SerializedAsset>&  		includeDependencies);
@@ -166,10 +169,10 @@ namespace minko
 								   const std::string&									    completePath,
                                    const std::vector<unsigned char>&                        data,
 								   std::shared_ptr<file::Dependency>						dependencies,
-								   short													assetRef,
+					               file::DependencyId										assetRef,
 								   std::list<std::shared_ptr<component::JobManager::Job>>&	jobList);
 
-			msgpack::type::tuple<uint, short, std::string>
+			file::Dependency::SerializedAsset
 			serializeStreamedTexture(std::shared_ptr<file::Dependency>          dependency,
 									 std::shared_ptr<file::AssetLibrary>		assetLibrary,
 									 const file::Dependency::TextureDependency& textureDependency,
@@ -183,7 +186,7 @@ namespace minko
 									   const std::string&										completePath,
                                        const std::vector<unsigned char>&                        data,
 									   std::shared_ptr<file::Dependency>						dependencies,
-									   short													assetRef,
+									   file::DependencyId										assetRef,
 									   std::list<std::shared_ptr<component::JobManager::Job>>&	jobList);
 
         private:

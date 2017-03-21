@@ -135,6 +135,8 @@ createCurl(const std::string&                                   url,
     curl_easy_setopt(curl, CURLOPT_URL, encodedUrl.c_str());
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verifyPeer ? 1L : 0L);
+    if (!verifyPeer)
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
@@ -194,6 +196,7 @@ HTTPRequest::run()
     curl_slist* curlHeaderList = nullptr;
 
     char curlErrorBuffer[CURL_ERROR_SIZE];
+    memset(curlErrorBuffer, 0, CURL_ERROR_SIZE);
 
     auto curl = createCurl(url, _username, _password, _additionalHeaders, _verifyPeer, curlHeaderList, curlErrorBuffer);
 
@@ -218,19 +221,24 @@ HTTPRequest::run()
 
     disposeCurl(curl, curlHeaderList);
 
-    const auto requestSucceeded =
-        res == CURLE_OK &&
-        (responseCode == 200 || responseCode == 206);
+    const auto validCurlCode = res == CURLE_OK;
+    const auto validStatusCode = responseCode == 200 || responseCode == 206;
+
+    const auto requestSucceeded = validCurlCode && validStatusCode;
 
     if (!requestSucceeded)
     {
-        const auto errorMessage =
-            "status: " + std::to_string(responseCode) +
-            (res != CURLE_OK ? ", error: " + std::string(curlErrorBuffer) : "");
+        if (!validCurlCode)
+            LOG_ERROR("curl status: " + std::to_string(responseCode) + ", error: " + std::string(curlErrorBuffer));
 
-        LOG_ERROR(errorMessage);
+        auto errorResponse = std::string();
 
-        error()->execute(responseCode, errorMessage);
+        if (validCurlCode)
+            errorResponse = std::string(_output.begin(), _output.end());
+        else
+            errorResponse = std::string();
+
+        error()->execute(responseCode, errorResponse);
     }
     else
     {
@@ -304,6 +312,7 @@ HTTPRequest::curlProgressHandler(void* arg, double total, double current, double
 
 bool
 HTTPRequest::fileExists(const std::string& filename,
+                        int& fileSize,
                         const std::string& username,
                         const std::string& password,
                         const std::unordered_map<std::string, std::string> *additionalHeaders,
@@ -314,6 +323,7 @@ HTTPRequest::fileExists(const std::string& filename,
     curl_slist* curlHeaderList = nullptr;
 
     char curlErrorBuffer[CURL_ERROR_SIZE];
+    memset(curlErrorBuffer, 0, CURL_ERROR_SIZE);
 
     auto curl = createCurl(
         url,
@@ -339,7 +349,11 @@ HTTPRequest::fileExists(const std::string& filename,
     auto status = curl_easy_perform(curl);
 
     auto responseCode = 0l;
+    double contentLength;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+    curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &contentLength);
+
+    fileSize = static_cast<int>(contentLength);
 
     disposeCurl(curl, curlHeaderList);
 
