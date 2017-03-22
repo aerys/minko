@@ -328,7 +328,7 @@ HTTPProtocol::load()
         HTTPRequest request(resolvedFilename(), username, password, &additionalHeaders);
 
         request.verifyPeer(verifyPeer);
-        request.verifyPeer(buffered);
+        request.buffered(buffered);
 
         auto requestIsSuccessfull = true;
 

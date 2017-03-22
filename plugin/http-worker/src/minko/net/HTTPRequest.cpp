@@ -70,7 +70,8 @@ HTTPRequest::HTTPRequest(const std::string& url,
     _bufferSignal(Signal<const std::vector<char>&>::create()),
     _username(username),
     _password(password),
-    _verifyPeer(true)
+    _verifyPeer(true),
+    _buffered(false)
 {
     if (additionalHeaders == nullptr)
         _additionalHeaders = std::unordered_map<std::string, std::string>();
