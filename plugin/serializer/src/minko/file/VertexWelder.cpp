@@ -51,14 +51,14 @@ VertexWelder::process(Node::Ptr& node, AssetLibrary::Ptr assetLibrary)
         ->where([this](Node::Ptr descendant) -> bool
             {
                 return descendant->hasComponent<Surface>() &&
-                    (!nodePredicateFunction() || nodePredicateFunction()(descendant)); 
+                    (!nodePredicateFunction() || nodePredicateFunction()(descendant));
             }
         );
 
     for (auto surfaceNode : surfaceNodes->nodes())
         for (auto surface : surfaceNode->components<Surface>())
             if (acceptsSurface(surface))
-                weldSurfaceGeometry(surface);
+                weldSurfaceGeometry(surface, assetLibrary);
 
     _progressRate = 1.f;
 
@@ -93,10 +93,9 @@ VertexWelder::acceptsSurface(Surface::Ptr surface)
 }
 
 void
-VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
+VertexWelder::weldSurfaceGeometry(Surface::Ptr surface, AssetLibrary::Ptr assetLibrary)
 {
     auto geometry = surface->geometry();
-
     auto spatialIndex = math::SpatialIndex<std::vector<unsigned int>>::create();
 
     buildSpatialIndex(geometry, spatialIndex);
@@ -285,7 +284,7 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
                 weldedVertices.size() + vertexBuffer->vertexSize(),
                 0.f
             );
-            
+
             const auto& vertexBufferData = vertexBuffer->data();
 
             for (const auto& vertexAttribute : vertexBuffer->attributes())
@@ -376,18 +375,16 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
         ++currentNewIndex;
     }
 
-    for (auto i = 0u; i < indices.size(); ++i)
-    {
-        auto newIndex = indexMap.at(indices[i]);
+    // Rebuild index buffer
+    auto newNumIndices = currentNewIndex;
+    render::IndexBuffer::Ptr newIndexBuffer = nullptr;
 
-        if (newIndex == -1)
-            break;
+    if (newNumIndices > std::numeric_limits<unsigned short>::max())
+        newIndexBuffer = createIndexBuffer<unsigned int>(indices, newNumIndices, 3u, indexMap, assetLibrary);
+    else
+        newIndexBuffer = createIndexBuffer<unsigned short>(indices, newNumIndices, 3u, indexMap, assetLibrary);
 
-        if (ushortIndexDataPointer)
-            (*ushortIndexDataPointer)[i] = static_cast<unsigned short>(newIndex);
-        else if (indexDataPointer)
-            (*indexDataPointer)[i] = static_cast<unsigned int>(newIndex);
-    }
+    geometry->indices(newIndexBuffer);
 
     auto newVertexBuffers = std::vector<render::VertexBuffer::Ptr>();
 
@@ -415,6 +412,25 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface)
     _weldedGeometrySet.insert(geometry);
 }
 
+template <typename T>
+render::IndexBuffer::Ptr
+VertexWelder::createIndexBuffer(const std::vector<unsigned int>&    indices,
+                                const std::vector<int>&             indexMap,
+                                AssetLibrary::Ptr                   assetLibrary)
+{
+    const auto numIndices = indices.size();
+
+    auto newIndices = std::vector<T>(numIndices, 0);
+    auto primitiveOffset = 0u;
+    for (auto i = 0u; i < numIndices; ++i)
+    {
+        auto newIndex = indexMap.at(indices[i]);
+        newIndices[i] = newIndex;
+    }
+
+    return render::IndexBuffer::create(assetLibrary->context(), newIndices);
+}
+
 void
 VertexWelder::buildSpatialIndex(Geometry::Ptr geometry, math::SpatialIndex<std::vector<unsigned int>>::Ptr index)
 {
@@ -437,8 +453,12 @@ bool
 VertexWelder::canWeldVertices(Geometry::Ptr                     geometry,
                               const std::vector<unsigned int>&  indices)
 {
-    if (indices.size() <= 1u || indices.size() > 8u)
+    if (indices.size() <= 1u)
         return false;
+
+    if (!_scalarAttributeWeldablePredicateFunction && !_vec2AttributeWeldablePredicateFunction &&
+        !_vec3AttributeWeldablePredicateFunction && !_vec4AttributeWeldablePredicateFunction)
+        return true;
 
     auto permutations = std::vector<bool>(indices.size());
     std::fill(permutations.begin() + indices.size() - 2u, permutations.end(), true);
