@@ -61,6 +61,8 @@ namespace minko
 
             std::unordered_set<GeometryPtr>                 _weldedGeometrySet;
 
+            float                                           _epsilon;
+
         public:
             ~VertexWelder() = default;
 
@@ -171,6 +173,14 @@ namespace minko
             void
             process(NodePtr& node, AssetLibraryPtr assetLibrary) override;
 
+            Ptr
+            epsilon(float value)
+            {
+                _epsilon = value;
+
+                return std::static_pointer_cast<VertexWelder>(shared_from_this());
+            }
+
         private:
             VertexWelder();
 
@@ -235,8 +245,6 @@ namespace minko
             template <typename T>
             IndexBufferPtr
             createIndexBuffer(const std::vector<unsigned int>&  indices,
-                              unsigned int                      newNumIndices,
-                              unsigned int                      primitiveSize,
                               const std::vector<int>&           indexMap,
                               AssetLibraryPtr                   assetLibrary);
         };

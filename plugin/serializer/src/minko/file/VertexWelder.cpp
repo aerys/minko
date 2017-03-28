@@ -36,7 +36,8 @@ VertexWelder::VertexWelder() :
     AbstractWriterPreprocessor<Node::Ptr>(),
     _statusChanged(StatusChangedSignal::create()),
     _progressRate(0.f),
-    _nodePredicateFunction([](Node::Ptr) -> bool { return true; })
+    _nodePredicateFunction([](Node::Ptr) -> bool { return true; }),
+    _epsilon(1e-6)
 {
 }
 
@@ -96,7 +97,7 @@ void
 VertexWelder::weldSurfaceGeometry(Surface::Ptr surface, AssetLibrary::Ptr assetLibrary)
 {
     auto geometry = surface->geometry();
-    auto spatialIndex = math::SpatialIndex<std::vector<unsigned int>>::create();
+    auto spatialIndex = math::SpatialIndex<std::vector<unsigned int>>::create(_epsilon);
 
     buildSpatialIndex(geometry, spatialIndex);
 
@@ -380,9 +381,9 @@ VertexWelder::weldSurfaceGeometry(Surface::Ptr surface, AssetLibrary::Ptr assetL
     render::IndexBuffer::Ptr newIndexBuffer = nullptr;
 
     if (newNumIndices > std::numeric_limits<unsigned short>::max())
-        newIndexBuffer = createIndexBuffer<unsigned int>(indices, newNumIndices, 3u, indexMap, assetLibrary);
+        newIndexBuffer = createIndexBuffer<unsigned int>(indices, indexMap, assetLibrary);
     else
-        newIndexBuffer = createIndexBuffer<unsigned short>(indices, newNumIndices, 3u, indexMap, assetLibrary);
+        newIndexBuffer = createIndexBuffer<unsigned short>(indices, indexMap, assetLibrary);
 
     geometry->indices(newIndexBuffer);
 
