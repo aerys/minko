@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 
 #include "minko/math/tools.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::scene;
@@ -61,7 +62,8 @@ bullet::PhysicsWorld::PhysicsWorld():
     _colliderLayoutMaskChangedSlot(),
     _paused(false),
     _maxNumSteps(0),
-    _baseFramerate(60.0f)
+    _baseFramerate(60.0f),
+    _currentPhysicsFrameTime(0.f)
 {
 }
 
@@ -335,15 +337,23 @@ bullet::PhysicsWorld::frameBeginHandler(std::shared_ptr<SceneManager> sceneManag
 {
     if (_paused)
         return;
+
+    _currentPhysicsFrameTime += deltaTime;
+    auto baseFrameTime = 1000.f / _baseFramerate;
+
+    if (_currentPhysicsFrameTime < baseFrameTime)
+        return;
     
-    deltaTime = deltaTime / 1000.0f;
+    auto frameTime = _currentPhysicsFrameTime / 1000.0f;
+
+    _currentPhysicsFrameTime = 0.f;
 
     auto baseStepLength = 1.0f / _baseFramerate;
 
-    if (_maxNumSteps > 0 && deltaTime > _maxNumSteps * baseStepLength)
-        deltaTime = baseStepLength;
+    if (_maxNumSteps > 0 && frameTime > _maxNumSteps * baseStepLength)
+        frameTime = baseStepLength;
             
-    _bulletDynamicsWorld->stepSimulation(deltaTime, _maxNumSteps, baseStepLength);
+    _bulletDynamicsWorld->stepSimulation(frameTime, _maxNumSteps, baseStepLength);
 
     updateColliders();
 }
@@ -351,7 +361,8 @@ bullet::PhysicsWorld::frameBeginHandler(std::shared_ptr<SceneManager> sceneManag
 void
 bullet::PhysicsWorld::frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
 {
-    notifyCollisions();
+    if (_currentPhysicsFrameTime == 0.f)
+        notifyCollisions();
 }
 
 void
