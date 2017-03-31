@@ -112,7 +112,6 @@ namespace minko
                 float                                                               _baseFramerate;
                 
                 bool                                                                _paused;
-                float                                                               _currentPhysicsFrameTime;
 
             public:
                 static
