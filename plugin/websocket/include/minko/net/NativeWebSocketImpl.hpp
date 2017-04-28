@@ -32,9 +32,20 @@ namespace minko
     {
         class WebSocket;
 
+        enum class TLSVersion
+        {
+            UNKNOWN,
+            TLS_1_0,
+            TLS_1_1,
+            TLS_1_2
+        };
+
         class NativeWebSocketImpl : public WebSocketImpl
         {
         public:
+            void
+            tlsVersion(TLSVersion tlsVersion);
+
             void
             connect(const std::string& uri, const std::string &cookie = "") override;
 
@@ -77,6 +88,26 @@ namespace minko
 
             std::mutex _callbackMutex;
             std::list<std::function<void(std::weak_ptr<WebSocket>)>> _callbacks;
+
+            TLSVersion _tlsVersion;
         };
+
+        inline
+        TLSVersion
+        parseTLSVersion(const std::string& str)
+        {
+            static const auto tlsVersionStringToValue = std::unordered_map<std::string, TLSVersion>{
+                { "1.0", TLSVersion::TLS_1_0 },
+                { "1.1", TLSVersion::TLS_1_1 },
+                { "1.2", TLSVersion::TLS_1_2 }
+            };
+
+            auto it = tlsVersionStringToValue.find(str);
+
+            if (it == tlsVersionStringToValue.end())
+                return TLSVersion::UNKNOWN;
+
+            return it->second;
+        }
     }
 }

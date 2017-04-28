@@ -33,7 +33,7 @@ namespace minko
     {
         static
         char **
-        makeArgvCopy(int argc, const char** argv)
+        makeArgvCopy(int argc, char** argv)
         {
             // From: https://gist.github.com/bnoordhuis/1981730.
             size_t strlen_sum;
@@ -62,19 +62,68 @@ namespace minko
 
         static
         void
-        startNode(const std::string& path)
+        startNode(const std::string& input)
         {
-            chdir(path.c_str());
+            std::stringstream inputStream(std::string(input.begin(), input.end()));
+
+            auto pathSize = 0;
+            auto argsSize = 0;
+
+            inputStream.read(reinterpret_cast<char*>(&pathSize), 4);
+            auto pathData = std::vector<char>(pathSize);
+
+            if (pathSize > 0)
+                inputStream.read(pathData.data(), pathSize);
+
+            const auto path = std::string(pathData.begin(), pathData.end());
+
+            inputStream.read(reinterpret_cast<char*>(&argsSize), 4);
+
+            auto argsData = std::vector<char>(argsSize);
+
+            if (argsSize > 0)
+                inputStream.read(argsData.data(), argsSize);
+
+            auto args = std::string(argsData.begin(), argsData.end());
 
             std::string binary = "node";
             std::string scriptPath = path + "/" + "index.js";
 
-            const char* args[] = { binary.c_str() , scriptPath.c_str(), nullptr };
+            std::vector<std::string> argsVec;
 
-            int argc = 2;
-            char** argv = makeArgvCopy(argc, args);
+            argsVec.push_back(binary);
+            argsVec.push_back(scriptPath);
 
-            LOG_DEBUG("Start node on " << scriptPath);
+            std::string token = " ";
+            auto i = args.find(token);
+
+            while (i != -1)
+            {
+                argsVec.push_back(args.substr(0, i));
+
+                args = args.substr(i + token.size());
+
+                i = args.find(token);
+            }
+
+            argsVec.push_back(args);
+
+            chdir(path.c_str());
+
+            char ** argsList = new char*[argsVec.size() + 1];
+
+            for(size_t i = 0; i < argsVec.size(); i++)
+            {
+                argsList[i] = new char[argsVec[i].size() + 1];
+                strcpy(argsList[i], argsVec[i].c_str());
+            }
+
+            argsList[argsVec.size()] = nullptr;
+
+            int argc = argsVec.size();
+            char** argv = makeArgvCopy(argc, argsList);
+
+            LOG_INFO("Start node on " << scriptPath);
             node::Start(argc, argv);
         }
 

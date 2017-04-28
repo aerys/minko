@@ -104,7 +104,9 @@ namespace minko
             });
 
             auto _1 = request.error()->connect([&](int e, const std::string& errorMessage) {
-                post(Message { "error" });
+                Message message{ "error" };
+                message.set(std::vector<char>(errorMessage.begin(), errorMessage.end()));
+                post(message);
             });
 
             auto _2 = request.complete()->connect([&](const std::vector<char>& output) {

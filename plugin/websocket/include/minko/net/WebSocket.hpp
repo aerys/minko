@@ -64,9 +64,9 @@ namespace minko
             void
             sendMessage(const void* payload, size_t s);
 
-            WebSocket();
+            WebSocket(WebSocketImpl* impl = nullptr);
 
-            WebSocket(AbstractCanvas::Ptr canvas);
+            WebSocket(AbstractCanvas::Ptr canvas, WebSocketImpl* impl = nullptr);
 
             ~WebSocket();
 

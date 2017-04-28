@@ -110,6 +110,10 @@ HTTPProtocol::errorHandler(int code, const char * message)
 {
     LOG_ERROR(message);
 
+    auto messageStr = std::string(message);
+
+    this->data().assign(messageStr.begin(), messageStr.end());
+
     error()->execute(shared_from_this());
 
     _httpProtocolReferences.erase(std::static_pointer_cast<HTTPProtocol>(shared_from_this()));
@@ -260,7 +264,7 @@ HTTPProtocol::load()
             }
             else if (message.type == "error")
             {
-                errorHandler();
+                errorHandler(0, std::string(message.data.begin(), message.data.end()).c_str());
             }
             else if (message.type == "buffer")
             {
@@ -324,7 +328,7 @@ HTTPProtocol::load()
         HTTPRequest request(resolvedFilename(), username, password, &additionalHeaders);
 
         request.verifyPeer(verifyPeer);
-        request.verifyPeer(buffered);
+        request.buffered(buffered);
 
         auto requestIsSuccessfull = true;
 

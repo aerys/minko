@@ -49,7 +49,11 @@ ZIPALIGN="${ANDROID_HOME}/tools/zipalign"
 VERSION_CODE="1"
 
 if ! [ -z "${BUILD_NUMBER}" ]; then
-	VERSION_CODE="${BUILD_NUMBER}"
+    VERSION_CODE="${BUILD_NUMBER}"
+fi
+
+if [ -z "${VERSION_NAME}" ]; then
+    VERSION_NAME="1.0"
 fi
 
 if [ ${OSTYPE} == "cygwin" ]; then
@@ -79,6 +83,7 @@ sed -i "s/{{PACKAGE}}/${PACKAGE}/" AndroidManifest.xml src/${PACKAGE//.//}/*.jav
 
 # Update version info
 sed -i "s/{{VERSION_CODE}}/$VERSION_CODE/" AndroidManifest.xml
+sed -i "s/{{VERSION_NAME}}/$VERSION_NAME/" AndroidManifest.xml
 
 mkdir -p libs/armeabi-v7a/
 # mkdir -p libs/x86/
