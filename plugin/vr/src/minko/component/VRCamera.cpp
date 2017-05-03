@@ -23,11 +23,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/log/Logger.hpp"
+#include "minko/file/Loader.hpp"
+#include "minko/file/File.hpp"
+#include "minko/file/Options.hpp"
+
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 # include "minko/vr/Cardboard.hpp"
 #else
 # if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+#  if defined(EMSCRIPTEN)
+#   include "emscripten/emscripten.h"
+#  endif
 #  include "minko/vr/WebVR.hpp"
 #  include "minko/vr/Cardboard.hpp"
 # else
@@ -37,6 +45,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::scene;
+using namespace minko::file;
 using namespace minko::component;
 using namespace minko::math;
 using namespace minko::vr;
@@ -51,6 +60,12 @@ VRCamera::VRCamera() :
     _viewportHeight(0.f),
     _rendererClearColor(0)
 {
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    bool webVRScriptLoaded = emscripten_run_script_int("if (window.MinkoVR != undefined) (1); else (0);") != 0;
+
+    if (!webVRScriptLoaded)
+        VRCamera::loadScript("script/minko.webvr.js");
+#endif
 }
 
 VRCamera::~VRCamera()
@@ -71,11 +86,57 @@ VRCamera::updateViewport(int viewportWidth, int viewportHeight)
         _VRImpl->updateViewport(viewportWidth, viewportHeight);
 }
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+void
+VRCamera::loadScript(std::string filename)
+{
+    auto loader = file::Loader::create();
+    auto options = Options::create();
+
+    options
+        ->loadAsynchronously(false)
+        ->storeDataIfNotParsed(false);
+
+    loader->options(options);
+
+    auto loaderComplete = loader->complete()->connect([=](file::Loader::Ptr loaderThis)
+    {
+        const auto& data = loaderThis->files().at(filename)->data();
+        const auto eval = std::string(data.begin(), data.end());
+
+        emscripten_run_script(eval.c_str());
+
+        LOG_INFO(filename << " script successfully loaded.");
+    });
+
+    auto loaderError = loader->error()->connect([=](file::Loader::Ptr loaderThis, const Error& error)
+    {
+        LOG_ERROR(error.type() << ": " << error.what());
+    });
+
+    loader
+        ->queue(filename)
+        ->load();
+}
+#endif
+
+bool
+VRCamera::supported()
+{
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    return (system::Platform::isMobile() && sensors::Attitude::getInstance()->isSupported()) || WebVR::supported();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    return true;
+#else
+    return OculusRift::detected();
+#endif
+}
+
 bool
 VRCamera::detected()
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    return WebVR::detected() || (system::Platform::isMobile() && sensors::Attitude::getInstance()->isSupported());
+    return (system::Platform::isMobile() && sensors::Attitude::getInstance()->isSupported()) || WebVR::detected();
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     return true;
 #else
@@ -238,4 +299,31 @@ VRCamera::updateCamera(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<
         _VRImpl->updateCamera(target(), leftCamera, rightCamera);
 
     target()->component<Transform>()->updateModelToWorldMatrix();
+}
+
+float
+VRCamera::getLeftEyeFov()
+{
+    if (!_VRImpl)
+        return 0.78f; // 45°
+
+    return _VRImpl->getLeftEyeFov();
+}
+
+float
+VRCamera::getRightEyeFov()
+{
+if (!_VRImpl)
+        return 0.78f; // 45°
+
+    return _VRImpl->getRightEyeFov();
+}
+
+void
+VRCamera::disablePositionTracking(bool disable)
+{
+    if (!_VRImpl)
+        return;
+
+    return _VRImpl->disablePositionTracking(disable);
 }

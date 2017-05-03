@@ -43,11 +43,10 @@ namespace minko
                                                                         const T&)>;
 
         private:
-            typedef std::shared_ptr<AssetLibrary>       AssetLibraryPtr;
-
-            typedef std::shared_ptr<component::Surface> SurfacePtr;
-
-            typedef std::shared_ptr<geometry::Geometry> GeometryPtr;
+            typedef std::shared_ptr<AssetLibrary>           AssetLibraryPtr;
+            typedef std::shared_ptr<render::IndexBuffer>    IndexBufferPtr;
+            typedef std::shared_ptr<component::Surface>     SurfacePtr;
+            typedef std::shared_ptr<geometry::Geometry>     GeometryPtr;
 
         private:
             StatusChangedSignal::Ptr                        _statusChanged;
@@ -61,6 +60,8 @@ namespace minko
             VertexAttributePredicateFunction<math::vec4>    _vec4AttributeWeldablePredicateFunction;
 
             std::unordered_set<GeometryPtr>                 _weldedGeometrySet;
+
+            float                                           _epsilon;
 
         public:
             ~VertexWelder() = default;
@@ -172,6 +173,14 @@ namespace minko
             void
             process(NodePtr& node, AssetLibraryPtr assetLibrary) override;
 
+            Ptr
+            epsilon(float value)
+            {
+                _epsilon = value;
+
+                return std::static_pointer_cast<VertexWelder>(shared_from_this());
+            }
+
         private:
             VertexWelder();
 
@@ -179,7 +188,7 @@ namespace minko
             acceptsSurface(SurfacePtr surface);
 
             void
-            weldSurfaceGeometry(SurfacePtr surface);
+            weldSurfaceGeometry(SurfacePtr surface, AssetLibraryPtr assetLibrary);
 
             void
             buildSpatialIndex(GeometryPtr                                                       geometry,
@@ -232,6 +241,12 @@ namespace minko
 
                 return true;
             }
+
+            template <typename T>
+            IndexBufferPtr
+            createIndexBuffer(const std::vector<unsigned int>&  indices,
+                              const std::vector<int>&           indexMap,
+                              AssetLibraryPtr                   assetLibrary);
         };
     }
 }

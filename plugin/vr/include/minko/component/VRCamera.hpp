@@ -91,7 +91,13 @@ namespace minko
             void
             updateViewport(int viewportWidth, int viewportHeight);
 
+            void
+            loadScript(std::string filename);
+
             static
+            bool
+            supported();
+
             bool
             detected();
 
@@ -118,6 +124,15 @@ namespace minko
             {
                 return _rightRenderer->enabled();
             }
+
+            float
+            getLeftEyeFov();
+
+            float
+            getRightEyeFov();
+
+            void
+            disablePositionTracking(bool disable);
 
         public:
             ~VRCamera();

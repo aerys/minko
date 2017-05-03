@@ -107,8 +107,10 @@ namespace minko
             void
             computeShadowProjection(const math::mat4&   view,
                                     const math::mat4&   projection,
-                                    float               zFar            = std::numeric_limits<float>::max(),
-                                    bool                fitToCascade    = false);
+                                    bool                fitToCascade = false,
+                                    float               zFar = std::numeric_limits<float>::max(),
+                                    float               zNear = std::numeric_limits<float>::min()
+                                    );
 
             void
             enableShadowMapping(uint shadowMapSize = DEFAULT_SHADOWMAP_SIZE,
@@ -125,7 +127,7 @@ namespace minko
             updateRoot(std::shared_ptr<scene::Node> root);
 
             void
-            targetRemoved(std::shared_ptr<scene::Node> target);
+            targetRemoved(std::shared_ptr<scene::Node> target) override;
 
 	    private:
             DirectionalLight(float diffuse, float specular);
