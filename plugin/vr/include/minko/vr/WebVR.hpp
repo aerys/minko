@@ -69,6 +69,10 @@ namespace minko
 
             static
             bool
+            supported();
+
+            static
+            bool
             detected();
 
             inline

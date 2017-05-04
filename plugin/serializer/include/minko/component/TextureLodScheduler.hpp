@@ -36,6 +36,7 @@ namespace minko
         private:
             typedef std::shared_ptr<scene::Node>                NodePtr;
 
+            typedef std::shared_ptr<AbstractComponent>          AbstractComponentPtr;
             typedef std::shared_ptr<SceneManager>               SceneManagerPtr;
             typedef std::shared_ptr<Renderer>                   RendererPtr;
             typedef std::shared_ptr<Surface>                    SurfacePtr;
@@ -61,10 +62,35 @@ namespace minko
                 int                                             maxAvailableLod;
                 int                                             maxLod;
 
+                std::vector<SurfacePtr>                         surfaces;
+
                 std::unordered_multimap<
                     NodePtr,
                     Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot
                 >                                               propertyChangedSlots;
+                std::unordered_map<
+                    NodePtr,
+                    Signal<NodePtr, NodePtr>::Slot
+                >                                               layoutChangedSlots;
+                std::unordered_map<
+                    SurfacePtr,
+                    Signal<AbstractComponentPtr>::Slot
+                >                                               layoutMaskChangedSlots;
+
+                TextureResourceInfo() :
+                    base(nullptr),
+                    texture(),
+                    textureType(),
+                    materialDataSet(),
+                    activeLod(-1),
+                    maxAvailableLod(-1),
+                    maxLod(-1),
+                    surfaces(),
+                    propertyChangedSlots(),
+                    layoutChangedSlots(),
+                    layoutMaskChangedSlots()
+                {
+                }
             };
 
         private:
@@ -74,6 +100,7 @@ namespace minko
             MasterLodScheduler::DeferredTextureRegisteredSignal::Slot   _deferredTextureRegisteredSlot;
             MasterLodScheduler::DeferredTextureReadySignal::Slot        _deferredTextureReadySlot;
 
+            std::unordered_map<ProviderPtr, std::vector<SurfacePtr>>    _materialToSurfaces;
             std::unordered_map<std::string, TextureResourceInfo>        _textureResources;
 
             math::vec3                                                  _eyePosition;
@@ -140,6 +167,9 @@ namespace minko
                          const std::unordered_set<ProviderPtr>&    materialDataSet,
                          const Flyweight<std::string>&             textureType,
                          AbstractTexturePtr                        texture);
+
+            void
+            layoutChanged(TextureResourceInfo& resource);
 
             void
             activeLodChanged(TextureResourceInfo&   resource,
