@@ -423,6 +423,9 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
             break;
         case ProgramInputs::Type::sampler2d:
         case ProgramInputs::Type::samplerCube:
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+        case ProgramInputs::Type::samplerExternalOES:
+#endif
         {
             auto samplerIt = std::find_if(
                 _samplers.begin(),

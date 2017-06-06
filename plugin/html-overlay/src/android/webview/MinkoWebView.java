@@ -6,11 +6,17 @@ import android.content.Context;
 import android.util.Log;
 import android.app.Activity;
 import android.content.ContextWrapper;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PorterDuff.Mode;
+import android.util.Log;
 import android.view.*;
 import org.libsdl.app.*;
 
 public class MinkoWebView extends WebView
 {
+    private static final String TAG = "Minko/Java";
+    private MinkoWebViewRenderer _minkoWebViewRenderer = null;
 	private long lastEventTime = -1;
 
 	public MinkoWebView(Context context)
@@ -54,6 +60,48 @@ public class MinkoWebView extends WebView
 		}
 
         return super.onTouchEvent(ev);
+    }
+
+    public void setRenderer(MinkoWebViewRenderer renderer)
+    {
+        _minkoWebViewRenderer = renderer;
+    }
+
+    @Override
+    public void draw(Canvas canvas) {
+        if (_minkoWebViewRenderer == null)
+        {
+            super.draw(canvas);
+            return;
+        }
+
+        // Returns canvas attached to OpenGL texture to draw on
+        Canvas glAttachedCanvas = _minkoWebViewRenderer.onDrawViewBegin();
+        
+        if (glAttachedCanvas != null)
+        {
+            // Translate canvas to reflect view scrolling
+            float xScale = glAttachedCanvas.getWidth() / (float)canvas.getWidth();
+            glAttachedCanvas.scale(xScale, xScale);
+            glAttachedCanvas.translate(-getScrollX(), -getScrollY());
+            
+            Log.i(TAG, "[MinkoWebView] Draw on the OpenGL ES attached canvas.");
+
+            // Don't forget to clear the canvas before to write
+            glAttachedCanvas.drawColor(Color.TRANSPARENT, Mode.MULTIPLY);
+
+            // Draw the view to provided canvas
+            super.draw(glAttachedCanvas);
+        }
+        else
+        {
+            Log.w(TAG, "[MinkoWebView] Attached canvas is null.");
+            super.draw(canvas);
+            return;
+        }
+
+        // Notify the canvas is updated
+        _minkoWebViewRenderer.onDrawViewEnd();
     }
 
     @Override

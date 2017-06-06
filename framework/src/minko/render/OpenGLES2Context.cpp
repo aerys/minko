@@ -63,6 +63,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
 # include <dlfcn.h>
+# include <EGL/egl.h>
+# include <EGL/eglext.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
@@ -821,6 +823,51 @@ OpenGLES2Context::createTexture(TextureType     type,
 }
 
 uint
+OpenGLES2Context::createSharedTexture(void* graphicBuffer, uint width, uint height)
+{
+    uint texture;
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    glGenTextures(1, &texture);
+
+    auto glTarget = GL_TEXTURE_EXTERNAL_OES;
+
+    glBindTexture(glTarget, texture);
+
+    _currentBoundTexture = texture;
+
+    // default sampler states
+    glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    _textures.push_back(texture);
+    _textureSizes[texture] = std::make_pair(width, height);
+    _textureHasMipmaps[texture] = false;
+    _textureTypes[texture] = TextureType::SharedTexture;
+
+    _currentWrapMode[texture] = WrapMode::CLAMP;
+    _currentTextureFilter[texture] = TextureFilter::LINEAR;
+    _currentMipFilter[texture] = MipFilter::NONE;
+
+    auto display = eglGetCurrentDisplay();
+    EGLint attrs[] = { EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE };
+    auto eglImage = eglCreateImageKHR(display, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID, (EGLClientBuffer)graphicBuffer, attrs);
+
+    if (display == EGL_NO_DISPLAY)
+        LOG_ERROR("Error: No EGL display found.");
+
+    if (eglImage == EGL_NO_IMAGE_KHR)
+        LOG_ERROR("Error creating the EGL image.");
+
+    glEGLImageTargetTexture2DOES(glTarget, eglImage);
+#endif
+
+    return texture;
+}
+
+uint
 OpenGLES2Context::createCompressedTexture(TextureType     type,
                                           TextureFormat   format,
                                           unsigned int    width,
@@ -938,6 +985,28 @@ OpenGLES2Context::getTextureType(uint textureId) const
 
 	return foundTypeIt->second;
 }
+
+int
+OpenGLES2Context::getTextureTarget(TextureType type) const
+{
+    switch (type)
+    {
+    case TextureType::Texture2D:
+        return GL_TEXTURE_2D;
+        break;
+    case TextureType::CubeTexture:
+        return GL_TEXTURE_CUBE_MAP;
+        break;
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    case TextureType::SharedTexture:
+        return GL_TEXTURE_EXTERNAL_OES;
+        break;
+#endif
+    default:
+        throw std::logic_error("Invalid TextureType: " + std::to_string(static_cast<int>(type)));
+    }
+}
+
 
 void
 OpenGLES2Context::uploadTexture2dData(uint 		texture,
@@ -1085,9 +1154,7 @@ OpenGLES2Context::setTextureAt(uint	position,
 	if (position >= _currentTexture.size())
 		return;
 
-	const auto glTarget	= getTextureType(texture) == TextureType::Texture2D
-		? GL_TEXTURE_2D
-		: GL_TEXTURE_CUBE_MAP;
+    const auto glTarget = getTextureTarget(getTextureType(texture));
 
 	if (_currentTexture[position] != texture || _currentBoundTexture != texture)
 	{
@@ -1111,9 +1178,7 @@ OpenGLES2Context::setSamplerStateAt(uint			position,
 									MipFilter		mipFiltering)
 {
 	const auto	texture		= _currentTexture[position];
-	const auto	glTarget	= getTextureType(texture) == TextureType::Texture2D
-		? GL_TEXTURE_2D
-		: GL_TEXTURE_CUBE_MAP;
+    const auto glTarget = getTextureTarget(getTextureType(texture));
 
 	auto active	= false;
 
@@ -1428,6 +1493,10 @@ OpenGLES2Context::convertInputType(unsigned int type)
 			return ProgramInputs::Type::sampler2d;
 		case GL_SAMPLER_CUBE:
 			return ProgramInputs::Type::samplerCube;
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+        case GL_SAMPLER_EXTERNAL_OES:
+            return ProgramInputs::Type::samplerExternalOES;
+#endif
 		default:
 			throw std::logic_error("unsupported type");
 			return ProgramInputs::Type::unknown;

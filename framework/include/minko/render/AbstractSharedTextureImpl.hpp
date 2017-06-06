@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -20,71 +20,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "AbstractDOM.hpp"
 
 namespace minko
 {
-	namespace dom
-	{
-		class AbstractDOMEngine
-		{
-		public:
-			typedef std::shared_ptr<AbstractDOMEngine> Ptr;
-			
-			virtual
-			~AbstractDOMEngine()
-			{
-			}
- 
-			virtual
-			AbstractDOM::Ptr
-			load(std::string uri) = 0;
+    namespace render
+    {
+        class AbstractSharedTextureImpl
+        {
+        public:
+            typedef std::shared_ptr<AbstractSharedTextureImpl> Ptr;
 
-			virtual
-			void
-			clear() = 0;
-
-			virtual
-			Signal<AbstractDOM::Ptr, std::string>::Ptr
-			onload() = 0;
-
-			virtual
-			Signal<AbstractDOM::Ptr, std::string>::Ptr
-			onmessage() = 0;
-
-			virtual
-			AbstractDOM::Ptr
-			mainDOM() = 0;
-
-			virtual
-			void
-			visible(bool) = 0;
-            
-            virtual
-			bool
-			visible() = 0;
+        public:
 
             virtual
-            void
-            updateNextFrame() = 0;
+            ~AbstractSharedTextureImpl() = default;
 
             virtual
-            void
-            pollRate(int) = 0;
+            void*
+            createGraphicBuffer(unsigned int width, unsigned int height) = 0;
 
-            // Render to texture
-            
-            virtual
-            void
-            enableRenderToTexture(std::shared_ptr<minko::render::SharedTexture> texture) = 0;
-
-            virtual
-            void
-            disableRenderToTexture() = 0;
-
-            virtual
-            std::shared_ptr<minko::render::AbstractTexture>
-            texture() = 0;
-		};
-	}
+        protected:
+            AbstractSharedTextureImpl() = default;
+        };
+    }
 }

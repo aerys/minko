@@ -237,12 +237,14 @@ namespace minko
                           bool          optimizeForRenderToTexture = false) override;
 
             uint
+            createSharedTexture(void* graphicBuffer, uint width, uint height) override;
+
+            uint
             createCompressedTexture(TextureType     type,
                                     TextureFormat   format,
                                     uint    		width,
                                     uint    		height,
                                     bool            mipMapping) override;
-
 
             uint
             createRectangleTexture(TextureType  type,
@@ -461,6 +463,9 @@ namespace minko
 
 			TextureType
 			getTextureType(uint textureId) const;
+
+            int
+            getTextureTarget(TextureType type) const;
 
             void
             setUniformFloat(uint location, uint count, const float* v) override;

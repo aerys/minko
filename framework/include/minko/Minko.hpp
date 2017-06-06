@@ -87,6 +87,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Texture.hpp"
 #include "minko/render/RectangleTexture.hpp"
 #include "minko/render/CubeTexture.hpp"
+#include "minko/render/SharedTexture.hpp"
 #include "minko/render/Priority.hpp"
 #include "minko/render/TextureFormat.hpp"
 #include "minko/geometry/Geometry.hpp"

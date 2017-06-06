@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/input/Touch.hpp"
 #include "minko/log/Logger.hpp"
+#include "minko/render/SharedTexture.hpp"
 
 #include "SDL.h"
 
@@ -38,6 +39,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::dom;
 using namespace minko::file;
+using namespace minko::render;
 using namespace android;
 using namespace android::dom;
 
@@ -223,6 +225,7 @@ AndroidWebViewDOMEngine::AndroidWebViewDOMEngine() :
     _updateNextFrame(false),
     _pollRate(-1),
     _lastUpdateTime(0.0),
+    _sharedTexture(nullptr),
     // JNI
     _initWebViewTask(nullptr),
     _evalJSMethod(nullptr),
@@ -280,6 +283,9 @@ AndroidWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Pt
     _changeResolutionMethod = env->GetMethodID(initWebViewTaskClass, "changeResolution", "(II)V");
     // Get hide method
     _hideMethod = env->GetMethodID(initWebViewTaskClass, "hide", "(Z)V");
+
+    // Get createSurfaceTexture method
+    _setWebViewRendererSurfaceMethod = env->GetMethodID(initWebViewTaskClass, "setWebViewRendererSurface", "(Landroid/view/Surface;)V");
 
     visible(_visible);
 
@@ -368,6 +374,14 @@ AndroidWebViewDOMEngine::enterFrame(float time)
     {
         _updateNextFrame = false;
         _lastUpdateTime = time;
+    }
+
+    // If we are rendering the WebView into a texture, 
+    // don't forget to update the surface texture
+    if (_jniSurfaceTexture != nullptr)
+    {
+         auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+         env->CallVoidMethod(_jniSurfaceTexture, _updateTexImageMethodId);
     }
 }
 
@@ -619,4 +633,72 @@ AndroidWebViewDOMEngine::eval(const std::string& data)
     env->DeleteLocalRef(evalJSResult);
 
     return result;
+}
+
+
+// Render to texture
+
+void
+AndroidWebViewDOMEngine::enableRenderToTexture(std::shared_ptr<SharedTexture> texture)
+{
+    if (!_canvas || !_canvas->context())
+    {
+        LOG_ERROR("No OpenGL context yet");
+        return;
+    }
+
+    _sharedTexture = texture;
+
+    LOG_INFO("Create a new WebView renderer surface");
+
+    createWebViewSurface();
+}
+
+void
+AndroidWebViewDOMEngine::createWebViewSurface()
+{
+    if (!_sharedTexture)
+        return;
+
+    // Send the new texture Id to Java
+    auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+
+    // Create a SurfaceTexture using JNI
+    const jclass surfaceTextureClass = env->FindClass("android/graphics/SurfaceTexture");
+    // Find the constructor that takes an int (texture name)
+    const jmethodID surfaceTextureConstructor = env->GetMethodID(surfaceTextureClass, "<init>", "(I)V" );
+    jobject surfaceTextureObject = env->NewObject(surfaceTextureClass, surfaceTextureConstructor, _sharedTexture->id());
+    _jniSurfaceTexture = env->NewGlobalRef(surfaceTextureObject);
+
+    // Retrieve SurfaceTexture methods we will use
+    _updateTexImageMethodId = env->GetMethodID(surfaceTextureClass, "updateTexImage", "()V");
+    _setDefaultBufferSizeMethodId = env->GetMethodID(surfaceTextureClass, "setDefaultBufferSize", "(II)V" );
+
+    // Create a Surface from the SurfaceTexture using JNI
+    const jclass surfaceClass = env->FindClass("android/view/Surface");
+    const jmethodID surfaceConstructor = env->GetMethodID(surfaceClass, "<init>", "(Landroid/graphics/SurfaceTexture;)V");
+    jobject surfaceObject = env->NewObject(surfaceClass, surfaceConstructor, _jniSurfaceTexture);
+    _jniSurface = env->NewGlobalRef(surfaceObject);
+
+    // Now that we have a globalRef, we can free the localRef
+    env->DeleteLocalRef(surfaceTextureObject);
+    env->DeleteLocalRef(surfaceTextureClass);
+    env->DeleteLocalRef(surfaceObject);
+    env->DeleteLocalRef(surfaceClass);
+
+    // Set the Surface on the Java WebView
+    env->CallVoidMethod(_initWebViewTask, _setWebViewRendererSurfaceMethod, _jniSurface);
+    env->CallVoidMethod(_jniSurfaceTexture, _setDefaultBufferSizeMethodId, _sharedTexture->width(), _sharedTexture->height());
+}
+
+void
+AndroidWebViewDOMEngine::disableRenderToTexture()
+{
+    // TODO
+}
+
+std::shared_ptr<minko::render::AbstractTexture>
+AndroidWebViewDOMEngine::texture()
+{
+    return _sharedTexture;
 }
