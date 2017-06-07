@@ -115,9 +115,6 @@ namespace android
                   void
                   disableRenderToTexture() override;
 
-                  std::shared_ptr<minko::render::AbstractTexture>
-                  texture() override;
-
             private:
 
                   void
@@ -131,9 +128,6 @@ namespace android
 
                   void
                   updateEvents();
-
-                  void
-                  createWebViewSurface();
                   
               public:
                   
@@ -202,14 +196,16 @@ namespace android
                   int _pollRate;
                   bool _updateNextFrame;
 
-                  std::shared_ptr<minko::render::SharedTexture> _sharedTexture;
-
                   // JNI part
 
                   // Java Objects
                   jobject _initWebViewTask = nullptr;
                   jobject _jniSurfaceTexture = nullptr;
                   jobject _jniSurface = nullptr;
+
+                  // Java Classes
+                  jclass _surfaceTextureClass = nullptr;
+                  jclass _surfaceClass = nullptr;
 
                   // Java Method IDs
                   jmethodID _evalJSMethod = nullptr;
@@ -219,8 +215,12 @@ namespace android
                   jmethodID _setWebViewRendererSurfaceMethod = nullptr;
 
                   // SurfaceTexture
+                  jmethodID _surfaceTextureConstructor = nullptr;
                   jmethodID _updateTexImageMethodId = nullptr;
                   jmethodID _setDefaultBufferSizeMethodId = nullptr;
+
+                  // Surface
+                  jmethodID _surfaceConstructor = nullptr;
             };
       }
 }

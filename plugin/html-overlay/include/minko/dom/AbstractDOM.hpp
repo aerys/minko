@@ -84,20 +84,6 @@ namespace minko
 			virtual
 			bool
 			isMain() = 0;
-
-            // Render to texture
-            
-            virtual
-            void
-            enableRenderToTexture(std::shared_ptr<minko::render::SharedTexture> texture) = 0;
-
-            virtual
-            void
-            disableRenderToTexture() = 0;
-            
-            virtual
-            std::shared_ptr<minko::render::AbstractTexture>
-            texture() = 0;
 		};
 	}
 }

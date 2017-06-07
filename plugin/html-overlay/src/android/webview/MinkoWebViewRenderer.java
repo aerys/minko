@@ -73,7 +73,7 @@ public class MinkoWebViewRenderer implements GLSurfaceView.Renderer
 
     public void onDrawViewEnd()
     {
-        if(_surfaceCanvas != null)
+        if(_surfaceCanvas != null && _webViewSurface != null)
             _webViewSurface.unlockCanvasAndPost(_surfaceCanvas);
 
         _surfaceCanvas = null;

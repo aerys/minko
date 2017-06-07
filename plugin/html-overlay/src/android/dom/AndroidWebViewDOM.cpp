@@ -228,23 +228,3 @@ AndroidWebViewDOM::runScriptInt(const std::string& script)
 {
     return atoi(_engine->eval(script).c_str());
 }
-
-// Render to texture
-
-void
-AndroidWebViewDOM::enableRenderToTexture(std::shared_ptr<minko::render::SharedTexture> texture)
-{
-    _engine->enableRenderToTexture(texture);
-}
-
-void
-AndroidWebViewDOM::disableRenderToTexture()
-{
-    _engine->disableRenderToTexture();
-}
-
-std::shared_ptr<minko::render::AbstractTexture>
-AndroidWebViewDOM::texture()
-{
-    return _engine->texture();
-}

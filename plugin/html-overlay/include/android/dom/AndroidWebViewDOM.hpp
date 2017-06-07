@@ -102,18 +102,7 @@ namespace android
 
             int
             runScriptInt(const std::string& script);
-
-            // Render to texture
-
-            void
-            enableRenderToTexture(std::shared_ptr<minko::render::SharedTexture> texture) override;
-
-            void
-            disableRenderToTexture() override;
-
-            std::shared_ptr<minko::render::AbstractTexture>
-            texture() override;
-
+            
 		private:
             std::string
             escapeJsonString(const std::string& input);

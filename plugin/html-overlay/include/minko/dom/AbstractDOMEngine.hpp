@@ -81,10 +81,6 @@ namespace minko
             virtual
             void
             disableRenderToTexture() = 0;
-
-            virtual
-            std::shared_ptr<minko::render::AbstractTexture>
-            texture() = 0;
 		};
 	}
 }
