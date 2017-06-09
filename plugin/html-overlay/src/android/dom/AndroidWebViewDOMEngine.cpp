@@ -685,17 +685,13 @@ AndroidWebViewDOMEngine::enableRenderToTexture(std::shared_ptr<SharedTexture> te
 void
 AndroidWebViewDOMEngine::disableRenderToTexture()
 {
-    LOG_INFO("DisableRenderToTexture");
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
-    LOG_INFO("Delete global refs");
     env->DeleteGlobalRef(_jniSurfaceTexture);
     env->DeleteGlobalRef(_jniSurface);
 
-    LOG_INFO("Nullptr");
     _jniSurfaceTexture = nullptr;
     _jniSurface = nullptr;
 
-    LOG_INFO("Set WebView Surface to nullptr");
     env->CallVoidMethod(_initWebViewTask, _setWebViewRendererSurfaceMethod, _jniSurface);
 }

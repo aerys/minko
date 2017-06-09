@@ -1,81 +1,81 @@
 {
-	"name" : "HTML overlay",
-	
-	"attributes" : {
-		"position"	: "geometry[${geometryUuid}].position",
-		"uv"		: "geometry[${geometryUuid}].uv"
-	},
-
-	"uniforms" : {
-		"overlaySampler" : "material[${materialUuid}].diffuseMap",
-		"overlayRatio"   : "material[${materialUuid}].overlayRatio"
-	},
-
-	"samplerStates" : {
-		"overlaySampler"	: { "textureFilter" : "linear" }
-	},
-
-	"states" : {
-		"blendingMode" 		: "alpha",
-		"priority"			: ["last", -999999999.0],
-		"depthMask"			: false,
-		"depthFunction"		: "always",
-		"triangleCulling"	: "none"
+    "name" : "HTML overlay",
+    
+    "attributes" : {
+        "position"  : "geometry[${geometryUuid}].position",
+        "uv"        : "geometry[${geometryUuid}].uv"
     },
-	
-	"techniques" : [{
-	
-		"passes" : [{
-			
-			"vertexShader" : "
-				#ifdef GL_ES
-    				#ifdef GL_FRAGMENT_PRECISION_HIGH
-        				precision highp float;
-    				#else
-        				precision mediump float;
-    				#endif
-				#endif
 
-				attribute vec3 position;
-				attribute vec2 uv;
+    "uniforms" : {
+        "overlaySampler" : "material[${materialUuid}].diffuseMap",
+        "overlayRatio"   : "material[${materialUuid}].overlayRatio"
+    },
 
-				varying vec2 vertTexcoord;
-				
-				void main(void)
-				{
-					vertTexcoord = vec2(uv.x, 1.0 - uv.y);
-				
-					gl_Position = vec4(position, 1) * vec4(1., 1., 1., .5);
-				}
-			",
+    "samplerStates" : {
+        "overlaySampler"    : { "textureFilter" : "linear" }
+    },
 
-			"fragmentShader" : "
-				#ifdef GL_ES
-				    #ifdef GL_FRAGMENT_PRECISION_HIGH
-				        precision highp float;
-				        precision highp int;
-				    #else
-				        precision mediump float;
-						precision mediump int;
-				    #endif
-				#endif
+    "states" : {
+        "blendingMode"      : "alpha",
+        "priority"          : ["last", -999999999.0],
+        "depthMask"         : false,
+        "depthFunction"     : "always",
+        "triangleCulling"   : "none"
+    },
+    
+    "techniques" : [{
+    
+        "passes" : [{
+            
+            "vertexShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
 
-				uniform sampler2D overlaySampler;
+                attribute vec3 position;
+                attribute vec2 uv;
 
-				varying vec2 vertTexcoord;
-				uniform vec2 overlayRatio;
+                varying vec2 vertTexcoord;
+                
+                void main(void)
+                {
+                    vertTexcoord = vec2(uv.x, 1.0 - uv.y);
+                
+                    gl_Position = vec4(position, 1) * vec4(1., 1., 1., .5);
+                }
+            ",
 
-				void main()
-				{
-					vec2 overlayUv = vec2(vertTexcoord.x, 1.0 - vertTexcoord.y) * overlayRatio.xy;
-					vec4 overlayColor = texture2D(overlaySampler, overlayUv);
+            "fragmentShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                        precision highp int;
+                    #else
+                        precision mediump float;
+                        precision mediump int;
+                    #endif
+                #endif
 
-					overlayColor = vec4(overlayColor.z, overlayColor.y, overlayColor.x, overlayColor.w);
+                uniform sampler2D overlaySampler;
 
-					gl_FragColor = overlayColor;
-				}
-			"
-		}]
-		
-	}]
+                varying vec2 vertTexcoord;
+                uniform vec2 overlayRatio;
+
+                void main()
+                {
+                    vec2 overlayUv = vec2(vertTexcoord.x, 1.0 - vertTexcoord.y) * overlayRatio.xy;
+                    vec4 overlayColor = texture2D(overlaySampler, overlayUv);
+
+                    overlayColor = vec4(overlayColor.z, overlayColor.y, overlayColor.x, overlayColor.w);
+
+                    gl_FragColor = overlayColor;
+                }
+            "
+        }]
+        
+    }]
 }

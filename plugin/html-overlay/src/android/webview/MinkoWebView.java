@@ -65,6 +65,9 @@ public class MinkoWebView extends WebView
     public void setRenderer(MinkoWebViewRenderer renderer)
     {
         _minkoWebViewRenderer = renderer;
+
+        // Force WebView redraw
+        this.invalidate();
     }
 
     @Override
