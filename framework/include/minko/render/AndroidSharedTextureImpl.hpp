@@ -33,9 +33,6 @@ namespace minko
         public:
             AndroidSharedTextureImpl() = default;
             ~AndroidSharedTextureImpl() = default;
-
-            void*
-            createGraphicBuffer(unsigned int width, unsigned int height) override;
         };
     }
 }

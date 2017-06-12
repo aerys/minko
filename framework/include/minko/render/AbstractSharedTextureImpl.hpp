@@ -35,10 +35,6 @@ namespace minko
             virtual
             ~AbstractSharedTextureImpl() = default;
 
-            virtual
-            void*
-            createGraphicBuffer(unsigned int width, unsigned int height) = 0;
-
         protected:
             AbstractSharedTextureImpl() = default;
         };

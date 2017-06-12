@@ -733,9 +733,7 @@ OpenGLES2Context::createTexture(TextureType     type,
 	// texture Specifies the name of a texture.
 	//
 	// glBindTexture bind a named texture to a texturing target
-	const auto glTarget = type == TextureType::Texture2D
-		? GL_TEXTURE_2D
-		: GL_TEXTURE_CUBE_MAP;
+    const auto glTarget = getTextureTarget(type);
 
 	glBindTexture(glTarget, texture);
 
@@ -786,7 +784,7 @@ OpenGLES2Context::createTexture(TextureType     type,
 		{
 			if (type == TextureType::Texture2D)
 				glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-			else
+            else if (type == TextureType::CubeTexture)
 			{
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -803,7 +801,7 @@ OpenGLES2Context::createTexture(TextureType     type,
 	{
 		if (type == TextureType::Texture2D)
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-		else
+        else if (type == TextureType::CubeTexture)
 		{
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -820,51 +818,6 @@ OpenGLES2Context::createTexture(TextureType     type,
 	checkForErrors();
 
 	return texture;
-}
-
-uint
-OpenGLES2Context::createSharedTexture(void* graphicBuffer, uint width, uint height)
-{
-    uint texture;
-
-#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-    glGenTextures(1, &texture);
-
-    auto glTarget = GL_TEXTURE_EXTERNAL_OES;
-
-    glBindTexture(glTarget, texture);
-
-    _currentBoundTexture = texture;
-
-    // default sampler states
-    glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    _textures.push_back(texture);
-    _textureSizes[texture] = std::make_pair(width, height);
-    _textureHasMipmaps[texture] = false;
-    _textureTypes[texture] = TextureType::SharedTexture;
-
-    _currentWrapMode[texture] = WrapMode::CLAMP;
-    _currentTextureFilter[texture] = TextureFilter::LINEAR;
-    _currentMipFilter[texture] = MipFilter::NONE;
-
-    auto display = eglGetCurrentDisplay();
-    EGLint attrs[] = { EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE };
-    auto eglImage = eglCreateImageKHR(display, EGL_NO_CONTEXT, EGL_NATIVE_BUFFER_ANDROID, (EGLClientBuffer)graphicBuffer, attrs);
-
-    if (display == EGL_NO_DISPLAY)
-        LOG_ERROR("Error: No EGL display found.");
-
-    if (eglImage == EGL_NO_IMAGE_KHR)
-        LOG_ERROR("Error creating the EGL image.");
-
-    glEGLImageTargetTexture2DOES(glTarget, eglImage);
-#endif
-
-    return texture;
 }
 
 uint

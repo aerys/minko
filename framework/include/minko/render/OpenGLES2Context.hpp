@@ -237,9 +237,6 @@ namespace minko
                           bool          optimizeForRenderToTexture = false) override;
 
             uint
-            createSharedTexture(void* graphicBuffer, uint width, uint height) override;
-
-            uint
             createCompressedTexture(TextureType     type,
                                     TextureFormat   format,
                                     uint    		width,

@@ -145,10 +145,6 @@ namespace minko
 
             virtual
             uint
-            createSharedTexture(void* graphicBuffer, uint width, uint height) = 0;
-
-            virtual
-            uint
             createRectangleTexture(TextureType  type,
                                    unsigned int width,
                                    unsigned int height) = 0;

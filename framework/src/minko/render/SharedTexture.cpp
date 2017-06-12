@@ -44,8 +44,7 @@ SharedTexture::SharedTexture(AbstractContext::Ptr    context,
         false, 
         filename
     ),
-    _sharedTextureImpl(nullptr),
-    _gralloc(nullptr)
+    _sharedTextureImpl(nullptr)
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     _sharedTextureImpl = std::make_shared<AndroidSharedTextureImpl>();
@@ -73,11 +72,7 @@ SharedTexture::upload()
     if (_id != -1)
         return;
 
-#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-    _gralloc = _sharedTextureImpl->createGraphicBuffer(_widthGPU, _heightGPU);
-#endif
-
-    _id = _context->createSharedTexture(_gralloc, _widthGPU, _heightGPU);
+    _id = _context->createTexture(_type, _widthGPU, _heightGPU, false);
 }
 
 void
@@ -95,10 +90,4 @@ SharedTexture::dispose()
 void
 SharedTexture::disposeData()
 {
-}
-
-void*
-SharedTexture::graphicBuffer()
-{
-    return _gralloc;
 }

@@ -18,17 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/render/AndroidSharedTextureImpl.hpp"
-#include "ui/GraphicBuffer.h" // From the Android source code
 
 using namespace minko;
 using namespace minko::render;
-
-void*
-AndroidSharedTextureImpl::createGraphicBuffer(unsigned int width, unsigned int height) 
-{
-      // Create the Android GraphicBuffer
-    int grallocUsage = GraphicBuffer::USAGE_HW_TEXTURE | GraphicBuffer::USAGE_SW_READ_OFTEN | GraphicBuffer::USAGE_SW_WRITE_OFTEN;
-    auto androidGraphicBuffer = new GraphicBuffer(width, height, PIXEL_FORMAT_RGBA_8888, grallocUsage);
-
-    return androidGraphicBuffer->getNativeBuffer();
-}

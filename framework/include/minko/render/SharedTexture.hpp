@@ -42,7 +42,6 @@ namespace minko
             typedef std::shared_ptr<AbstractContext> AbstractContextPtr;
 
             AbstractSharedTextureImpl::Ptr _sharedTextureImpl;
-            void* _gralloc;
         public:
             inline static
             Ptr
@@ -74,9 +73,6 @@ namespace minko
 
             void
             upload() override;
-
-            void*
-            graphicBuffer();
 
             ~SharedTexture()
             {
