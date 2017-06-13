@@ -653,7 +653,7 @@ AndroidWebViewDOMEngine::eval(const std::string& data)
 // Render to texture
 
 void
-AndroidWebViewDOMEngine::enableRenderToTexture(std::shared_ptr<SharedTexture> texture)
+AndroidWebViewDOMEngine::enableRenderToTexture(std::shared_ptr<AbstractTexture> texture)
 {
     if (!_canvas || !_canvas->context())
     {
