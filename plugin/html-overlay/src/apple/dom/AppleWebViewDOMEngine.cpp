@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
 
+#include "minko/render/Texture.hpp"
+
 #include "minko/MinkoSDL.hpp"
 
 #include "SDL.h"
@@ -57,7 +59,14 @@ AppleWebViewDOMEngine::AppleWebViewDOMEngine() :
     _isReady(false),
     _updateNextFrame(false),
     _pollRate(-1),
-    _lastUpdateTime(0.0)
+    _lastUpdateTime(0.0),
+    _webView(nullptr),
+    _webViewRenderToTextureTime(0)
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+    , _webViewTexture(nullptr)
+    , _graphicContext(nullptr)
+    , _webViewTexturePixelBuffer(nullptr)
+#endif
 {
 }
 
@@ -292,7 +301,19 @@ AppleWebViewDOMEngine::enterFrame(float time)
         _updateNextFrame = false;
         _lastUpdateTime = time;
     }
-
+    
+    if (_webViewTexture &&
+        (_webViewRenderToTextureTime == 0 || time - _webViewRenderToTextureTime > 1000))
+    {
+        _webViewRenderToTextureTime = time;
+        
+        // Draw the view to the buffer
+        CGContextClearRect(_graphicContext, CGRectMake(0, 0 , _webViewTexture->width(), _webViewTexture->height()));
+        [_webView setHidden:false];
+        [_webView.layer renderInContext:_graphicContext];
+        [_webView setHidden:true];
+        _webViewTexture->directUpload(_webViewTexturePixelBuffer);
+    }
 }
 
 AppleWebViewDOMEngine::Ptr
@@ -512,4 +533,76 @@ AppleWebViewDOMEngine::eval(std::string data)
     std::string resultString([result UTF8String]);
 
     return resultString;
+}
+
+// Render to texture
+
+void
+AppleWebViewDOMEngine::enableRenderToTexture(std::shared_ptr<minko::render::AbstractTexture> texture)
+{
+    _webViewTexture = std::static_pointer_cast<minko::render::Texture>(texture);
+
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+    // make space for an RGBA image of the view
+    _webViewTexturePixelBuffer = (GLubyte *)calloc(
+        4 *
+        _webViewTexture->width() *
+        _webViewTexture->height(),
+        sizeof(GLubyte)
+    );
+    
+    // Create a suitable CoreGraphics context
+    CGColorSpaceRef colourSpace = CGColorSpaceCreateDeviceRGB();
+    _graphicContext = CGBitmapContextCreate(
+        _webViewTexturePixelBuffer,
+        _webViewTexture->width(), _webViewTexture->height(),
+        8, 4 * _webViewTexture->width(),
+        colourSpace,
+        kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big
+    );
+    CGColorSpaceRelease(colourSpace);
+    
+    // Make sure that the rendering will not be upside down texture
+    CGContextTranslateCTM(_graphicContext, 0, _webViewTexture->height());
+    CGContextScaleCTM(_graphicContext, 1.0, -1.0);
+#endif
+    
+    // Update webview size to match the texture
+    _originalWebViewSize = _webView.frame;
+    [_webView setFrame:CGRectMake(0, 0, _webViewTexture->width(), _webViewTexture->height())];
+    
+    // Render the webview into the texture
+    [_webView.layer renderInContext:_graphicContext];
+    _webViewTexture->directUpload(_webViewTexturePixelBuffer);
+    
+    // Hide the webview
+    [_webView setHidden:YES];
+    
+    // Disable user interaction to avoid weird behaviour
+    _webView.userInteractionEnabled = NO;
+}
+
+void
+AppleWebViewDOMEngine::disableRenderToTexture()
+{
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
+    if (_webViewTexture == nullptr)
+        return;
+    
+    CGContextRelease(_graphicContext);
+    free(_webViewTexturePixelBuffer);
+    
+    _webViewTexture = nullptr;
+    _graphicContext = nullptr;
+    _webViewTexturePixelBuffer = nullptr;
+#endif
+    
+    // Reset the webview size
+    [_webView setFrame:_originalWebViewSize];
+    
+    // Make the webview visible again
+    [_webView setHidden:NO];
+    
+    // Enable user interaction
+    _webView.userInteractionEnabled = YES;
 }

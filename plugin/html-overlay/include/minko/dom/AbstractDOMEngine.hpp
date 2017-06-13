@@ -76,7 +76,7 @@ namespace minko
             
             virtual
             void
-            enableRenderToTexture(std::shared_ptr<minko::render::SharedTexture> texture) = 0;
+            enableRenderToTexture(std::shared_ptr<minko::render::AbstractTexture> texture) = 0;
 
             virtual
             void

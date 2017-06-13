@@ -126,7 +126,7 @@ namespace minko
             // Render to texture
 
             void
-            enableRenderToTexture(std::shared_ptr<minko::render::SharedTexture> texture);
+            enableRenderToTexture(std::shared_ptr<minko::render::AbstractTexture> texture);
 
             void
             disableRenderToTexture();

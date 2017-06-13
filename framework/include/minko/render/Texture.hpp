@@ -98,6 +98,9 @@ namespace minko
             void
             uploadMipLevel(uint              level,
                            unsigned char*    data);
+            
+            void
+            directUpload(unsigned char* data);
 
             ~Texture()
             {

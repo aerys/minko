@@ -110,7 +110,7 @@ namespace android
                   // Render to texture
 
                   void
-                  enableRenderToTexture(std::shared_ptr<minko::render::SharedTexture> texture) override;
+                  enableRenderToTexture(std::shared_ptr<minko::render::AbstractTexture> texture) override;
 
                   void
                   disableRenderToTexture() override;

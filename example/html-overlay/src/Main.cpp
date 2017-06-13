@@ -26,7 +26,6 @@ using namespace minko::component;
 
 Signal<minko::dom::AbstractDOM::Ptr, std::string>::Slot onloadSlot;
 Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onclickSlot;
-Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot onTapSlot;
 
 dom::AbstractDOM::Ptr gameInterfaceDom;
 dom::AbstractDOMElement::Ptr redScoreElement;
@@ -34,7 +33,7 @@ dom::AbstractDOMElement::Ptr blueScoreElement;
 
 bool enableRenderToTexture = true;
 bool renderToTexture = enableRenderToTexture;
-minko::render::SharedTexture::Ptr sharedTexture = nullptr;
+minko::render::AbstractTexture::Ptr sharedTexture = nullptr;
 
 int redScore;
 int blueScore;
@@ -65,10 +64,12 @@ main(int argc, char** argv)
     sceneManager->assets()->loader()
         ->queue("effect/Basic.effect");
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     if (renderToTexture)
         sceneManager->assets()->loader()
             ->queue("effect/Custom.effect");
-
+#endif
+    
     sceneManager->assets()->context()->errorsEnabled(true);
 
     auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
@@ -81,6 +82,7 @@ main(int argc, char** argv)
     if (enableRenderToTexture)
     {
         // Create the shared texture to render the WebView into it
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
         sharedTexture = minko::render::SharedTexture::create(
             canvas->context(), 
             512, 
@@ -88,6 +90,9 @@ main(int argc, char** argv)
             minko::render::TextureFormat::RGBA, 
             "WebViewTexture"
         );
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
+        sharedTexture = minko::render::Texture::create(canvas->context(), 512, 512);
+#endif
         
         sharedTexture->upload();
     }
@@ -141,34 +146,14 @@ main(int argc, char** argv)
             blueScoreElement = gameInterfaceDom->getElementById("teamScoreBlue");
         }
 
-        onTapSlot = dom->document()->ontouchstart()->connect([=](dom::AbstractDOMTouchEvent::Ptr event)
-        {
-            if (enableRenderToTexture)
-            {
-                renderToTexture = !renderToTexture;
-
-                if (renderToTexture)
-                {
-                    overlay->enableRenderToTexture(sharedTexture);
-
-                    mesh->component<Surface>()->effect(sceneManager->assets()->effect("effect/Custom.effect"));
-                    material->data()->set("diffuseMap", sharedTexture->sampler());
-                }
-                else
-                {
-                    overlay->disableRenderToTexture();
-
-                    mesh->component<Surface>()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
-                    material->data()->unset("diffuseMap");
-                }
-            }
-        });
-
         if (enableRenderToTexture)
         {
             overlay->enableRenderToTexture(sharedTexture);
             
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
             mesh->component<Surface>()->effect(sceneManager->assets()->effect("effect/Custom.effect"));
+#endif
+            
             material->data()->set("diffuseMap", sharedTexture->sampler());
         }
     });
@@ -183,6 +168,29 @@ main(int argc, char** argv)
     auto leftButtonDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
     {
         updateBlueScore();
+        
+        if (enableRenderToTexture)
+        {
+            renderToTexture = !renderToTexture;
+            
+            if (renderToTexture)
+            {
+                overlay->enableRenderToTexture(sharedTexture);
+                
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+                mesh->component<Surface>()->effect(sceneManager->assets()->effect("effect/Custom.effect"));
+#endif
+                
+                material->data()->set("diffuseMap", sharedTexture->sampler());
+            }
+            else
+            {
+                overlay->disableRenderToTexture();
+                
+                mesh->component<Surface>()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
+                material->data()->unset("diffuseMap");
+            }
+        }
     });
 
     auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)

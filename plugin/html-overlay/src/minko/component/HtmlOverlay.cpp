@@ -107,7 +107,7 @@ HtmlOverlay::visible(bool value)
 }
 
 void
-HtmlOverlay::enableRenderToTexture(std::shared_ptr<minko::render::SharedTexture> texture)
+HtmlOverlay::enableRenderToTexture(std::shared_ptr<minko::render::AbstractTexture> texture)
 {
     _domEngine->enableRenderToTexture(texture);
 }

@@ -222,6 +222,21 @@ Texture::upload()
 }
 
 void
+Texture::directUpload(unsigned char* data)
+{
+    if (_id == -1)
+        return;
+    
+    _context->uploadTexture2dData(
+        _id,
+        _widthGPU,
+        _heightGPU,
+        0,
+        data
+    );
+}
+
+void
 Texture::uploadMipLevel(uint            level,
                         unsigned char*  data)
 {
