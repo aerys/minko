@@ -59,6 +59,8 @@ AndroidWebViewDOMEngine::Ptr AndroidWebViewDOMEngine::currentEngine;
 int AndroidWebViewDOMEngine::numTouches = 0;
 int AndroidWebViewDOMEngine::firstIdentifier = -1;
 
+bool AndroidWebViewDOMEngine::shouldUpdateWebViewTexture = false;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -207,6 +209,11 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
     }
 
     AndroidWebViewDOMEngine::eventMutex.unlock();
+}
+
+void Java_minko_plugin_htmloverlay_MinkoWebView_minkoNativeOnWebViewUpdate(JNIEnv* env)
+{
+    AndroidWebViewDOMEngine::shouldUpdateWebViewTexture = true;
 }
 
 /* Ends C function definitions when using C++ */
@@ -392,8 +399,10 @@ AndroidWebViewDOMEngine::enterFrame(float time)
 
     // If we are rendering the WebView into a texture, 
     // don't forget to update the surface texture
-    if (_jniSurfaceTexture != nullptr)
+    if (_jniSurfaceTexture != nullptr && AndroidWebViewDOMEngine::shouldUpdateWebViewTexture)
     {
+        AndroidWebViewDOMEngine::shouldUpdateWebViewTexture = false;
+
          auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
          env->CallVoidMethod(_jniSurfaceTexture, _updateTexImageMethodId);
     }

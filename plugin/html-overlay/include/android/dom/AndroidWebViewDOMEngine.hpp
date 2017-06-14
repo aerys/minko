@@ -158,6 +158,9 @@ namespace android
 
                   static
                   int firstIdentifier;
+
+                  static
+                  bool shouldUpdateWebViewTexture;
               private:
 
                   // WebView Slots

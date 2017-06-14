@@ -19,6 +19,8 @@ public class MinkoWebView extends WebView
     private MinkoWebViewRenderer _minkoWebViewRenderer = null;
 	private long lastEventTime = -1;
 
+    public native void minkoNativeOnWebViewUpdate();
+
 	public MinkoWebView(Context context)
 	{
 		super(context);
@@ -95,6 +97,9 @@ public class MinkoWebView extends WebView
 
             // Draw the view to provided canvas
             super.draw(glAttachedCanvas);
+
+            // Notice the native code
+            minkoNativeOnWebViewUpdate();
         }
         else
         {
