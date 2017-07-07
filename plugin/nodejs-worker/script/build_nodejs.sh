@@ -48,6 +48,11 @@ NODE_VERSION="6.x"
     sed -i "s/-fPIE/-fPIC/g" lib/node/common.gypi
 }
 
+[[ -r lib/nodejs/android/release/libnode.so ]] || {
+    echo "libnode.so is already built"
+    exit 0
+}
+
 [[ -z $USE_PREBUILT ]] || {
     echo "Using pre-built version."
     exit 0
