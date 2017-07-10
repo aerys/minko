@@ -26,11 +26,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
+bool useSpotLight = true;
+
 scene::Node::Ptr lightNode;
 scene::Node::Ptr debugNode = scene::Node::create("debug", scene::BuiltinLayout::DEBUG_ONLY);
-bool projectionAuto = false;
+
 DirectionalLight::Ptr directionalLight = DirectionalLight::create(.3f);
 DirectionalLight::Ptr directionalLight2 = DirectionalLight::create(.3f);
+SpotLight::Ptr spotLight = SpotLight::create(.3f);
+SpotLight::Ptr spotLight2 = SpotLight::create(.3f);
 
 std::array<FrustumDisplay::Ptr, 5> frustums;
 
@@ -39,31 +43,62 @@ initializeShadowMapping(scene::Node::Ptr root, file::AssetLibrary::Ptr assets)
 {
     root->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
 
-    directionalLight->enableShadowMapping(512);
-    directionalLight2->enableShadowMapping(256);
-
     lightNode = scene::Node::create("light")
         ->addComponent(AmbientLight::create())
-        ->addComponent(directionalLight)
-        ->addComponent(Transform::create(math::inverse(
-            math::lookAt(math::vec3(1.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
-        )));
+        ->addComponent(
+            Transform::create(math::inverse(
+                math::lookAt(math::vec3(2.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
+            ))
+        );
+
     root->addChild(lightNode);
 
-    if (directionalLight->shadowMappingEnabled())
+    if (!useSpotLight)
     {
-        auto debugDisplay = TextureDebugDisplay::create();
+        directionalLight->enableShadowMapping(512);
+        directionalLight2->enableShadowMapping(256);
 
-        debugDisplay->initialize(assets, directionalLight->shadowMap());
-        debugNode->addComponent(debugDisplay);
+        lightNode->addComponent(directionalLight);
+
+        auto lightNode2 = scene::Node::create()
+            ->addComponent(directionalLight2)
+            ->addComponent(Transform::create(math::inverse(
+                math::lookAt(math::vec3(-1.f, 1.f, 0.5f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
+            )));
+
+        root->addChild(lightNode2);
+
+        if (directionalLight->shadowMappingEnabled())
+        {
+            auto debugDisplay = TextureDebugDisplay::create();
+
+            debugDisplay->initialize(assets, directionalLight->shadowMap());
+            debugNode->addComponent(debugDisplay);
+        }
     }
+    else
+    {
+        spotLight->enableShadowMapping(512);
+        spotLight2->enableShadowMapping(256);
 
-    auto lightNode2 = scene::Node::create()
-        ->addComponent(directionalLight2)
-        ->addComponent(Transform::create(math::inverse(
-            math::lookAt(math::vec3(-1.f, 1.f, 0.5f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
-        )));
-    root->addChild(lightNode2);
+        lightNode->addComponent(spotLight);
+
+        auto lightNode2 = scene::Node::create()
+            ->addComponent(spotLight2)
+            ->addComponent(Transform::create(math::inverse(
+                math::lookAt(math::vec3(-5.f, 2.f, 0.5f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
+            )));
+
+        root->addChild(lightNode2);
+
+        if (spotLight2->shadowMappingEnabled())
+        {
+            auto debugDisplay = TextureDebugDisplay::create();
+
+            debugDisplay->initialize(assets, spotLight2->shadowMap());
+            debugNode->addComponent(debugDisplay);
+        }
+    }
 }
 
 int main(int argc, char** argv)
@@ -150,24 +185,34 @@ int main(int argc, char** argv)
 
         auto perspective = camera->component<Camera>();
         camera->component<Transform>()->updateModelToWorldMatrix();
-        directionalLight->target()->component<Transform>()->updateModelToWorldMatrix();
-        directionalLight->computeShadowProjection(perspective->viewMatrix(), perspective->projectionMatrix());
 
-        directionalLight2->target()->component<Transform>()->updateModelToWorldMatrix();
-        directionalLight2->computeShadowProjection(perspective->viewMatrix(), perspective->projectionMatrix());
+        if (!useSpotLight)
+        {
+            directionalLight->target()->component<Transform>()->updateModelToWorldMatrix();
+            directionalLight->computeShadowProjection(perspective->viewMatrix(), perspective->projectionMatrix());
+            directionalLight2->target()->component<Transform>()->updateModelToWorldMatrix();
+            directionalLight2->computeShadowProjection(perspective->viewMatrix(), perspective->projectionMatrix());
+        }
+        else
+        {
+            if (spotLight->target())
+            {
+                spotLight->target()->component<Transform>()->updateModelToWorldMatrix();
+                spotLight->computeShadowProjection();
+            }
+
+            if (spotLight2->target())
+            {
+                spotLight2->target()->component<Transform>()->updateModelToWorldMatrix();
+                spotLight2->computeShadowProjection();
+            }
+        }
     });
 
     bool cameraMoved = true;
 
     auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
     {
-        if (k->keyIsDown(input::Keyboard::Key::R))
-        {
-            if (renderer->effect() == sceneManager->assets()->effect("effect/Phong.effect"))
-                renderer->effect(sceneManager->assets()->effect("effect/debug/ShadowMappingDebug.effect"));
-            else
-                renderer->effect(sceneManager->assets()->effect("effect/Phong.effect"));
-        }
         if (k->keyIsDown(input::Keyboard::Key::C))
         {
             auto p = camera->component<Camera>();
@@ -180,54 +225,88 @@ int main(int argc, char** argv)
                 debugNode->addComponent(frustums[4]);
             }
         }
-        if (k->keyIsDown(input::Keyboard::Key::L))
-        {
-            auto p = camera->component<Camera>();
-            std::array<math::vec4, 4> colors = {
-                math::vec4(1.f, 0.f, 0.f, .1f),
-                math::vec4(0.f, 1.f, 0.f, .1f),
-                math::vec4(0.f, 0.f, 1.f, .1f),
-                math::vec4(1.f, 1.f, 0.f, .1f)
-            };
 
-            for (auto i = 0u; i < directionalLight->numShadowCascades(); ++i)
+        if (!useSpotLight)
+        {
+            if (k->keyIsDown(input::Keyboard::Key::R))
             {
-                if (frustums[i] && debugNode->hasComponent(frustums[i]))
+                if (renderer->effect() == sceneManager->assets()->effect("effect/Phong.effect"))
+                    renderer->effect(sceneManager->assets()->effect("effect/debug/ShadowMappingDebug.effect"));
+                else
+                    renderer->effect(sceneManager->assets()->effect("effect/Phong.effect"));
+            }
+            if (k->keyIsDown(input::Keyboard::Key::L))
+            {
+                auto p = camera->component<Camera>();
+                std::array<math::vec4, 4> colors = {
+                    math::vec4(1.f, 0.f, 0.f, .1f),
+                    math::vec4(0.f, 1.f, 0.f, .1f),
+                    math::vec4(0.f, 0.f, 1.f, .1f),
+                    math::vec4(1.f, 1.f, 0.f, .1f)
+                };
+
+                for (auto i = 0u; i < directionalLight->numShadowCascades(); ++i)
                 {
-                    debugNode->removeComponent(frustums[i]);
-                    debugDisplay = false;
-                    cameraMoved = true;
+                    if (frustums[i] && debugNode->hasComponent(frustums[i]))
+                    {
+                        debugNode->removeComponent(frustums[i]);
+                        debugDisplay = false;
+                        cameraMoved = true;
+                    }
+                    else
+                    {
+                        frustums[i] = FrustumDisplay::create(
+                            directionalLight->shadowProjections()[i] * math::inverse(directionalLight->target()->component<Transform>()->modelToWorldMatrix())
+                        );
+                        frustums[i]->material()->diffuseColor(colors[i]);
+                        debugNode->addComponent(frustums[i]);
+                        debugDisplay = true;
+                    }
+
                 }
+            }
+            if (k->keyIsDown(input::Keyboard::Key::A))
+            {
+                    if (directionalLight->shadowMappingEnabled())
+                        directionalLight->disableShadowMapping(k->keyIsDown(input::Keyboard::Key::SHIFT));
+                    else
+                    {
+                        directionalLight->enableShadowMapping();
+                        cameraMoved = true;
+                    }
+            }
+            if (k->keyIsDown(input::Keyboard::Key::Z))
+            {
+                if (directionalLight2->shadowMappingEnabled())
+                    directionalLight2->disableShadowMapping(k->keyIsDown(input::Keyboard::Key::SHIFT));
                 else
                 {
-                    frustums[i] = FrustumDisplay::create(
-                        directionalLight->shadowProjections()[i] * math::inverse(directionalLight->target()->component<Transform>()->modelToWorldMatrix())
-                    );
-                    frustums[i]->material()->diffuseColor(colors[i]);
-                    debugNode->addComponent(frustums[i]);
-                    debugDisplay = true;
+                    directionalLight2->enableShadowMapping();
+                    cameraMoved = true;
                 }
-
             }
         }
-        if (k->keyIsDown(input::Keyboard::Key::A))
+        else
         {
-            if (directionalLight->shadowMappingEnabled())
-                directionalLight->disableShadowMapping(k->keyIsDown(input::Keyboard::Key::SHIFT));
-            else
+            if (k->keyIsDown(input::Keyboard::Key::A))
             {
-                directionalLight->enableShadowMapping();
-                cameraMoved = true;
+                if (spotLight->shadowMappingEnabled())
+                    spotLight->disableShadowMapping(k->keyIsDown(input::Keyboard::Key::SHIFT));
+                else
+                {
+                    spotLight->enableShadowMapping();
+                    cameraMoved = true;
+                }
             }
-        }
-        if (k->keyIsDown(input::Keyboard::Key::Z))
-        {
-            if (directionalLight2->shadowMappingEnabled())
-                directionalLight2->disableShadowMapping(k->keyIsDown(input::Keyboard::Key::SHIFT));
-            else
+            if (k->keyIsDown(input::Keyboard::Key::Z))
             {
-                directionalLight2->enableShadowMapping();
-                cameraMoved = true;
+                if (spotLight2->shadowMappingEnabled())
+                    spotLight2->disableShadowMapping(k->keyIsDown(input::Keyboard::Key::SHIFT));
+                else
+                {
+                    spotLight2->enableShadowMapping();
+                    cameraMoved = true;
+                }
             }
         }
     });
@@ -274,7 +353,7 @@ int main(int argc, char** argv)
         mouseMove = nullptr;
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
         distance += zoomSpeed;
         zoomSpeed *= 0.9f;
@@ -306,8 +385,12 @@ int main(int argc, char** argv)
         }
 
         auto p = camera->component<Camera>();
-        directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
-        directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
+
+        if (!useSpotLight)
+        {
+            //directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
+            //directionalLight2->computeShadowProjection(p->viewMatrix(), p->projectionMatrix(), 40.f);
+        }
 
         if (cameraMoved)
         {

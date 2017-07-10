@@ -50,11 +50,28 @@ vec4 saturate(vec4 x)
     return clamp(x, 0.0, 1.0);
 }
 
+// Ref https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/
+
+#define ACOS_C0 1.56467
+#define ACOS_C1 -0.155972
+
+// polynomial degree 1
+// input [-1, 1] and output [0, PI]
+float ACos(float inX)
+{
+    float x = abs(inX);
+    float res = ACOS_C1 * x + ACOS_C0; // p(x)
+    res *= sqrt(1.0 - x);
+
+    return (inX >= 0.0) ? res : PI - res; // Undo range reduction
+}
+
 vec2 normalToLatLongUV(const vec3 dir)
 {
     float n = length(dir.xz);
     vec2 pos = vec2((n > 0.0000001) ? dir.x / n : 0.0, dir.y);
-    pos = acos(pos)*INV_PI;
+    // pos = acos(pos)*INV_PI;
+    pos = vec2(ACos(pos.x), ACos(pos.y))*INV_PI;
     pos.x = (dir.z > 0.0) ? pos.x * 0.5 : 0.9999999 - (pos.x * 0.5);
     pos.y = min(0.9999999, pos.y);
 
