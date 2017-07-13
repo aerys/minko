@@ -39,7 +39,7 @@ namespace minko
         operator()(const T& a, const T& b) const = 0;
     };
 
-    template <typename T, typename H = Hash<T>>
+    template <typename T, typename H = std::hash<T>>
     inline
     void
     hash_combine(std::size_t& seed, const T& v)
