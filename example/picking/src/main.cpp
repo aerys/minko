@@ -66,11 +66,24 @@ main(int argc, char** argv)
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager);
 
+    auto fov = .785f;
+    auto aspectRatio = canvas->aspectRatio();
+    auto zNear = 0.1f;
+    auto zFar = 1000.f;
+
+    auto cameraComponent = Camera::create(math::perspective(fov, aspectRatio, zNear, zFar));
+
     auto camera = scene::Node::create("camera")
         ->addComponent(Transform::create(
             math::inverse(math::lookAt(math::vec3(0.f, 0.f, 4.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
         ))
-        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
+        ->addComponent(cameraComponent);
+
+    cameraComponent->data()
+        ->set("fov", fov)
+        ->set("aspectRatio", aspectRatio)
+        ->set("zNear", zNear)
+        ->set("zFar", zFar);
 
     root->addChild(camera);
 
@@ -133,7 +146,7 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
+        camera->component<Camera>()->projectionMatrix(math::perspective(fov, aspectRatio, zNear, zFar));
     });
 
     auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
