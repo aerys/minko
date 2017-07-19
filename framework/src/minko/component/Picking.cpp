@@ -31,6 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/math/Ray.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace component;
@@ -530,12 +531,7 @@ Picking::enabled(bool enabled)
 void
 Picking::frameBeginHandler(SceneManagerPtr, float, float)
 {
-    if (_debug)
-        return;
-
-    _renderer->enabled(true);
-    _renderer->render(_sceneManager->canvas()->context());
-    _renderer->enabled(false);
+    renderPickingFrame();
 }
 
 void
@@ -545,6 +541,17 @@ Picking::renderingBegin(RendererPtr renderer)
         return;
 
     updatePickingProjection();
+}
+
+void
+Picking::renderPickingFrame()
+{
+    if (_debug)
+        return;
+
+    _renderer->enabled(true);
+    _renderer->render(_sceneManager->canvas()->context());
+    _renderer->enabled(false);
 }
 
 void
@@ -645,10 +652,16 @@ Picking::depthRenderingEnd(RendererPtr renderer)
 }
 
 void
-Picking::updatePickingProjection()
+Picking::updatePickingProjection(math::vec2 startPosition)
 {
-	const auto mouseX = static_cast<float>(_mouse->x());
-	const auto mouseY = static_cast<float>(_mouse->y());
+	auto mouseX = static_cast<float>(_mouse->x());
+	auto mouseY = static_cast<float>(_mouse->y());
+
+    if (startPosition != math::vec2(0))
+    {
+        mouseX = startPosition.x;
+        mouseY = startPosition.y;
+    }
 
 	auto perspectiveCamera	= _camera->component<component::Camera>();
 	auto projection	= perspectiveCamera->projectionMatrix();
@@ -931,4 +944,66 @@ Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
         _executeRightClickHandler = true;
         enabled(true);
     }
+}
+
+std::vector<scene::Node::Ptr>
+Picking::pickArea(minko::math::vec2 bottomLeft, minko::math::vec2 topRight)
+{
+    auto pickedNodes = std::vector<scene::Node::Ptr>();
+
+    const auto width = static_cast<int>(topRight.x - bottomLeft.x);
+    const auto height = static_cast<int>(bottomLeft.y - topRight.y);
+
+    if (width == 0 || height == 0)
+        return pickedNodes;
+
+    // Change the scissor box size and make sure to update the projection
+    _renderer->scissorBox(0, 0, width, height);
+    updatePickingProjection(bottomLeft);
+
+    // Force picking renderer to render a frame
+    renderPickingFrame();
+
+    // Read and store all pixels in the selection area
+    std::vector<unsigned char> selectAreaPixelBuffer(4 * width * height);
+    _context->readPixels(0, 0, width, height, &selectAreaPixelBuffer[0]);
+
+    // Retrieve all surface ids in the selection area
+    std::vector<bool> surfaceIds; // std::vector + resize combo instead of a std::set for better performances
+    uint lastPickedSurfaceId = 0;
+    auto pickingRendererColor = _renderer->backgroundColor() >> 8; // bit right shift to ignore alpha
+    for (auto i = 0; i < selectAreaPixelBuffer.size(); i += 4)
+    {
+        auto currentPixel = &selectAreaPixelBuffer[i];
+        uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
+
+        if (lastPickedSurfaceId != pickedSurfaceId && pickedSurfaceId != pickingRendererColor)
+        {
+            if (surfaceIds.size() < pickedSurfaceId + 1)
+                surfaceIds.resize(pickedSurfaceId + 1);
+
+            surfaceIds[pickedSurfaceId] = true;
+            lastPickedSurfaceId = pickedSurfaceId;
+        }
+    }
+
+    // Find the nodes associated to the picked surface ids
+    for (auto i = 0; i < surfaceIds.size(); i++)
+    {
+        if (surfaceIds[i])
+        {
+            auto surfaceIt = _pickingIdToSurface.find(i);
+
+            if (surfaceIt != _pickingIdToSurface.end())
+            {
+                auto pickedSurface = surfaceIt->second;
+                pickedNodes.push_back(pickedSurface->target());
+            }
+        }
+    }
+
+    // Make sure to reset the scissor box size
+    _renderer->scissorBox(0, 0, 1, 1);
+
+    return pickedNodes;
 }

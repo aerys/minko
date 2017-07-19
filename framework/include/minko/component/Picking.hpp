@@ -143,7 +143,6 @@ namespace minko
             bool                                        _renderDepth;
 
             bool                                        _debug;
-
 		public:
 			inline static
 			Ptr
@@ -303,6 +302,9 @@ namespace minko
 			    return _lastMergingMask;
 			}
 
+            std::vector<NodePtr>
+            pickArea(minko::math::vec2 bottomLeft, minko::math::vec2 topRight);
+
             inline
             void
             debug(bool v)
@@ -427,10 +429,13 @@ namespace minko
             dispatchEvents(SurfacePtr pickedSurface, float depth);
             
             void
-            updatePickingProjection();
+            updatePickingProjection(minko::math::vec2 startPosition = minko::math::vec2());
 
             void
             updatePickingOrigin();
+
+            void
+            renderPickingFrame();
 		};
 	}
 }
