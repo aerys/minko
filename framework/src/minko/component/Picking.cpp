@@ -952,7 +952,7 @@ Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
 }
 
 std::vector<scene::Node::Ptr>
-Picking::pickArea(minko::math::vec2 bottomLeft, minko::math::vec2 topRight)
+Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight)
 {
     auto pickedNodes = std::vector<scene::Node::Ptr>();
 

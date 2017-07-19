@@ -306,7 +306,7 @@ namespace minko
 			}
 
             std::vector<NodePtr>
-            pickArea(minko::math::vec2 bottomLeft, minko::math::vec2 topRight);
+            pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight);
 
             inline
             void
