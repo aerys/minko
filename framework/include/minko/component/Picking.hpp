@@ -143,6 +143,9 @@ namespace minko
             bool                                        _renderDepth;
 
             bool                                        _debug;
+
+            bool                                        _multiselecting;
+            minko::math::vec2                           _multiselectionStartPosition;
 		public:
 			inline static
 			Ptr
@@ -429,7 +432,7 @@ namespace minko
             dispatchEvents(SurfacePtr pickedSurface, float depth);
             
             void
-            updatePickingProjection(minko::math::vec2 startPosition = minko::math::vec2());
+            updatePickingProjection();
 
             void
             updatePickingOrigin();

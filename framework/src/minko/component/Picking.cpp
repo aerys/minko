@@ -70,7 +70,9 @@ Picking::Picking() :
     _frameBeginSlot(nullptr),
     _enabled(false),
     _renderDepth(true),
-    _debug(false)
+    _debug(false),
+    _multiselecting(false),
+    _multiselectionStartPosition()
 {
 }
 
@@ -256,11 +258,14 @@ Picking::targetAdded(NodePtr target)
         priority,
         "Picking Renderer"
     );
+
     if (!_debug)
+    {
         _renderer->scissorBox(0, 0, 1, 1);
-    _renderer->layoutMask(scene::BuiltinLayout::PICKING);
-    if (!_debug)
         _renderer->enabled(false);
+    }
+
+    _renderer->layoutMask(scene::BuiltinLayout::PICKING);
 
     if (_pickingDepthEffect == nullptr)
         _pickingDepthEffect = _sceneManager->assets()->effect("effect/PickingDepth.effect");
@@ -652,15 +657,15 @@ Picking::depthRenderingEnd(RendererPtr renderer)
 }
 
 void
-Picking::updatePickingProjection(math::vec2 startPosition)
+Picking::updatePickingProjection()
 {
 	auto mouseX = static_cast<float>(_mouse->x());
 	auto mouseY = static_cast<float>(_mouse->y());
 
-    if (startPosition != math::vec2(0))
+    if (_multiselecting && _multiselectionStartPosition != math::vec2(0))
     {
-        mouseX = startPosition.x;
-        mouseY = startPosition.y;
+        mouseX = _multiselectionStartPosition.x;
+        mouseY = _multiselectionStartPosition.y;
     }
 
 	auto perspectiveCamera	= _camera->component<component::Camera>();
@@ -957,12 +962,18 @@ Picking::pickArea(minko::math::vec2 bottomLeft, minko::math::vec2 topRight)
     if (width == 0 || height == 0)
         return pickedNodes;
 
+    _multiselecting = true;
+    _multiselectionStartPosition = bottomLeft;
+
     // Change the scissor box size and make sure to update the projection
     _renderer->scissorBox(0, 0, width, height);
-    updatePickingProjection(bottomLeft);
+    updatePickingProjection();
 
     // Force picking renderer to render a frame
     renderPickingFrame();
+
+    if (_debug)
+        return pickedNodes;
 
     // Read and store all pixels in the selection area
     std::vector<unsigned char> selectAreaPixelBuffer(4 * width * height);
@@ -1004,6 +1015,8 @@ Picking::pickArea(minko::math::vec2 bottomLeft, minko::math::vec2 topRight)
 
     // Make sure to reset the scissor box size
     _renderer->scissorBox(0, 0, 1, 1);
+
+    _multiselecting = false;
 
     return pickedNodes;
 }
