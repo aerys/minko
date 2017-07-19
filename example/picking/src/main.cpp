@@ -29,11 +29,16 @@ Signal<scene::Node::Ptr>::Slot pickingMouseRightClick;
 Signal<scene::Node::Ptr>::Slot pickingMouseOver;
 Signal<scene::Node::Ptr>::Slot pickingMouseOut;
 
+Signal<input::Mouse::Ptr>::Slot mouseLeftButtonDown;
+Signal<input::Mouse::Ptr>::Slot mouseLeftButtonUp;
+
+math::vec2 multiSelectFirstPoint;
+math::vec2 multiSelectSecondPoint;
+
 int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Picking");
-
     auto sceneManager = SceneManager::create(canvas);
 
     // Setup assets
@@ -50,7 +55,7 @@ main(int argc, char** argv)
     redMaterial->diffuseColor(0xFF0000FF);
 
     auto greenMaterial = material::BasicMaterial::create();
-    greenMaterial->diffuseColor(0xF0FF00FF);
+    greenMaterial->diffuseColor(0x00FF00FF);
 
     auto blueMaterial = material::BasicMaterial::create();
     blueMaterial->diffuseColor(0x0000FFFF);
@@ -119,26 +124,61 @@ main(int argc, char** argv)
             ->addChild(sphere)
             ->addChild(quad);
 
-        root->addComponent(Picking::create(camera, false, true));
+        // Picking component
+        auto picking = Picking::create(camera, false, true);
+        //picking->debug(true);
 
-        pickingMouseClick = root->component<Picking>()->mouseClick()->connect([&](scene::Node::Ptr node)
+        root->addComponent(picking);
+
+        pickingMouseClick = picking->mouseClick()->connect([&](scene::Node::Ptr node)
         {
             std::cout << "Click: " << node->name() << std::endl;
         });
 
-        pickingMouseRightClick = root->component<Picking>()->mouseRightClick()->connect([&](scene::Node::Ptr node)
+        pickingMouseRightClick = picking->mouseRightClick()->connect([&](scene::Node::Ptr node)
         {
             std::cout << "Right Click: " << node->name() << std::endl;
         });
 
-        pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
+        pickingMouseOver = picking->mouseOver()->connect([&](scene::Node::Ptr node)
         {
             std::cout << "Mouse In: " << node->name() << std::endl;
         });
 
-        pickingMouseOut = root->component<Picking>()->mouseOut()->connect([&](scene::Node::Ptr node)
+        pickingMouseOut = picking->mouseOut()->connect([&](scene::Node::Ptr node)
         {
             std::cout << "Mouse Out: " << node->name() << std::endl;
+        });
+
+        // Multiselect area
+        mouseLeftButtonDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
+        {
+            multiSelectFirstPoint = math::vec2(m->x(), m->y());
+        });
+
+        mouseLeftButtonUp = canvas->mouse()->leftButtonUp()->connect([=](input::Mouse::Ptr m)
+        {
+            multiSelectSecondPoint = math::vec2(m->x(), m->y());
+
+            auto bottomLeft = math::vec2(
+                math::min(multiSelectFirstPoint.x, multiSelectSecondPoint.x),
+                math::max(multiSelectFirstPoint.y, multiSelectSecondPoint.y)
+            );
+
+            auto topRight = math::vec2(
+                math::max(multiSelectFirstPoint.x, multiSelectSecondPoint.x),
+                math::min(multiSelectFirstPoint.y, multiSelectSecondPoint.y)
+            );
+
+            auto width = static_cast<int>(topRight.x - bottomLeft.x);
+            auto height = static_cast<int>(bottomLeft.y - topRight.y);
+
+            LOG_INFO("Picking nodes from an area of size: " << width << "x" << height << " pixels");
+
+            auto pickedNodes = picking->pickArea(bottomLeft, topRight);
+
+            for (auto node : pickedNodes)
+                LOG_INFO(node->name());
         });
     });
 
