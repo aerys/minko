@@ -144,6 +144,8 @@ namespace minko
 
             bool                                        _debug;
 
+            bool                                        _multiselecting;
+            minko::math::vec2                           _multiselectionStartPosition;
 		public:
 			inline static
 			Ptr
@@ -303,6 +305,9 @@ namespace minko
 			    return _lastMergingMask;
 			}
 
+            std::vector<NodePtr>
+            pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight);
+
             inline
             void
             debug(bool v)
@@ -431,6 +436,9 @@ namespace minko
 
             void
             updatePickingOrigin();
+
+            void
+            renderPickingFrame();
 		};
 	}
 }
