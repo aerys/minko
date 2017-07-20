@@ -981,8 +981,12 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     _context->readPixels(0, 0, width, height, &selectAreaPixelBuffer[0]);
 
     // Retrieve all surface ids in the selection area
-    std::vector<bool> surfaceIds(_pickingIdToSurface.size() + 1); // std::vector + resize combo instead of a std::set for better performances
-    std::vector<bool> surfaceIdsOnEdge(_pickingIdToSurface.size() + 1);
+    auto maxSurfaceId = 0;
+    if (!_pickingIdToSurface.empty())
+        maxSurfaceId = _pickingIdToSurface.rbegin()->first;
+
+    std::vector<bool> surfaceIds(maxSurfaceId + 1); // std::vector + resize combo instead of a std::set for better performances
+    std::vector<bool> surfaceIdsOnEdge(maxSurfaceId + 1);
     uint lastPickedSurfaceId = 0;
     auto pickingRendererColor = _renderer->backgroundColor() >> 8; // bit right shift to ignore alpha
     for (auto i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
