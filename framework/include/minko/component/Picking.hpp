@@ -305,7 +305,7 @@ namespace minko
 			    return _lastMergingMask;
 			}
 
-            std::vector<NodePtr>
+            std::list<NodePtr>
             pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight);
 
             inline
