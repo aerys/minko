@@ -96,6 +96,14 @@ namespace minko
     template<typename T>
     struct Hash;
 
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+    template <typename... H>
+    using map = google::sparse_hash_map<H...>;
+#else
+    template <class K, typename... V>
+    using map = std::unordered_map<K, V...>;
+#endif
+
 	namespace render
 	{
         class DrawCallPool;
