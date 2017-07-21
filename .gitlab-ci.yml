@@ -5,7 +5,7 @@ html5_release:
     stage: build
     image: trzeci/emscripten:sdk-tag-1.37.3-64bit
     script:
-    - apt-get install make # https://github.com/asRIA/emscripten-docker/issues/1
+    - apt-get update && apt-get install -y make # https://github.com/asRIA/emscripten-docker/issues/1
     - cd script
     - ./solution_gmake_min.sh
     - ./build_html5_release.sh
