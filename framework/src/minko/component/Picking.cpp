@@ -951,10 +951,10 @@ Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
     }
 }
 
-std::list<scene::Node::Ptr>
+map<scene::Node::Ptr, std::set<unsigned char>>
 Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
 {
-    auto pickedNodes = std::list<scene::Node::Ptr>();
+    auto pickedNodes = map<scene::Node::Ptr, std::set<unsigned char>>();
 
     const auto width = static_cast<int>(topRight.x - bottomLeft.x);
     const auto height = static_cast<int>(bottomLeft.y - topRight.y);
@@ -985,17 +985,20 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     if (!_pickingIdToSurface.empty())
         maxSurfaceId = _pickingIdToSurface.rbegin()->first;
 
-    std::vector<bool> surfaceIds(maxSurfaceId + 1); // std::vector + resize combo instead of a std::set for better performances
-    std::vector<bool> surfaceIdsOnEdge(maxSurfaceId + 1);
     uint lastPickedSurfaceId = 0;
+    unsigned char lastAlphaValue = 0;
     auto pickingRendererColor = _renderer->backgroundColor() >> 8; // bit right shift to ignore alpha
     for (auto i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
     {
         auto currentPixel = &selectAreaPixelBuffer[i];
         uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
+        auto alpha = currentPixel[3];
 
-        if (lastPickedSurfaceId != pickedSurfaceId && pickedSurfaceId < surfaceIds.size() && pickedSurfaceId != pickingRendererColor)
+        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha) && pickedSurfaceId <= maxSurfaceId && pickedSurfaceId != pickingRendererColor)
         {
+            lastPickedSurfaceId = pickedSurfaceId;
+            lastAlphaValue = alpha;
+
             if (fullyInside)
             {
                 auto pixelBufferWidth = pixelSize * width;
@@ -1008,35 +1011,28 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
                     i % pixelBufferWidth == pixelBufferWidth - pixelSize    // Left border
                     ))
                 {
-                    surfaceIdsOnEdge[pickedSurfaceId] = true;
+                    continue;
                 }
             }
 
-            surfaceIds[pickedSurfaceId] = true;
-
-            if (!fullyInside)
-                lastPickedSurfaceId = pickedSurfaceId;
-        }
-    }
-
-    // Don't return surfaces that are on an edge
-    if (fullyInside)
-    {
-        for (auto i = 0; i < surfaceIdsOnEdge.size(); i++)
-            surfaceIds[i] = surfaceIds[i] && !surfaceIdsOnEdge[i];
-    }
-
-    // Find the nodes associated to the picked surface ids
-    for (auto i = 0; i < surfaceIds.size(); i++)
-    {
-        if (surfaceIds[i])
-        {
-            auto surfaceIt = _pickingIdToSurface.find(i);
+            auto surfaceIt = _pickingIdToSurface.find(pickedSurfaceId);
 
             if (surfaceIt != _pickingIdToSurface.end())
             {
                 auto pickedSurface = surfaceIt->second;
-                pickedNodes.push_back(pickedSurface->target());
+                auto surfaceAlphaValues = pickedNodes.find(pickedSurface->target());
+
+                if (surfaceAlphaValues == pickedNodes.end())
+                {
+                    auto alphaSet = std::set<unsigned char>();
+                    alphaSet.insert(alpha);
+
+                    pickedNodes.emplace(pickedSurface->target(), alphaSet);
+                }
+                else
+                {
+                    surfaceAlphaValues->second.insert(alpha);
+                }
             }
         }
     }
