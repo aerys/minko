@@ -3,7 +3,7 @@ stages:
 
 html5_release:
     stage: build
-    image: trzeci/emscripten:sdk-tag-1.35.4-64bit
+    image: trzeci/emscripten:sdk-tag-1.37.3-64bit
     script:
     - cd script
     - ./solution_gmake_min.sh
