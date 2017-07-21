@@ -28,11 +28,6 @@ minko.project.worker("minko-plugin-" .. PROJECT_NAME)
 		}
 	else
 		prebuildcommands {
-			"bash -c \"rm -rf lib/node/bin/android/release/*.a\"",
 			"bash script/build_nodejs.sh"
 		}
 	end
-
-	postbuildcommands {
-		"bash script/merge_static_libraries.sh"
-	}

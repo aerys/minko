@@ -41,6 +41,16 @@ NODE_VERSION="6.x"
 
     # getservbyport_r is not defined in Android NDK libc.
     sed -i 's/.*HAVE_GETSERVBYPORT_R.*//g' lib/node/deps/cares/config/android/ares_config.h
+
+    # remove linker '-pie' flag since we generate a shared library
+    # instead of an executable
+    sed -i "s/, '-pie'//g" lib/node/common.gypi
+    sed -i "s/-fPIE/-fPIC/g" lib/node/common.gypi
+}
+
+[[ -r lib/nodejs/android/release/libnode.so ]] || {
+    echo "libnode.so is already built"
+    exit 0
 }
 
 [[ -z $USE_PREBUILT ]] || {
@@ -99,10 +109,11 @@ export GYP_DEFINES
     --without-snapshot \
     --without-intl \
     --without-inspector \
-    --shared-openssl \
-    --shared-openssl-includes="${PLUGIN_DIR}/../ssl/lib/openssl/include" \
-    --shared-openssl-libpath="${PLUGIN_DIR}/../ssl/lib/openssl/lib/android" \
-    --enable-static
+    --shared
+    # --shared-openssl \
+    # --shared-openssl-includes="${PLUGIN_DIR}/../ssl/lib/openssl/include" \
+    # --shared-openssl-libpath="${PLUGIN_DIR}/../ssl/lib/openssl/lib/android" \
+    # --enable-static
 popd
 
 make -j4 -C lib/node
