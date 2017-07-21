@@ -1,19 +1,9 @@
-before_script:
-  # Install Emscripten 1.37.9
-  - wget https://s3.amazonaws.com/mozilla-games/emscripten/releases/emsdk-portable.tar.gz
-  - tar xvzf emsdk-portable.tar.gz
-  - cd emsdk-portable
-  - ./emsdk update
-  - ./emsdk install --build=Release sdk-1.37.9-64bit
-  - ./emsdk activate sdk-1.37.9-64bit
-  - source emsdk_env.sh
-  - ./emsdk_set_env.sh
-
 stages:
   - build
 
 html5_release:
     stage: build
+    image: trzeci/emscripten:sdk-tag-1.35.4-64bit
     script:
     - cd script
     - ./solution_gmake_min.sh
