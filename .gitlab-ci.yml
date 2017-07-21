@@ -8,3 +8,13 @@ before_script:
   - ./emsdk activate sdk-1.37.9-64bit
   - source emsdk_env.sh
   - ./emsdk_set_env.sh
+
+stages:
+  - build
+
+html5_release:
+    stage: build
+    script:
+    - cd script
+    - ./solution_gmake_min.sh
+    - ./build_html5_release.sh
