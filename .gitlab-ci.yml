@@ -9,3 +9,10 @@ html5_release:
     - cd script
     - ./solution_gmake_min.sh
     - ./build_html5_release.sh
+
+android_release:
+    state: build
+    image: bitriseio/android-ndk:v2017_01_28-10_06-b344
+    - cd script
+    - ./solution_gmake_min.sh
+    - ./build_android_release.sh
