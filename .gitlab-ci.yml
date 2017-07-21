@@ -12,8 +12,9 @@ html5_release:
 
 android_release:
   stage: build
-  image: bitriseio/android-ndk:v2017_01_28-10_06-b344
+  image: alexisduque/android-ndk-gradle-docker:latest
   script:
     - cd script
+    - ./install_jni.sh
     - ./solution_gmake_min.sh
     - ./build_android_release.sh
