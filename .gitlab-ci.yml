@@ -11,7 +11,7 @@ html5_release:
     - ./build_html5_release.sh
 
 android_release:
-  state: build
+  stage: build
   image: bitriseio/android-ndk:v2017_01_28-10_06-b344
   script:
     - cd script
