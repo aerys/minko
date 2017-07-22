@@ -30,4 +30,4 @@ linux_release:
       - cd script
       - ./solution_gmake_min.sh
       - cd ..
-      - make -j$(nproc) config=linux_release
+      - make -j$(nproc) config=linux64_release
