@@ -27,7 +27,7 @@ linux_release:
     stage: build
     image: gcc:6.2
     script:
-      - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtkglext1
+      - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1
       - cd script
       - ./solution_gmake_min.sh
       - cd ..
