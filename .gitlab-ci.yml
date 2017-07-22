@@ -5,8 +5,6 @@ stages:
 html5_build:
   stage: build
   image: trzeci/emscripten:sdk-tag-1.37.3-64bit
-  tags:
-    - html5
   script:
     - apt-get update && apt-get install -y make # https://github.com/asRIA/emscripten-docker/issues/1
     - cd script
@@ -16,8 +14,6 @@ html5_build:
 android_build:
   stage: build
   image: alexisduque/android-ndk-gradle-docker:latest
-  tags:
-    - android
   script:
     # https://github.com/aerys/minko/blob/master/doc/tutorial/Compiling_the_SDK_for_Android.md
     - mkdir -p /opt/android-sdk-linux/ndk
@@ -31,8 +27,6 @@ android_build:
 linux_build:
     stage: build
     image: gcc:6.2
-    tags:
-      - linux
     script:
       - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
       - cd script
@@ -43,9 +37,6 @@ linux_build:
 linux_offscreen_build:
     stage: build
     image: gcc:6.2
-    tags:
-      - linux
-      - offscreen
     script:
       - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
       - cd script
@@ -55,9 +46,6 @@ linux_offscreen_build:
 
 linux_offscreen_test:
     stage: test
-    tags:
-      - linux
-      - offscreen
     script:
       - cd script
       - ./solution_gmake_full.sh --no-example --no-tutorial
