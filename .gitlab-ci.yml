@@ -22,3 +22,12 @@ android_release:
     - ./install_jni.sh
     - ./solution_gmake_min.sh
     - ./build_android_release.sh
+
+linux_release:
+    stage: build
+    image: madduci/docker-ubuntu-cpp:gcc-6
+    script:
+      - cd script
+      - ./solution_gmake_min.sh
+      - cd ..
+      - make -j$(nproc) config=linux_release
