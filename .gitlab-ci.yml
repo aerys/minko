@@ -8,7 +8,7 @@ html5_release:
     - apt-get update && apt-get install -y make # https://github.com/asRIA/emscripten-docker/issues/1
     - cd script
     - ./solution_gmake_min.sh --no-glsl-optimizer
-    - ./build_html5_release.sh
+    - ./build_html5_release.sh -j$(nproc)
 
 android_release:
   stage: build
@@ -21,7 +21,7 @@ android_release:
     - cd script
     - ./install_jni.sh
     - ./solution_gmake_min.sh
-    - ./build_android_release.sh
+    - ./build_android_release.sh -j$(nproc)
 
 linux_release:
     stage: build
