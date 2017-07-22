@@ -54,7 +54,7 @@ linux_offscreen_build:
       - make -j$(nproc) config=linux64_release
 
 linux_offscreen_test:
-    state: test
+    stage: test
     tags:
       - linux
       - offscreen
