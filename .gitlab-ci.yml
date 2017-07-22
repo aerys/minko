@@ -1,18 +1,23 @@
 stages:
   - build
+  - test
 
-html5_release:
+html5_build:
   stage: build
   image: trzeci/emscripten:sdk-tag-1.37.3-64bit
+  tags:
+    - html5
   script:
     - apt-get update && apt-get install -y make # https://github.com/asRIA/emscripten-docker/issues/1
     - cd script
     - ./solution_gmake_min.sh --no-glsl-optimizer
     - ./build_html5_release.sh -j$(nproc)
 
-android_release:
+android_build:
   stage: build
   image: alexisduque/android-ndk-gradle-docker:latest
+  tags:
+    - android
   script:
     # https://github.com/aerys/minko/blob/master/doc/tutorial/Compiling_the_SDK_for_Android.md
     - mkdir -p /opt/android-sdk-linux/ndk
@@ -23,12 +28,39 @@ android_release:
     - ./solution_gmake_min.sh
     - ./build_android_release.sh -j$(nproc)
 
-linux_release:
+linux_build:
     stage: build
     image: gcc:6.2
+    tags:
+      - linux
     script:
-      - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev
+      - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
       - cd script
       - ./solution_gmake_min.sh
       - cd ..
       - make -j$(nproc) config=linux64_release
+
+linux_offscreen_build:
+    stage: build
+    image: gcc:6.2
+    tags:
+      - linux
+      - offscreen
+    script:
+      - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+      - cd script
+      - ./solution_gmake_min.sh --with-offscreen
+      - cd ..
+      - make -j$(nproc) config=linux64_release
+
+linux_offscreen_test:
+    state: test
+    tags:
+      - linux
+      - offscreen
+    script:
+      - cd script
+      - ./solution_gmake_full.sh --no-example --no-tutorial
+      - cd ../test
+      - make -j$(nproc) config=linux64_release
+      - ./bin/linux64/release/minko-test
