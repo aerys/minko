@@ -25,7 +25,7 @@ android_release:
 
 linux_release:
     stage: build
-    image: madduci/docker-ubuntu-cpp:gcc-6
+    image: gcc:6.2
     script:
       - cd script
       - ./solution_gmake_min.sh
