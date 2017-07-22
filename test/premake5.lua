@@ -1,4 +1,4 @@
-include "lib/googletest"
+-- include "lib/googletest"
 
 minko.project.application "minko-test"
 
@@ -10,20 +10,27 @@ minko.project.application "minko-test"
 	includedirs { "src" }
 	defines { "MINKO_TEST" }
 
-	-- plugin
+	-- plugins
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("serializer")
 	minko.plugin.enable("websocket")
 	minko.plugin.enable("http-loader")
-
-	-- googletest framework
-	links { "googletest" }
-
-	includedirs { "lib/googletest/include" }
-
-	if _OPTIONS['with-offscreen'] then
+    minko.plugin.enable("ssl")
+    if _OPTIONS['with-offscreen'] then
 		minko.plugin.enable("offscreen")
 	end
+
+	-- googletest
+    files {
+		"lib/googletest/src/gtest-all.cc",
+	}
+    includedirs {
+        "lib/googletest/include",
+        "lib/googletest",
+    }
+    excludes {
+        "lib/googletest/gtest_main.cc",
+    }
 
 	configuration { "osx64 or linux32 or linux64" }
 		links { "pthread" }
