@@ -27,7 +27,7 @@ linux_release:
     stage: build
     image: gcc:6.2
     script:
-      - apt-get update && apt-get install -y mesa-common-dev libmesa-dev
+      - apt-get update && apt-get install -y mesa-common-dev libgl1-mesa-dev
       - cd script
       - ./solution_gmake_min.sh
       - cd ..
