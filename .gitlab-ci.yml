@@ -27,6 +27,7 @@ linux_release:
     stage: build
     image: gcc:6.2
     script:
+      - apt-get install -y mesa-common-dev libmesa-dev
       - cd script
       - ./solution_gmake_min.sh
       - cd ..
