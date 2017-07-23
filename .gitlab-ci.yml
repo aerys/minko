@@ -2,7 +2,7 @@ stages:
   - build
   - test
 
-html5_build:
+build:html5:
   stage: build
   image: trzeci/emscripten:sdk-tag-1.37.3-64bit
   script:
@@ -11,7 +11,7 @@ html5_build:
     - ./solution_gmake_min.sh --no-glsl-optimizer
     - ./build_html5_release.sh -j$(nproc)
 
-android_build:
+build:android:
   stage: build
   image: alexisduque/android-ndk-gradle-docker:latest
   script:
@@ -24,7 +24,7 @@ android_build:
     - ./solution_gmake_min.sh
     - ./build_android_release.sh -j$(nproc)
 
-linux_build:
+build:linux:
     stage: build
     image: gcc:6.2
     artifacts:
@@ -36,9 +36,11 @@ linux_build:
       - cd ..
       - make -j$(nproc) config=linux64_release
 
-linux_offscreen_build:
+build:linux_offscreen:
     stage: build
     image: gcc:6.2
+    artifacts:
+      untracked: true
     script:
       - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
       - cd script
@@ -46,8 +48,10 @@ linux_offscreen_build:
       - cd ..
       - make -j$(nproc) config=linux64_release
 
-linux_offscreen_test:
+test:linux_offscreen:
     stage: test
+    dependencies:
+      - build:linux_offscreen
     script:
       - cd script
       - ./solution_gmake_full.sh --no-example --no-tutorial
