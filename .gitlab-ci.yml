@@ -2,7 +2,22 @@ stages:
   - build
   - test
 
+.build_with_artifacts_template: &build_with_artifacts_template
+  artifacts:
+    untracked: true
+    paths:
+      - plugin/*/include
+      - plugin/*/premake5.lua
+      - plugin/*/plugin.lua
+      - framework/*/include
+      - skeleton
+      - premake5.lua
+      - sdk.lua
+      - LICENSE.md
+      - README.md
+
 build:html5:
+  <<: *build_with_artifacts_template
   stage: build
   image: trzeci/emscripten:sdk-tag-1.37.3-64bit
   script:
@@ -12,6 +27,7 @@ build:html5:
     - ./build_html5_release.sh -j$(nproc)
 
 build:android:
+  <<: *build_with_artifacts_template
   stage: build
   image: alexisduque/android-ndk-gradle-docker:latest
   script:
@@ -25,28 +41,26 @@ build:android:
     - ./build_android_release.sh -j$(nproc)
 
 build:linux:
-    stage: build
-    image: gcc:6.2
-    artifacts:
-      untracked: true
-    script:
-      - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
-      - cd script
-      - ./solution_gmake_min.sh
-      - cd ..
-      - make -j$(nproc) config=linux64_release
+  <<: *build_with_artifacts_template
+  stage: build
+  image: gcc:6.2
+  script:
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+    - cd script
+    - ./solution_gmake_min.sh
+    - cd ..
+    - make -j$(nproc) config=linux64_release
 
 build:linux_offscreen:
-    stage: build
-    image: gcc:6.2
-    artifacts:
-      untracked: true
-    script:
-      - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
-      - cd script
-      - ./solution_gmake_min.sh --with-offscreen
-      - cd ..
-      - make -j$(nproc) config=linux64_release
+  <<: *build_with_artifacts_template
+  stage: build
+  image: gcc:6.2
+  script:
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+    - cd script
+    - ./solution_gmake_min.sh --with-offscreen
+    - cd ..
+    - make -j$(nproc) config=linux64_release
 
 test:linux_offscreen:
     stage: test
