@@ -4,12 +4,14 @@ stages:
 
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
-    untracked: true
     paths:
+      - framework/include
+      - framework/bin
+      - framework/premake5.lua
       - plugin/*/include
+      - plugin/*/bin
       - plugin/*/premake5.lua
       - plugin/*/plugin.lua
-      - framework/*/include
       - skeleton
       - premake5.lua
       - sdk.lua
