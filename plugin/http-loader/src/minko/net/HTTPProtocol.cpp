@@ -189,10 +189,17 @@ HTTPProtocol::load()
             additionalHeadersJsonString += " }";
         }
 
+        auto method = "GET";
+
+        if (!postFields.empty())
+            method = "POST";
+
+        LOG_INFO("HTTP Protocol request method: " << method);
+
         _handle = emscripten_async_wget3_data(
             resolvedFilename().c_str(),
-            "GET",
-            "",
+            method,
+            postFields.c_str(),
             additionalHeadersJsonString.c_str(),
             this,
             true,
