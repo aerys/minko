@@ -8,6 +8,7 @@ stages:
       - bin
       - script/premake5.sh
       - script/premake5.bat
+      - module
       - framework/include
       - framework/bin
       - framework/premake5.lua
