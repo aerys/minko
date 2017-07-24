@@ -5,6 +5,9 @@ stages:
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
     paths:
+      - bin
+      - script/premake5.sh
+      - script/premake5.bat
       - framework/include
       - framework/bin
       - framework/premake5.lua
