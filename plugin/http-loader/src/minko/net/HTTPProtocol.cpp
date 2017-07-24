@@ -136,6 +136,7 @@ HTTPProtocol::load()
     auto additionalHeaders = std::unordered_map<std::string, std::string>();
     auto verifyPeer = true;
     auto buffered = _options->buffered();
+    auto postFields = std::string();
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
@@ -147,6 +148,7 @@ HTTPProtocol::load()
         additionalHeaders = httpOptions->additionalHeaders();
 
         verifyPeer = httpOptions->verifyPeer();
+        postFields = httpOptions->postFields();
     }
 
     auto seekingOffset = _options->seekingOffset();
@@ -284,6 +286,7 @@ HTTPProtocol::load()
         const int passwordSize = password.size();
 
         const int numAdditionalHeaders = additionalHeaders.size();
+        const int postFieldsSize = postFields.size();
 
         inputStream.write(reinterpret_cast<const char*>(&resolvedFilenameSize), 4);
         if (resolvedFilenameSize > 0)
@@ -318,6 +321,10 @@ HTTPProtocol::load()
 
         inputStream.write(reinterpret_cast<const char*>(&verifyPeer), 1);
         inputStream.write(reinterpret_cast<const char*>(&buffered), 1);
+
+        inputStream.write(reinterpret_cast<const char*>(&postFieldsSize), 4);
+        if (postFieldsSize> 0)
+            inputStream.write(postFields.data(), postFieldsSize);
 
         auto inputString = inputStream.str();
 
