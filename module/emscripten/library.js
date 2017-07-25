@@ -52,7 +52,7 @@ mergeInto(LibraryManager.library, {
             var setContentType = true;
             var additionalHeaderObject = JSON.parse(Pointer_stringify(additionalHeader));
             for (var entry in additionalHeaderObject) {
-                if (additionalHeaderObject[entry] == 'Content-Type')
+                if (entry.toLowerCase() == 'content-type')
                     setContentType = false;
                 http.setRequestHeader(entry, additionalHeaderObject[entry]);
             }
