@@ -53,7 +53,7 @@ build:android:
 build:linux:
   <<: *build_with_artifacts_template
   stage: build
-  image: gcc:6.2
+  image: gcc:4.9.4
   script:
     - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
     - cd script
@@ -64,7 +64,7 @@ build:linux:
 build:linux_offscreen:
   <<: *build_with_artifacts_template
   stage: build
-  image: gcc:6.2
+  image: gcc:4.9.4
   script:
     - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
     - cd script
@@ -74,7 +74,7 @@ build:linux_offscreen:
 
 test:linux_offscreen:
     stage: test
-    image: gcc:6.2
+    image: gcc:4.9.4
     dependencies:
       - build:linux_offscreen
     script:
