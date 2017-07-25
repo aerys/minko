@@ -1,6 +1,7 @@
 stages:
   - build
   - test
+  - trigger
 
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
@@ -78,8 +79,11 @@ test:linux_offscreen:
       - ./test/bin/linux64/release/minko-test
 
 trigger:linux_offscreen:
-      - cd script
-      - ./solution_gmake_full.sh --no-example --no-tutorial --with-offscreen
-      - cd ../test
-      - make -j$(nproc) config=linux64_release
-      - ./bin/linux64/release/minko-test
+    stage: trigger
+    script:
+      # smartshape-converter
+      - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/9/trigger/pipeline
+    only:
+        - master
+        - dev
+        - /^client\/.*$/
