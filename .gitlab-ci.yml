@@ -12,8 +12,12 @@ stages:
       - framework/include
       - framework/bin
       - framework/premake5.lua
+      - framework/asset
+      - framework/lib
       - plugin/*/include
       - plugin/*/bin
+      - plugin/*/lib
+      - plugin/*/asset
       - plugin/*/premake5.lua
       - plugin/*/plugin.lua
       - skeleton
