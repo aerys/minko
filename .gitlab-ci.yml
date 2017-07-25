@@ -1,0 +1,89 @@
+stages:
+  - build
+  - test
+  - trigger
+
+.build_with_artifacts_template: &build_with_artifacts_template
+  artifacts:
+    paths:
+      - bin
+      - script/premake5.sh
+      - script/premake5.bat
+      - module
+      - framework/include
+      - framework/bin
+      - framework/premake5.lua
+      - framework/asset
+      - framework/lib
+      - plugin/*/include
+      - plugin/*/bin
+      - plugin/*/lib
+      - plugin/*/asset
+      - plugin/*/premake5.lua
+      - plugin/*/plugin.lua
+      - skeleton
+      - premake5.lua
+      - sdk.lua
+      - LICENSE.md
+      - README.md
+
+build:html5:
+  <<: *build_with_artifacts_template
+  stage: build
+  image: trzeci/emscripten:sdk-tag-1.37.3-64bit
+  script:
+    - apt-get update && apt-get install -y make # https://github.com/asRIA/emscripten-docker/issues/1
+    - ./script/solution_gmake_min.sh --no-glsl-optimizer
+    - make -j$(nproc) config=html5_release
+
+build:android:
+  <<: *build_with_artifacts_template
+  stage: build
+  image: alexisduque/android-ndk-gradle-docker:latest
+  script:
+    # https://github.com/aerys/minko/blob/master/doc/tutorial/Compiling_the_SDK_for_Android.md
+    - mkdir -p /opt/android-sdk-linux/ndk
+    - ln -s /opt/android-ndk-r13b /opt/android-sdk-linux/ndk/android-ndk-r13b
+    - ln -s /opt/android-sdk-linux/build-tools/25.0.2/zipalign /opt/android-sdk-linux/zipalign
+    - ./script/install_jni.sh
+    - ./script/solution_gmake_min.sh
+    - make -j$(nproc) config=android_release
+
+build:linux:
+  <<: *build_with_artifacts_template
+  stage: build
+  image: gcc:4.9.4
+  script:
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+    - ./script/solution_gmake_min.sh
+    - make -j$(nproc) config=linux64_release
+
+build:linux_offscreen:
+  <<: *build_with_artifacts_template
+  stage: build
+  image: gcc:4.9.4
+  script:
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+    - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay --no-glsl-optimizer
+    - make -j$(nproc) config=linux64_release
+
+test:linux_offscreen:
+    stage: test
+    image: gcc:4.9.4
+    dependencies:
+      - build:linux_offscreen
+    script:
+      - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+      - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --no-glsl-optimizer
+      - make -j$(nproc) config=linux64_release -C test
+      - ./test/bin/linux64/release/minko-test
+
+trigger:linux_offscreen:
+    stage: trigger
+    script:
+      # smartshape-converter
+      - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/9/trigger/pipeline
+    only:
+        - master
+        - dev
+        - /^client\/.*$/
