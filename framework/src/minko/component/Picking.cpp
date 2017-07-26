@@ -33,6 +33,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Ray.hpp"
 #include "minko/log/Logger.hpp"
 
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+# include "sparsehash/sparse_hash_map"
+#endif
+
 using namespace minko;
 using namespace component;
 
@@ -951,10 +955,10 @@ Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
     }
 }
 
-std::list<scene::Node::Ptr>
+Picking::map<scene::Node::Ptr, std::set<unsigned char>>
 Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
 {
-    auto pickedNodes = std::list<scene::Node::Ptr>();
+    auto pickedNodes = Picking::map<scene::Node::Ptr, std::set<unsigned char>>();
 
     const auto width = static_cast<int>(topRight.x - bottomLeft.x);
     const auto height = static_cast<int>(bottomLeft.y - topRight.y);
@@ -981,59 +985,75 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     _context->readPixels(0, 0, width, height, &selectAreaPixelBuffer[0]);
 
     // Retrieve all surface ids in the selection area
-    std::vector<bool> surfaceIds(_pickingIdToSurface.size() + 1); // std::vector + resize combo instead of a std::set for better performances
-    std::vector<bool> surfaceIdsOnEdge(_pickingIdToSurface.size() + 1);
+    auto maxSurfaceId = 0;
+    if (!_pickingIdToSurface.empty())
+        maxSurfaceId = _pickingIdToSurface.rbegin()->first;
+
     uint lastPickedSurfaceId = 0;
+    unsigned char lastAlphaValue = 0;
+    auto elementsToRemove = map<scene::Node::Ptr, std::set<unsigned char>>();
     auto pickingRendererColor = _renderer->backgroundColor() >> 8; // bit right shift to ignore alpha
     for (auto i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
     {
         auto currentPixel = &selectAreaPixelBuffer[i];
         uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
+        auto alpha = currentPixel[3];
 
-        if (lastPickedSurfaceId != pickedSurfaceId && pickedSurfaceId < surfaceIds.size() && pickedSurfaceId != pickingRendererColor)
+        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || fullyInside) && pickedSurfaceId <= maxSurfaceId && pickedSurfaceId != pickingRendererColor)
         {
-            if (fullyInside)
-            {
-                auto pixelBufferWidth = pixelSize * width;
+            lastPickedSurfaceId = pickedSurfaceId;
+            lastAlphaValue = alpha;
 
-                // Check that the read pixel is not on the edge of the picking rendering
-                if ((
-                    i <= pixelBufferWidth ||                                // Bottom border
-                    i >= (pixelSize * width * height) - pixelBufferWidth || // Top border
-                    i % pixelBufferWidth == 0 ||                            // Right border
-                    i % pixelBufferWidth == pixelBufferWidth - pixelSize    // Left border
-                    ))
-                {
-                    surfaceIdsOnEdge[pickedSurfaceId] = true;
-                }
-            }
-
-            surfaceIds[pickedSurfaceId] = true;
-
-            if (!fullyInside)
-                lastPickedSurfaceId = pickedSurfaceId;
-        }
-    }
-
-    // Don't return surfaces that are on an edge
-    if (fullyInside)
-    {
-        for (auto i = 0; i < surfaceIdsOnEdge.size(); i++)
-            surfaceIds[i] = surfaceIds[i] && !surfaceIdsOnEdge[i];
-    }
-
-    // Find the nodes associated to the picked surface ids
-    for (auto i = 0; i < surfaceIds.size(); i++)
-    {
-        if (surfaceIds[i])
-        {
-            auto surfaceIt = _pickingIdToSurface.find(i);
+            auto surfaceIt = _pickingIdToSurface.find(pickedSurfaceId);
 
             if (surfaceIt != _pickingIdToSurface.end())
             {
                 auto pickedSurface = surfaceIt->second;
-                pickedNodes.push_back(pickedSurface->target());
+
+                if (fullyInside)
+                {
+                    auto pixelBufferWidth = pixelSize * width;
+
+                    // Check that the read pixel is not on the edge of the picking rendering
+                    if ((
+                        i <= pixelBufferWidth ||                                // Bottom border
+                        i >= (pixelSize * width * height) - pixelBufferWidth || // Top border
+                        i % pixelBufferWidth == 0 ||                            // Right border
+                        i % pixelBufferWidth == pixelBufferWidth - pixelSize    // Left border
+                        ))
+                    {
+                        // Store the combinaison node / alpha value to remove afterward
+                        auto surfaceAlphaValuesToRemove = elementsToRemove.find(pickedSurface->target());
+                        if (surfaceAlphaValuesToRemove == elementsToRemove.end())
+                            elementsToRemove.insert(std::make_pair(pickedSurface->target(), std::set<unsigned char> { alpha }));
+                        else
+                            surfaceAlphaValuesToRemove->second.insert(alpha);
+
+                        continue;
+                    }
+                }
+
+                // Store the combinaison node / alpha value to return as picked
+                auto surfaceAlphaValues = pickedNodes.find(pickedSurface->target());
+                if (surfaceAlphaValues == pickedNodes.end())
+                    pickedNodes.insert(std::make_pair(pickedSurface->target(), std::set<unsigned char> { alpha }));
+                else
+                    surfaceAlphaValues->second.insert(alpha);
             }
+        }
+    }
+
+    if (fullyInside)
+    {
+        for (const auto& element : elementsToRemove)
+        {
+            auto& subSurfaces = pickedNodes[element.first];
+
+            for (const auto& a : element.second)
+                subSurfaces.erase(a);
+
+            if (subSurfaces.empty())
+                pickedNodes.erase(element.first);
         }
     }
 

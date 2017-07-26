@@ -49,17 +49,20 @@ mergeInto(LibraryManager.library, {
         } catch (ex) { }
 
         try {
+            var setContentType = true;
             var additionalHeaderObject = JSON.parse(Pointer_stringify(additionalHeader));
             for (var entry in additionalHeaderObject) {
+                if (entry.toLowerCase() == 'content-type')
+                    setContentType = false;
                 http.setRequestHeader(entry, additionalHeaderObject[entry]);
             }
         } catch (ex) { }
 
         if (_request == "POST") {
             //Send the proper header information along with the request
-            http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            http.setRequestHeader("Content-length", _param.length);
-            http.setRequestHeader("Connection", "close");
+            if (setContentType)
+                http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
             http.send(_param);
         } else {
             http.send(null);

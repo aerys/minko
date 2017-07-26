@@ -21,6 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+# include "sparsehash/sparse_hash_map"
+#endif
+
 using namespace minko;
 using namespace minko::component;
 
@@ -175,10 +179,10 @@ main(int argc, char** argv)
 
             LOG_INFO("Picking nodes from an area of size: " << width << "x" << height << " pixels");
 
-            auto pickedNodes = picking->pickArea(bottomLeft, topRight);
+            auto pickedNodes = picking->pickArea(bottomLeft, topRight, true);
 
             for (auto node : pickedNodes)
-                LOG_INFO(node->name());
+                LOG_INFO(node.first->name());
         });
     });
 

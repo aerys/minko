@@ -62,7 +62,8 @@ extern "C"
 HTTPRequest::HTTPRequest(const std::string& url,
                          const std::string& username,
                          const std::string& password,
-                         const std::unordered_map<std::string, std::string>* additionalHeaders) :
+                         const std::unordered_map<std::string, std::string>* additionalHeaders,
+                         const std::string& postFields) :
     _url(url),
     _progress(Signal<float>::create()),
     _error(Signal<int, const std::string&>::create()),
@@ -71,7 +72,8 @@ HTTPRequest::HTTPRequest(const std::string& url,
     _username(username),
     _password(password),
     _verifyPeer(true),
-    _buffered(false)
+    _buffered(false),
+    _postFields(postFields)
 {
     if (additionalHeaders == nullptr)
         _additionalHeaders = std::unordered_map<std::string, std::string>();
@@ -123,6 +125,7 @@ createCurl(const std::string&                                   url,
            const std::string&                                   password,
            const std::unordered_map<std::string, std::string>&  additionalHeaders,
            bool                                                 verifyPeer,
+           const std::string&                                   postFields,
            curl_slist*&                                         curlHeaderList,
            char*                                                curlErrorBuffer)
 {
@@ -138,6 +141,13 @@ createCurl(const std::string&                                   url,
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verifyPeer ? 1L : 0L);
     if (!verifyPeer)
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+    // POST method
+    if (!postFields.empty())
+    {
+        curl_easy_setopt(curl, CURLOPT_POST, 1);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postFields.c_str());
+    }
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
@@ -199,7 +209,7 @@ HTTPRequest::run()
     char curlErrorBuffer[CURL_ERROR_SIZE];
     memset(curlErrorBuffer, 0, CURL_ERROR_SIZE);
 
-    auto curl = createCurl(url, _username, _password, _additionalHeaders, _verifyPeer, curlHeaderList, curlErrorBuffer);
+    auto curl = createCurl(url, _username, _password, _additionalHeaders, _verifyPeer, _postFields, curlHeaderList, curlErrorBuffer);
 
     if (!curl)
     {
@@ -332,6 +342,7 @@ HTTPRequest::fileExists(const std::string& filename,
         password,
         additionalHeaders ? *additionalHeaders : std::unordered_map<std::string, std::string>(),
         verifyPeer,
+        "",
         curlHeaderList,
         curlErrorBuffer
     );

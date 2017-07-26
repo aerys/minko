@@ -37,6 +37,8 @@ namespace minko
 
             std::unordered_map<std::string, std::string>    _additionalHeaders;
 
+            std::string                                     _postFields;
+
             bool                                            _verifyPeer;
 
         public:
@@ -124,6 +126,22 @@ namespace minko
             verifyPeer(bool value)
             {
                 _verifyPeer = value;
+
+                return std::static_pointer_cast<HTTPOptions>(shared_from_this());
+            }
+
+            inline
+            const std::string&
+            postFields() const
+            {
+                return _postFields;
+            }
+
+            inline
+            Ptr
+            postFields(const std::string& value)
+            {
+                _postFields = value;
 
                 return std::static_pointer_cast<HTTPOptions>(shared_from_this());
             }

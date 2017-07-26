@@ -28,7 +28,8 @@ HTTPOptions::HTTPOptions() :
     _username(),
     _password(),
     _additionalHeaders(),
-    _verifyPeer(true)
+    _verifyPeer(true),
+    _postFields()
 {
 }
 
@@ -37,7 +38,8 @@ HTTPOptions::HTTPOptions(const HTTPOptions& copy) :
     _username(copy._username),
     _password(copy._password),
     _additionalHeaders(copy._additionalHeaders),
-    _verifyPeer(copy._verifyPeer)
+    _verifyPeer(copy._verifyPeer),
+    _postFields(copy._postFields)
 {
 }
 
