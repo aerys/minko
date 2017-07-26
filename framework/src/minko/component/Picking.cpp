@@ -1047,7 +1047,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     {
         for (const auto& element : elementsToRemove)
         {
-            auto subSurfaces = pickedNodes[element.first];
+            auto& subSurfaces = pickedNodes[element.first];
 
             for (const auto& a : element.second)
                 subSurfaces.erase(a);
