@@ -305,8 +305,8 @@ namespace minko
 			    return _lastMergingMask;
 			}
 
-            map<NodePtr, std::set<unsigned char>>
-            pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = false);
+            std::unordered_map<NodePtr, std::set<unsigned char>>
+            pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true);
 
             inline
             void

@@ -951,10 +951,10 @@ Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
     }
 }
 
-map<scene::Node::Ptr, std::set<unsigned char>>
+std::unordered_map<scene::Node::Ptr, std::set<unsigned char>>
 Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
 {
-    auto pickedNodes = map<scene::Node::Ptr, std::set<unsigned char>>();
+    auto pickedNodes = std::unordered_map<scene::Node::Ptr, std::set<unsigned char>>();
 
     const auto width = static_cast<int>(topRight.x - bottomLeft.x);
     const auto height = static_cast<int>(bottomLeft.y - topRight.y);
@@ -987,6 +987,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
 
     uint lastPickedSurfaceId = 0;
     unsigned char lastAlphaValue = 0;
+    auto elementsToRemove = std::unordered_map<scene::Node::Ptr, std::set<unsigned char>>();
     auto pickingRendererColor = _renderer->backgroundColor() >> 8; // bit right shift to ignore alpha
     for (auto i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
     {
@@ -994,34 +995,47 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
         uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
         auto alpha = currentPixel[3];
 
-        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha) && pickedSurfaceId <= maxSurfaceId && pickedSurfaceId != pickingRendererColor)
+        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || fullyInside) && pickedSurfaceId <= maxSurfaceId && pickedSurfaceId != pickingRendererColor)
         {
             lastPickedSurfaceId = pickedSurfaceId;
             lastAlphaValue = alpha;
-
-            if (fullyInside)
-            {
-                auto pixelBufferWidth = pixelSize * width;
-
-                // Check that the read pixel is not on the edge of the picking rendering
-                if ((
-                    i <= pixelBufferWidth ||                                // Bottom border
-                    i >= (pixelSize * width * height) - pixelBufferWidth || // Top border
-                    i % pixelBufferWidth == 0 ||                            // Right border
-                    i % pixelBufferWidth == pixelBufferWidth - pixelSize    // Left border
-                    ))
-                {
-                    continue;
-                }
-            }
 
             auto surfaceIt = _pickingIdToSurface.find(pickedSurfaceId);
 
             if (surfaceIt != _pickingIdToSurface.end())
             {
                 auto pickedSurface = surfaceIt->second;
-                auto surfaceAlphaValues = pickedNodes.find(pickedSurface->target());
 
+                if (fullyInside)
+                {
+                    auto pixelBufferWidth = pixelSize * width;
+
+                    // Check that the read pixel is not on the edge of the picking rendering
+                    if ((
+                        i <= pixelBufferWidth ||                                // Bottom border
+                        i >= (pixelSize * width * height) - pixelBufferWidth || // Top border
+                        i % pixelBufferWidth == 0 ||                            // Right border
+                        i % pixelBufferWidth == pixelBufferWidth - pixelSize    // Left border
+                        ))
+                    {
+                        // Store the combinaison node / alpha value to remove afterward
+                        auto surfaceAlphaValuesToRemove = elementsToRemove.find(pickedSurface->target());
+                        if (surfaceAlphaValuesToRemove == elementsToRemove.end())
+                        {
+                            auto alphaSet = std::set<unsigned char>();
+                            alphaSet.insert(alpha);
+
+                            elementsToRemove.emplace(pickedSurface->target(), alphaSet);
+                        }
+                        else
+                            surfaceAlphaValuesToRemove->second.insert(alpha);
+
+                        continue;
+                    }
+                }
+
+                // Store the combinaison node / alpha value to return as picked
+                auto surfaceAlphaValues = pickedNodes.find(pickedSurface->target());
                 if (surfaceAlphaValues == pickedNodes.end())
                 {
                     auto alphaSet = std::set<unsigned char>();
@@ -1030,10 +1044,20 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
                     pickedNodes.emplace(pickedSurface->target(), alphaSet);
                 }
                 else
-                {
                     surfaceAlphaValues->second.insert(alpha);
-                }
             }
+        }
+    }
+
+    if (fullyInside)
+    {
+        for (auto element : elementsToRemove)
+        {
+            for (auto a : element.second)
+                pickedNodes[element.first].erase(a);
+
+            if (pickedNodes[element.first].empty())
+                pickedNodes.erase(element.first);
         }
     }
 

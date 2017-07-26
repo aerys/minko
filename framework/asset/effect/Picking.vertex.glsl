@@ -21,6 +21,7 @@ attribute vec4 aBoneWeightsB;
 #endif
 
 attribute float aPopProtected;
+attribute float aMergingMask;
 
 #ifdef MODEL_TO_WORLD
 uniform mat4 uModelToWorldMatrix;
@@ -38,8 +39,16 @@ uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
 #endif
 
+varying 	float 	vMergingMask;
+
 void main(void)
 {
+	vMergingMask = 0.0;
+
+	#if defined(VERTEX_MERGING_MASK)
+		vMergingMask = aMergingMask;
+	#endif
+	
 	#if defined(HAS_POSITION)
 		vec4 pos = vec4(aPosition, 1.0);
 
