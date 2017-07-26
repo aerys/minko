@@ -21,6 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+# include "sparsehash/sparse_hash_map"
+#endif
+
 using namespace minko;
 using namespace minko::component;
 
