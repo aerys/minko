@@ -194,8 +194,6 @@ HTTPProtocol::load()
         if (!postFields.empty())
             method = "POST";
 
-        LOG_INFO("HTTP Protocol request method: " << method);
-
         _handle = emscripten_async_wget3_data(
             resolvedFilename().c_str(),
             method,
