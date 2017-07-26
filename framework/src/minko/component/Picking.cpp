@@ -955,10 +955,10 @@ Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
     }
 }
 
-std::map<scene::Node::Ptr, std::set<unsigned char>>
+Picking::map<scene::Node::Ptr, std::set<unsigned char>>
 Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
 {
-    auto pickedNodes = std::map<scene::Node::Ptr, std::set<unsigned char>>();
+    auto pickedNodes = Picking::map<scene::Node::Ptr, std::set<unsigned char>>();
 
     const auto width = static_cast<int>(topRight.x - bottomLeft.x);
     const auto height = static_cast<int>(bottomLeft.y - topRight.y);
@@ -991,7 +991,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
 
     uint lastPickedSurfaceId = 0;
     unsigned char lastAlphaValue = 0;
-    auto elementsToRemove = std::map<scene::Node::Ptr, std::set<unsigned char>>();
+    auto elementsToRemove = map<scene::Node::Ptr, std::set<unsigned char>>();
     auto pickingRendererColor = _renderer->backgroundColor() >> 8; // bit right shift to ignore alpha
     for (auto i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
     {
@@ -1025,12 +1025,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
                         // Store the combinaison node / alpha value to remove afterward
                         auto surfaceAlphaValuesToRemove = elementsToRemove.find(pickedSurface->target());
                         if (surfaceAlphaValuesToRemove == elementsToRemove.end())
-                        {
-                            auto alphaSet = std::set<unsigned char>();
-                            alphaSet.insert(alpha);
-
-                            elementsToRemove.emplace(pickedSurface->target(), alphaSet);
-                        }
+                            elementsToRemove.insert(std::make_pair(pickedSurface->target(), std::set<unsigned char> { alpha }));
                         else
                             surfaceAlphaValuesToRemove->second.insert(alpha);
 
@@ -1041,12 +1036,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
                 // Store the combinaison node / alpha value to return as picked
                 auto surfaceAlphaValues = pickedNodes.find(pickedSurface->target());
                 if (surfaceAlphaValues == pickedNodes.end())
-                {
-                    auto alphaSet = std::set<unsigned char>();
-                    alphaSet.insert(alpha);
-
-                    pickedNodes.emplace(pickedSurface->target(), alphaSet);
-                }
+                    pickedNodes.insert(std::make_pair(pickedSurface->target(), std::set<unsigned char> { alpha }));
                 else
                     surfaceAlphaValues->second.insert(alpha);
             }
@@ -1055,12 +1045,14 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
 
     if (fullyInside)
     {
-        for (auto element : elementsToRemove)
+        for (const auto& element : elementsToRemove)
         {
-            for (auto a : element.second)
-                pickedNodes[element.first].erase(a);
+            auto subSurfaces = pickedNodes[element.first];
 
-            if (pickedNodes[element.first].empty())
+            for (const auto& a : element.second)
+                subSurfaces.erase(a);
+
+            if (subSurfaces.empty())
                 pickedNodes.erase(element.first);
         }
     }
