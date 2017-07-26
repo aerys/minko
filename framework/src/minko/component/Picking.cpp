@@ -33,6 +33,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Ray.hpp"
 #include "minko/log/Logger.hpp"
 
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+# include "sparsehash/sparse_hash_map"
+#endif
+
 using namespace minko;
 using namespace component;
 
@@ -951,10 +955,10 @@ Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
     }
 }
 
-std::unordered_map<scene::Node::Ptr, std::set<unsigned char>>
+std::map<scene::Node::Ptr, std::set<unsigned char>>
 Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
 {
-    auto pickedNodes = std::unordered_map<scene::Node::Ptr, std::set<unsigned char>>();
+    auto pickedNodes = std::map<scene::Node::Ptr, std::set<unsigned char>>();
 
     const auto width = static_cast<int>(topRight.x - bottomLeft.x);
     const auto height = static_cast<int>(bottomLeft.y - topRight.y);
@@ -987,7 +991,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
 
     uint lastPickedSurfaceId = 0;
     unsigned char lastAlphaValue = 0;
-    auto elementsToRemove = std::unordered_map<scene::Node::Ptr, std::set<unsigned char>>();
+    auto elementsToRemove = std::map<scene::Node::Ptr, std::set<unsigned char>>();
     auto pickingRendererColor = _renderer->backgroundColor() >> 8; // bit right shift to ignore alpha
     for (auto i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
     {

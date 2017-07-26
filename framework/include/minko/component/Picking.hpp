@@ -28,6 +28,14 @@ namespace minko
 {
 	namespace component
 	{
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+        template <typename... H>
+        using map = google::sparse_hash_map<H...>;
+#else
+        template <class K, typename... V>
+        using map = std::unordered_map<K, V...>;
+#endif
+
 		class Picking :
 			public AbstractComponent
 		{
@@ -305,7 +313,7 @@ namespace minko
 			    return _lastMergingMask;
 			}
 
-            std::unordered_map<NodePtr, std::set<unsigned char>>
+            std::map<NodePtr, std::set<unsigned char>>
             pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true);
 
             inline
