@@ -32,7 +32,6 @@ build:html5:
   stage: build
   image: trzeci/emscripten:sdk-tag-1.37.3-64bit
   script:
-    - apt-get update && apt-get install -y make # https://github.com/asRIA/emscripten-docker/issues/1
     - ./script/solution_gmake_min.sh --no-glsl-optimizer
     - make -j$(nproc) config=html5_release
 
