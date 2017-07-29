@@ -79,6 +79,7 @@ test:linux_offscreen:
 
 trigger:linux_offscreen:
     stage: trigger
+    dependencies: []
     script:
       # smartshape-converter
       - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/9/trigger/pipeline
