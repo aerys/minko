@@ -82,7 +82,7 @@ trigger:linux_offscreen:
     dependencies: []
     script:
       # smartshape-converter
-      - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/9/trigger/pipeline
+      - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/3769175/trigger/pipeline
     only:
         - master
         - dev
