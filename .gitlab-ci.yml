@@ -7,6 +7,7 @@ stages:
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
+    expire_in: 1 week
     paths:
       - bin
       - script
@@ -85,20 +86,42 @@ test:linux_offscreen:
     - ./test/bin/linux64/release/minko-test
 
 archive:linux_offscreen:
-  stage: archive
-  image: andreausu/backblaze-b2
+  <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE: ${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}.tar.bz2
+    CI_DEBUG_TRACE: "true"
+    ARCHIVE: ${CI_PROJECT_NAME}-linux_offscreen-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}.tar.bz2
   dependencies:
     - build:linux_offscreen
-  script:
-    - tar -cvjSf ${ARCHIVE} * .*
-    - b2 authorize_account ${B2_ACCOUNT_ID} ${B2_APPLICATION_KEY}
-    - b2 upload_file ${B2_ARTIFACTS_BUCKET} ${ARCHIVE} ${ARCHIVE}
+
+archive:android:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE: ${CI_PROJECT_NAME}-android-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}.tar.bz2
+  dependencies:
+    - build:android
+
+archive:html5:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE: ${CI_PROJECT_NAME}-html5-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}.tar.bz2
+  dependencies:
+    - build:html5
+
+archive:linux:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE: ${CI_PROJECT_NAME}-linux-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}.tar.bz2
+  dependencies:
+    - build:linux
 
 trigger:
   stage: trigger
+  variables:
+    GIT_STRATEGY: none
   dependencies: []
   only:
       - master
