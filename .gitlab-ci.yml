@@ -1,6 +1,7 @@
 stages:
   - build
   - test
+  - archive
   - trigger
 
 .build_with_artifacts_template: &build_with_artifacts_template
@@ -68,20 +69,33 @@ build:linux_offscreen:
     - make -j$(nproc) config=linux64_release
 
 test:linux_offscreen:
-    stage: test
-    image: gcc:4.9.4
-    dependencies:
-      - build:linux_offscreen
-    artifacts:
-      name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
-      when: on_failure
-      paths:
-        - test
-    script:
-      - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
-      - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --no-glsl-optimizer
-      - make -j$(nproc) config=linux64_release -C test
-      - ./test/bin/linux64/release/minko-test
+  stage: test
+  image: gcc:4.9.4
+  dependencies:
+    - build:linux_offscreen
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
+    when: on_failure
+    paths:
+      - test
+  script:
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+    - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --no-glsl-optimizer
+    - make -j$(nproc) config=linux64_release -C test
+    - ./test/bin/linux64/release/minko-test
+
+archive:linux_offscreen:
+  stage: archive
+  image: andreausu/backblaze-b2
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE: ${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}.tar.bz2
+  dependencies:
+    - build:linux_offscreen
+  script:
+    - tar -cvjSf ${ARCHIVE} * .*
+    - b2 authorize_account ${B2_ACCOUNT_ID} ${B2_APPLICATION_KEY}
+    - b2 upload_file ${B2_ARTIFACTS_BUCKET} ${ARCHIVE} ${ARCHIVE}
 
 trigger:
   stage: trigger
