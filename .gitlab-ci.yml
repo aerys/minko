@@ -45,7 +45,7 @@ build:android:
     - ln -s /opt/android-ndk-r13b /opt/android-sdk-linux/ndk/android-ndk-r13b
     - ln -s /opt/android-sdk-linux/build-tools/25.0.2/zipalign /opt/android-sdk-linux/zipalign
     - ./script/install_jni.sh
-    - ./script/solution_gmake_min.sh
+    - ./script/solution_gmake_min.sh --no-glsl-optimizer --with-nodejs-worker
     - make -j$(nproc) config=android_release
 
 build:linux:
