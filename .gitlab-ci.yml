@@ -43,7 +43,7 @@ stages:
     - cd "${CI_PROJECT_DIR}/.."
     - tar -cjSf "/tmp/${ARCHIVE}" "${CI_PROJECT_NAME}"
     - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
-    - b2 upload_file "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE}" "${CI_PROJECT_NAME}/${ARCHIVE}"
+    - b2 upload_file "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE}" "${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}/${ARCHIVE}"
 
 build:html5:
   <<: *build_with_artifacts_template
