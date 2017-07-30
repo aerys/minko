@@ -34,9 +34,9 @@ stages:
   stage: archive
   image: andreausu/backblaze-b2
   script:
-    - tar -cvjSf ${ARCHIVE} * .*
-    - b2 authorize_account ${B2_ACCOUNT_ID} ${B2_APPLICATION_KEY}
-    - b2 upload_file ${B2_ARTIFACTS_BUCKET} ${ARCHIVE} ${ARCHIVE}
+    - tar -cvjSf "${ARCHIVE}" * .*
+    - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
+    - b2 upload_file "${B2_ARTIFACTS_BUCKET}" "${ARCHIVE}" "${ARCHIVE}"
 
 build:html5:
   <<: *build_with_artifacts_template
