@@ -32,8 +32,9 @@ stages:
 
 .archive_template: &archive_template
   stage: archive
-  image: andreausu/backblaze-b2
+  image: python:3.6
   script:
+    - pip install b2
     - tar -cvjSf "${ARCHIVE}" * .*
     - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
     - b2 upload_file "${B2_ARTIFACTS_BUCKET}" "${ARCHIVE}" "${ARCHIVE}"
