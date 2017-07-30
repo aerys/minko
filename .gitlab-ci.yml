@@ -35,9 +35,9 @@ stages:
   image: python:3.6
   script:
     - pip install b2
-    - tar -cvjSf "${ARCHIVE}" * .*
+    - tar -cjSf "/tmp/${ARCHIVE}" ${CI_PROJECT_DIR}
     - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
-    - b2 upload_file "${B2_ARTIFACTS_BUCKET}" "${ARCHIVE}" "${ARCHIVE}"
+    - b2 upload_file "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE}" "${ARCHIVE}"
 
 build:html5:
   <<: *build_with_artifacts_template
