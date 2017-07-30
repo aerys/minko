@@ -33,6 +33,7 @@ stages:
       - master
       - dev
       - /^client\/.*$/
+      - feature/gitlab-ci
 
 build:html5:
   <<: *build_with_artifacts_template
