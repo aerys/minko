@@ -33,6 +33,11 @@ stages:
 .archive_template: &archive_template
   stage: archive
   image: python:3.6
+  only:
+    - master
+    - dev
+    - /^client\/.*$/
+    - feature/gitlab-ci
   script:
     - pip install b2
     - cd "${CI_PROJECT_DIR}/.."
