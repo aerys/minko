@@ -7,8 +7,7 @@ stages:
   artifacts:
     paths:
       - bin
-      - script/premake5.sh
-      - script/premake5.bat
+      - script
       - module
       - framework/include
       - framework/bin
@@ -27,12 +26,19 @@ stages:
       - LICENSE.md
       - README.md
 
+.trigger_template: &trigger_template
+  stage: trigger
+  dependencies: []
+  only:
+      - master
+      - dev
+      - /^client\/.*$/
+
 build:html5:
   <<: *build_with_artifacts_template
   stage: build
   image: trzeci/emscripten:sdk-tag-1.37.3-64bit
   script:
-    - apt-get update && apt-get install -y make # https://github.com/asRIA/emscripten-docker/issues/1
     - ./script/solution_gmake_min.sh --no-glsl-optimizer
     - make -j$(nproc) config=html5_release
 
@@ -79,11 +85,19 @@ test:linux_offscreen:
       - ./test/bin/linux64/release/minko-test
 
 trigger:linux_offscreen:
-    stage: trigger
-    script:
-      # smartshape-converter
-      - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/9/trigger/pipeline
-    only:
-        - master
-        - dev
-        - /^client\/.*$/
+  <<: *trigger_template
+  script:
+    # smartshape-converter
+    - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/3769175/trigger/pipeline
+
+trigger:android:
+  <<: *trigger_template
+  script:
+    # smartshape-app
+    - curl --request POST --form "token=${SMARTSHAPE_APP_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/3809722/trigger/pipeline
+
+trigger:html5:
+  <<: *trigger_template
+  script:
+    # smartshape-app
+    - curl --request POST --form "token=${SMARTSHAPE_APP_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/3809722/trigger/pipeline
