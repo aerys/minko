@@ -51,10 +51,21 @@ build:linux:
   <<: *build_with_artifacts_template
   stage: build
   image: gcc:4.9.4
+  variables:
+    CEF_DIR: cef_binary_3.1750.1738_linux64
+    CEF_URL: http://static.aerys.in:8080/minko/lib/cef_binary_3.1750.1738_linux64.7z
   script:
-    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev p7zip-full
     - ./script/solution_gmake_min.sh
     - make -j$(nproc) config=linux64_release
+    - mkdir -p plugin/html-overlay/lib/linux64
+    - pushd plugin/html-overlay/lib/linux64
+    # install cef shared libs
+    - wget --quiet ${CEF_URL}
+    - 7z -y x ${CEF_DIR}.7z
+    - mv ${CEF_DIR}/Release/chrome-sandbox .
+    - mv ${CEF_DIR}/Release/libcef.so .
+    - mv ${CEF_DIR}/Release/libffmpegsumo.so .
 
 build:linux_offscreen:
   <<: *build_with_artifacts_template
