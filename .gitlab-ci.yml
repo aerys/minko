@@ -35,9 +35,10 @@ stages:
   image: python:3.6
   script:
     - pip install b2
-    - tar -cjSf "/tmp/${ARCHIVE}" ${CI_PROJECT_DIR}
+    - cd "${CI_PROJECT_DIR}/.."
+    - tar -cjSf "/tmp/${ARCHIVE}" "${CI_PROJECT_NAME}"
     - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
-    - b2 upload_file "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE}" "${ARCHIVE}"
+    - b2 upload_file "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE}" "${CI_PROJECT_NAME}/${ARCHIVE}"
 
 build:html5:
   <<: *build_with_artifacts_template
@@ -98,7 +99,6 @@ archive:linux_offscreen:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    CI_DEBUG_TRACE: "true"
     ARCHIVE: ${CI_PROJECT_NAME}-linux_offscreen-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}.tar.bz2
   dependencies:
     - build:linux_offscreen
