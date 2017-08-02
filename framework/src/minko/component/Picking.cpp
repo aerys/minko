@@ -255,7 +255,7 @@ Picking::targetAdded(NodePtr target)
     auto priority = _debug ? -1000.0f : 1000.0f;
 
     _renderer = Renderer::create(
-        0xFFFF00FF,
+        0x000000FF,
         nullptr,
         _pickingEffect,
         "default",
@@ -275,7 +275,7 @@ Picking::targetAdded(NodePtr target)
         _pickingDepthEffect = _sceneManager->assets()->effect("effect/PickingDepth.effect");
 
     _depthRenderer = Renderer::create(
-        0xFFFF00FF,
+        0x000000FF,
         nullptr,
         _pickingDepthEffect,
         "default",
@@ -588,6 +588,9 @@ Picking::renderingEnd(RendererPtr renderer)
     {
         dispatchEvents(nullptr, _lastDepthValue);
     }
+
+    if (!_multiselecting)
+        _sceneManager->nextFrame(0.f, 0.f);
 }
 
 void
@@ -1061,6 +1064,8 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     _renderer->scissorBox(0, 0, 1, 1);
 
     _multiselecting = false;
+
+    _sceneManager->nextFrame(0.f, 0.f);
 
     return pickedNodes;
 }
