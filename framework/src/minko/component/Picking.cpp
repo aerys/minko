@@ -253,9 +253,13 @@ Picking::targetAdded(NodePtr target)
         _pickingEffect = _sceneManager->assets()->effect("effect/Picking.effect");
 
     auto priority = _debug ? -1000.0f : 1000.0f;
+    auto pickingRendererColor = 0x000000FF;
+
+    if (_debug)
+        pickingRendererColor = 0xFFFF00FF;
 
     _renderer = Renderer::create(
-        0x000000FF,
+        pickingRendererColor,
         nullptr,
         _pickingEffect,
         "default",
