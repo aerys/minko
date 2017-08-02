@@ -588,9 +588,6 @@ Picking::renderingEnd(RendererPtr renderer)
     {
         dispatchEvents(nullptr, _lastDepthValue);
     }
-
-    if (!_multiselecting)
-        _sceneManager->nextFrame(0.f, 0.f);
 }
 
 void
