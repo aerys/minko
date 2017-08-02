@@ -995,14 +995,13 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     uint lastPickedSurfaceId = 0;
     unsigned char lastAlphaValue = 0;
     auto elementsToRemove = map<scene::Node::Ptr, std::set<unsigned char>>();
-    auto pickingRendererColor = _renderer->backgroundColor() >> 8; // bit right shift to ignore alpha
     for (auto i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
     {
         auto currentPixel = &selectAreaPixelBuffer[i];
         uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
         auto alpha = currentPixel[3];
 
-        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || fullyInside) && pickedSurfaceId <= maxSurfaceId && pickedSurfaceId != pickingRendererColor)
+        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || fullyInside) && pickedSurfaceId <= maxSurfaceId)
         {
             lastPickedSurfaceId = pickedSurfaceId;
             lastAlphaValue = alpha;
