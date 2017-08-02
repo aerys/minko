@@ -253,9 +253,13 @@ Picking::targetAdded(NodePtr target)
         _pickingEffect = _sceneManager->assets()->effect("effect/Picking.effect");
 
     auto priority = _debug ? -1000.0f : 1000.0f;
+    auto pickingRendererColor = 0x000000FF;
+
+    if (_debug)
+        pickingRendererColor = 0xFFFF00FF;
 
     _renderer = Renderer::create(
-        0xFFFF00FF,
+        pickingRendererColor,
         nullptr,
         _pickingEffect,
         "default",
@@ -275,7 +279,7 @@ Picking::targetAdded(NodePtr target)
         _pickingDepthEffect = _sceneManager->assets()->effect("effect/PickingDepth.effect");
 
     _depthRenderer = Renderer::create(
-        0xFFFF00FF,
+        0x000000FF,
         nullptr,
         _pickingDepthEffect,
         "default",
@@ -992,14 +996,13 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     uint lastPickedSurfaceId = 0;
     unsigned char lastAlphaValue = 0;
     auto elementsToRemove = map<scene::Node::Ptr, std::set<unsigned char>>();
-    auto pickingRendererColor = _renderer->backgroundColor() >> 8; // bit right shift to ignore alpha
     for (auto i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
     {
         auto currentPixel = &selectAreaPixelBuffer[i];
         uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
         auto alpha = currentPixel[3];
 
-        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || fullyInside) && pickedSurfaceId <= maxSurfaceId && pickedSurfaceId != pickingRendererColor)
+        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || fullyInside) && pickedSurfaceId <= maxSurfaceId)
         {
             lastPickedSurfaceId = pickedSurfaceId;
             lastAlphaValue = alpha;
@@ -1061,6 +1064,8 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     _renderer->scissorBox(0, 0, 1, 1);
 
     _multiselecting = false;
+
+    _sceneManager->nextFrame(0.f, 0.f);
 
     return pickedNodes;
 }
