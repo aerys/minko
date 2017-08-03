@@ -348,7 +348,5 @@ buildGeometry(render::AbstractContext::Ptr          context,
     geometry->indices(ib);
     geometry->upload();
 
-    geometry->computeNormals();
-
     return true;
 }
