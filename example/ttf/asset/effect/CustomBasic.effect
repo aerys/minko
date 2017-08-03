@@ -1,0 +1,55 @@
+{
+    "name" : "custom-basic",
+    "uniforms" : {
+        "uDiffuseTint"      : "material[${materialUuid}].diffuseTint",
+        "uGammaCorrection"  : { "binding" : { "property" : "gammaCorrection", "source" : "renderer" }, "default" : 2.2 },
+        "uFogColor"         : "material[${materialUuid}].fogColor",
+        "uFogBounds"        : "material[${materialUuid}].fogBounds"
+    },
+    "macros" : {
+        "DIFFUSE_TINT"      : "material[${materialUuid}].diffuseTint",
+        "GAMMA_CORRECTION"  : { "binding" : { "property" : "gammaCorrection", "source" : "renderer" } },
+        "FOG_ENABLED"       : "material[${materialUuid}].fogEnabled",
+        "FOG_LIN"           : "material[${materialUuid}].fogLinear",
+        "FOG_EXP"           : "material[${materialUuid}].fogExponential",
+        "FOG_EXP2"          : "material[${materialUuid}].fogExponential2",
+        "FOG_TECHNIQUE"     : { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" }
+    },
+    "techniques" : [
+        {
+            "name" : "default",
+            "passes" : [
+                {
+                    "name" : "basic-opaque-pass",
+                    "extends" : {
+                        "effect"    : "BaseStreamingTemplate.effect",
+                        "technique" : "base-streaming-technique",
+                        "pass"      : "base-streaming-pass"
+                    },
+                    "vertexShader" : "#pragma include \"CustomBasic.vertex.glsl\"",
+                    "fragmentShader" : "#pragma include \"CustomBasic.fragment.glsl\""
+                }
+            ]
+        },
+        {
+            "name" : "transparent",
+            "states" : {
+                "blendingMode"  : "alpha",
+                "priority"      : "transparent",
+                "zSorted"       : true
+            },
+            "passes" : [
+                {
+                    "name" : "basic-transparent-pass",
+                    "extends" : {
+                        "effect"    : "BaseStreamingTemplate.effect",
+                        "technique" : "base-streaming-technique",
+                        "pass"      : "base-streaming-pass"
+                    },
+                    "vertexShader" : "#pragma include \"CustomBasic.vertex.glsl\"",
+                    "fragmentShader" : "#pragma include \"CustomBasic.fragment.glsl\""
+                }
+            ]
+        }
+    ]
+}
