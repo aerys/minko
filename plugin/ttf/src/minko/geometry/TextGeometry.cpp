@@ -48,7 +48,6 @@ struct Font
     std::vector<FontCharacter>      characters;
     math::uvec2                     atlasSize;
     math::uvec2                     atlasCharOffset;
-    float                           atlasAlphaThreshold;
 };
 
 static
@@ -98,7 +97,6 @@ TextGeometry::setText(const std::string& fontFilename, const std::string& text, 
 
         font.atlasSize = math::uvec2(1024);
         font.atlasCharOffset = math::uvec2(64);
-        font.atlasAlphaThreshold = .5f;
         font.atlas = render::Texture::create(
             _context,
             font.atlasSize.x, font.atlasSize.y,
@@ -109,8 +107,9 @@ TextGeometry::setText(const std::string& fontFilename, const std::string& text, 
 
         buildAtlas(font);
         font.atlas->upload();
-        _atlasTexture = font.atlas;
     }
+
+	_atlasTexture = font.atlas;
 
     buildGeometry(_context, shared_from_this(), text, scale, font);
 
@@ -210,7 +209,6 @@ buildAtlas(Font& font)
 {
     const auto atlasSize = font.atlasSize;
     const auto atlasCharOffset = font.atlasCharOffset;
-    const auto atlasAlphaThreshold = font.atlasAlphaThreshold;
     const auto& fontCharacters = font.characters;
 
     auto atlasTextureData = std::vector<unsigned char>(atlasSize.x * atlasSize.y * 4);
@@ -236,7 +234,7 @@ buildAtlas(Font& font)
                 fontCharacterData[dstOffset]     = srcValue;
                 fontCharacterData[dstOffset + 1] = srcValue;
                 fontCharacterData[dstOffset + 2] = srcValue;
-                fontCharacterData[dstOffset + 3] = srcValue / 255.f < atlasAlphaThreshold ? 0 : 255;
+                fontCharacterData[dstOffset + 3] = srcValue;
             }
         }
 
