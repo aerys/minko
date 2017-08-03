@@ -27,17 +27,22 @@ function minko.plugin.ttf:enable()
 
 	minko.plugin.links { "ttf" }
 
-    links { "freetype" }
+    links { "freetype28" }
 
     configuration { "windows32", "ConsoleApp or WindowedApp" }
         libdirs { minko.plugin.path("ttf") .. "/lib/freetype/lib/windows32" }
         prelinkcommands {
-            minko.action.copy("lib/freetype/lib/windows32/*.dll")
+            minko.action.copy(minko.plugin.path("ttf") .. "/lib/freetype/lib/windows32/*.dll")
         }
 
     configuration { "windows64", "ConsoleApp or WindowedApp" }
         libdirs { minko.plugin.path("ttf") .. "/lib/freetype/lib/windows64" }
         prelinkcommands {
-            minko.action.copy("lib/freetype/lib/windows64/*.dll")
+            minko.action.copy(minko.plugin.path("ttf") .. "/lib/freetype/lib/windows64/*.dll")
+        }
+
+    configuration { "vs*" }
+        linkoptions {
+            "/NODEFAULTLIB:msvcrt.lib"
         }
 end
