@@ -63,6 +63,10 @@ bool
 buildAtlas(Font& font);
 
 static
+math::vec2
+getTextSize(const Font& font, const std::string& text, float scale);
+
+static
 bool
 buildGeometry(render::AbstractContext::Ptr  context,
               Geometry::Ptr                 geometry,
@@ -130,7 +134,7 @@ getCharacterSet()
         for (auto c = '0'; c <= '9'; ++c)
             characters.push_back(c);
 
-        static const auto specialCharacters = std::string(" .,'?!");
+        static const auto specialCharacters = std::string(" .,'?!/");
 
         characters.insert(characters.end(), specialCharacters.begin(), specialCharacters.end());
     }
@@ -262,6 +266,44 @@ buildAtlas(Font& font)
     return true;
 }
 
+math::vec2
+getTextSize(const Font& font, const std::string& text, float scale)
+{
+    auto size = math::vec2(0.f, -std::numeric_limits<float>::max());
+
+    for (auto i = 0; i < text.size(); ++i)
+    {
+        const auto c = text.at(i);
+
+        const auto it = std::find_if(
+            font.characters.begin(),
+            font.characters.end(),
+            [&c](const FontCharacter& fontCharacter) { return fontCharacter.c == c; });
+
+        if (it == font.characters.end())
+        {
+            LOG_WARNING("Unhandled character " << c);
+            continue;
+        }
+
+        const auto& fontCharacter = *it;
+
+        const auto w = fontCharacter.size.x * scale;
+        const auto h = fontCharacter.size.y * scale;
+        const auto min = math::vec3(
+            fontCharacter.bearing.x * scale,
+            -(fontCharacter.size.y - fontCharacter.bearing.y) * scale,
+            0.f
+        );
+        const auto max = min + math::vec3(w, h, 0.f);
+
+        size.x += (fontCharacter.advance >> 6) * scale;
+        size.y = math::max(size.y, (max - min).y);
+    }
+
+    return size;
+}
+
 bool
 buildGeometry(render::AbstractContext::Ptr          context,
               Geometry::Ptr                         geometry,
@@ -280,7 +322,9 @@ buildGeometry(render::AbstractContext::Ptr          context,
 
     auto indexOffset = 0;
 
-    auto positionOffset = math::vec3();
+    // Origin point is at text center
+    const auto textSize = getTextSize(font, text, scale);
+    auto positionOffset = math::vec3(-math::vec2(textSize.x, textSize.y) / 2.f, 0.f);
 
     for (auto i = 0; i < text.size(); ++i)
     {
