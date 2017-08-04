@@ -135,7 +135,7 @@ getCharacterSet()
         for (auto c = '0'; c <= '9'; ++c)
             characters.push_back(c);
 
-        static const auto specialCharacters = std::string(" .,'?!/");
+        static const auto specialCharacters = std::string(" .,'?!/*");
 
         characters.insert(characters.end(), specialCharacters.begin(), specialCharacters.end());
     }
