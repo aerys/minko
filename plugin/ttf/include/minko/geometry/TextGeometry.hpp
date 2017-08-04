@@ -49,7 +49,7 @@ namespace minko
             }
 
             Ptr
-            setText(const std::string& fontFilename, const std::string& text, float scale);
+            setText(const std::string& fontFilename, const std::string& text, float scale, bool centerOrigin = true);
 
             std::shared_ptr<render::AbstractTexture>
             atlasTexture()

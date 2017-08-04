@@ -72,7 +72,8 @@ buildGeometry(render::AbstractContext::Ptr  context,
               Geometry::Ptr                 geometry,
               const std::string&            text,
               float                         fontSize,
-              const Font&                   font);
+              const Font&                   font,
+		      bool							centerOrigin);
 
 TextGeometry::TextGeometry() :
     Geometry("text"),
@@ -81,7 +82,7 @@ TextGeometry::TextGeometry() :
 }
 
 TextGeometry::Ptr
-TextGeometry::setText(const std::string& fontFilename, const std::string& text, float scale)
+TextGeometry::setText(const std::string& fontFilename, const std::string& text, float scale, bool centerOrigin)
 {
     static auto fontCache = std::unordered_map<std::string, Font>();
 
@@ -115,7 +116,7 @@ TextGeometry::setText(const std::string& fontFilename, const std::string& text, 
 
 	_atlasTexture = font.atlas;
 
-    buildGeometry(_context, shared_from_this(), text, scale, font);
+    buildGeometry(_context, shared_from_this(), text, scale, font, centerOrigin);
 
     return std::static_pointer_cast<TextGeometry>(shared_from_this());
 }
@@ -309,7 +310,8 @@ buildGeometry(render::AbstractContext::Ptr          context,
               Geometry::Ptr                         geometry,
               const std::string&                    text,
               float                                 scale,
-              const Font&                           font)
+              const Font&                           font,
+			  bool									centerOrigin)
 {
     const auto atlasSize = font.atlasSize;
     const auto atlasCharOffset = font.atlasCharOffset;
@@ -324,7 +326,9 @@ buildGeometry(render::AbstractContext::Ptr          context,
 
     // Origin point is at text center
     const auto textSize = getTextSize(font, text, scale);
-    auto positionOffset = math::vec3(-math::vec2(textSize.x, textSize.y) / 2.f, 0.f);
+    auto positionOffset = centerOrigin
+		? math::vec3(-math::vec2(textSize.x, textSize.y) / 2.f, 0.f)
+		: math::vec3();
 
     for (auto i = 0; i < text.size(); ++i)
     {
