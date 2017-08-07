@@ -77,7 +77,9 @@ buildGeometry(render::AbstractContext::Ptr  context,
 
 TextGeometry::TextGeometry() :
     Geometry("text"),
-    _context()
+    _context(),
+    _atlasTexture(),
+    _textSize(0.f)
 {
 }
 
@@ -115,6 +117,7 @@ TextGeometry::setText(const std::string& fontFilename, const std::string& text, 
     }
 
 	_atlasTexture = font.atlas;
+    _textSize = getTextSize(font, text, scale);
 
     buildGeometry(_context, shared_from_this(), text, scale, font, centerOrigin);
 

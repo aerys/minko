@@ -35,6 +35,7 @@ namespace minko
             std::shared_ptr<render::AbstractContext> _context;
 
             std::shared_ptr<render::AbstractTexture> _atlasTexture;
+            math::vec2                               _textSize;
 
         public:
             static
@@ -55,6 +56,12 @@ namespace minko
             atlasTexture()
             {
                 return _atlasTexture;
+            }
+
+            const math::vec2&
+            textSize() const
+            {
+                return _textSize;
             }
 
         private:
