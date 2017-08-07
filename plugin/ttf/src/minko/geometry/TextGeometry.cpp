@@ -131,16 +131,9 @@ getCharacterSet()
 
     if (characters.empty())
     {
-        for (auto c = 'a'; c <= 'z'; ++c)
-            characters.push_back(c);
-        for (auto c = 'A'; c <= 'Z'; ++c)
-            characters.push_back(c);
-        for (auto c = '0'; c <= '9'; ++c)
-            characters.push_back(c);
-
-        static const auto specialCharacters = std::string(" .,'?!/*");
-
-        characters.insert(characters.end(), specialCharacters.begin(), specialCharacters.end());
+        characters.reserve(256);
+        for (int i = std::numeric_limits<char>::min(); i <= std::numeric_limits<char>::max(); ++i)
+            characters.push_back(static_cast<char>(i));
     }
 
     return characters;
