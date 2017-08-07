@@ -374,8 +374,8 @@ buildGeometry(render::AbstractContext::Ptr          context,
         });
 
         indexData.insert(indexData.end(), {
-            static_cast<unsigned short>(indexOffset), static_cast<unsigned short>(indexOffset + 1), static_cast<unsigned short>(indexOffset + 2),
-            static_cast<unsigned short>(indexOffset), static_cast<unsigned short>(indexOffset + 2), static_cast<unsigned short>(indexOffset + 3)
+            static_cast<unsigned short>(indexOffset), static_cast<unsigned short>(indexOffset + 2), static_cast<unsigned short>(indexOffset + 1),
+            static_cast<unsigned short>(indexOffset), static_cast<unsigned short>(indexOffset + 3), static_cast<unsigned short>(indexOffset + 2)
         });
         indexOffset += 4;
     }
