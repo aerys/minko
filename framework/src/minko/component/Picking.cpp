@@ -279,7 +279,7 @@ Picking::targetAdded(NodePtr target)
         _pickingDepthEffect = _sceneManager->assets()->effect("effect/PickingDepth.effect");
 
     _depthRenderer = Renderer::create(
-        0x000000FF,
+        pickingRendererColor,
         nullptr,
         _pickingDepthEffect,
         "default",
@@ -1065,7 +1065,9 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
 
     _multiselecting = false;
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     _sceneManager->nextFrame(0.f, 0.f);
+#endif
 
     return pickedNodes;
 }
