@@ -9,7 +9,7 @@ if not defined MINKO_HOME (
 	exit /b 1
 )
 
-mingw32-make SHELL=cmd.exe config=html5_release verbose=1
+mingw32-make %* SHELL=cmd.exe config=html5_release verbose=1
 
 popd
 pause
