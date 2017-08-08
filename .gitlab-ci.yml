@@ -43,6 +43,7 @@ stages:
     - dev
     - /^client\/.*$/
     - feature/gitlab-ci
+    - tags
   script:
     - pip install b2
     - cd "${CI_PROJECT_DIR}/.."
@@ -147,6 +148,7 @@ trigger:
       - dev
       - /^client\/.*$/
       - feature/gitlab-ci
+      - tags
   script:
     - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/3769175/trigger/pipeline
     - curl --request POST --form "token=${SMARTSHAPE_APP_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/3809722/trigger/pipeline
