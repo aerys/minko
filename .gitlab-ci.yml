@@ -46,8 +46,8 @@ stages:
     - tags
   script:
     - pip install b2
-    - cd "${CI_PROJECT_DIR}/.."
-    - tar -cjSf "/tmp/${ARCHIVE_NAME}" "${CI_PROJECT_NAME}"
+    - cd "${CI_PROJECT_DIR}"
+    - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
     - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
     - b2 upload_file --noProgress --info CI_COMMIT_SHA=${CI_COMMIT_SHA} "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE_NAME}" "${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}/${ARCHIVE_NAME}"
 
