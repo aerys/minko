@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-const std::string EFFECT_FILENAME = "effect/CustomBasic.effect";
+const std::string EFFECT_FILENAME = "effect/Basic.effect";
 const std::string FONT_FILENAME = "font/MyFont.ttf";
 
 int
@@ -47,18 +47,18 @@ main(int argc, char** argv)
         ->addComponent(sceneManager);
 
     auto textMeshes = std::vector<scene::Node::Ptr>{
-        scene::Node::create("textMesh1")->addComponent(Transform::create(math::translate(math::vec3(-3.f, 1.f, 0.f)))),
-        scene::Node::create("textMesh2")->addComponent(Transform::create(math::translate(math::vec3(-3.f, -1.f, 0.f))))
+        scene::Node::create("textMesh1")->addComponent(Transform::create(math::translate(math::vec3(0.f, 1.f, 0.f)))),
+        scene::Node::create("textMesh2")->addComponent(Transform::create(math::translate(math::vec3(0.f, -1.f, 0.f))))
     };
 
     auto textGeometries = std::vector<geometry::TextGeometry::Ptr>{
-        geometry::TextGeometry::create(canvas->context())->setText(FONT_FILENAME, "Text in blue with a scale of 0.006", .006f),
-        geometry::TextGeometry::create(canvas->context())->setText(FONT_FILENAME, "Larger text in white.", .01f)
+        geometry::TextGeometry::create(canvas->context())->setText(FONT_FILENAME, "Text in blue with a scale of 0.006", .006f, true),
+        geometry::TextGeometry::create(canvas->context())->setText(FONT_FILENAME, "Larger text in white.", .01f, true)
     };
 
     auto defaultTextMaterial = material::Material::create()->set({
-        { "diffuseTint", math::vec4(.15f, .55f, .88f, 1.f) },
-        { "diffuseMap", textGeometries.front()->atlasTexture()->sampler() },
+        { "diffuseColor", math::vec4(.15f, .55f, .88f, 1.f) },
+        { "alphaMap", textGeometries.front()->atlasTexture()->sampler() },
         { "triangleCulling", render::TriangleCulling::NONE },
         { render::States::PROPERTY_BLENDING_SOURCE, render::Blending::Source::SRC_ALPHA },
         { render::States::PROPERTY_BLENDING_DESTINATION, render::Blending::Destination::ONE_MINUS_SRC_ALPHA }
@@ -66,7 +66,7 @@ main(int argc, char** argv)
 
     auto textMaterials = std::vector<material::Material::Ptr>{
         defaultTextMaterial,
-        material::Material::create(defaultTextMaterial)->set({{"diffuseTint", math::vec4(1.f)}})
+        material::Material::create(defaultTextMaterial)->set({{"diffuseColor", math::vec4(1.f)}})
     };
 
     auto camera = scene::Node::create("camera")
