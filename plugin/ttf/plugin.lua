@@ -1,5 +1,5 @@
-/*
-Copyright (c) 2014 Aerys
+--[[
+Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -15,26 +15,34 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+]]--
 
-#include "minko/scene/Layout.hpp"
+-- ttf plugin
+minko.plugin.ttf = {}
 
-using namespace minko;
-using namespace minko::scene;
+function minko.plugin.ttf:enable()
+    defines { "MINKO_PLUGIN_TTF" }
 
-const Layout BuiltinLayout::DEFAULT             = 1 << 0;
-const Layout BuiltinLayout::DEBUG_ONLY          = 1 << 1;
-const Layout BuiltinLayout::STATIC              = 1 << 2;
-const Layout BuiltinLayout::IGNORE_RAYCASTING   = 1 << 3;
-const Layout BuiltinLayout::IGNORE_CULLING      = 1 << 4;
-const Layout BuiltinLayout::HIDDEN              = 1 << 5;
-const Layout BuiltinLayout::PICKING             = 1 << 6;
-const Layout BuiltinLayout::INSIDE_FRUSTUM      = 1 << 7;
-const Layout BuiltinLayout::MINOR_OBJECT        = 1 << 8;
-const Layout BuiltinLayout::PICKING_DEPTH       = 1 << 9;
-const Layout BuiltinLayout::CAST_SHADOW			= 1 << 10;
-const Layout BuiltinLayout::TEXT				= 1 << 11;
+    includedirs { minko.plugin.path("ttf") .. "/include" }
 
-const Layout LayoutMask::NOTHING                    = 0;
-const Layout LayoutMask::COLLISIONS_DYNAMIC_DEFAULT = EVERYTHING & ~BuiltinLayout::STATIC;
-const Layout LayoutMask::EVERYTHING                 = 0xffffffff;
+	minko.plugin.links { "ttf" }
+
+    links { "freetype28" }
+
+    configuration { "windows32", "ConsoleApp or WindowedApp" }
+        libdirs { minko.plugin.path("ttf") .. "/lib/freetype/lib/windows32" }
+        prelinkcommands {
+            minko.action.copy(minko.plugin.path("ttf") .. "/lib/freetype/lib/windows32/*.dll")
+        }
+
+    configuration { "windows64", "ConsoleApp or WindowedApp" }
+        libdirs { minko.plugin.path("ttf") .. "/lib/freetype/lib/windows64" }
+        prelinkcommands {
+            minko.action.copy(minko.plugin.path("ttf") .. "/lib/freetype/lib/windows64/*.dll")
+        }
+
+    configuration { "vs*" }
+        linkoptions {
+            "/NODEFAULTLIB:msvcrt.lib"
+        }
+end

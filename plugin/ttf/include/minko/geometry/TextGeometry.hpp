@@ -20,34 +20,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/geometry/Geometry.hpp"
 
 namespace minko
 {
-    namespace scene
+    namespace geometry
     {
-        typedef uint32_t Layout;
-
-        struct BuiltinLayout
+        class TextGeometry : public Geometry
         {
-            static const Layout DEFAULT;
-            static const Layout DEBUG_ONLY;
-            static const Layout STATIC;
-            static const Layout IGNORE_RAYCASTING;
-            static const Layout IGNORE_CULLING;
-            static const Layout HIDDEN;
-            static const Layout PICKING;
-            static const Layout INSIDE_FRUSTUM;
-            static const Layout MINOR_OBJECT;
-            static const Layout PICKING_DEPTH;
-			static const Layout CAST_SHADOW;
-			static const Layout TEXT;
-        };
+        public:
+            using Ptr = std::shared_ptr<TextGeometry>;
 
-        struct LayoutMask
-        {
-            static const Layout NOTHING;
-            static const Layout EVERYTHING;
-            static const Layout COLLISIONS_DYNAMIC_DEFAULT;
+        private:
+            std::shared_ptr<render::AbstractContext> _context;
+
+            std::shared_ptr<render::AbstractTexture> _atlasTexture;
+            math::vec2                               _textSize;
+
+        public:
+            static
+            Ptr
+            create(std::shared_ptr<render::AbstractContext> context)
+            {
+                auto instance = Ptr(new TextGeometry());
+
+                instance->_context = context;
+
+                return instance;
+            }
+
+            Ptr
+            setText(const std::string& fontFilename, const std::string& text, float scale, bool centerOrigin = true);
+
+            std::shared_ptr<render::AbstractTexture>
+            atlasTexture()
+            {
+                return _atlasTexture;
+            }
+
+            const math::vec2&
+            textSize() const
+            {
+                return _textSize;
+            }
+
+        private:
+            TextGeometry();
         };
     }
 }

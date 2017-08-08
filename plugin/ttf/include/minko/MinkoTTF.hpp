@@ -17,24 +17,6 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/scene/Layout.hpp"
+#pragma once
 
-using namespace minko;
-using namespace minko::scene;
-
-const Layout BuiltinLayout::DEFAULT             = 1 << 0;
-const Layout BuiltinLayout::DEBUG_ONLY          = 1 << 1;
-const Layout BuiltinLayout::STATIC              = 1 << 2;
-const Layout BuiltinLayout::IGNORE_RAYCASTING   = 1 << 3;
-const Layout BuiltinLayout::IGNORE_CULLING      = 1 << 4;
-const Layout BuiltinLayout::HIDDEN              = 1 << 5;
-const Layout BuiltinLayout::PICKING             = 1 << 6;
-const Layout BuiltinLayout::INSIDE_FRUSTUM      = 1 << 7;
-const Layout BuiltinLayout::MINOR_OBJECT        = 1 << 8;
-const Layout BuiltinLayout::PICKING_DEPTH       = 1 << 9;
-const Layout BuiltinLayout::CAST_SHADOW			= 1 << 10;
-const Layout BuiltinLayout::TEXT				= 1 << 11;
-
-const Layout LayoutMask::NOTHING                    = 0;
-const Layout LayoutMask::COLLISIONS_DYNAMIC_DEFAULT = EVERYTHING & ~BuiltinLayout::STATIC;
-const Layout LayoutMask::EVERYTHING                 = 0xffffffff;
+#include "minko/geometry/TextGeometry.hpp"

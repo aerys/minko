@@ -100,6 +100,7 @@ local plugins = {
 	['ssl'] = true,
 	['sensors'] = true,
 	['serializer'] = true,
+    ['ttf'] = true,
 	['video-camera'] = true,
 	['vr'] = true,
 	['websocket'] = true
