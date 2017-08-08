@@ -110,7 +110,7 @@ archive:linux_offscreen:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux_offscreen-${CI_COMMIT_REF_NAME}.tar.bz2
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux_offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
     - build:linux_offscreen
 
@@ -118,7 +118,7 @@ archive:android:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-android-${CI_COMMIT_REF_NAME}.tar.bz2
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-android-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
     - build:android
 
@@ -126,7 +126,7 @@ archive:html5:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-html5-${CI_COMMIT_REF_NAME}.tar.bz2
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-html5-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
     - build:html5
 
@@ -134,7 +134,7 @@ archive:linux:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux-${CI_COMMIT_REF_NAME}.tar.bz2
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
     - build:linux
 
