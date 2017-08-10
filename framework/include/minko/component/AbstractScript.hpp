@@ -52,6 +52,8 @@ namespace minko
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		                _componentRemovedSlot;
 			Signal<std::shared_ptr<SceneManager>, float, float>::Slot		_frameBeginSlot;
 			Signal<std::shared_ptr<SceneManager>, float, float>::Slot		_frameEndSlot;
+            std::shared_ptr<file::Loader>                                   _requiredAssetLoader;
+            Signal<std::shared_ptr<file::Loader>, const file::Error&>::Slot _requiredAssetErrorSlot;
 
 		public:
 			bool
@@ -63,22 +65,20 @@ namespace minko
 			void
 			enabled(bool v);
 
+            bool
+            started()
+            {
+                return _started;
+            }
+
+            virtual
+            bool
+            ready();
+
 		protected:
-			AbstractScript() :
-				_enabled(true),
-				_started(false),
-				_time(0.f),
-				_deltaTime(0.f),
-				_targetAddedSlot(nullptr),
-				_targetRemovedSlot(nullptr),
-				_addedSlot(nullptr),
-				_removedSlot(nullptr),
-				_componentAddedSlot(nullptr),
-				_componentRemovedSlot(nullptr),
-				_frameBeginSlot(nullptr),
-				_frameEndSlot(nullptr)
-			{
-			}
+            AbstractScript();
+
+            ~AbstractScript();
 
             inline
             float
@@ -122,18 +122,17 @@ namespace minko
 				// nothing
 			}
 
-			virtual
-			bool
-			ready()
-			{
-				return true;
-			}
-
             virtual
             float
             priority()
             {
                 return 0.0f;
+            }
+
+            std::shared_ptr<file::Loader>
+            requiredAssets()
+            {
+                return _requiredAssetLoader;
             }
 
 		protected:
@@ -162,6 +161,12 @@ namespace minko
 
 			void
 			setSceneManager(std::shared_ptr<SceneManager> sceneManager);
+
+            void
+            requiredAssetErrorHandler(std::shared_ptr<file::Loader> loader, const file::Error& error)
+            {
+                // nothing
+            }
 		};
 	}
 }

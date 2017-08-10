@@ -221,10 +221,10 @@ namespace minko
 			createIndexBuffer(const uint size) override;
 
 			void
-			uploaderIndexBufferData(const uint 	indexBuffer,
-									const uint 	offset,
-									const uint 	size,
-									void*		data) override;
+			uploadIndexBufferData(const uint 	indexBuffer,
+							      const uint 	offset,
+							      const uint 	size,
+							      void*		    data) override;
 
 			void
 			deleteIndexBuffer(const uint indexBuffer) override;
@@ -393,7 +393,7 @@ namespace minko
             setVertexAttributeArray(const uint vertexArray) override;
 
             void
-            deleteVertexAttributeArray(const uint vertexArray);
+            deleteVertexAttributeArray(const uint vertexArray) override;
 
 		protected:
 			OpenGLES2Context();

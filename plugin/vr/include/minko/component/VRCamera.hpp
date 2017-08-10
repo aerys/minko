@@ -20,12 +20,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Minko.hpp"
-#include "minko/OculusCommon.hpp"
+#include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
 
 namespace minko
 {
+    namespace vr
+    {
+        class VRImpl;
+    }
+
     namespace component
     {
         class VRCamera :
@@ -47,7 +52,7 @@ namespace minko
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
             Signal<SceneMgrPtr, float, float>::Slot             _frameBeginSlot;
 
-            std::shared_ptr<oculus::VRImpl>                     _VRImpl;
+            std::shared_ptr<vr::VRImpl>                         _VRImpl;
 
             std::shared_ptr<component::Renderer>                _leftRenderer;
             std::shared_ptr<component::Renderer>                _rightRenderer;
@@ -63,8 +68,8 @@ namespace minko
             Ptr
             create(int viewportWidth,
                    int viewportHeight,
-                   float zNear  = 0.1f,
-                   float zFar   = 1000.0f,
+                   float zNear = 0.1f,
+                   float zFar = 1000.0f,
                    uint rendererClearColor = 0,
                    void* window = nullptr,
                    Renderer::Ptr leftRenderer = nullptr,
@@ -86,7 +91,13 @@ namespace minko
             void
             updateViewport(int viewportWidth, int viewportHeight);
 
+            void
+            loadScript(std::string filename);
+
             static
+            bool
+            supported();
+
             bool
             detected();
 
@@ -114,6 +125,15 @@ namespace minko
                 return _rightRenderer->enabled();
             }
 
+            float
+            getLeftEyeFov();
+
+            float
+            getRightEyeFov();
+
+            void
+            disablePositionTracking(bool disable);
+
         public:
             ~VRCamera();
 
@@ -121,23 +141,23 @@ namespace minko
             VRCamera();
 
             void
-            initialize(int viewportWidth, 
-                       int viewportHeight, 
-                       float zNear, 
-                       float zFar, 
+            initialize(int viewportWidth,
+                       int viewportHeight,
+                       float zNear,
+                       float zFar,
                        uint rendererClearColor,
-                       void* window, 
+                       void* window,
                        Renderer::Ptr leftRenderer = nullptr,
                        Renderer::Ptr rightRenderer = nullptr);
 
             void
-            updateCameraOrientation(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera);
+            updateCamera(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera);
 
             void
-            targetAdded(NodePtr target);
+            targetAdded(NodePtr target) override;
 
             void
-            targetRemoved(NodePtr target);
+            targetRemoved(NodePtr target) override;
 
             void
             findSceneManager();

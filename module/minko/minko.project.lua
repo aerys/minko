@@ -46,11 +46,11 @@ minko.project.library = function(name)
 			"_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS"		-- disable "<hash_map> is deprecated and will be REMOVED" error
 		}
 		flags {
-			--"NoMinimalRebuild"
+			-- "NoMinimalRebuild"
 		}
 		buildoptions {
 			"/wd4503",				-- remove warnings about too long type names
-			--"/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
+			-- "/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
 		}
 
 	configuration { "vs*", "release" }
@@ -272,6 +272,10 @@ minko.project.application = function(name)
 		cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=0'
 		-- demangling C++ symbols
 		cmd = cmd .. ' -s DEMANGLE_SUPPORT=1'
+
+		cmd = cmd .. ' -s NO_EXIT_RUNTIME=1'
+		cmd = cmd .. ' -s EXPORTED_FUNCTIONS="[\'_main\', \'_minkoRunPlayer\']"'
+
 		-- use a separate *.mem file to initialize the app memory
 		cmd = cmd .. ' --memory-init-file 1'
 		-- set the app (or the sdk) template.html

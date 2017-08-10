@@ -1,3 +1,6 @@
+#ifndef _PACK_FUNCTION_GLSL_
+#define _PACK_FUNCTION_GLSL_
+
 vec4 packFloat8bitRGBA(float val)
 {
     vec4 pack = vec4(1.0, 255.0, 65025.0, 16581375.0) * val;
@@ -39,3 +42,5 @@ float unpackFloat8bitRG(vec2 pack)
 {
     return dot(pack, vec2(1.0, 1.0 / 255.0));
 }
+
+#endif // _PACK_FUNCTION_GLSL_

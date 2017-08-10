@@ -124,7 +124,7 @@ main(int argc, char** argv)
 					)
 				)
 			)
-			->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+			->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
 
         camera->data().set("discretizedLightMap", texture->sampler());
 
@@ -212,7 +212,7 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr c, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
 
 		//renderTargetTexture = render::Texture::create(sceneManager->assets()->context(), math::clp2(w), math::clp2(h), false, true);
 		//renderTargetTexture->upload();
@@ -293,7 +293,7 @@ main(int argc, char** argv)
         mouseMove = nullptr;
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr c, float t, float dt)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr c, float t, float dt)
     {
         camera->component<Transform>()->matrix(math::rotate(cameraRotationSpeed, math::vec3(0, 1, 0)) * camera->component<Transform>()->matrix());
         cameraRotationSpeed *= .99f;

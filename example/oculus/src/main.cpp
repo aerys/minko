@@ -127,7 +127,7 @@ main(int argc, char** argv)
         camera->component<VRCamera>()->updateViewport(width, height);
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         //animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, time, spheresAnimData);
         spheres->component<Transform>()->matrix()->appendRotationY(.001f);

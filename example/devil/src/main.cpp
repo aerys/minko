@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 const std::string TEXTURE_JPG = "texture/bricks.jpg";
 const std::string TEXTURE_PNG = "texture/bricks.png";
@@ -56,7 +55,7 @@ main(int argc, char** argv)
 
     std::vector<std::string> extensions = file::DevILParser::getSupportedFileExensions();
 
-    for (uint i = 0; i < extensions.size(); i++)
+    for (unsigned int i = 0; i < extensions.size(); i++)
     {
         std::string extension = extensions[i];
         sceneManager->assets()->loader()->options()->registerParser<file::DevILParser>(extension);
@@ -74,9 +73,13 @@ main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+            math::inverse(
+                math::lookAt(
+                    math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0, 1, 0)
+                )
+            )
         ))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
 
     root->addChild(camera);
 
@@ -97,25 +100,27 @@ main(int argc, char** argv)
         ));
     });
 
-    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int w, unsigned int h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
     float lastChangeTime = 0;
     int currentTextureId = 0;
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
-        mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+        mesh->component<Transform>()->matrix(
+            mesh->component<Transform>()->matrix() * math::rotate(0.01f, math::vec3(0, 1, 0))
+        );
 
-        sceneManager->nextFrame(time, deltaTime);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
 
         if (lastChangeTime + 1000 < time)
         {
             lastChangeTime = time;
 
-            mesh->component<Surface>()->material()->set("diffuseMap", textures[++currentTextureId % textures.size()]);
+            mesh->component<Surface>()->material()->data()->set("diffuseMap", textures[++currentTextureId % textures.size()]->sampler());
         }
     });
 

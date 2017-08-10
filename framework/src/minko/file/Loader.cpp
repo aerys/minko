@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractProtocol.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/AbstractCache.hpp"
 
 #include "minko/log/Logger.hpp"
 
@@ -31,6 +32,7 @@ using namespace minko::file;
 Loader::Loader() :
     _options(Options::create()),
     _complete(Signal<Loader::Ptr>::create()),
+    _buffer(Signal<Loader::Ptr>::create()),
     _progress(Signal<Loader::Ptr, float>::create()),
     _parsingProgress(Signal<Loader::Ptr, float>::create()),
     _error(Signal<Loader::Ptr, const Error&>::create()),
@@ -53,6 +55,9 @@ Loader::queue(const std::string& filename, std::shared_ptr<Options> options)
     _filesQueue.push_back(filename);
     _filenameToOptions[filename] = (options ? options : _options);
 
+    if (_filenameToNumAttempts.find(filename) == _filenameToNumAttempts.end())
+        _filenameToNumAttempts[filename] = 0;
+
     return std::static_pointer_cast<Loader>(shared_from_this());
 }
 
@@ -62,97 +67,124 @@ Loader::load()
     if (_filesQueue.empty())
     {
         _complete->execute(std::dynamic_pointer_cast<Loader>(shared_from_this()));
+
+        return;
     }
-    else
+
+    _numFiles = _filesQueue.size();
+    _protocolToProgress.clear();
+
+    auto queue = _filesQueue;
+
+    for (auto& filename : queue)
     {
-        _numFiles = _filesQueue.size();
-        _protocolToProgress.clear();
+        auto options = _filenameToOptions[filename];
+        auto assets = options->assetLibrary();
 
-        auto queue = _filesQueue;
+        const auto byteRangeRequested = options->seekedLength() > 0;
 
-        for (auto& filename : queue)
+        if (!byteRangeRequested && assets && (
+            assets->cubeTexture(filename) != nullptr
+            || assets->texture(filename) != nullptr
+            || assets->geometry(filename) != nullptr
+            || assets->effect(filename) != nullptr
+            || assets->symbol(filename) != nullptr
+            || assets->sound(filename) != nullptr
+            || assets->material(filename) != nullptr
+            || assets->script(filename) != nullptr
+            || assets->hasBlob(filename)))
         {
-            auto options = _filenameToOptions[filename];
+            _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
+            _filenameToOptions.erase(filename);
+            _filenameToNumAttempts.erase(filename);
 
-            const auto& includePaths = options->includePaths();
+            if (_filesQueue.empty())
+                _complete->execute(std::dynamic_pointer_cast<Loader>(shared_from_this()));
+            continue;
+        }
 
-            auto loadFile = false;
+        const auto& includePaths = options->includePaths();
+        auto loadFile = false;
+        auto resolvedFilename = options->uriFunction()(File::sanitizeFilename(filename));
+        auto protocol = options->protocolFunction()(resolvedFilename);
 
-            auto resolvedFilename = options->uriFunction()(File::sanitizeFilename(filename));
+        protocol->options(options);
 
-            auto protocol = options->protocolFunction()(resolvedFilename);
-
-            protocol->options(options);
-
-            if (includePaths.empty() ||
-                protocol->isAbsolutePath(resolvedFilename))
+        if (includePaths.empty() || protocol->isAbsolutePath(resolvedFilename))
+        {
+            loadFile = true;
+        }
+        else
+        {
+            for (const auto& includePath : includePaths)
             {
-                loadFile = true;
-            }
-            else
-            {
-                for (const auto& includePath : includePaths)
+                resolvedFilename = options->uriFunction()(File::sanitizeFilename(*includePath + '/' + filename));
+
+                protocol = options->protocolFunction()(resolvedFilename);
+
+                protocol->options(options);
+
+                if (protocol->fileExists(resolvedFilename))
                 {
-                    resolvedFilename = options->uriFunction()(File::sanitizeFilename(*includePath + '/' + filename));
+                    loadFile = true;
 
-                    protocol = options->protocolFunction()(resolvedFilename);
-
-                    protocol->options(options);
-
-                    if (protocol->fileExists(resolvedFilename))
-                    {
-                        loadFile = true;
-
-                        break;
-                    }
+                    break;
                 }
             }
+        }
 
-            if (loadFile)
+        if (loadFile)
+        {
+            _files[filename] = protocol->file();
+
+            _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
+            _loading.push_back(filename);
+
+            auto that = shared_from_this();
+
+            _protocolErrorSlots.emplace(
+                protocol,
+                protocol->error()->connect([that](AbstractProtocol::Ptr protocol)
+                {
+                    that->protocolErrorHandler(protocol);
+                }
+            ));
+
+            _protocolCompleteSlots.emplace(
+                protocol,
+                protocol->complete()->connect([that](AbstractProtocol::Ptr protocol)
             {
-                _files[filename] = protocol->file();
-
-                _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
-                _loading.push_back(filename);
-
-                auto that = shared_from_this();
-
-                _protocolErrorSlots.emplace(
-                    protocol,
-                    protocol->error()->connect([that](AbstractProtocol::Ptr protocol)
-                    {
-                        that->protocolErrorHandler(protocol);
-                    }
-                ));
-
-                _protocolCompleteSlots.emplace(
-                    protocol,
-                    protocol->complete()->connect([that](AbstractProtocol::Ptr protocol)
-                    {
-                        that->protocolCompleteHandler(protocol);
-                    }
-                ));
-
-                _protocolProgressSlots.emplace(
-                    protocol,
-                    protocol->progress()->connect([that](AbstractProtocol::Ptr protocol, float progress)
-                    {
-                        that->protocolProgressHandler(protocol, progress);
-                    }
-                ));
-
-                protocol->load(filename, resolvedFilename, options);
+                that->protocolCompleteHandler(protocol);
             }
-            else
+            ));
+
+            _protocolBufferSlots.emplace(
+                protocol,
+                protocol->buffer()->connect([that](AbstractProtocol::Ptr protocol)
             {
-                auto error = Error(
-                    "ProtocolError",
-                    std::string("File does not exist: ") + filename +
-                    std::string(", include paths: ") + std::to_string(_options->includePaths(), ",")
-                );
-
-                errorThrown(error);
+                that->protocolBufferHandler(protocol);
             }
+            ));
+
+            _protocolProgressSlots.emplace(
+                protocol,
+                protocol->progress()->connect([that](AbstractProtocol::Ptr protocol, float progress)
+                {
+                    that->protocolProgressHandler(protocol, progress);
+                }
+            ));
+
+            protocol->load(filename, resolvedFilename, options);
+        }
+        else
+        {
+            auto error = Error(
+                "ProtocolError",
+                std::string("File does not exist: ") + filename +
+                std::string(", include paths: ") + std::to_string(_options->includePaths(), ",")
+            );
+
+            errorThrown(error);
         }
     }
 }
@@ -160,11 +192,36 @@ Loader::load()
 void
 Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
+    const auto& filename = protocol->file()->filename();
+    auto optionsIt = _filenameToOptions.find(filename);
+    auto options = optionsIt->second;
+
+    _loading.remove(filename);
+
+    _filenameToOptions.erase(optionsIt);
+
+    _protocolErrorSlots.erase(protocol);
+    _protocolCompleteSlots.erase(protocol);
+    _protocolBufferSlots.erase(protocol);
+    _protocolProgressSlots.erase(protocol);
+
     auto error = Error(
         "ProtocolError",
-        std::string("Protocol error: ") + protocol->file()->filename() +
-        std::string(", include paths: ") + std::to_string(_options->includePaths(), ",")
+        std::string("Protocol error: ") + filename +
+        std::string(", include paths: ") + std::to_string(options->includePaths(), ",")
     );
+
+    const auto numAttempts = ++_filenameToNumAttempts[filename];
+
+    if (options->retryOnErrorFunction() && options->retryOnErrorFunction()(filename, error, numAttempts))
+    {
+        queue(filename, options);
+        load();
+
+        return;
+    }
+
+    _filenameToNumAttempts.erase(filename);
 
     errorThrown(error);
 }
@@ -172,6 +229,9 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 void
 Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float progress)
 {
+    if (_protocolToProgress[protocol] == progress)
+        return;
+
     _protocolToProgress[protocol] = progress;
 
     float newTotalProgress = 0.f;
@@ -189,18 +249,26 @@ Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, floa
 }
 
 void
+Loader::protocolBufferHandler(std::shared_ptr<AbstractProtocol> protocol)
+{
+    _buffer->execute(std::dynamic_pointer_cast<Loader>(shared_from_this()));
+}
+
+void
 Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
     _protocolToProgress[protocol] = 1.f;
 
     auto filename = protocol->file()->filename();
 
-    _loading.erase(std::find(_loading.begin(), _loading.end(), filename));
+    _loading.remove(filename);
 
     _filenameToOptions.erase(filename);
+    _filenameToNumAttempts.erase(filename);
 
     _protocolErrorSlots.erase(protocol);
     _protocolCompleteSlots.erase(protocol);
+    _protocolBufferSlots.erase(protocol);
     _protocolProgressSlots.erase(protocol);
 
     _numFilesToParse++;
@@ -208,6 +276,11 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     LOG_DEBUG("file '" << protocol->file()->filename() << "' loaded, "
         << _loading.size() << " file(s) still loading, "
         << _filesQueue.size() << " file(s) in the queue");
+
+    const auto byteRangeRequested = protocol->options()->seekedLength() > 0;
+
+    if (!protocol->file()->loadedFromCache() && protocol->options()->cache() && byteRangeRequested)
+        protocol->options()->cache()->set(protocol->file(), protocol->options()->seekingOffset());
 
     auto parsed = processData(
         filename,
@@ -288,7 +361,7 @@ Loader::parserProgressHandler(AbstractParser::Ptr parser, float progress)
         newTotalProgress = 1.0f;
 
     _parsingProgress->execute(
-        std::dynamic_pointer_cast<Loader>(shared_from_this()), 
+        std::dynamic_pointer_cast<Loader>(shared_from_this()),
         newTotalProgress
     );
 }
@@ -317,9 +390,11 @@ Loader::finalize()
     {
         _protocolErrorSlots.clear();
         _protocolCompleteSlots.clear();
+        _protocolBufferSlots.clear();
         _protocolProgressSlots.clear();
         _parserErrorSlots.clear();
         _filenameToOptions.clear();
+        _filenameToNumAttempts.clear();
 
         _complete->execute(shared_from_this());
 

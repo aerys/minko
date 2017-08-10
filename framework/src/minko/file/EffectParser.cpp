@@ -19,27 +19,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/EffectParser.hpp"
 
-#include "minko/file/Loader.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/render/Effect.hpp"
-#include "minko/render/Program.hpp"
-#include "minko/render/States.hpp"
-#include "minko/render/Effect.hpp"
+#include "minko/data/Store.hpp"
+#include "minko/file/AssetLibrary.hpp"
+#include "minko/file/FileProtocol.hpp"
+#include "minko/file/JSON.hpp"
+#include "minko/file/Loader.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/log/Logger.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
-#include "minko/render/TriangleCulling.hpp"
-#include "minko/render/AbstractTexture.hpp"
-#include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
+#include "minko/render/Effect.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/render/Priority.hpp"
-#include "minko/file/FileProtocol.hpp"
-#include "minko/file/Options.hpp"
-#include "minko/file/AssetLibrary.hpp"
-#include "minko/data/Store.hpp"
-#include "minko/log/Logger.hpp"
-
-#include "json/json.h"
+#include "minko/render/Program.hpp"
+#include "minko/render/States.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/render/TriangleCulling.hpp"
 
 using namespace minko;
 using namespace minko::data;
@@ -153,8 +151,8 @@ EffectParser::parse(const std::string&				    filename,
 				    const std::vector<unsigned char>&	data,
 				    std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
-	Json::Value root;
-	Json::Reader reader;
+	JSON::Value root;
+	JSON::Reader reader;
 
     // Add a line ending to avoid JSON parsing error
     auto tempData = data;
@@ -197,7 +195,7 @@ EffectParser::parse(const std::string&				    filename,
 }
 
 void
-EffectParser::parseGlobalScope(const Json::Value& node, Scope& scope)
+EffectParser::parseGlobalScope(const JSON::Value& node, Scope& scope)
 {
     parseAttributes(node, scope, scope.attributeBlock);
     parseUniforms(node, scope, scope.uniformBlock);
@@ -208,7 +206,7 @@ EffectParser::parseGlobalScope(const Json::Value& node, Scope& scope)
 }
 
 bool
-EffectParser::parseConfiguration(const Json::Value& node)
+EffectParser::parseConfiguration(const JSON::Value& node)
 {
     auto confValue = node.get("configuration", 0);
     auto platforms = _options->platforms();
@@ -290,7 +288,7 @@ EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
 }
 
 void
-EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques)
+EffectParser::parseTechniques(const JSON::Value& node, Scope& scope, Techniques& techniques)
 {
     auto techniquesNode = node.get("techniques", 0);
 
@@ -324,7 +322,7 @@ EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques&
 }
 
 void
-EffectParser::parsePasses(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes)
+EffectParser::parsePasses(const JSON::Value& node, Scope& scope, std::vector<PassPtr>& passes)
 {
     auto passesNode = node.get("passes", 0);
 
@@ -368,7 +366,7 @@ EffectParser::findPassFromEffectFilename(const std::string& effectFilename,
 }
 
 render::Pass::Ptr
-EffectParser::getPassToExtend(const Json::Value& extendNode)
+EffectParser::getPassToExtend(const JSON::Value& extendNode)
 {
     render::Pass::Ptr pass;
     std::string passName;
@@ -426,11 +424,11 @@ EffectParser::getPassToExtend(const Json::Value& extendNode)
 }
 
 void
-EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes)
+EffectParser::parsePass(const JSON::Value& node, Scope& scope, std::vector<PassPtr>& passes)
 {
     if (node.isString())
     {
-        passes.push_back(Pass::create(getPassToExtend(node), true));
+        passes.push_back(Pass::create(getPassToExtend(node), false));
     }
     else if (node.isObject())
     {
@@ -552,7 +550,7 @@ EffectParser::checkDeferredPassBindings(const Scope& passScope)
 }
 
 void
-EffectParser::parseDefaultValue(const Json::Value&  node,
+EffectParser::parseDefaultValue(const JSON::Value&  node,
                                 const Scope&        scope,
                                 const std::string&  valueName,
                                 data::Provider::Ptr defaultValues)
@@ -587,7 +585,7 @@ EffectParser::parseDefaultValue(const Json::Value&  node,
 
 template<typename T>
 void
-EffectParser::parseDefaultValueSamplerStates(const Json::Value&    node,
+EffectParser::parseDefaultValueSamplerStates(const JSON::Value&    node,
                                              const Scope&          scope,
                                              const std::string&    valueName,
                                              data::Provider::Ptr   defaultValues)
@@ -613,7 +611,7 @@ EffectParser::parseDefaultValueSamplerStates(const Json::Value&    node,
 }
 
 void
-EffectParser::parseDefaultValueStates(const Json::Value&    node,
+EffectParser::parseDefaultValueStates(const JSON::Value&    node,
                                       const Scope&          scope,
                                       const std::string&    stateName,
                                       data::Provider::Ptr   defaultValues)
@@ -646,7 +644,7 @@ EffectParser::parseDefaultValueStates(const Json::Value&    node,
 }
 
 void
-EffectParser::parseDefaultValueVectorArray(const Json::Value&    defaultValueNode,
+EffectParser::parseDefaultValueVectorArray(const JSON::Value&    defaultValueNode,
                                            const Scope&          scope,
                                            const std::string&    valueName,
                                            data::Provider::Ptr   defaultValues)
@@ -654,7 +652,7 @@ EffectParser::parseDefaultValueVectorArray(const Json::Value&    defaultValueNod
     auto size = defaultValueNode.size();
     auto type = defaultValueNode[0].type();
 
-    if (type == Json::ValueType::intValue)
+    if (type == JSON::ValueType::intValue)
     {
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
@@ -666,7 +664,7 @@ EffectParser::parseDefaultValueVectorArray(const Json::Value&    defaultValueNod
         else if (size == 4)
             defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
     }
-    else if (type == Json::ValueType::realValue)
+    else if (type == JSON::ValueType::realValue)
     {
         std::vector<float> value(size);
         for (auto i = 0u; i < size; ++i)
@@ -678,7 +676,7 @@ EffectParser::parseDefaultValueVectorArray(const Json::Value&    defaultValueNod
         else if (size == 4)
             defaultValues->set(valueName, math::make_vec4<float>(&value[0]));
     }
-    else if (type == Json::ValueType::booleanValue)
+    else if (type == JSON::ValueType::booleanValue)
     {
         // GLSL bool uniforms are set using integers, thus even if the default value is written
         // using boolean values, we store it as integers
@@ -696,7 +694,7 @@ EffectParser::parseDefaultValueVectorArray(const Json::Value&    defaultValueNod
 }
 
 void
-EffectParser::parseDefaultValueVectorObject(const Json::Value&    defaultValueNode,
+EffectParser::parseDefaultValueVectorObject(const JSON::Value&    defaultValueNode,
                                             const Scope&          scope,
                                             const std::string&    valueName,
                                             data::Provider::Ptr   defaultValues)
@@ -706,7 +704,7 @@ EffectParser::parseDefaultValueVectorObject(const Json::Value&    defaultValueNo
     auto type = defaultValueNode[memberNames[0]].type();
     std::vector<std::string> offsets = { "x", "y", "z", "w" };
 
-    if (type == Json::ValueType::intValue)
+    if (type == JSON::ValueType::intValue)
     {
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
@@ -718,7 +716,7 @@ EffectParser::parseDefaultValueVectorObject(const Json::Value&    defaultValueNo
         else if (size == 4)
             defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
     }
-    else if (type == Json::ValueType::realValue)
+    else if (type == JSON::ValueType::realValue)
     {
         std::vector<float> value(size);
         for (auto i = 0u; i < size; ++i)
@@ -730,7 +728,7 @@ EffectParser::parseDefaultValueVectorObject(const Json::Value&    defaultValueNo
         else if (size == 4)
             defaultValues->set(valueName, math::make_vec4<float>(&value[0]));
     }
-    else if (type == Json::ValueType::booleanValue)
+    else if (type == JSON::ValueType::booleanValue)
     {
         // GLSL bool uniforms are set using integers, thus even if the default value is written
         // using boolean values, we store it as integers
@@ -748,7 +746,7 @@ EffectParser::parseDefaultValueVectorObject(const Json::Value&    defaultValueNo
 }
 
 void
-EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, AttributeBlock& attributes)
+EffectParser::parseAttributes(const JSON::Value& node, const Scope& scope, AttributeBlock& attributes)
 {
     auto attributesNode = node.get("attributes", 0);
 
@@ -775,7 +773,7 @@ EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, Attri
                 attributeNode,
                 scope,
                 attributeName,
-                //Json::ValueType::realValue,
+                //JSON::ValueType::realValue,
                 defaultValuesProvider
             );
             */
@@ -785,7 +783,7 @@ EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, Attri
 }
 
 void
-EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, UniformBlock& uniforms)
+EffectParser::parseUniforms(const JSON::Value& node, const Scope& scope, UniformBlock& uniforms)
 {
     auto uniformsNode = node.get("uniforms", 0);
 
@@ -818,7 +816,7 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
 }
 
 void
-EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, const std::string uniformName, data::Provider::Ptr defaultValues, data::BindingMap& bindingMap)
+EffectParser::parseSamplerStates(const JSON::Value& node, const Scope& scope, const std::string uniformName, data::Provider::Ptr defaultValues, data::BindingMap& bindingMap)
 {
     if (node.isObject())
     {
@@ -921,7 +919,7 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
 }
 
 void
-EffectParser::parseMacros(const Json::Value& node, const Scope& scope, MacroBlock& macros)
+EffectParser::parseMacros(const JSON::Value& node, const Scope& scope, MacroBlock& macros)
 {
     auto macrosNode = node.get("macros", 0);
 
@@ -963,7 +961,7 @@ EffectParser::parseMacros(const Json::Value& node, const Scope& scope, MacroBloc
 }
 
 void
-EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBlock& stateBlock)
+EffectParser::parseStates(const JSON::Value& node, const Scope& scope, StateBlock& stateBlock)
 {
     auto statesNode = node.get("states", 0);
 
@@ -1015,7 +1013,7 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
 }
 
 void
-EffectParser::parseState(const Json::Value& node,
+EffectParser::parseState(const JSON::Value& node,
                          const Scope&       scope,
                          StateBlock&        stateBlock,
                          const std::string& stateProperty)
@@ -1059,7 +1057,7 @@ EffectParser::parseState(const Json::Value& node,
 }
 
 void
-EffectParser::parsePriority(const Json::Value&	node,
+EffectParser::parsePriority(const JSON::Value&	node,
                             const Scope&        scope,
                             StateBlock&         stateBlock)
 {
@@ -1084,7 +1082,7 @@ EffectParser::parsePriority(const Json::Value&	node,
 }
 
 void
-EffectParser::parseBlendingMode(const Json::Value&	node,
+EffectParser::parseBlendingMode(const JSON::Value&	node,
                                 const Scope&        scope,
                                 StateBlock&         stateBlock)
 {
@@ -1113,7 +1111,7 @@ EffectParser::parseBlendingMode(const Json::Value&	node,
 }
 
 void
-EffectParser::parseBlendingSource(const Json::Value&    node,
+EffectParser::parseBlendingSource(const JSON::Value&    node,
                                   const Scope&          scope,
                                   StateBlock&           stateBlock)
 {
@@ -1126,7 +1124,7 @@ EffectParser::parseBlendingSource(const Json::Value&    node,
 }
 
 void
-EffectParser::parseBlendingDestination(const Json::Value&   node,
+EffectParser::parseBlendingDestination(const JSON::Value&   node,
                                        const Scope&         scope,
                                        StateBlock&          stateBlock)
 {
@@ -1139,7 +1137,7 @@ EffectParser::parseBlendingDestination(const Json::Value&   node,
 }
 
 void
-EffectParser::parseZSort(const Json::Value&	node,
+EffectParser::parseZSort(const JSON::Value&	node,
                          const Scope&       scope,
                          StateBlock&        stateBlock)
 {
@@ -1148,7 +1146,7 @@ EffectParser::parseZSort(const Json::Value&	node,
 }
 
 void
-EffectParser::parseColorMask(const Json::Value&	node,
+EffectParser::parseColorMask(const JSON::Value&	node,
                              const Scope&       scope,
                              StateBlock&        stateBlock) const
 {
@@ -1157,7 +1155,7 @@ EffectParser::parseColorMask(const Json::Value&	node,
 }
 
 void
-EffectParser::parseDepthMask(const Json::Value&	    node,
+EffectParser::parseDepthMask(const JSON::Value&	    node,
                              const Scope&           scope,
                              StateBlock&            stateBlock)
 {
@@ -1166,7 +1164,7 @@ EffectParser::parseDepthMask(const Json::Value&	    node,
 }
 
 void
-EffectParser::parseDepthFunction(const Json::Value&	node,
+EffectParser::parseDepthFunction(const JSON::Value&	node,
 			                     const Scope&       scope,
                                  StateBlock&        stateBlock)
 {
@@ -1181,7 +1179,7 @@ EffectParser::parseDepthFunction(const Json::Value&	node,
 }
 
 void
-EffectParser::parseTriangleCulling(const Json::Value&   node,
+EffectParser::parseTriangleCulling(const JSON::Value&   node,
                                    const Scope&         scope,
                                    StateBlock&          stateBlock)
 {
@@ -1196,7 +1194,7 @@ EffectParser::parseTriangleCulling(const Json::Value&   node,
 }
 
 void
-EffectParser::parseStencilState(const Json::Value&  node,
+EffectParser::parseStencilState(const JSON::Value&  node,
                                 const Scope&        scope,
                                 StateBlock&         stateBlock)
 {
@@ -1224,7 +1222,7 @@ EffectParser::parseStencilState(const Json::Value&  node,
 }
 
 void
-EffectParser::parseStencilFunction(const Json::Value&  node,
+EffectParser::parseStencilFunction(const JSON::Value&  node,
                                    const Scope&        scope,
                                    StateBlock&         stateBlock)
 {
@@ -1233,7 +1231,7 @@ EffectParser::parseStencilFunction(const Json::Value&  node,
 }
 
 void
-EffectParser::parseStencilReference(const Json::Value&  node,
+EffectParser::parseStencilReference(const JSON::Value&  node,
                                     const Scope&        scope,
                                     StateBlock&         stateBlock)
 {
@@ -1242,7 +1240,7 @@ EffectParser::parseStencilReference(const Json::Value&  node,
 }
 
 void
-EffectParser::parseStencilMask(const Json::Value&  node,
+EffectParser::parseStencilMask(const JSON::Value&  node,
                                const Scope&        scope,
                                StateBlock&         stateBlock)
 {
@@ -1251,7 +1249,7 @@ EffectParser::parseStencilMask(const Json::Value&  node,
 }
 
 void
-EffectParser::parseStencilOperations(const Json::Value& node,
+EffectParser::parseStencilOperations(const JSON::Value& node,
                                      const Scope&       scope,
                                      StateBlock&        stateBlock)
 {
@@ -1273,7 +1271,7 @@ EffectParser::parseStencilOperations(const Json::Value& node,
 }
 
 void
-EffectParser::parseStencilFailOperation(const Json::Value& node,
+EffectParser::parseStencilFailOperation(const JSON::Value& node,
                                         const Scope&       scope,
                                         StateBlock&        stateBlock)
 {
@@ -1282,7 +1280,7 @@ EffectParser::parseStencilFailOperation(const Json::Value& node,
 }
 
 void
-EffectParser::parseStencilZFailOperation(const Json::Value& node,
+EffectParser::parseStencilZFailOperation(const JSON::Value& node,
                                          const Scope&       scope,
                                          StateBlock&        stateBlock)
 {
@@ -1291,7 +1289,7 @@ EffectParser::parseStencilZFailOperation(const Json::Value& node,
 }
 
 void
-EffectParser::parseStencilZPassOperation(const Json::Value& node,
+EffectParser::parseStencilZPassOperation(const JSON::Value& node,
                                          const Scope&       scope,
                                          StateBlock&        stateBlock)
 {
@@ -1300,7 +1298,7 @@ EffectParser::parseStencilZPassOperation(const Json::Value& node,
 }
 
 void
-EffectParser::parseScissorTest(const Json::Value& node,
+EffectParser::parseScissorTest(const JSON::Value& node,
                                const Scope&       scope,
                                StateBlock&        stateBlock)
 {
@@ -1309,7 +1307,7 @@ EffectParser::parseScissorTest(const Json::Value& node,
 }
 
 void
-EffectParser::parseScissorBox(const Json::Value& node,
+EffectParser::parseScissorBox(const JSON::Value& node,
                               const Scope&       scope,
                               StateBlock&        stateBlock)
 {
@@ -1331,7 +1329,7 @@ EffectParser::parseScissorBox(const Json::Value& node,
 }
 
 void
-EffectParser::parseTarget(const Json::Value&    node,
+EffectParser::parseTarget(const JSON::Value&    node,
                           const Scope&          scope,
                           StateBlock&           stateBlock)
 {
@@ -1407,7 +1405,7 @@ EffectParser::parseTarget(const Json::Value&    node,
 }
 
 bool
-EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding& binding)
+EffectParser::parseBinding(const JSON::Value& node, const Scope& scope, Binding& binding)
 {
     binding.source = Binding::Source::TARGET;
 
@@ -1457,7 +1455,7 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
 }
 
 void
-EffectParser::parseMacroBinding(const Json::Value& node, const Scope& scope, MacroBinding& binding)
+EffectParser::parseMacroBinding(const JSON::Value& node, const Scope& scope, MacroBinding& binding)
 {
     if (!node.isObject())
         return;
@@ -1479,7 +1477,7 @@ EffectParser::parseMacroBinding(const Json::Value& node, const Scope& scope, Mac
 }
 
 render::Shader::Ptr
-EffectParser::parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type)
+EffectParser::parseShader(const JSON::Value& node, const Scope& scope, render::Shader::Type type)
 {
     if (!node.isString())
         throw;

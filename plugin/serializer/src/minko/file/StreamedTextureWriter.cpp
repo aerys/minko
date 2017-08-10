@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/CRNTranscoder.hpp"
+#include "minko/file/JPEGWriter.hpp"
 #include "minko/file/LinkedAsset.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/PNGWriter.hpp"
@@ -88,7 +89,7 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
 
     ensureTextureSizeIsValid(texture, writerOptions, _textureType);
 
-    const auto& textureFormats = writerOptions->textureFormats();
+    const auto textureFormats = writerOptions->textureFormats(_textureType, assetLibrary->textureName(texture));
 
     auto linkedAsset = _linkedAsset;
     const auto linkedAssetId = _linkedAssetId;
@@ -105,10 +106,6 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
 
     for (auto textureFormat : textureFormats)
     {
-        if (TextureFormatInfo::isCompressed(textureFormat) &&
-            !writerOptions->compressTexture(_textureType))
-            continue;
-
         auto formatHeader = msgpack::type::tuple<int, std::vector<msgpack::type::tuple<int, int>>>();
 
         formatHeader.get<0>() = static_cast<int>(textureFormat);
@@ -260,12 +257,13 @@ StreamedTextureWriter::writeRGBATexture(AbstractTexture::Ptr                    
 {
     const auto textureFormat = TextureFormat::RGBA;
 
-    auto imageFormat = writerOptions->imageFormat();
+    auto imageFormat = writerOptions->imageFormat(textureType);
 
     auto texture = std::static_pointer_cast<Texture>(abstractTexture);
 
     const auto baseWidth = texture->width();
     const auto baseHeight = texture->height();
+    const auto numComponents = textureFormat == TextureFormat::RGB ? 3 : 4;
 
     auto mipLevelTemplate = Texture::create(
         texture->context(),
@@ -295,9 +293,27 @@ StreamedTextureWriter::writeRGBATexture(AbstractTexture::Ptr                    
 
         auto mipLevelData = std::vector<unsigned char>();
 
-        auto writer = PNGWriter::create();
+        switch (imageFormat)
+        {
+        case minko::serialize::ImageFormat::PNG:
+        {
+            auto writer = PNGWriter::create();
 
-        writer->writeToStream(mipLevelData, mipLevelTemplate->data(), mipLevelWidth, mipLevelHeight);
+            writer->writeToStream(mipLevelData, mipLevelTemplate->data(), mipLevelWidth, mipLevelHeight);
+
+            break;
+        }
+        case minko::serialize::ImageFormat::JPEG:
+        {
+            auto writer = JPEGWriter::create();
+
+            writer->encode(mipLevelData, mipLevelTemplate->data(), mipLevelWidth, mipLevelHeight, numComponents, writerOptions->jpegImageQualityFactor(textureType));
+
+            break;
+        }
+        default:
+            return false;
+        }
 
         blob.write(reinterpret_cast<const char*>(mipLevelData.data()), mipLevelData.size());
 

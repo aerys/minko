@@ -74,7 +74,7 @@ main(int argc, char** argv)
                 )
             )
         )
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
 
     root->addChild(greenCube);
     root->addChild(blueCube);
@@ -131,10 +131,10 @@ main(int argc, char** argv)
     
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
     
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         greenCube->component<Transform>()->matrix(
             greenCube->component<Transform>()->matrix() * math::rotate(0.01f, math::vec3(0, 1, 0))

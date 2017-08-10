@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/JobManager.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
+#include "minko/extension/StreamingExtension.hpp"
 #include "minko/file/AbstractStreamedAssetParser.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Dependency.hpp"
@@ -172,7 +173,7 @@ AbstractStreamedAssetParser::lodRequestFetchingError(const Error& error)
 void
 AbstractStreamedAssetParser::lodRequestFetchingComplete(const std::vector<unsigned char>& data)
 {
-    if (_jobManager)
+    if (!_jobManager.expired())
     {
         auto parsingJob = ParsingJob::create(
             [this, data]() -> void
@@ -189,7 +190,7 @@ AbstractStreamedAssetParser::lodRequestFetchingComplete(const std::vector<unsign
             }
         );
 
-        _jobManager->pushJob(parsingJob);
+        _jobManager.lock()->pushJob(parsingJob);
     }
     else
     {
@@ -384,7 +385,7 @@ AbstractStreamedAssetParser::parseStreamedAssetHeader()
         priority()
     );
 
-    const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
+    const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + extension::StreamingExtension::STREAMED_ASSET_HEADER_SIZE_BYTE_SIZE;
 
     auto headerOptions = _options->clone()
         ->loadAsynchronously(true)
@@ -412,7 +413,7 @@ AbstractStreamedAssetParser::parseStreamedAssetHeader()
         {
             linkedAsset->filename(linkedAsset->lastResolvedFilename());
 
-            const auto streamedAssetHeaderSizeOffset = assetHeaderSize - 2;
+            const auto streamedAssetHeaderSizeOffset = assetHeaderSize - extension::StreamingExtension::STREAMED_ASSET_HEADER_SIZE_BYTE_SIZE;
 
             const auto streamedAssetHeaderSize = assetHeaderSize +
                 (linkedAssetData[streamedAssetHeaderSizeOffset] << 8) +
@@ -426,8 +427,6 @@ AbstractStreamedAssetParser::parseStreamedAssetHeader()
                 {
                     _loaderErrorSlot = nullptr;
                     _loaderCompleteSlot = nullptr;
-
-                    _linkedAsset->offset(linkedAsset->offset() + streamedAssetHeaderSize + 2);
 
                     _headerIsRead = true;
 
@@ -444,6 +443,14 @@ AbstractStreamedAssetParser::parseStreamedAssetHeader()
                     );
 
                     parseHeader(linkedAssetData, _options);
+
+                    // Streamed assets with external to data
+                    // are structured this way
+                    // ASSET_HEADER | STREAMED_ASSET_HEADER | LINKED_ASSET_ID
+                    // Here LINKED_ASSET_ID corresponds to a DependencyId (4 bytes from scene version 0.4.0).
+
+                    const auto& versionInfo = SceneVersionInfo::getInfoByVersion(_version);
+                    _linkedAsset->offset(linkedAsset->offset() + streamedAssetHeaderSize + versionInfo.numDependenciesBytes());
 
                     prepareNextLod();
 

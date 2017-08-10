@@ -40,6 +40,7 @@ namespace minko
             class SphereShape;
             class ConvexHullShape;
 			class CapsuleShape;
+			class TriangleMeshShape;
         }
     }
 

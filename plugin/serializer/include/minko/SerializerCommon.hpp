@@ -3,13 +3,13 @@
 #include "minko/Common.hpp"
 #include <queue>
 
-#define MINKO_SCENE_MAGIC_NUMBER    0x4D4B0300 // MK30 last byte reserved for extensions (material, geometry...)
+#define MINKO_SCENE_MAGIC_NUMBER                0x4D4B0300 // MK30 last byte reserved for extensions (material, geometry...)
 
-#define MINKO_SCENE_HEADER_SIZE     30
+#define MINKO_SCENE_HEADER_SIZE                 30
 
-#define MINKO_SCENE_VERSION_MAJOR   0
-#define MINKO_SCENE_VERSION_MINOR	3
-#define MINKO_SCENE_VERSION_PATCH   1
+#define MINKO_SCENE_VERSION_MAJOR               0
+#define MINKO_SCENE_VERSION_MINOR	            4
+#define MINKO_SCENE_VERSION_PATCH               0
 
 namespace minko
 {
@@ -51,8 +51,11 @@ namespace minko
         class SurfaceOperator;
         class TextureParser;
         class TextureWriter;
+        class VertexColorSampler;
         class VertexWelder;
         class WriterOptions;
+
+        using DependencyId = unsigned int;
 	}
 
     namespace math

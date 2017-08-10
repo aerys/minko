@@ -20,8 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Types.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/file/AbstractWriter.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/file/CRNTranscoder.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/file/JPEGWriter.hpp"
 #include "minko/file/PNGWriter.hpp"
 #include "minko/file/PVRTranscoder.hpp"
 #include "minko/file/QTranscoder.hpp"
@@ -122,7 +124,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 
     const auto generateMipmaps = writerOptions->generateMipMaps(_textureType);
 
-    const auto& textureFormats = writerOptions->textureFormats();
+    const auto textureFormats = writerOptions->textureFormats(_textureType, assetLibrary->textureName(texture));
 
     std::stringstream headerStream;
     std::stringstream blobStream;
@@ -135,10 +137,6 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 
     for (auto textureFormat : textureFormats)
     {
-        if (TextureFormatInfo::isCompressed(textureFormat) &&
-            !writerOptions->compressTexture(_textureType))
-            continue;
-
         const auto offset = blobStream.str().size();
 
         if (!_formatWriterFunctions.at(textureFormat)(_data, _textureType, writerOptions, blobStream))
@@ -232,7 +230,7 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr    abstractTexture,
                                 WriterOptions::Ptr      writerOptions,
                                 std::stringstream&      blob)
 {
-    auto imageFormat = writerOptions->imageFormat();
+    auto imageFormat = writerOptions->imageFormat(textureType);
 
     auto texture = std::static_pointer_cast<Texture>(abstractTexture);
 
@@ -245,6 +243,21 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr    abstractTexture,
         auto writer = PNGWriter::create();
 
         writer->writeToStream(textureData, texture->data(), texture->width(), texture->height());
+
+        break;
+    }
+    case serialize::ImageFormat::JPEG:
+    {
+        auto writer = JPEGWriter::create();
+
+        writer->encode(
+            textureData,
+            texture->data(),
+            texture->width(),
+            texture->height(),
+            texture->format() == TextureFormat::RGB ? 3 : 4,
+            writerOptions->jpegImageQualityFactor(textureType)
+        );
 
         break;
     }

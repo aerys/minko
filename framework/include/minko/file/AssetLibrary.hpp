@@ -75,6 +75,8 @@ namespace minko
             Signal<Ptr>::Ptr                                                _ready;
 
         public:
+            ~AssetLibrary();
+
             static
             Ptr
             create(AbsContextPtr context);
@@ -82,6 +84,9 @@ namespace minko
             static
             Ptr
             create(Ptr);
+
+            void
+            clear();
 
             inline
             uint

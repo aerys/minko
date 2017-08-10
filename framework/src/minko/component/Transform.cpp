@@ -61,7 +61,10 @@ Transform::targetAdded(scene::Node::Ptr	target)
     {
         addedOrRemovedHandler(n, t, p);
     });
-	//_removedSlot = target->removed()->connect(callback);
+	_removedSlot = target->removed().connect([=](scene::Node::Ptr n, scene::Node::Ptr t, scene::Node::Ptr p)
+    {
+        addedOrRemovedHandler(n, t, p);
+    });
 
 	addedOrRemovedHandler(nullptr, target, target->parent());
 }
@@ -142,6 +145,12 @@ Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 			std::placeholders::_3
 		), 1000.f);
 
+    if (target->hasComponent<Transform>())
+    {
+        _toAdd.push_back(target);
+        _invalidLists = true;
+    }
+
 	addedHandler(target, target->root(), target->parent());
 }
 
@@ -172,10 +181,11 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
         if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
         {
             auto removeIt = std::find(_toRemove.begin(), _toRemove.end(), target);
+            auto addIt = std::find(_toAdd.begin(), _toAdd.end(), target);
 
             if (removeIt != _toRemove.end())
                 _toRemove.erase(removeIt);
-            else
+            else if (addIt == _toAdd.end())
             {
                 _toAdd.push_back(target);
                 _invalidLists = true;
@@ -218,13 +228,21 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
     if (node->root() == this->target() && node != target)
     {
         auto otherRoot = target->component<RootTransform>();
-
+        
         if (otherRoot != nullptr)
         {
             _toAdd.insert(_toAdd.begin(), otherRoot->_nodes.begin(), otherRoot->_nodes.end());
             _toAdd.insert(_toAdd.begin(), otherRoot->_toAdd.begin(), otherRoot->_toAdd.end());
-            for (const auto& toRemove : _toRemove)
-                _toAdd.remove(toRemove);
+
+            _toAdd.unique();
+            _toRemove.unique();
+
+            _toAdd.remove_if([this, &otherRoot](scene::Node::Ptr node)
+            {
+                return std::find(_toRemove.begin(), _toRemove.end(), node) != _toRemove.end() &&
+                       std::find(otherRoot->_toAdd.begin(), otherRoot->_toAdd.end(), node) == otherRoot->_toAdd.end();
+            });
+
             _invalidLists = true;
 
             target->removeComponent(otherRoot);
@@ -250,6 +268,9 @@ Transform::RootTransform::updateTransformsList()
 {
     if (_toAdd.empty() && _toRemove.empty())
         return;
+
+    _toAdd.unique();
+    _toRemove.unique();
 
     for (const auto& toRemove : _toRemove)
     {

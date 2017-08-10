@@ -70,4 +70,26 @@ vec4 texturelod_texture2D(sampler2D tex, vec2 uv, vec2 texSize, float baseLod, f
 #endif
 }
 
+vec4 texturelod_mix(sampler2D   tex,
+                    vec2        uv,
+                    vec2        texSize,
+                    float       maxLod,
+                    float       mixStartLod,
+                    float       mixStartTime,
+                    float       mixPeriod,
+                    float       time,
+                    vec4        defaultColor)
+{
+    float maxTextureLod = floor(log2(texSize.x));
+
+    if (maxLod >= maxTextureLod)
+        return defaultColor;
+
+    float lodDistance = mixStartLod - maxLod;
+    float mixAlpha = clamp((time - mixStartTime) / (mixPeriod * lodDistance), 0.0, 1.0);
+    float mixedMaxLod = mix(mixStartLod, maxLod, mixAlpha);
+
+    return texturelod_texture2D(tex, uv, texSize, 0.0, mixedMaxLod, defaultColor);
+}
+
 #endif

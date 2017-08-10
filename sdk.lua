@@ -92,14 +92,17 @@ local plugins = {
 	['http-worker'] = true,
 	['jpeg'] = true,
 	['leap'] = false,
-	['vr'] = true,
+	['nodejs-worker'] = false,
 	['offscreen'] = false,
 	['particles'] = false,
 	['png'] = true,
 	['sdl'] = true,
+	['ssl'] = true,
 	['sensors'] = true,
 	['serializer'] = true,
 	['video-camera'] = true,
+	['vr'] = true,
+	['websocket'] = true
 }
 
 for plugin, enabled in pairs(plugins) do

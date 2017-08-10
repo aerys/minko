@@ -48,10 +48,10 @@ namespace minko
 
 			static
 			std::string
-			serializePerspectiveCamera(NodePtr			    node,
-                                       AbstractComponentPtr component,
-                                       AssetLibraryPtr      assetLibrary,
-									   DependencyPtr	    dependencies);
+			serializeCamera(NodePtr			        node,
+                            AbstractComponentPtr    component,
+                            AssetLibraryPtr         assetLibrary,
+							DependencyPtr	        dependencies);
 
 			static
 			std::string

@@ -106,7 +106,7 @@ main(int argc, char** argv)
     int frameId = 0;
     int cubeId = 0;
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         frameId++;
         sceneManager->nextFrame(time, deltaTime);

@@ -75,6 +75,22 @@ DrawCall::DrawCall(uint                   batchId,
     bindPositionalMembers();
 }
 
+DrawCall::~DrawCall()
+{
+    if (_program)
+    {
+        auto context = _program->context();
+
+        if (_vertexAttribArray > 0)
+        {
+            context->deleteVertexAttributeArray(_vertexAttribArray);
+            _vertexAttribArray = 0;
+        }
+
+        _program = nullptr;
+    }
+}
+
 data::Store&
 DrawCall::getStore(data::Binding::Source source)
 {

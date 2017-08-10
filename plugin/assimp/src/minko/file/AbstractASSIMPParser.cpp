@@ -40,7 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Surface.hpp"
 #include "minko/component/Skinning.hpp"
 #include "minko/component/MasterAnimation.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/component/AbstractAnimation.hpp"
 #include "minko/component/Animation.hpp"
 #include "minko/component/Metadata.hpp"
@@ -575,9 +575,11 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     if (mesh->HasVertexColors(0u))
         vertexSize += 4u;
 
-	std::vector<float>	vertexData	(vertexSize * mesh->mNumVertices, 0.0f);
+    const auto numVertices = mesh->mNumVertices;
+
+	std::vector<float>	vertexData	(vertexSize * numVertices, 0.0f);
 	unsigned int		vId			= 0;
-	for (unsigned int vertexId = 0; vertexId < mesh->mNumVertices; ++vertexId)
+	for (unsigned int vertexId = 0; vertexId < numVertices; ++vertexId)
 	{
 		if (mesh->HasPositions())
         {
@@ -620,10 +622,8 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 
     auto indices = render::IndexBuffer::Ptr();
 
-    const auto numIndices = mesh->mNumFaces * 3u;
-
     if (_options->optimizeForRendering() ||
-        numIndices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
+        numVertices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
     {
         indices = createIndexBuffer<unsigned short>(mesh, _assetLibrary->context());
     }
@@ -778,11 +778,13 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 				* aiCamera->mAspect);
 
             cameraNode
-			    ->addComponent(PerspectiveCamera::create(
-				    aiCamera->mAspect,
-				    half_fovy,
-				    aiCamera->mClipPlaneNear,
-				    aiCamera->mClipPlaneFar
+			    ->addComponent(Camera::create(
+                    math::perspective(
+                        half_fovy,
+    				    aiCamera->mAspect,
+    				    aiCamera->mClipPlaneNear,
+    				    aiCamera->mClipPlaneFar
+                    )
 			    ));
 			if (!cameraNode->hasComponent<Transform>())
 				cameraNode->addComponent(Transform::create());

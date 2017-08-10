@@ -49,13 +49,13 @@ WriterOptions::WriterOptions() :
     _geometryFunction([](const std::string& filename, Geometry::Ptr geometry) -> Geometry::Ptr { return geometry; }),
     _materialFunction([](const std::string& filename, Material::Ptr material) -> Material::Ptr { return material; }),
     _textureFunction([](const std::string& filename, AbstractTexture::Ptr texture) -> AbstractTexture::Ptr { return texture; }),
-    _imageFormat(ImageFormat::PNG),
     _textureFormats(),
+    _compressedTextureExceptions(),
     _textureOptions{
-        { "",           { true, 0.f, false, true, true, true, math::vec2(1.f), math::ivec2(2048), TextureFilter::LINEAR, MipFilter::LINEAR } },
-        { "lightMap",   { true, 0.f, false, true, true, true, math::vec2(1.f), math::ivec2(2048), TextureFilter::LINEAR, MipFilter::LINEAR } },
-        { "radianceMap",   { true, 0.f, true, true, true, true, math::vec2(1.f), math::ivec2(2048), TextureFilter::NEAREST, MipFilter::NONE } },
-        { "irradianceMap", { true, 0.f, false, false, true, true, math::vec2(1.f), math::ivec2(2048), TextureFilter::NEAREST, MipFilter::NONE } }
+        { "",               { ImageFormat::JPEG, 0.9f, true, 0.f, false, true,  true, true, math::vec2(1.f), math::ivec2(2048), TextureFilter::LINEAR,  MipFilter::LINEAR } },
+        { "lightMap",       { ImageFormat::JPEG, 0.9f, true, 0.f, false, true,  true, true, math::vec2(1.f), math::ivec2(2048), TextureFilter::LINEAR,  MipFilter::LINEAR } },
+        { "radianceMap",    { ImageFormat::JPEG, 0.9f, true, 0.f, true,  true,  true, true, math::vec2(1.f), math::ivec2(2048), TextureFilter::NEAREST, MipFilter::NONE } },
+        { "irradianceMap",  { ImageFormat::JPEG, 0.9f, true, 0.f, false, false, true, true, math::vec2(1.f), math::ivec2(2048), TextureFilter::NEAREST, MipFilter::NONE } }
     },
     _writeAnimations(false),
     _nullAssetUuids()

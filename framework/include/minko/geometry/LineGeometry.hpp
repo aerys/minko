@@ -49,11 +49,11 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
+			create(std::shared_ptr<render::AbstractContext> context, int numSegments = 0)
 			{
 				Ptr ptr = std::shared_ptr<LineGeometry>(new LineGeometry());
 
-				ptr->initialize(context);
+				ptr->initialize(context, numSegments);
 
 				return ptr;
 			}
@@ -95,7 +95,7 @@ namespace minko
             LineGeometry();
 
 			void
-			initialize(std::shared_ptr<render::AbstractContext> context);
+			initialize(std::shared_ptr<render::AbstractContext> context, int numSegments);
 		};
 	}
 }

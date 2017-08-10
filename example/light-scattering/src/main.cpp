@@ -105,7 +105,7 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(
             math::inverse(math::lookAt(math::vec3(0.f), math::vec3(0.f, 0.f, 1.f), math::vec3(0.f, 1.f, 0.f)))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f))
+        ->addComponent(Camera::create(math::perspective(float(M_PI) * 0.25f, 800.f / 600.f, .1f, 1000.f)))
         ->addComponent(renderer);
     root->addChild(camera);
 
@@ -174,10 +174,10 @@ int main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([=](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([=](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([=](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         camera->component<Transform>()->matrix(
             math::rotate(0.001f, math::vec3(0.f, 1.f, 0.f))
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
         );
 
         math::vec3 worldSpaceLightPosition = math::vec3(sun->component<Transform>()->modelToWorldMatrix()[3]);
-        math::vec3 screenSpaceLightPosition = camera->component<PerspectiveCamera>()->project(worldSpaceLightPosition);
+        math::vec3 screenSpaceLightPosition = camera->component<Camera>()->project(worldSpaceLightPosition);
         screenSpaceLightPosition = math::vec3(screenSpaceLightPosition.x / canvas->width(), screenSpaceLightPosition.y / canvas->height(), 1.f);
         // std::cout << glm::to_string(screenSpaceLightPosition) << std::endl;
 

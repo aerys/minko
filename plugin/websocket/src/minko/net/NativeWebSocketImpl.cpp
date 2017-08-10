@@ -1,0 +1,236 @@
+/*
+Copyright (c) 2016 Aerys
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+#include "minko/net/NativeWebSocketImpl.hpp"
+
+#include "minko/AbstractCanvas.hpp"
+#include "minko/log/Logger.hpp"
+
+using namespace minko::net;
+
+NativeWebSocketImpl::NativeWebSocketImpl()
+    : WebSocketImpl(),
+    _tlsVersion(TLSVersion::TLS_1_2)
+{
+}
+
+NativeWebSocketImpl::~NativeWebSocketImpl()
+{
+    disconnect();
+}
+
+void
+NativeWebSocketImpl::tlsConnect(const std::string &uri, const std::string& cookie)
+{
+    _tlsClient.set_access_channels(websocketpp::log::alevel::none);
+    _tlsClient.clear_access_channels(websocketpp::log::alevel::all);
+
+    _tlsClient.init_asio();
+    _tlsClient.set_message_handler([&](websocketpp::connection_hdl c, tls_message_ptr msg)
+    {
+        auto payloadString = msg->get_payload();
+        std::vector<uint8_t> payload(payloadString.begin(), payloadString.end());
+
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->messageReceived()->execute(s, payload); });
+    });
+
+    _tlsClient.set_tls_init_handler([&](websocketpp::connection_hdl hdl)
+    {
+        auto asioContextMethod = asio::ssl::context::method();
+
+        switch (_tlsVersion)
+        {
+        case minko::net::TLSVersion::TLS_1_0:
+            asioContextMethod = asio::ssl::context::tlsv1;
+            break;
+        case minko::net::TLSVersion::TLS_1_1:
+            asioContextMethod = asio::ssl::context::tlsv11;
+            break;
+        case minko::net::TLSVersion::TLS_1_2:
+            asioContextMethod = asio::ssl::context::tlsv12;
+            break;
+        default:
+            asioContextMethod = asio::ssl::context::tlsv12;
+            break;
+        }
+
+        websocketpp::lib::shared_ptr<asio::ssl::context> ctx(new asio::ssl::context(asioContextMethod));
+
+        return ctx;
+    });
+
+    _tlsClient.set_open_handler([&](websocketpp::connection_hdl hdl)
+    {
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->connected()->execute(s); });
+    });
+
+    _tlsClient.set_close_handler([this](websocketpp::connection_hdl hdl)
+    {
+        pushCallback([this](std::weak_ptr<WebSocket> s) { this->disconnected()->execute(s); });
+    });
+
+    websocketpp::lib::error_code ec;
+    _tlsConnection = _tlsClient.get_connection(uri, ec);
+    if (ec)
+    {
+        LOG_ERROR("could not create connection because: " << ec.message());
+        return;
+    }
+
+    if (!cookie.empty())
+        _tlsConnection->replace_header("Cookie", cookie);
+
+    _tlsConnection->add_subprotocol("binary");
+
+    _tlsClient.connect(_tlsConnection);
+    _tlsClient.start_perpetual();
+    _thread.reset(new websocketpp::lib::thread(&tls_client::run, &_tlsClient));
+}
+
+void
+NativeWebSocketImpl::tlsVersion(TLSVersion tlsVersion)
+{
+    _tlsVersion = tlsVersion;
+}
+
+void
+NativeWebSocketImpl::connect(const std::string &uri, const std::string &cookie)
+{
+    if (uri.find("wss") == 0)
+        return tlsConnect(uri, cookie);
+
+    _client.set_access_channels(websocketpp::log::alevel::none);
+    _client.clear_access_channels(websocketpp::log::alevel::all);
+
+    _client.init_asio();
+    _client.set_message_handler([&](websocketpp::connection_hdl c, message_ptr msg)
+    {
+        auto payloadString = msg->get_payload();
+        std::vector<uint8_t> payload(payloadString.begin(), payloadString.end());
+
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->messageReceived()->execute(s, payload); });
+    });
+
+    _client.set_open_handler([&](websocketpp::connection_hdl hdl)
+    {
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->connected()->execute(s); });
+    });
+
+    _client.set_close_handler([this](websocketpp::connection_hdl hdl)
+    {
+        pushCallback([this](std::weak_ptr<WebSocket> s) { this->disconnected()->execute(s); });
+    });
+
+    websocketpp::lib::error_code ec;
+    _connection = _client.get_connection(uri, ec);
+    if (ec)
+    {
+        LOG_ERROR("could not create connection because: " << ec.message());
+        return;
+    }
+
+    if (!cookie.empty())
+        _connection->replace_header("Cookie", cookie);
+
+    _connection->add_subprotocol("binary");
+
+    _client.connect(_connection);
+    _client.start_perpetual();
+    _thread.reset(new websocketpp::lib::thread(&client::run, &_client));
+}
+
+void
+NativeWebSocketImpl::disconnect()
+{
+    std::unique_lock<std::mutex> lock(_connectionMutex);
+
+    if (!isConnected())
+        return;
+
+    if (_connection)
+        _client.stop_perpetual();
+    if (_tlsConnection)
+        _tlsClient.stop_perpetual();
+
+    if (!!_connection && _connection->get_state() != websocketpp::session::state::closed)
+    {
+        _connection->close(0, "disconnect() called");
+        _connection = nullptr;
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->disconnected()->execute(s); });
+    }
+    else if (!!_tlsConnection && _tlsConnection->get_state() != websocketpp::session::state::closed)
+    {
+        _tlsConnection->close(0, "disconnect() called");
+        _tlsConnection = nullptr;
+        pushCallback([=](std::weak_ptr<WebSocket> s) { this->disconnected()->execute(s); });
+    }
+
+    lock.unlock();
+
+    if (!!_thread && _thread->joinable())
+        _thread->join();
+}
+
+void
+NativeWebSocketImpl::sendMessage(const void* payload, size_t s)
+{
+    std::lock_guard<std::mutex> guard(_connectionMutex);
+
+    try
+    {
+        if (_connection)
+            _client.send(_connection, payload, s, websocketpp::frame::opcode::BINARY);
+        else if (_tlsConnection)
+            _tlsClient.send(_tlsConnection, payload, s, websocketpp::frame::opcode::BINARY);
+    }
+    catch (...)
+    {
+        disconnect();
+    }
+}
+
+bool
+NativeWebSocketImpl::isConnected()
+{
+    return !!_connection
+        ? _connection->get_state() == websocketpp::session::state::open
+        : !!_tlsConnection
+            ? _tlsConnection->get_state() == websocketpp::session::state::open
+            : false;
+}
+
+bool
+NativeWebSocketImpl::poll(std::weak_ptr<WebSocket> webSocket)
+{
+    bool read = !_callbacks.empty();
+
+    std::lock_guard<std::mutex> guard(_callbackMutex);
+    for (auto& callback : _callbacks)
+        callback(webSocket);
+    _callbacks.clear();
+
+    return read;
+}
+
+void
+NativeWebSocketImpl::pushCallback(std::function<void(std::weak_ptr<WebSocket>)> callback)
+{
+    std::lock_guard<std::mutex> guard(_callbackMutex);
+    _callbacks.push_back(callback);
+}

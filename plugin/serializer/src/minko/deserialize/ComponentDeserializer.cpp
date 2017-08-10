@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractSerializerParser.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Transform.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/component/ImageBasedLight.hpp"
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
@@ -80,13 +80,31 @@ ComponentDeserializer::deserializeProjectionCamera(file::SceneVersion sceneVersi
 												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 												   std::shared_ptr<file::Dependency>	dependencies)
 {
-	std::string				dst;
+	std::string dst;
 
     unpack(dst, packed.data(), packed.size() - 1);
 
 	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-	return component::PerspectiveCamera::create(dstContent[0], dstContent[1], dstContent[2], dstContent[3]);
+	return component::Camera::create(math::perspective(dstContent[1], dstContent[0], dstContent[2], dstContent[3]));
+}
+
+std::shared_ptr<component::AbstractComponent>
+ComponentDeserializer::deserializeCamera(file::SceneVersion                     sceneVersion,
+                                         std::string&                           packed,
+                                         std::shared_ptr<file::AssetLibrary>	assetLibrary,
+                                         std::shared_ptr<file::Dependency>	    dependencies)
+{
+    msgpack::type::tuple<uint, std::string> dst;
+
+    minko::deserialize::unpack(dst, packed.data(), packed.size() - 1);
+    uint& _0 = dst.get<0>();
+    std::string& _1 = dst.get<1>();
+    std::tuple<uint, std::string&> serializedMatrixTuple(_0, _1);
+
+    math::mat4 projectionMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+
+    return component::Camera::create(projectionMatrix);
 }
 
 component::AbstractComponent::Ptr
@@ -95,7 +113,7 @@ ComponentDeserializer::deserializeImageBasedLight(file::SceneVersion        scen
                                                   file::AssetLibrary::Ptr   assetLibrary,
                                                   file::Dependency::Ptr     dependencies)
 {
-    auto deserializedImageBasedLight = msgpack::type::tuple<std::string, unsigned int, unsigned int>();
+    auto deserializedImageBasedLight = msgpack::type::tuple<std::string, file::DependencyId, file::DependencyId>();
     auto imageBasedLight = component::ImageBasedLight::create();
 
     unpack(deserializedImageBasedLight, serializedImageBasedLight.data(), serializedImageBasedLight.size() - 1);
@@ -112,18 +130,18 @@ ComponentDeserializer::deserializeImageBasedLight(file::SceneVersion        scen
 
     if (irradianceMapId != 0u)
     {
-        auto irradianceMap = dependencies->getTextureReference(irradianceMapId).texture;
+        auto irradianceMapDependency = dependencies->getTextureReference(irradianceMapId);
 
-        if (irradianceMap)
-            imageBasedLight->irradianceMap(irradianceMap->sampler());
+        if (irradianceMapDependency && irradianceMapDependency->texture)
+            imageBasedLight->irradianceMap(irradianceMapDependency->texture->sampler());
     }
 
     if (radianceMapId != 0u)
     {
-        auto radianceMap = dependencies->getTextureReference(radianceMapId).texture;
+        auto radianceMapDependency = dependencies->getTextureReference(radianceMapId);
 
-        if (radianceMap)
-            imageBasedLight->radianceMap(radianceMap->sampler());
+        if (radianceMapDependency && radianceMapDependency->texture)
+            imageBasedLight->radianceMap(radianceMapDependency->texture->sampler());
     }
 
     return imageBasedLight;
@@ -218,7 +236,30 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
 										  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 										  std::shared_ptr<file::Dependency>		dependencies)
 {
-	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string> dst;
+    const auto& versionInfo = file::SceneVersionInfo::getInfoByVersion(sceneVersion);
+
+	msgpack::type::tuple<file::DependencyId, file::DependencyId, file::DependencyId, std::string> dst;
+
+    if (versionInfo.numDependenciesBytes() == 2)
+    {
+	    msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string> ushortDst;
+
+        unpack(ushortDst, packed.data(), packed.size() - 1);
+
+        dst.get<0>() = ushortDst.get<0>();
+        dst.get<1>() = ushortDst.get<1>();
+        dst.get<2>() = ushortDst.get<2>();
+        dst.get<3>() = ushortDst.get<3>();
+    }
+    else if (versionInfo.numDependenciesBytes() == 4)
+    {
+        unpack(dst, packed.data(), packed.size() - 1);
+    }
+    else
+    {
+        return nullptr;
+    }
+
 	msgpack::type::tuple<std::vector<SurfaceExtension>>	ext;
 
     unpack(dst, packed.data(), packed.size() - 1);
@@ -268,7 +309,6 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
     auto surface = component::Surface::Ptr();
 
     material = (material != nullptr ? material : assetLibrary->material("defaultMaterial"));
-    effect = (effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect"));
 
     if (uuid.empty())
     {

@@ -124,7 +124,7 @@ main(int argc, char** argv)
                 )
             )
         )
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio())
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f))
         );
     root->addChild(camera);
 
@@ -185,7 +185,7 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
     // currently, keyUp events seem not to be fired at the individual key level
@@ -297,7 +297,7 @@ main(int argc, char** argv)
         }
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         sceneManager->nextFrame(time, deltaTime);
     });

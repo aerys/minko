@@ -81,16 +81,19 @@ SceneManager::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 }
 
 void
-SceneManager::nextFrame(float time, float deltaTime, render::AbstractTexture::Ptr renderTarget)
+SceneManager::nextFrame(float time, float deltaTime, bool shouldRender, render::AbstractTexture::Ptr renderTarget)
 {
     _time = time;
 	_data->set("time", _time);
 
 	_frameBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), time, deltaTime);
-	_cullBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
-	_cullEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
-	_renderBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
-	_renderEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
+    if (shouldRender)
+    {
+        _cullBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
+        _cullEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
+        _renderBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
+        _renderEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
+    }
     _frameEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), time, deltaTime);
 
 	++_frameId;

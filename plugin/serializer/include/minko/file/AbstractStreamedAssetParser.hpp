@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/StreamingCommon.hpp"
 #include "minko/deserialize/Unpacker.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/extension/StreamingExtension.hpp"
 #include "minko/file/AbstractSerializerParser.hpp"
 
 namespace minko
@@ -83,13 +84,13 @@ namespace minko
 
                     _complete = true;
                 }
-			
+
 			    float
 			    priority() override
                 {
                     return _priority;
                 }
-			
+
 			    void
 			    afterLastStep() override
                 {
@@ -118,7 +119,7 @@ namespace minko
 
             std::shared_ptr<LinkedAsset>														_linkedAsset;
 
-            std::shared_ptr<component::JobManager>                                              _jobManager;
+            std::weak_ptr<component::JobManager>                                                _jobManager;
 
             std::string																			_filename;
             std::string																			_resolvedFilename;
@@ -220,6 +221,20 @@ namespace minko
             lodRequestComplete() const
             {
                 return _lodRequestComplete;
+            }
+
+            virtual
+            std::size_t
+            lodRequestNumPrimitivesLoaded()
+            {
+                return 0;
+            }
+
+            virtual
+            std::size_t
+            lodRequestNumVerticesLoaded()
+            {
+                return 0;
             }
 
             inline
@@ -403,7 +418,7 @@ namespace minko
             int
             streamedAssetHeaderOffset() const
             {
-                return assetHeaderOffset() + MINKO_SCENE_HEADER_SIZE + _dependencySize;
+                return assetHeaderOffset() + MINKO_SCENE_HEADER_SIZE + extension::StreamingExtension::STREAMED_ASSET_HEADER_SIZE_BYTE_SIZE;
             }
 
             void

@@ -126,10 +126,10 @@ namespace minko
 
             virtual
             void
-            uploaderIndexBufferData(const uint     indexBuffer,
-                                    const uint     offset,
-                                    const uint     size,
-                                    void*                data) = 0;
+            uploadIndexBufferData(const uint     indexBuffer,
+                                  const uint     offset,
+                                  const uint     size,
+                                  void*          data) = 0;
 
             virtual
             void
@@ -358,6 +358,10 @@ namespace minko
             virtual
             void
             setVertexAttributeArray(const uint vertexArray) = 0;
+
+            virtual
+            void
+            deleteVertexAttributeArray(const uint vertexArray) = 0;
         };
     }
 }

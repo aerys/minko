@@ -122,6 +122,18 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
             if (seekedDrawCall != nullptr)
             {
                 seekedDrawCall->batchIDs().push_back(_batchId);
+
+                if (drawCall->program())
+                {
+                    unwatchProgramSignature(
+                        *drawCall,
+                        drawCall->pass()->macroBindings(),
+                        drawCall->rootData(),
+                        drawCall->rendererData(),
+                        drawCall->targetData()
+                    );
+                    unbindDrawCall(*drawCall);
+                }
                 delete drawCall;
                 continue;
             }
@@ -200,9 +212,10 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
         auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
         auto bindingKey = MacroBindingKey(propertyName, &macroBinding, &store);
 
-        DrawCallList* drawCalls = _macroToDrawCalls->count(bindingKey) != 0
-            ? (*_macroToDrawCalls)[bindingKey]
-            : (*_macroToDrawCalls)[bindingKey] = new DrawCallList();
+        if (_macroToDrawCalls->count(bindingKey) == 0)
+            _macroToDrawCalls->insert(std::make_pair(bindingKey, new DrawCallList()));
+
+        DrawCallList* drawCalls = _macroToDrawCalls->find(bindingKey)->second;
 
         assert(std::find(drawCalls->begin(), drawCalls->end(), &drawCall) == drawCalls->end());
 
@@ -243,10 +256,7 @@ DrawCallPool::addMacroCallback(const MacroBindingKey&   key,
                                PropertyChanged&         signal,
                                const PropertyCallback&  callback)
 {
-    //if (_macroChangedSlot->count(key) == 0)
-        (*_macroChangedSlot)[key] = ChangedSlot(signal.connect(callback), 1);
-    /*else
-        (*_macroChangedSlot)[key].second++;*/
+    _macroChangedSlot->insert(std::make_pair(key, ChangedSlot(signal.connect(callback), 1)));
 }
 
 void
@@ -255,10 +265,11 @@ DrawCallPool::removeMacroCallback(const MacroBindingKey& key)
     if (!_macroChangedSlot->count(key))
         return;
 
-    assert((*_macroChangedSlot)[key].second != 0);
+    auto& value = _macroChangedSlot->find(key)->second;
 
-    (*_macroChangedSlot)[key].second--;
-    if ((*_macroChangedSlot)[key].second == 0)
+    assert(value.second != 0);
+
+    if (--value.second == 0)
         _macroChangedSlot->erase(key);
 }
 
@@ -341,7 +352,7 @@ DrawCallPool::unwatchProgramSignature(DrawCall&                     drawCall,
         auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
         auto bindingKey = MacroBindingKey(propertyName, &macroBinding, &store);
 
-        auto* drawCalls = (*_macroToDrawCalls)[bindingKey];
+        auto* drawCalls = _macroToDrawCalls->find(bindingKey)->second;
 
         drawCalls->erase(std::remove(drawCalls->begin(), drawCalls->end(), &drawCall), drawCalls->end());
 

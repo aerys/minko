@@ -12,7 +12,17 @@ Minko's SDK uses premake5, which is embed in the SDK, for its build system. The 
 
 To do this, open a command line prompt in the root directory of the SDK and run: `script/solution_gmake.sh`
 
-Step 3: Build and run the project
+Step 3: Make sure JDK is installed
+----------------------------------
+
+Java files need to be compiled to deploy a Minko Android application, so make sure that you have a `${JAVA_HOME}` environment variable that is pointing to the JDK root folder.
+
+If not, you can download the JDK [here](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) (*Java SE Development Kit 8u101*) and create the `${JAVA_HOME}` variable as said earlier.
+
+Please also make sure that the JDK's `bin` folder is in your `${PATH}` because we need to use the `jarsigner` binary.
+
+
+Step 4: Build and run the project
 ---------------------------------
 
 Now, you should have a Makefile at the root directory of your project. You can build the solution using the following command line:

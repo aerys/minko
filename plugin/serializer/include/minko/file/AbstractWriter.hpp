@@ -66,9 +66,9 @@ namespace minko
 			typedef std::shared_ptr<AbstractWriter> Ptr;
 
 		private:
-			typedef std::vector<msgpack::type::tuple<unsigned int, short, std::string>> SerializedDependency;
+			typedef std::vector<Dependency::SerializedAsset>        SerializedDependency;
 
-            typedef std::shared_ptr<AbstractWriterPreprocessor<T>> PreprocessorPtr;
+            typedef std::shared_ptr<AbstractWriterPreprocessor<T>>  PreprocessorPtr;
 
 		protected:
 			std::shared_ptr<Signal<Ptr>>	                    _complete;
@@ -397,11 +397,11 @@ namespace minko
 
                     std::vector<std::string> serializedDependencyBufs;
 
-                    unsigned int dependencySize = 2;
+                    unsigned int dependencySize = sizeof(DependencyId);
 
                     for (auto serializedDependencyEntry : serializedDependency)
                     {
-                        dependencySize += 4;
+                        dependencySize += sizeof(dependencySize);
 
                         std::stringstream sbuf;
                         msgpack::pack(sbuf, serializedDependencyEntry);
@@ -421,10 +421,12 @@ namespace minko
 
                     embeddedHeaderData.insert(embeddedHeaderData.begin(), header, header + headerSize);
 
-                    const auto numDependencies = short(serializedDependencyBufs.size());
+                    const int numDependencies = serializedDependencyBufs.size();
 
-                    embeddedHeaderData.push_back((numDependencies & 0xff00) >> 8);
-                    embeddedHeaderData.push_back((numDependencies & 0x00ff));
+                    embeddedHeaderData.push_back((numDependencies & 0xff000000) >> 24);
+                    embeddedHeaderData.push_back((numDependencies & 0x00ff0000) >> 16);
+                    embeddedHeaderData.push_back((numDependencies & 0x0000ff00) >> 8);
+                    embeddedHeaderData.push_back((numDependencies & 0x000000ff));
 
                     result.write(
                         reinterpret_cast<const char*>(embeddedHeaderData.data()),

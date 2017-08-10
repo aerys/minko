@@ -123,7 +123,7 @@ main(int argc, char** argv)
 
     auto camera = Node::create("camera")
         ->addComponent(Renderer::create(generateHexColor()))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)))
         ->addComponent(Transform::create());
 
     camera->component<Transform>()->matrix(
@@ -194,7 +194,7 @@ main(int argc, char** argv)
             root->addChild(star);
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
     {
         bigStarNode->component<Transform>()->matrix(
             math::rotate(.001f, math::vec3(0.f, 0.f, 1.f)) *

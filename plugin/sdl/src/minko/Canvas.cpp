@@ -28,7 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/Transform.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5 && MINKO_PLATFORM != MINKO_PLATFORM_ANDROID
 # include "minko/file/FileProtocolWorker.hpp"
@@ -74,8 +74,9 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _startTime(std::chrono::high_resolution_clock::now()),
     _framerate(0.f),
     _desiredFramerate(60.f),
+    _desiredEventrate(60.f),
 	_swapBuffersAtEnterFrame(true),
-    _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
+    _enterFrame(Signal<AbstractCanvas::Ptr, float, float, bool>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
     _fileDropped(Signal<const std::string&>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
@@ -162,6 +163,13 @@ Canvas::initializeInputs()
 void
 Canvas::initializeWindow()
 {
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    // SDL_SetHint() function MUST be called before SDL_Init()
+
+    // Android accelerometer will not be considered as a joystick anymore
+    SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
+#endif
+
     int initFlags = 0;
 
 #if !defined(MINKO_PLUGIN_OFFSCREEN)
@@ -296,13 +304,13 @@ Canvas::createScene()
 		->addComponent(Transform::create(
 			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0.f, 1.f, 0.f)))
 		))
-		->addComponent(PerspectiveCamera::create(shared_from_this()->aspectRatio()));
+		->addComponent(Camera::create(math::perspective(.785f, shared_from_this()->aspectRatio(), 0.1f, 1000.f)));
 
     root->addChild(_camera);
 
     _resizedSlot = _resized->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		_camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        _camera->component<Camera>()->projectionMatrix(math::perspective(.785f, float(w) / float(h), 0.1f, 1000.f));
 	});
 
     return root;
@@ -391,6 +399,7 @@ Canvas::step()
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     // Detect new joystick
+    auto invalidJoysticks = 0;
     for (int i = 0; i < SDL_NumJoysticks(); i++)
     {
         if (!SDL_JoystickOpened(i))
@@ -415,11 +424,15 @@ Canvas::step()
                 printf("Number of Balls: %d\n", SDL_JoystickNumBalls(joystick));
 # endif // DEBUG
             }
+            else
+            {
+                invalidJoysticks++;
+            }
         }
     }
 
     // A gamepad has been removed ?
-    if (_joysticks.size() != SDL_NumJoysticks())
+    if (_joysticks.size() != (SDL_NumJoysticks() - invalidJoysticks))
     {
         // We looking for the missing gamepad
         int joystickId = 0;
@@ -504,7 +517,7 @@ Canvas::step()
 
                 c = c2;
             }
-            
+
             if (c != 0)
             {
                 bool found = false;
@@ -761,7 +774,7 @@ Canvas::step()
         case SDL_FINGERMOTION:
         {
             auto id = static_cast<int>(event.tfinger.fingerId);
-            
+
             auto normalizedX = event.tfinger.x;
             auto normalizedY = event.tfinger.y;
             auto normalizedDX = event.tfinger.dx;
@@ -1004,13 +1017,19 @@ Canvas::step()
     auto absoluteTime = std::chrono::high_resolution_clock::now();
 	_relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
     _deltaTime = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
+    _deltaRenderTime  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - _previousRenderTime).count(); // in milliseconds
     _previousTime = absoluteTime;
+
+    auto shouldRender = (_desiredEventrate == _desiredFramerate) || _deltaRenderTime >= (1000.f / _desiredFramerate);
+
+    if (shouldRender)
+        _previousRenderTime = absoluteTime;
 
     if (_enableRendering)
     {
-        _enterFrame->execute(that, _relativeTime, _deltaTime);
+        _enterFrame->execute(that, _relativeTime, _deltaTime, shouldRender);
 
-        if (_swapBuffersAtEnterFrame)
+        if (_swapBuffersAtEnterFrame && shouldRender)
             swapBuffers();
     }
 
@@ -1019,12 +1038,12 @@ Canvas::step()
     // framerate in seconds
     _framerate = 1000.f / _frameDuration;
 
-    auto remainingTime = (1000.f / _desiredFramerate) - _frameDuration;
+    auto remainingTime = (1000.f / _desiredEventrate) - _frameDuration;
 
     if (remainingTime > 0)
     {
         _backend->wait(that, uint(remainingTime));
-		_framerate = _desiredFramerate;
+		_framerate = _desiredEventrate;
     }
 }
 
@@ -1079,6 +1098,15 @@ void
 Canvas::desiredFramerate(float desiredFramerate)
 {
     _desiredFramerate = desiredFramerate;
+
+    if (_desiredEventrate < _desiredFramerate)
+        _desiredEventrate = desiredFramerate;
+}
+
+void
+Canvas::desiredEventrate(float desiredEventrate)
+{
+    _desiredEventrate = desiredEventrate;
 }
 
 void

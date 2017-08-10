@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Surface.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/MasterAnimation.hpp"
+#include "minko/component/Metadata.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/deserialize/Unpacker.hpp"
@@ -50,6 +51,13 @@ SceneParser::SceneParser()
 
     registerComponent(serialize::PROJECTION_CAMERA,
         std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
+
+    registerComponent(serialize::CAMERA,
+        std::bind(&deserialize::ComponentDeserializer::deserializeCamera,
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3,
@@ -354,7 +362,12 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
                 std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](_version, componentPack[componentIndex], assetLibrary, _dependency);
 
                 for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
+                {
                     node->addComponent(newComponent);
+
+                    if (std::dynamic_pointer_cast<component::Metadata>(newComponent) != nullptr)
+                        handleMetadata(node, std::dynamic_pointer_cast<component::Metadata>(newComponent), options);
+                }
             }
         }
     }
@@ -377,6 +390,9 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
 
             if (!node->hasComponent<component::MasterAnimation>())
 			    node->addComponent(component::MasterAnimation::create());
+
+            if (std::dynamic_pointer_cast<component::Metadata>(newComponent) != nullptr)
+                handleMetadata(node, std::dynamic_pointer_cast<component::Metadata>(newComponent), options);
 		}
     }
 
@@ -405,4 +421,20 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
     }
 
     return root;
+}
+
+void
+SceneParser::handleMetadata(std::shared_ptr<scene::Node> node, 
+                            std::shared_ptr<component::Metadata> metadata, 
+                            std::shared_ptr<file::Options> options)
+{
+    auto data = metadata->data();
+
+    for (auto it = data.begin(); it != data.end(); ++it)
+    {
+        auto metadataName = it->first;
+        auto metadataValue = it->second;
+
+        options->attributeFunction()(node, metadataName, metadataValue);
+    }
 }

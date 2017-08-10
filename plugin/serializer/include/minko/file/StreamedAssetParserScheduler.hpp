@@ -33,7 +33,7 @@ namespace minko
             public component::JobManager::Job
         {
         public:
-            typedef std::shared_ptr<StreamedAssetParserScheduler> Ptr;
+            typedef std::shared_ptr<StreamedAssetParserScheduler>   Ptr;
 
             struct Parameters
             {
@@ -48,7 +48,7 @@ namespace minko
         private:
             struct ParserEntry;
 
-            typedef std::shared_ptr<ParserEntry> ParserEntryPtr;
+            typedef ParserEntry*                                    ParserEntryPtr;
 
             struct ParserEntry
             {
@@ -77,7 +77,7 @@ namespace minko
             {
                 inline
                 bool
-                operator()(ParserEntryPtr left, ParserEntryPtr right) const
+                operator()(const ParserEntryPtr left, const ParserEntryPtr right) const
                 {
                     static const auto epsilon = 1e-3f;
 
@@ -89,7 +89,7 @@ namespace minko
 
                     if (rightPriority > leftPriority)
                         return false;
-                    
+
                     if (left < right)
                         return true;
 
@@ -113,6 +113,13 @@ namespace minko
             std::unordered_set<
                 ParserEntryPtr
             >                           _pendingDataEntries;
+            std::unordered_set<
+                ParserEntryPtr
+            >                           _entriesToRemove;
+
+            std::unordered_set<
+                ParserEntryPtr
+            >                           _abortedRequests;
 
             Parameters                  _parameters;
 
@@ -122,8 +129,14 @@ namespace minko
 
             Signal<Ptr>::Ptr            _active;
             Signal<Ptr>::Ptr            _inactive;
+            std::size_t                 _numBytesLoaded;
+            std::size_t                 _numPrimitivesLoaded;
+            std::size_t                 _numVerticesLoaded;
+            int                         _numRequestsExecuted;
 
         public:
+            ~StreamedAssetParserScheduler();
+
             inline
             static
             Ptr
@@ -155,6 +168,43 @@ namespace minko
                 return _inactive;
             }
 
+            inline
+            std::size_t
+            numBytesLoaded() const
+            {
+                return _numBytesLoaded;
+            }
+
+            inline
+            std::size_t
+            numPrimitivesLoaded() const
+            {
+                return _numPrimitivesLoaded;
+            }
+
+            std::size_t
+            numVerticesLoaded() const
+            {
+                return _numVerticesLoaded;
+            }
+
+            inline
+            std::size_t
+            numRequestsExecuted() const
+            {
+                return _numRequestsExecuted;
+            }
+
+            inline
+            int
+            numActiveParsers() const
+            {
+                return _activeEntries.size();
+            }
+
+            void
+            clear();
+
 			bool
 			complete() override;
 
@@ -163,10 +213,10 @@ namespace minko
 
 			void
 			step() override;
-			
+
 			float
 			priority() override;
-			
+
 			void
 			afterLastStep() override;
 
@@ -182,6 +232,9 @@ namespace minko
 
             ParserEntryPtr
             popHeadingParser();
+
+            void
+            clearEntriesToRemove();
 
             void
             removeEntry(ParserEntryPtr entry);

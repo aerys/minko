@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TextureFormatInfo.hpp"
 
 #ifndef MINKO_NO_CRNLIB
-# include "crnlib.h"
+# define CRND_HEADER_FILE_ONLY
 # include "crn_core.h"
 # include "crn_console.h"
 # include "crn_decomp.h"

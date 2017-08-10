@@ -27,7 +27,7 @@ using namespace minko;
 using namespace minko::geometry;
 using namespace minko::render;
 
-/*static*/ const uint		 LineGeometry::MAX_NUM_LINES		= 16000;
+/*static*/ const uint		 LineGeometry::MAX_NUM_LINES		= 1048576;
 /*static*/ const std::string LineGeometry::ATTRNAME_START_POS	= "startPosition";
 /*static*/ const std::string LineGeometry::ATTRNAME_STOP_POS    = "stopPosition";
 /*static*/ const std::string LineGeometry::ATTRNAME_WEIGHTS		= "weights";
@@ -44,7 +44,7 @@ LineGeometry::LineGeometry():
 }
 
 void
-LineGeometry::initialize(AbstractContext::Ptr context)
+LineGeometry::initialize(AbstractContext::Ptr context, int numSegments)
 {
 	if (context == nullptr)
 		throw std::invalid_argument("context");
@@ -55,6 +55,12 @@ LineGeometry::initialize(AbstractContext::Ptr context)
 	_vertexBuffer->addAttribute(ATTRNAME_START_POS,	3, 0);
 	_vertexBuffer->addAttribute(ATTRNAME_STOP_POS, 3, 3);
 	_vertexBuffer->addAttribute(ATTRNAME_WEIGHTS, 3, 6);
+
+    if (numSegments > 0)
+    {
+        _vertexBuffer->data().reserve(4 * numSegments * _vertexBuffer->vertexSize());
+        _indexBuffer->data().reserve(6 * numSegments);
+    }
 }
 
 math::vec3
@@ -82,20 +88,14 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 		return moveTo(x, y, z);
 
 	const uint vertexSize = _vertexBuffer->vertexSize();
-	const unsigned int oldVertexDataSize = _vertexBuffer->data().size();
-	const unsigned int oldIndexDataSize	= _indexBuffer->data().size();
+    const unsigned int oldVertexDataSize = _vertexBuffer->data().size();
+    const unsigned int oldIndexDataSize = _indexBuffer->data().size();
 
-	std::vector<float> vertexData (oldVertexDataSize + 4 * numSegments * vertexSize);
-	std::vector<unsigned short>	indexData (oldIndexDataSize + 6 * numSegments);
+    auto& vertexData = _vertexBuffer->data();
+    auto& indexData = _indexBuffer->data();
 
-	if (oldVertexDataSize > 0)
-		memcpy(&vertexData[0], &_vertexBuffer->data()[0], sizeof(float) * oldVertexDataSize);
-
-	if (oldIndexDataSize > 0)
-		memcpy(&indexData[0], &_indexBuffer->data()[0], sizeof(unsigned short) * oldIndexDataSize);
-
-	_vertexBuffer->dispose();
-	_indexBuffer->dispose();
+    vertexData.resize(oldVertexDataSize + 4 * numSegments * vertexSize);
+    indexData.resize(oldIndexDataSize + 6 * numSegments);
 
 	const float invNumSegments	= 1.f / (float)numSegments;
 	const float stepX = (x - _currentX) * invNumSegments;
@@ -158,9 +158,6 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 	assert(vid == vertexData.size());
 	assert(iid == indexData.size());
 #endif
-
-	std::swap(_vertexBuffer->data(), vertexData);
-	std::swap(_indexBuffer->data(), indexData);
 
 	return std::static_pointer_cast<LineGeometry>(shared_from_this());
 }

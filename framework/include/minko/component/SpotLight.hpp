@@ -33,6 +33,24 @@ namespace minko
 		public:
 			typedef std::shared_ptr<SpotLight> Ptr;
 
+        private:
+            typedef std::shared_ptr<render::Texture>    TexturePtr;
+            typedef std::shared_ptr<Renderer>           RendererPtr;
+
+        public:
+            static const uint MIN_SHADOWMAP_SIZE;
+            static const uint MAX_SHADOWMAP_SIZE;
+            static const uint DEFAULT_SHADOWMAP_SIZE;
+
+        private:
+            bool                        _shadowMappingEnabled;
+            uint                        _shadowMapSize;
+            TexturePtr                  _shadowMap;
+            RendererPtr                 _shadowRenderer;
+            math::mat4                  _shadowProjection;
+            math::mat4                  _view;
+            float                       _shadowBias;
+
 		public:
 			inline static
 			Ptr
@@ -89,9 +107,73 @@ namespace minko
                 return data()->get<math::vec3>("position");
             }
 
+                        inline
+            TexturePtr
+            shadowMap()
+            {
+                return _shadowMap;
+            }
+
+            inline
+            float
+            shadowSpread()
+            {
+                return data()->get<float>("shadowSpread");
+            }
+
+            inline
+            void
+            shadowSpread(float spread)
+            {
+                data()->set("shadowSpread", spread);
+            }
+
+            inline
+            math::mat4
+            shadowProjection() const
+            {
+                return _shadowProjection;
+            }
+
+            inline
+            bool
+            shadowMappingEnabled() const
+            {
+                return _shadowMappingEnabled;
+            }
+
+            inline
+            float
+            shadowBias()
+            {
+                return data()->get<float>("shadowBias");
+            }
+
+            inline
+            void
+            shadowBias(float value)
+            {
+                data()->set("shadowBias", value);
+            }
+
+            void
+            computeShadowProjection();
+
+            void
+            enableShadowMapping(uint shadowMapSize = DEFAULT_SHADOWMAP_SIZE);
+
+            void
+            disableShadowMapping(bool disposeResources = false);
+
 		protected:
 			void
             updateModelToWorldMatrix(const math::mat4& modelToWorld);
+
+            void
+            updateRoot(std::shared_ptr<scene::Node> root);
+
+            void
+            targetRemoved(std::shared_ptr<scene::Node> target) override;
 
 		private:
 			SpotLight(float diffuse,
@@ -103,6 +185,9 @@ namespace minko
                       float attenuationQuadratic);
 
 			SpotLight(const SpotLight& spotlight, const CloneOption& option);
+
+            bool
+            initializeShadowMapping();
 		};
 	}
 }

@@ -6,40 +6,36 @@
 
 set -e
 
-if [ "$#" -ne 2 ]; then
-    echo "usage: copy_java.sh absoluteSrcDir relativeDestDir" 2> /dev/null
+[[ $# -ne 2 ]] && {
+    echo "usage: cpjf.sh absolute_src_dir relative_dest_dir" > /dev/stderr
     exit 1
-fi
+}
 
-if [ $OSTYPE == "cygwin" ]; then
-	curDir=$(cygpath -w $(pwd))
-else
-	curDir=$(pwd)
-fi
+ABSOLUTE_SRC_DIR=$1
+RELATIVE_DEST_DIR=$2
 
-#echo "Current directory: $curDir"
+[[ ! -d ${ABSOLUTE_SRC_DIR} ]] && {
+    exit 0
+}
 
-if [ -d $1 ]; then
-	# Move to the current plugin directory
-	pushd $1 > /dev/null
+CURRENT_DIR=$(pwd)
 
-	java_files=$(find . -iname '*.java')
+[[ $OSTYPE == "cygwin" ]] && {
+    CURRENT_DIR=$(cygpath -w ${CURRENT_DIR})
+}
 
-	for file in $java_files 
-	do
-		dir="$2/"$(dirname "$file")
-		# create the dest dir if doesn't exist
-		if [ ! -d "$curDir/$dir" ]; then
-			#echo "Make a new directory: $dir"
-			mkdir -p "$curDir/$dir"
-		fi
+# Move to the current plugin directory
+pushd "${ABSOLUTE_SRC_DIR}" > /dev/null
 
-		# copy Java file
-		#echo "Copy file $1/$file to $curDir/$dir"
-		cp "$1/$file" "$curDir/$dir"
-	done
+JAVA_FILES=$(find . -iname '*.java')
 
-	popd > /dev/null
-else
-	echo "warning: $1 not found."
-fi
+for FILE in ${JAVA_FILES}
+do
+    DEST_DIR="${RELATIVE_DEST_DIR}/$(dirname ${FILE})"
+
+    mkdir -p "${CURRENT_DIR}/${DEST_DIR}"
+
+    cp "${ABSOLUTE_SRC_DIR}/${FILE}" "${CURRENT_DIR}/${DEST_DIR}"
+done
+
+popd > /dev/null

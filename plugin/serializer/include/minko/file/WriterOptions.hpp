@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Flyweight.hpp"
 #include "minko/SerializerCommon.hpp"
 #include "minko/Types.hpp"
+#include "minko/render/TextureFormat.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 
 namespace minko
 {
@@ -70,6 +72,8 @@ namespace minko
 
             struct TextureOptions
             {
+                serialize::ImageFormat  imageFormat;
+                float                   jpegImageQualityFactor;
                 bool                    compressTexture;
                 float                   compressedTextureQualityFactor;
                 bool                    preserveMipMaps;
@@ -99,8 +103,9 @@ namespace minko
             MaterialFunction                    _materialFunction;
             TextureFunction                     _textureFunction;
 
-            serialize::ImageFormat              _imageFormat;
-            std::list<render::TextureFormat>    _textureFormats;
+            std::vector<render::TextureFormat>  _textureFormats;
+
+            std::vector<std::string>            _compressedTextureExceptions;
 
             std::unordered_map<
                 Flyweight<std::string>,
@@ -140,8 +145,8 @@ namespace minko
                 instance->_geometryFunction = other->_geometryFunction;
                 instance->_materialFunction = other->_materialFunction;
                 instance->_textureFunction = other->_textureFunction;
-                instance->_imageFormat = other->_imageFormat;
                 instance->_textureFormats = other->_textureFormats;
+                instance->_compressedTextureExceptions = other->_compressedTextureExceptions;
                 instance->_textureOptions = other->_textureOptions;
                 instance->_writeAnimations = other->_writeAnimations;
                 instance->_nullAssetUuids = other->_nullAssetUuids;
@@ -326,23 +331,30 @@ namespace minko
             }
 
             inline
-			serialize::ImageFormat
-			imageFormat() const
-			{
-				return _imageFormat;
-			}
+            std::vector<render::TextureFormat>
+            textureFormats(const std::string& textureType, const std::string& filename)
+            {
+                const auto compressTexture =
+                    this->compressTexture(textureType) &&
+                    this->compressTextureByFilename(filename);
 
-			inline
-			Ptr
-			imageFormat(serialize::ImageFormat value)
-			{
-				_imageFormat = value;
+                if (compressTexture)
+                    return _textureFormats;
 
-				return shared_from_this();
-			}
+                auto textureFormats = std::vector<render::TextureFormat>();
+
+                for (const auto textureFormat : _textureFormats)
+                    if (!render::TextureFormatInfo::isCompressed(textureFormat))
+                        textureFormats.push_back(textureFormat);
+
+                if (textureFormats.empty())
+                    textureFormats.push_back(render::TextureFormat::RGBA);
+
+                return textureFormats;
+            }
 
             inline
-            const std::list<render::TextureFormat>&
+            const std::vector<render::TextureFormat>&
             textureFormats() const
             {
                 return _textureFormats;
@@ -353,6 +365,74 @@ namespace minko
             registerTextureFormat(render::TextureFormat textureFormat)
             {
                 _textureFormats.push_back(textureFormat);
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            compressTextureByFilename(const std::string& filename)
+            {
+                return std::find(
+                    _compressedTextureExceptions.begin(),
+                    _compressedTextureExceptions.end(),
+                    filename
+                ) == _compressedTextureExceptions.end();
+            }
+
+            inline
+            Ptr
+            registerCompressedTextureException(const std::string& filename)
+            {
+                _compressedTextureExceptions.push_back(filename);
+
+                return shared_from_this();
+            }
+
+            inline
+            serialize::ImageFormat
+            imageFormat(const std::string& textureType) const
+            {
+                return textureOptions(textureType).imageFormat;
+            }
+
+            inline
+            Ptr
+            imageFormat(const std::string& textureType, serialize::ImageFormat value)
+            {
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.imageFormat = value;
+                }
+                else
+                {
+                    _textureOptions.at(textureType).imageFormat = value;
+                }
+
+                return shared_from_this();
+            }
+
+            inline
+            float
+            jpegImageQualityFactor(const std::string& textureType) const
+            {
+                return textureOptions(textureType).jpegImageQualityFactor;
+            }
+
+            inline
+            Ptr
+            jpegImageQualityFactor(const std::string& textureType, float value)
+            {
+                if (textureType.empty())
+                {
+                    for (auto& textureOption : _textureOptions)
+                        textureOption.second.jpegImageQualityFactor = math::clamp(value, 0.f, 1.f);
+                }
+                else
+                {
+                    _textureOptions.at(textureType).jpegImageQualityFactor = math::clamp(value, 0.f, 1.f);
+                }
 
                 return shared_from_this();
             }

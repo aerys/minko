@@ -5,8 +5,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	files {
 		"src/**.hpp",
 		"src/**.cpp",
-		"include/**.hpp",
-        "asset/**"
+		"include/**.hpp"
 	}
 	includedirs {
 		"include",
@@ -57,18 +56,18 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "not html5" }
 		excludes {
-			"include/minko/oculus/WebVROculus.hpp",
-			"src/minko/oculus/WebVROculus.cpp",
+			"include/minko/vr/WebVR.hpp",
+			"src/minko/vr/WebVR.cpp",
 		}
 
 	configuration { "not android", "not ios", "not html5" }
 		excludes {
-			"include/minko/oculus/Cardboard.hpp",
-			"src/minko/oculus/Cardboard.cpp",
+			"include/minko/vr/Cardboard.hpp",
+			"src/minko/vr/Cardboard.cpp",
 		}
 
 	configuration { "html5 or android or ios" }
 		excludes {
-			"include/minko/oculus/NativeOculus.hpp",
-			"src/minko/oculus/NativeOculus.cpp",
+			"include/minko/vr/OculusRift.hpp",
+			"src/minko/vr/OculusRift.cpp",
 		}

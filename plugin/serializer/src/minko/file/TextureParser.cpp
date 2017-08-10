@@ -36,6 +36,8 @@ using namespace minko::render;
 using namespace minko::serialize;
 using namespace minko::deserialize;
 
+const int TextureParser::TEXTURE_HEADER_SIZE_BYTE_SIZE = 2;
+
 std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction, Hash<TextureFormat>> TextureParser::_formatParserFunctions =
 {
     { TextureFormat::RGB, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
@@ -75,18 +77,19 @@ TextureParser::parse(const std::string&                filename,
 
     if (_textureHeaderSize == 0)
     {
-        const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2 + 2;
-        const auto textureHeaderSizeOffset = assetHeaderSize - 2;
+        const auto& versionInfo = SceneVersionInfo::getInfoByVersion(_version);
+        const auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + versionInfo.numDependenciesBytes() + TEXTURE_HEADER_SIZE_BYTE_SIZE;
+        const auto textureHeaderSizeOffset = assetHeaderSize - TEXTURE_HEADER_SIZE_BYTE_SIZE;
 
         std::stringstream headerDataStream(std::string(
             data.begin() + textureHeaderSizeOffset,
-            data.begin() + textureHeaderSizeOffset + 2
+            data.begin() + textureHeaderSizeOffset + TEXTURE_HEADER_SIZE_BYTE_SIZE
         ));
 
-        headerDataStream.read(reinterpret_cast<char*>(&_textureHeaderSize), 2u);
+        headerDataStream.read(reinterpret_cast<char*>(&_textureHeaderSize), TEXTURE_HEADER_SIZE_BYTE_SIZE);
     }
 
-    auto textureHeaderOffset = _headerSize + _dependencySize + 2;
+    auto textureHeaderOffset = _headerSize + _dependencySize + TEXTURE_HEADER_SIZE_BYTE_SIZE;
     auto textureBlobOffset = textureHeaderOffset + _textureHeaderSize;
 
     typedef msgpack::type::tuple<
@@ -212,6 +215,10 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
     msgpack::type::tuple<int, std::string> deserializedTexture;
     unpack(deserializedTexture, data, data.size());
 
+    auto parsingOptions = options->parserFunction()
+        ? options->clone()->parserFunction(nullptr)
+        : options;
+
     auto imageFormat = static_cast<ImageFormat>(deserializedTexture.get<0>());
 
     auto parser = AbstractParser::Ptr();
@@ -219,7 +226,11 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
     switch (imageFormat)
     {
     case ImageFormat::PNG:
-        parser = PNGParser::create();
+        parser = parsingOptions->getParser("png");
+        break;
+
+    case ImageFormat::JPEG:
+        parser = parsingOptions->getParser("jpg");
         break;
 
     default:
@@ -229,7 +240,7 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
     parser->parse(
         fileName,
         fileName,
-        options,
+        parsingOptions,
         std::vector<unsigned char>(deserializedTexture.get<1>().begin(), deserializedTexture.get<1>().end()),
         assetLibrary
     );

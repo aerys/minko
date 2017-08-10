@@ -46,7 +46,8 @@ namespace minko
 			typedef std::function<AbsParserPtr(void)>                               ParserHandler;
 			typedef std::function<AbsProtocolPtr(void)>		                        ProtocolHandler;
 			typedef Hash<render::TextureFormat>										TextureFormatHash;
-			typedef std::unordered_set<render::TextureFormat, TextureFormatHash>	TextureFormatSet;
+            typedef std::unordered_set<render::TextureFormat, TextureFormatHash>	TextureFormatSet;
+            typedef std::shared_ptr<AbstractCache>                                  AbstractCachePtr;
 
 		public:
 			typedef std::shared_ptr<Options>													Ptr;
@@ -62,6 +63,7 @@ namespace minko
             typedef std::function<render::TextureFormat(const TextureFormatSet&)>				TextureFormatFunction;
             typedef std::function<void(NodePtr, const std::string&, const std::string&)> 		AttributeFunction;
             typedef std::function<bool(const std::string&)> 		                            PreventLoadingFunction;
+            typedef std::function<bool(const std::string&, const Error&, int)>                  RetryOnErrorFunction;
 
             enum class FileStatus
             {
@@ -114,10 +116,13 @@ namespace minko
             TextureFormatFunction                                       _textureFormatFunction;
             AttributeFunction                                           _attributeFunction;
             FileStatusFunction                                          _fileStatusFunction;
-            PreventLoadingFunction                                        _preventLoadingFunction;
+            PreventLoadingFunction                                      _preventLoadingFunction;
+            RetryOnErrorFunction                                        _retryOnErrorFunction;
             int                                                         _seekingOffset;
             int                                                         _seekedLength;
-
+            AbstractCachePtr                                            _cache;
+            bool                                                        _buffered;
+            
             static std::unordered_map<
                 Flyweight<std::string>,
                 ProtocolHandler
@@ -743,6 +748,22 @@ namespace minko
             }
 
             inline
+            const RetryOnErrorFunction&
+            retryOnErrorFunction() const
+            {
+                return _retryOnErrorFunction;
+            }
+
+            inline
+            Ptr
+            retryOnErrorFunction(const RetryOnErrorFunction& func)
+            {
+                _retryOnErrorFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
             int
 			seekingOffset() const
 			{
@@ -770,6 +791,38 @@ namespace minko
 			seekedLength(int value)
 			{
 				_seekedLength = value;
+
+				return shared_from_this();
+			}
+
+            inline
+			AbstractCachePtr
+			cache() const
+			{
+				return _cache;
+			}
+
+			inline
+			Ptr
+			cache(AbstractCachePtr value)
+			{
+                _cache = value;
+
+				return shared_from_this();
+			}
+
+            inline
+			bool
+			buffered() const
+			{
+				return _buffered;
+			}
+
+			inline
+			Ptr
+			buffered(bool value)
+			{
+                _buffered = value;
 
 				return shared_from_this();
 			}

@@ -37,7 +37,7 @@ APKProtocol::APKProtocol()
 void
 APKProtocol::load()
 {
-    auto resolvedFilename = this->resolvedFilename();
+    auto resolvedFilename = File::canonizeFilename(this->resolvedFilename());
 
     auto options = _options;
 
@@ -138,7 +138,7 @@ APKProtocol::load()
 bool
 APKProtocol::fileExists(const std::string& filename)
 {
-    auto resolvedFilename = filename;
+    auto resolvedFilename = File::canonizeFilename(filename);
 
     auto protocolPrefixPosition = resolvedFilename.find("://");
 

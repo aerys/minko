@@ -107,6 +107,13 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
     auto surfaceTarget = surface->target();
     auto material = surface->material();
 
+    // Add surface to cache of material to surfaces.
+
+    auto materialToSurfacesIt = _materialToSurfaces.emplace(material->data(), std::vector<Surface::Ptr>());
+    auto& surfaces = materialToSurfacesIt.first->second;
+    if (std::find(surfaces.begin(), surfaces.end(), surface) == surfaces.end())
+        surfaces.push_back(surface);
+
     auto textures = std::unordered_map<AbstractTexture::Ptr, Flyweight<std::string>>();
 
     for (const auto& propertyNameToValuePair : material->data()->values())
@@ -123,10 +130,10 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         textures.insert(std::make_pair(texture, propertyName));
     }
 
-    for (auto textureToTextureNamePair : textures)
+    for (auto textureToTextureTypePair : textures)
     {
-        auto texture = textureToTextureNamePair.first;
-        const auto textureName = *textureToTextureNamePair.second;
+        auto texture = textureToTextureTypePair.first;
+        const auto textureType = *textureToTextureTypePair.second;
 
         auto masterLodScheduler = this->masterLodScheduler();
 
@@ -137,71 +144,10 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
 
         auto resourceIt = _textureResources.find(textureData->uuid());
 
-        TextureResourceInfo* resource = nullptr;
-
         if (resourceIt == _textureResources.end())
         {
-            auto& resourceBase = registerResource(textureData);
-
-            auto newResourceIt = _textureResources.insert(std::make_pair(
-                resourceBase.uuid(),
-                TextureResourceInfo()
-            ));
-
-            auto& newResource = newResourceIt.first->second;
-
-            newResource.base = &resourceBase;
-
-            resource = &newResource;
-
-            resource->texture = texture;
-
-            const auto& lodDependencyProperties =
-                this->masterLodScheduler()->streamingOptions()->streamedTextureLodDependencyProperties();
-
-            for (const auto& propertyName : lodDependencyProperties)
-            {
-                resource->propertyChangedSlots.insert(std::make_pair(
-                    surfaceTarget,
-                    surfaceTarget->data().propertyChanged(propertyName).connect(
-                        [=](Store&          	store,
-                            Provider::Ptr       provider,
-                            const data::Provider::PropertyName&)
-                        {
-                            invalidateLodRequirement(*resource->base);
-                        }
-                    )
-                ));
-            }
-
-            material->data()->set(
-                textureName + std::string("MaxAvailableLod"),
-                static_cast<float>(lodToMipLevel(
-                    DEFAULT_LOD,
-                    resource->texture->width(),
-                    resource->texture->height())
-                )
-            );
-
-            material->data()->set(
-                textureName + std::string("Size"),
-                math::vec2(texture->width(), texture->height())
-            );
-
-            material->data()->set(
-                textureName + std::string("LodEnabled"),
-                true
-            );
-
-            resource->textureType = textureName;
-            resource->materialDataSet.insert(material->data());
-
-            resource->maxLod = textureData->get<int>("maxLod");
-            resource->activeLod = std::max(resource->activeLod, DEFAULT_LOD);
-        }
-        else
-        {
-            resource = &resourceIt->second;
+            textureRegistered(textureData);
+            textureReady(resourceIt->second, textureData, { material->data() }, textureType, texture);
         }
     }
 }
@@ -211,8 +157,6 @@ TextureLodScheduler::textureRegistered(ProviderPtr data)
 {
     auto resourceIt = _textureResources.find(data->uuid());
 
-    TextureResourceInfo* resource = nullptr;
-
     if (resourceIt == _textureResources.end())
     {
         auto& resourceBase = registerResource(data);
@@ -221,16 +165,10 @@ TextureLodScheduler::textureRegistered(ProviderPtr data)
             resourceBase.uuid(),
             TextureResourceInfo()
         ));
-    
+
         auto& newResource = newResourceIt.first->second;
 
         newResource.base = &resourceBase;
-
-        resource = &newResource;
-    }
-    else
-    {
-        resource = &resourceIt->second;
     }
 }
 
@@ -245,6 +183,7 @@ TextureLodScheduler::textureReady(TextureResourceInfo&                      reso
     resource.textureType = *textureType;
 
     resource.maxLod = data->get<int>("maxLod");
+    resource.activeLod = std::max(resource.activeLod, DEFAULT_LOD);
 
     for (auto materialData : materialDataSet)
     {
@@ -268,7 +207,76 @@ TextureLodScheduler::textureReady(TextureResourceInfo&                      reso
             *textureType + std::string("LodEnabled"),
             true
         );
+
+        if (masterLodScheduler()->streamingOptions()->streamedTextureLodBlendingEnabled())
+        {
+            materialData->set(*textureType + "LodBlendingEnabled", true);
+            materialData->set(*textureType + "LodBlendingStartLod", 0.f);
+            materialData->set(*textureType + "LodBlendingStartTime", 0.f);
+        }
     }
+
+    // Retrieve surfaces related to the texture.
+
+    for (auto materialData : materialDataSet)
+    {
+        const auto materialToSurfacesIt = _materialToSurfaces.find(materialData);
+
+        if (materialToSurfacesIt == _materialToSurfaces.end())
+            continue;
+
+        for (auto surface : materialToSurfacesIt->second)
+            if (std::find(resource.surfaces.begin(), resource.surfaces.end(), surface) == resource.surfaces.end())
+                resource.surfaces.push_back(surface);
+    }
+
+    const auto& lodDependencyProperties =
+        this->masterLodScheduler()->streamingOptions()->streamedTextureLodDependencyProperties();
+
+    for (auto surface : resource.surfaces)
+    {
+        auto surfaceTarget = surface->target();
+
+        for (const auto& propertyName : lodDependencyProperties)
+        {
+            resource.propertyChangedSlots.insert(std::make_pair(
+                surfaceTarget,
+                surfaceTarget->data().propertyChanged(propertyName).connect(
+                    [=](Store&          	store,
+                        Provider::Ptr       provider,
+                        const data::Provider::PropertyName&)
+                    {
+                        invalidateLodRequirement(*resource.base);
+                    }
+                )
+            ));
+        }
+
+        auto resourcePtr = &resource;
+
+        resource.layoutChangedSlots.emplace(surfaceTarget, surfaceTarget->layoutChanged().connect(
+            [this, resourcePtr](Node::Ptr node, Node::Ptr target)
+            {
+                if (node != target)
+                    return;
+
+                layoutChanged(*resourcePtr);
+            }
+        ));
+
+        resource.layoutMaskChangedSlots.emplace(surface, surface->layoutMaskChanged().connect(
+            [this, resourcePtr](AbstractComponent::Ptr component)
+            {
+                layoutChanged(*resourcePtr);
+            }
+        ));
+    }
+}
+
+void
+TextureLodScheduler::layoutChanged(TextureResourceInfo& resource)
+{
+    invalidateLodRequirement(*resource.base);
 }
 
 void
@@ -329,19 +337,38 @@ TextureLodScheduler::lodInfo(ResourceInfo&  resource,
 
     const auto previousActiveLod = textureResource.activeLod;
 
-    const auto requiredLod = computeRequiredLod(textureResource, nullptr);
+    auto maxRequiredLod = 0;
+    auto maxPriority = 0.f;
+    auto maxRequiredLodSurface = Surface::Ptr();
 
-    const auto activeLod = std::min(requiredLod, textureResource.maxAvailableLod);
+    static const auto emptySurfaces = std::vector<Surface::Ptr>{ nullptr };
+    const auto& surfaces = textureResource.surfaces.empty()
+        ? emptySurfaces
+        : textureResource.surfaces;
+
+    for (auto surface : surfaces)
+    {
+        const auto requiredLod = computeRequiredLod(textureResource, surface);
+        const auto priority = computeLodPriority(textureResource, surface, requiredLod, textureResource.activeLod, time);
+
+        if (requiredLod > maxRequiredLod)
+            maxRequiredLodSurface = surface;
+
+        maxRequiredLod = std::max(requiredLod, maxRequiredLod);
+        maxPriority = std::max(priority, maxPriority);
+    }
+
+    lodInfo.requiredLod = maxRequiredLod;
+    lodInfo.priority = maxPriority;
+
+    const auto activeLod = std::min(maxRequiredLod, textureResource.maxAvailableLod);
 
     if (previousActiveLod != activeLod)
     {
         textureResource.activeLod = activeLod;
 
-        activeLodChanged(textureResource, nullptr, previousActiveLod, activeLod);
+        activeLodChanged(textureResource, maxRequiredLodSurface, previousActiveLod, activeLod, time);
     }
-
-    lodInfo.requiredLod = requiredLod;
-    lodInfo.priority = computeLodPriority(textureResource, nullptr, requiredLod, activeLod, time);
 
     return lodInfo;
 }
@@ -350,7 +377,8 @@ void
 TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
                                       Surface::Ptr           surface,
                                       int                    previousLod,
-                                      int                    lod)
+                                      int                    lod,
+                                      float                  time)
 {
     auto textureData = resource.base->data;
 
@@ -388,6 +416,31 @@ TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
 */
 
         materialData->set(maxAvailableLodPropertyName, mipLevel);
+
+        if (masterLodScheduler()->streamingOptions()->streamedTextureLodBlendingEnabled())
+        {
+            auto lodBlendingActive = false;
+
+            if (materialData->hasProperty(textureType + "LodBlendingStartLod"))
+            {
+                const auto oldLodBlendingStartLod = materialData->get<float>(textureType + "LodBlendingStartLod");
+                const auto oldLodBlendingStartTime = materialData->get<float>(textureType + "LodBlendingStartTime");
+
+                const auto lodBlendingDuration = masterLodScheduler()->streamingOptions()->streamedTextureLodBlendingPeriod() *
+                    (lod - previousLod);
+
+                lodBlendingActive = (time - oldLodBlendingStartTime) < lodBlendingDuration;
+            }
+
+            if (!lodBlendingActive)
+            {
+                materialData->set(
+                    textureType + "LodBlendingStartLod",
+                    float(lodToMipLevel(previousLod, resource.texture->width(), resource.texture->height()))
+                );
+                materialData->set(textureType + "LodBlendingStartTime", time);
+            }
+        }
     }
 }
 

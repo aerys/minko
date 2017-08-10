@@ -31,29 +31,11 @@ namespace minko
         public:
             typedef std::shared_ptr<StreamedTextureWriterPreprocessor>  Ptr;
 
-            struct Options
-            {
-                static const auto none                  = 0u;
-
-                static const auto computeVertexColor    = 1u << 0;
-                static const auto smoothVertexColor     = 1u << 1;
-
-                static const auto all                   = computeVertexColor | smoothVertexColor;
-
-                unsigned int flags;
-
-                Options() :
-                    flags(none)
-                {
-                }
-            };
-
         private:
             typedef std::shared_ptr<scene::Node>                                NodePtr;
             typedef std::shared_ptr<AssetLibrary>                               AssetLibraryPtr;
 
         private:
-            Options                     _options;
             StatusChangedSignal::Ptr    _statusChanged;
 
         public:
@@ -67,13 +49,6 @@ namespace minko
                 auto instance = Ptr(new StreamedTextureWriterPreprocessor());
 
                 return instance;
-            }
-
-            inline
-            void
-            options(const Options& options)
-            {
-                _options = options;
             }
 
             inline
@@ -95,23 +70,6 @@ namespace minko
 
         private:
             StreamedTextureWriterPreprocessor();
-
-            void
-            computeVertexColorAttributes(NodePtr            node,
-                                         AssetLibraryPtr    assetLibrary);
-
-            void
-            computeVertexColorAttributes(std::shared_ptr<geometry::Geometry>    geometry,
-                                         std::shared_ptr<material::Material>    material,
-                                         AssetLibraryPtr                        assetLibrary);
-
-            void
-            sampleColor(unsigned int                       width,
-                        unsigned int                       height,
-                        unsigned int                       numComponents,
-                        const std::vector<unsigned char>&  textureData,
-                        const math::vec2&                  uv,
-                        math::vec4&                        color);
         };
     }
 }

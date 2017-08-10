@@ -105,6 +105,10 @@ namespace minko
         resumed() = 0;
 
         virtual
+        Signal<AbstractCanvas::Ptr, float, float, bool>::Ptr
+        enterFrame() = 0;
+
+        virtual
         int
         getJoystickAxis(std::shared_ptr<input::Joystick> joystick, int axis) = 0;
 
@@ -148,6 +152,14 @@ namespace minko
         virtual
         void
         desiredFramerate(float desiredFramerate) = 0;
+
+        virtual
+        float
+        desiredEventrate() = 0;
+
+        virtual
+        void
+        desiredEventrate(float desiredEventrate) = 0;
 
         static
         std::shared_ptr<AbstractCanvas>

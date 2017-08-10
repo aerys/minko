@@ -30,6 +30,70 @@ using namespace minko;
 using namespace minko::serialize;
 using namespace minko::deserialize;
 
+TEST_F(GeometrySerializerTest, Index32BitSerialization)
+{
+    const auto geometryFilename = std::string("Index32BitSerialization.geometry");
+    const auto numVertices = 256000;
+    const auto numIndices = numVertices;
+
+    auto sourceAssetLibrary = file::AssetLibrary::create(MinkoTests::canvas()->context());
+    auto exportAssetLibrary = file::AssetLibrary::create(MinkoTests::canvas()->context());
+    auto geometryWriter = file::GeometryWriter::create();
+    auto geometry = geometry::Geometry::create();
+    auto loader = file::Loader::create(exportAssetLibrary->loader());
+    loader->options(loader->options()->clone());
+
+    auto indexData = std::vector<unsigned int>(numIndices);
+    for (auto i = 0; i < indexData.size(); ++i)
+        indexData[i] = i;
+
+    geometry->indices(render::IndexBuffer::create(MinkoTests::canvas()->context(), indexData));
+
+    auto vertexData = std::vector<float>(numVertices * 3u, 0.f);
+
+    auto vertexBuffer = render::VertexBuffer::create(MinkoTests::canvas()->context(), vertexData);
+    vertexBuffer->addAttribute("position", 3u, 0u);
+
+    geometry->addVertexBuffer(vertexBuffer);
+
+    sourceAssetLibrary->geometry(geometryFilename, geometry);
+    geometryWriter->data(geometry);
+    geometryWriter->write(geometryFilename, sourceAssetLibrary, sourceAssetLibrary->loader()->options(), file::WriterOptions::create());
+
+    loader->options()
+        ->registerParser<file::GeometryParser>("geometry")
+        ->loadAsynchronously(false);
+
+    auto loaderErrorSlot = loader->error()->connect([](file::Loader::Ptr loader, const file::Error& error)
+        {
+            ASSERT_TRUE(false);
+        }
+    );
+
+    auto loaderCompleteSlot = loader->complete()->connect([&](file::Loader::Ptr loader)
+        {
+            auto parsedGeometry = exportAssetLibrary->geometry(geometryFilename);
+
+            ASSERT_NE(parsedGeometry, nullptr);
+            ASSERT_EQ(parsedGeometry->numVertices(), numVertices);
+            ASSERT_NE(parsedGeometry->indices(), nullptr);
+            ASSERT_EQ(parsedGeometry->indices()->numIndices(), numIndices);
+            ASSERT_NE(parsedGeometry->indices()->dataPointer<unsigned int>(), nullptr);
+
+            const auto& parsedIndexData = *parsedGeometry->indices()->dataPointer<unsigned int>();
+
+            for (auto i = 0; i < parsedIndexData.size(); ++i)
+                ASSERT_EQ(parsedIndexData[i], i);
+        }
+    );
+
+    loader
+        ->queue(geometryFilename)
+        ->load();
+
+    ASSERT_NE(exportAssetLibrary->geometry(geometryFilename), nullptr);
+}
+
 /*
 TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 {

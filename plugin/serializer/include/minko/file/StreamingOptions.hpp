@@ -114,7 +114,11 @@ namespace minko
 
             bool                                                    _createStreamedTextureOnTheFly;
 
-            float                                                   _popGeometryBlendingRange;
+            bool                                                    _popGeometryLodBlendingEnabled;
+            float                                                   _popGeometryLodBlendingPeriod;
+            int                                                     _popGeometryLodBlendingMinPrecisionLevel;
+            bool                                                    _streamedTextureLodBlendingEnabled;
+            float                                                   _streamedTextureLodBlendingPeriod;
 
             int                                                     _maxNumActiveParsers;
 
@@ -443,17 +447,81 @@ namespace minko
             }
 
             inline
-            float
-            popGeometryBlendingRange() const
+            bool
+            popGeometryLodBlendingEnabled() const
             {
-                return _popGeometryBlendingRange;
+                return _popGeometryLodBlendingEnabled;
             }
 
             inline
             Ptr
-            popGeometryBlendingRange(float value)
+            popGeometryLodBlendingEnabled(bool value)
             {
-                _popGeometryBlendingRange = math::clamp(value, 0.f, 1.f);
+                _popGeometryLodBlendingEnabled = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            float
+            popGeometryLodBlendingPeriod() const
+            {
+                return _popGeometryLodBlendingPeriod;
+            }
+
+            inline
+            Ptr
+            popGeometryLodBlendingPeriod(float value)
+            {
+                _popGeometryLodBlendingPeriod = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            int
+            popGeometryLodBlendingMinPrecisionLevel() const
+            {
+                return _popGeometryLodBlendingMinPrecisionLevel;
+            }
+
+            inline
+            Ptr
+            popGeometryLodBlendingMinPrecisionLevel(int value)
+            {
+                _popGeometryLodBlendingMinPrecisionLevel = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            streamedTextureLodBlendingEnabled() const
+            {
+                return _streamedTextureLodBlendingEnabled;
+            }
+
+            inline
+            Ptr
+            streamedTextureLodBlendingEnabled(bool value)
+            {
+                _streamedTextureLodBlendingEnabled = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            float
+            streamedTextureLodBlendingPeriod() const
+            {
+                return _streamedTextureLodBlendingPeriod;
+            }
+
+            inline
+            Ptr
+            streamedTextureLodBlendingPeriod(float value)
+            {
+                _streamedTextureLodBlendingPeriod = value;
 
                 return shared_from_this();
             }

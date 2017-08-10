@@ -431,7 +431,7 @@ TEST_F(DirectionalLightTest, OneCascadeNumDeferredPasses)
     auto fx = MinkoTests::loadEffect("effect/Basic.effect");
     auto renderer = Renderer::create();
     auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
         ->addComponent(renderer)
         ->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
@@ -483,7 +483,7 @@ TEST_F(DirectionalLightTest, TwoCascadesNumDeferredPasses)
     auto fx = MinkoTests::loadEffect("effect/Basic.effect");
     auto renderer = Renderer::create();
     auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
         ->addComponent(renderer)
         ->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
@@ -540,7 +540,7 @@ TEST_F(DirectionalLightTest, ThreeCascadesNumDeferredPasses)
     auto fx = MinkoTests::loadEffect("effect/Basic.effect");
     auto renderer = Renderer::create();
     auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
         ->addComponent(renderer)
         ->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
@@ -602,7 +602,7 @@ TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
     auto fx = MinkoTests::loadEffect("effect/Basic.effect");
     auto renderer = Renderer::create();
     auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
         ->addComponent(renderer)
         ->addComponent(ShadowMappingTechnique::create(ShadowMappingTechnique::Technique::ESM));
@@ -695,7 +695,7 @@ TEST_F(DirectionalLightTest, RenderersAndDrawCalls)
     auto fx = MinkoTests::loadEffect("effect/Phong.effect");
     auto renderer = Renderer::create();
     auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CAST_SHADOW)
-        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
         ->addComponent(SceneManager::create(MinkoTests::canvas()))
         ->addComponent(renderer);
 

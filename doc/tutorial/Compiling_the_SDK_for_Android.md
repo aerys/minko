@@ -1,6 +1,6 @@
 This tutorial will guide through the few steps to compile the Minko SDK **for Android** using the command line. Compiling the SDK for Android should work on Windows, OS X, Linux.
 
-To target Android, the Android [SDK](http://developer.android.com/sdk/index.html) and [NDK](https://developer.android.com/tools/sdk/ndk/index.html) must be installed. Both are free and available on all supported platforms. However, on Windows, **Cygwin** is an additional requirement. Though you can follow Google's [instructions](http://www.kandroid.org/ndk/docs/STANDALONE-TOOLCHAIN.html) regarding the installation of the toolchain, all necessary steps will be detailed here.
+To target Android, the Android [SDK](http://developer.android.com/sdk/index.html) and [NDK](https://developer.android.com/tools/sdk/ndk/index.html) must be installed. Both are free and available on all supported platforms. However, on Windows, **Cygwin** is an additional requirement. Though you can follow Google's [instructions](https://developer.android.com/ndk/guides/standalone_toolchain.html) regarding the installation of the toolchain, all necessary steps will be detailed here.
 
 Step 1: Get the sources
 -----------------------
@@ -34,7 +34,7 @@ When it is back, you will see that **Default** changes to **Install** for the **
 
 ### Installing the Android NDK
 
--   Download the latest [Android NDK](https://developer.android.com/tools/sdk/ndk/index.html) package
+-   Download the [Android NDK (r10d)](http://dl.google.com/android/ndk/android-ndk-r10d-windows-x86.exe) package
 -   Extract the archive to `${ANDROID_HOME}/ndk`
 -   Run the following script: `script/install_jni.sh`
 
@@ -102,8 +102,7 @@ Last step for build in release for Android is to make sure that you have a binar
 
 For further information, please follow the official [Android documentation](http://developer.android.com/tools/publishing/app-signing.html#signing-manually).
 
-
-Step 5: Compile the SDK
+Step 6: Compile the SDK
 -----------------------
 
 Now, you should have a bunch of Makefiles. You can build the solution using the following command line:
@@ -124,7 +123,7 @@ $ make -j4 config=android_release
 
 It should speed up the compilation process significantly.
 
-Step 6 (optional): Re-compile SDL2
+Step 7 (optional): Re-compile SDL2
 ----------------------------------
 
 If you get undefined reference errors for SDL2 functions at linkage when building the SDK's examples/tutorials, it means you might have to rebuild SDL2 for your NDK/platform. By default, Minko builds for **ARMv7**. If you need to support another architecture, you will have to rebuild SDL2.
@@ -137,7 +136,7 @@ script/premake5.sh gmake --rebuild-sdl
 
 Then try the step 4 again. Your solution should contain a new SDL2 project that will be built using your version of the Android NDK and you should not get any linkage error.
 
-Step 7: Enjoy!
+Step 8: Enjoy!
 --------------
 
 Now use your SDK to [Create a new application](../tutorial/Create_a_new_application.md).

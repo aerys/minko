@@ -77,7 +77,10 @@ Options::Options() :
     _textureFormatFunction(),
     _attributeFunction(),
     _fileStatusFunction(),
-    _preventLoadingFunction()
+    _preventLoadingFunction(),
+    _retryOnErrorFunction(),
+    _cache(nullptr),
+    _buffered(false)
 {
     auto binaryDir = File::getBinaryDirectory();
 
@@ -133,9 +136,12 @@ Options::Options(const Options& copy) :
     _attributeFunction(copy._attributeFunction),
     _fileStatusFunction(copy._fileStatusFunction),
     _preventLoadingFunction(copy._preventLoadingFunction),
+    _retryOnErrorFunction(copy._retryOnErrorFunction),
     _loadAsynchronously(copy._loadAsynchronously),
     _seekingOffset(copy._seekingOffset),
-    _seekedLength(copy._seekedLength)
+    _seekedLength(copy._seekedLength),
+    _cache(copy._cache),
+    _buffered(copy._buffered)
 {
 }
 
@@ -348,12 +354,16 @@ Options::initializeDefaultFunctions()
     _parserFunction = nullptr;
 
     if (!_preventLoadingFunction)
-    {
         _preventLoadingFunction = [](const std::string& filename) -> bool
         {
             return false;
         };
-    }
+
+    if (!_retryOnErrorFunction)
+        _retryOnErrorFunction = [](const std::string& filename, const Error& error, int numAttempts) -> bool
+        {
+            return false;
+        };
 }
 
 void

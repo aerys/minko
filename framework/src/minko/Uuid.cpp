@@ -17,6 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <iomanip>
+
 #include "minko/Rand.hpp"
 #include "minko/Uuid.hpp"
 
@@ -36,7 +38,7 @@ Uuid::s4()
     int rand = Rand::rand();
 
     std::ostringstream os;
-    os << std::hex << rand;
+    os << std::setw(4) << std::setfill('0') << std::hex << rand;
 
     return os.str().substr(0, 4);
 }
