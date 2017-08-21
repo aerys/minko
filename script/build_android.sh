@@ -46,7 +46,9 @@ ZIPALIGN="${ANDROID_HOME}/tools/zipalign"
 	exit 1
 }
 
-VERSION_CODE="1"
+if [ -z "${VERSION_CODE}" ]; then
+    VERSION_CODE="1"
+fi
 
 if ! [ -z "${BUILD_NUMBER}" ]; then
     VERSION_CODE="${BUILD_NUMBER}"
