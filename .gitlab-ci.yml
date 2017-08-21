@@ -1,14 +1,16 @@
 stages:
   - build
   - test
+  - archive
   - trigger
 
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
+    expire_in: 1 hr
     paths:
       - bin
-      - script/premake5.sh
-      - script/premake5.bat
+      - script
       - module
       - framework/include
       - framework/bin
@@ -21,11 +23,33 @@ stages:
       - plugin/*/asset
       - plugin/*/premake5.lua
       - plugin/*/plugin.lua
+      - plugin/html-overlay/src/android/tasks/*.java
+      - plugin/html-overlay/src/android/webview/*.java
+      - plugin/sensors/src/android/*.java
+      - plugin/nodejs-worker/src/minko/file/*.java
+      - plugin/video-camera/src/minko/video/*.java
       - skeleton
+      - template
       - premake5.lua
       - sdk.lua
       - LICENSE.md
       - README.md
+
+.archive_template: &archive_template
+  stage: archive
+  image: python:3.6
+  only:
+    - master
+    - dev
+    - /^client\/.*$/
+    - feature/gitlab-ci
+    - tags
+  script:
+    - pip install b2
+    - cd "${CI_PROJECT_DIR}"
+    - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
+    - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
+    - b2 upload_file --noProgress --info CI_COMMIT_SHA=${CI_COMMIT_SHA} "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE_NAME}" "${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}/${ARCHIVE_NAME}"
 
 build:html5:
   <<: *build_with_artifacts_template
@@ -43,9 +67,9 @@ build:android:
     # https://github.com/aerys/minko/blob/master/doc/tutorial/Compiling_the_SDK_for_Android.md
     - mkdir -p /opt/android-sdk-linux/ndk
     - ln -s /opt/android-ndk-r13b /opt/android-sdk-linux/ndk/android-ndk-r13b
-    - ln -s /opt/android-sdk-linux/build-tools/25.0.2/zipalign /opt/android-sdk-linux/zipalign
+    - ln -s /opt/android-sdk-linux/build-tools/25.0.2/zipalign /opt/android-sdk-linux/tools/zipalign
     - ./script/install_jni.sh
-    - ./script/solution_gmake_min.sh
+    - ./script/solution_gmake_min.sh --no-glsl-optimizer --with-nodejs-worker
     - make -j$(nproc) config=android_release
 
 build:linux:
@@ -53,7 +77,7 @@ build:linux:
   stage: build
   image: gcc:4.9.4
   script:
-    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev p7zip-full
     - ./script/solution_gmake_min.sh
     - make -j$(nproc) config=linux64_release
 
@@ -67,23 +91,64 @@ build:linux_offscreen:
     - make -j$(nproc) config=linux64_release
 
 test:linux_offscreen:
-    stage: test
-    image: gcc:4.9.4
-    dependencies:
-      - build:linux_offscreen
-    script:
-      - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
-      - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --no-glsl-optimizer
-      - make -j$(nproc) config=linux64_release -C test
-      - ./test/bin/linux64/release/minko-test
+  stage: test
+  image: gcc:4.9.4
+  dependencies:
+    - build:linux_offscreen
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
+    when: on_failure
+    paths:
+      - test
+  script:
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+    - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --no-glsl-optimizer
+    - make -j$(nproc) config=linux64_release -C test
+    - ./test/bin/linux64/release/minko-test
 
-trigger:linux_offscreen:
-    stage: trigger
-    dependencies: []
-    script:
-      # smartshape-converter
-      - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/3769175/trigger/pipeline
-    only:
-        - master
-        - dev
-        - /^client\/.*$/
+archive:linux_offscreen:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux_offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
+  dependencies:
+    - build:linux_offscreen
+
+archive:android:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-android-${CI_COMMIT_REF_SLUG}.tar.bz2
+  dependencies:
+    - build:android
+
+archive:html5:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-html5-${CI_COMMIT_REF_SLUG}.tar.bz2
+  dependencies:
+    - build:html5
+
+archive:linux:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux-${CI_COMMIT_REF_SLUG}.tar.bz2
+  dependencies:
+    - build:linux
+
+trigger:
+  stage: trigger
+  variables:
+    GIT_STRATEGY: none
+  dependencies: []
+  only:
+      - master
+      - dev
+      - /^client\/.*$/
+      - feature/gitlab-ci
+      - tags
+  script:
+    - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/3769175/trigger/pipeline
+    - curl --request POST --form "token=${SMARTSHAPE_APP_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://gitlab.com/api/v4/projects/3809722/trigger/pipeline
