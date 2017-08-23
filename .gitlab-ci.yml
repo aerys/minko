@@ -70,7 +70,7 @@ build:android:
     - ln -s /opt/android-sdk-linux/build-tools/25.0.2/zipalign /opt/android-sdk-linux/tools/zipalign
     - ./script/install_jni.sh
     - ./script/solution_gmake_min.sh --no-glsl-optimizer --with-nodejs-worker
-    - make -j$(nproc) config=android_release
+    - make config=android_release
 
 build:linux:
   <<: *build_with_artifacts_template
