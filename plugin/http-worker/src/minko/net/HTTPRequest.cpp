@@ -17,6 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <iomanip>
+
 #include "minko/log/Logger.hpp"
 #include "minko/net/HTTPRequest.hpp"
 
@@ -83,11 +85,11 @@ HTTPRequest::HTTPRequest(const std::string& url,
 
 static
 std::string
-encodeUrl(const std::string& url)
+urlEscape(const std::string& url)
 {
     static const auto authorizedCharacters = std::set<char>
     {
-         '/', ':', '~', '-', '.', '_', '?', '&', '='
+        '/', ':', '~', '-', '.', '_', '?', '&', '='
     };
 
     std::stringstream encodedUrlStream;
@@ -111,7 +113,10 @@ encodeUrl(const std::string& url)
         }
         else
         {
-            encodedUrlStream << "%" << std::hex << static_cast<int>(c);
+            encodedUrlStream << std::hex;
+            encodedUrlStream << std::uppercase;
+            encodedUrlStream << '%' << std::setw(2) << int((unsigned char) c);
+            encodedUrlStream << std::nouppercase;
         }
     }
 
@@ -134,9 +139,9 @@ createCurl(const std::string&                                   url,
     if (!curl)
         return nullptr;
 
-    const auto encodedUrl = encodeUrl(url);
+    const auto escapedUrl = urlEscape(url);
 
-    curl_easy_setopt(curl, CURLOPT_URL, encodedUrl.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, escapedUrl.c_str());
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verifyPeer ? 1L : 0L);
     if (!verifyPeer)
