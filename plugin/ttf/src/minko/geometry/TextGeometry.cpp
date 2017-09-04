@@ -294,7 +294,11 @@ getTextSize(const Font& font, const std::string& text, float scale)
         );
         const auto max = min + math::vec3(w, h, 0.f);
 
-        size.x += (fontCharacter.advance >> 6) * scale;
+        if (i < text.size() - 1)
+            size.x += (fontCharacter.advance >> 6) * scale;
+        else
+            size.x += fontCharacter.bearing.x * scale;
+
         size.y = math::max(size.y, (max - min).y);
     }
 
