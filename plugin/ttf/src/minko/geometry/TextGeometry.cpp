@@ -287,17 +287,20 @@ getTextSize(const Font& font, const std::string& text, float scale)
 
         const auto w = fontCharacter.size.x * scale;
         const auto h = fontCharacter.size.y * scale;
+        const auto horizontalBearing = i == 0 ? 0.f : fontCharacter.bearing.x;
         const auto min = math::vec3(
-            fontCharacter.bearing.x * scale,
+            horizontalBearing * scale,
             -(fontCharacter.size.y - fontCharacter.bearing.y) * scale,
             0.f
         );
         const auto max = min + math::vec3(w, h, 0.f);
 
-        if (i < text.size() - 1)
+        if (i == 0)
+            size.x += ((fontCharacter.advance >> 6) - fontCharacter.bearing.x) * scale;
+        else if (i < text.size() - 1)
             size.x += (fontCharacter.advance >> 6) * scale;
         else
-            size.x += fontCharacter.bearing.x * scale;
+            size.x += (fontCharacter.bearing.x + fontCharacter.size.x) * scale;
 
         size.y = math::max(size.y, (max - min).y);
     }
@@ -360,15 +363,21 @@ buildGeometry(render::AbstractContext::Ptr          context,
         );
         const auto nextUvOffset = uvOffset + math::vec2(fontCharacter.size.x, fontCharacter.size.y) / math::vec2(atlasSize.x, atlasSize.y);
 
+        // Ignore front character bearing
+        // See https://www.freetype.org/freetype2/docs/glyphs/glyphs-3.html
+        const auto horizontalBearing = i == 0 ? 0.f : fontCharacter.bearing.x;
         const auto min = positionOffset + math::vec3(
-            fontCharacter.bearing.x * scale,
+            horizontalBearing * scale,
             -(fontCharacter.size.y - fontCharacter.bearing.y) * scale,
             0.f
         );
         const auto max = min + math::vec3(w, h, 0.f);
 
         // See https://learnopengl.com/code_viewer.php?code=in-practice/text_rendering.
-        positionOffset.x += (fontCharacter.advance >> 6) * scale;
+        if (i == 0)
+            positionOffset.x += ((fontCharacter.advance >> 6) - fontCharacter.bearing.x) * scale;
+        else
+            positionOffset.x += (fontCharacter.advance >> 6) * scale;
 
         vertexData.insert(vertexData.end(), {
             min.x, min.y, 0.f, uvOffset.x, nextUvOffset.y,
