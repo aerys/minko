@@ -44,8 +44,26 @@ namespace minko
                 return _text;
             }
 
+            std::shared_ptr<render::Effect>
+            effect() const
+            {
+                return _effect;
+            }
+
+            std::shared_ptr<material::Material>
+            material() const
+            {
+                return _material;
+            }
+
+            math::vec2
+            textSize() const;
+
             Ptr
             text(const std::string& text);
+
+            Ptr
+            atlas(std::shared_ptr<render::AbstractTexture> atlas);
 
         private:
             ASCIIText() = default;

@@ -3,7 +3,8 @@ PROJECT_NAME = path.getname(os.getcwd())
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
     minko.plugin.enable("jpeg")
-	minko.plugin.enable("png")
+    minko.plugin.enable("png")
+    minko.plugin.enable("ttf")
 
 	files {
 		"src/**.hpp",

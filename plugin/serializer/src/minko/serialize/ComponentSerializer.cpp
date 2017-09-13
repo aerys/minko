@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/animation/AbstractTimeline.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/ASCIIText.hpp"
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Camera.hpp"
@@ -466,13 +467,37 @@ std::string
 ComponentSerializer::serializeMetadata(NodePtr              node,
                                        AbstractComponentPtr component,
                                        AssetLibraryPtr      assetLibrary,
-                                       DependencyPtr 	    dependencies)
+                                       DependencyPtr        dependencies)
 {
-    auto metadata = std::dynamic_pointer_cast<component::Metadata>(component);
+    auto metadata = std::static_pointer_cast<component::Metadata>(component);
 
     std::stringstream buffer;
     msgpack::pack(buffer, metadata->data());
     msgpack::pack(buffer, (int8_t)serialize::METADATA);
+
+    return buffer.str();
+}
+
+std::string
+ComponentSerializer::serializeASCIIText(NodePtr              node,
+                                        AbstractComponentPtr component,
+                                        AssetLibraryPtr      assetLibrary,
+                                        DependencyPtr        dependencies)
+{
+    auto text = std::static_pointer_cast<component::ASCIIText>(component);
+
+	file::DependencyId materialId = text->material() ? dependencies->registerDependency(text->material()) : file::DependencyId(0);
+	file::DependencyId effectId = text->effect() ? dependencies->registerDependency(text->effect()) : file::DependencyId(0);
+
+	msgpack::type::tuple<std::string, file::DependencyId, file::DependencyId> src(
+        text->text(),
+		materialId,
+		effectId
+    );
+
+    std::stringstream buffer;
+    msgpack::pack(buffer, text->text());
+    msgpack::pack(buffer, (int8_t)serialize::ASCII_TEXT);
 
     return buffer.str();
 }

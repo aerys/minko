@@ -130,12 +130,19 @@ namespace minko
                                  AssetLibraryPtr        assetLibrary,
 								 DependencyPtr 	        dependencies);
 
-			static
-			std::string
- 			serializeMetadata(NodePtr              	node,
-                              AbstractComponentPtr	component,
+            static
+            std::string
+            serializeMetadata(NodePtr               node,
+                              AbstractComponentPtr  component,
                               AssetLibraryPtr       assetLibrary,
-                              DependencyPtr 	    dependencies);
+                              DependencyPtr         dependencies);
+
+            static
+            std::string
+            serializeASCIIText(NodePtr               node,
+                               AbstractComponentPtr  component,
+                               AssetLibraryPtr       assetLibrary,
+                               DependencyPtr         dependencies);
 
 			static
 			std::string
