@@ -27,7 +27,9 @@ function minko.plugin.ttf:enable()
 
 	minko.plugin.links { "ttf" }
 
-    links { "freetype28" }
+    configuration { "windows" }
+        links { "freetype28" }
+        defines { "MINKO_PLUGIN_TTF_FREETYPE" }
 
     configuration { "windows32", "ConsoleApp or WindowedApp" }
         libdirs { minko.plugin.path("ttf") .. "/lib/freetype/lib/windows32" }
@@ -40,9 +42,6 @@ function minko.plugin.ttf:enable()
         prelinkcommands {
             minko.action.copy(minko.plugin.path("ttf") .. "/lib/freetype/lib/windows64/*.dll")
         }
-
-    configuration { "windows" }
-        defines { "MINKO_PLUGIN_TTF_FREETYPE" }
 
     configuration { "vs*" }
         linkoptions {
