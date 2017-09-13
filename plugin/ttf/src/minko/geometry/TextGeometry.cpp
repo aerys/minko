@@ -17,8 +17,10 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifdef MINKO_PLUGIN_TTF_FREETYPE
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#endif
 
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/Loader.hpp"
@@ -44,7 +46,7 @@ struct FontCharacter
 
 struct Font
 {
-    render::Texture::Ptr            atlas;
+    render::AbstractTexture::Ptr    atlas;
     std::vector<FontCharacter>      characters;
     math::uvec2                     atlasSize;
     math::uvec2                     atlasCharOffset;
@@ -54,13 +56,24 @@ static
 const std::vector<char>&
 getCharacterSet();
 
+#ifdef MINKO_PLUGIN_TTF_FREETYPE
 static
 bool
 loadFont(render::AbstractContext::Ptr context, const std::string& fontFilename, Font& font);
 
 static
 bool
-buildAtlas(Font& font);
+buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& fontFilename, float scale, unsigned int fontCharacterStride);
+
+static
+bool
+getCharacterBox(const Font&         font,
+                const std::string&  text,
+                float               scale,
+                math::ivec2&        boxMin,
+                math::ivec2&        boxMax,
+                int                 characterIndex = -1);
+#endif
 
 static
 math::vec2
@@ -83,6 +96,7 @@ TextGeometry::TextGeometry() :
 {
 }
 
+#ifdef MINKO_PLUGIN_TTF_FREETYPE
 TextGeometry::Ptr
 TextGeometry::setText(const std::string& fontFilename, const std::string& text, float scale, bool centerOrigin)
 {
@@ -102,17 +116,7 @@ TextGeometry::setText(const std::string& fontFilename, const std::string& text, 
             throw std::runtime_error(error.c_str());
         }
 
-        font.atlasSize = math::uvec2(1024);
-        font.atlasCharOffset = math::uvec2(64);
-        font.atlas = render::Texture::create(
-            _context,
-            font.atlasSize.x, font.atlasSize.y,
-            false, false, false,
-            render::TextureFormat::RGBA,
-            fontFilename
-        );
-
-        buildAtlas(font);
+        buildAtlas(font, _context, fontFilename, scale, 16u);
         font.atlas->upload();
     }
 
@@ -123,22 +127,36 @@ TextGeometry::setText(const std::string& fontFilename, const std::string& text, 
 
     return std::static_pointer_cast<TextGeometry>(shared_from_this());
 }
+#endif
 
-const std::vector<char>&
-getCharacterSet()
+TextGeometry::Ptr
+TextGeometry::setText(std::shared_ptr<render::AbstractTexture>    atlasTexture,
+                      const std::string&                          text,
+                      float                                       scale,
+                      bool                                        centerOrigin,
+                      int                                         stride)
 {
-    static auto characters = std::vector<char>();
+    if (!atlasTexture)
+        return std::static_pointer_cast<TextGeometry>(shared_from_this());
 
-    if (characters.empty())
-    {
-        characters.reserve(256);
-        for (int i = std::numeric_limits<char>::min(); i <= std::numeric_limits<char>::max(); ++i)
-            characters.push_back(static_cast<char>(i));
-    }
+    auto font = Font();
 
-    return characters;
+    for (auto c : getCharacterSet())
+        font.characters.emplace_back(FontCharacter{c});
+
+    font.atlasSize = math::uvec2(atlasTexture->originalWidth(), atlasTexture->originalHeight());
+    font.atlasCharOffset = math::uvec2(font.atlasSize) / static_cast<unsigned int>(stride);
+    font.atlas = atlasTexture;
+
+    _atlasTexture = font.atlas;
+    _textSize = getTextSize(font, text, scale);
+
+    buildGeometry(_context, shared_from_this(), text, scale, font, centerOrigin);
+
+    return std::static_pointer_cast<TextGeometry>(shared_from_this());
 }
 
+#ifdef MINKO_PLUGIN_TTF_FREETYPE
 bool
 loadFont(render::AbstractContext::Ptr context, const std::string& fontFilename, Font& font)
 {
@@ -190,12 +208,16 @@ loadFont(render::AbstractContext::Ptr context, const std::string& fontFilename, 
         const auto h = face->glyph->bitmap.rows;
         const auto textureData = std::vector<unsigned char>(face->glyph->bitmap.buffer, face->glyph->bitmap.buffer + w * h);
 
+        // See https://learnopengl.com/code_viewer.php?code=in-practice/text_rendering
+        const auto advance = static_cast<unsigned int>(face->glyph->advance.x) >> 6;
+        const auto bearing = math::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top);
+
         font.characters.emplace_back(FontCharacter{
             c,
             textureData,
-            math::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-            math::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-            static_cast<unsigned int>(face->glyph->advance.x)
+            math::ivec2(w, h),
+            bearing,
+            advance
         });
     }
 
@@ -206,11 +228,39 @@ loadFont(render::AbstractContext::Ptr context, const std::string& fontFilename, 
 }
 
 bool
-buildAtlas(Font& font)
+buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& fontFilename, float scale, unsigned int fontCharacterStride)
 {
-    const auto atlasSize = font.atlasSize;
-    const auto atlasCharOffset = font.atlasCharOffset;
     const auto& fontCharacters = font.characters;
+
+    auto fontCharacterMaxSize = math::ivec2(std::numeric_limits<int>::min());
+    auto referenceBaseLine = 0;
+    for (auto i = 0; i < fontCharacters.size(); ++i)
+    {
+        auto fontCharacterBoxMin = math::ivec2();
+        auto fontCharacterBoxMax = math::ivec2();
+        if (!getCharacterBox(font, std::string{ fontCharacters.at(i).c }, 1.f, fontCharacterBoxMin, fontCharacterBoxMax))
+            continue;
+
+        const auto fontCharacterSize = fontCharacterBoxMax - fontCharacterBoxMin;
+
+        fontCharacterMaxSize.x = math::max(fontCharacterMaxSize.x, fontCharacterSize.x);
+        fontCharacterMaxSize.y = math::max(fontCharacterMaxSize.y, fontCharacterSize.y);
+
+        referenceBaseLine = math::max(referenceBaseLine, fontCharacterBoxMin.y + fontCharacterSize.y);
+    }
+
+    font.atlasCharOffset = fontCharacterMaxSize;
+    font.atlasSize = fontCharacterStride * font.atlasCharOffset;
+    font.atlas = render::Texture::create(
+        context,
+        font.atlasSize.x, font.atlasSize.y,
+        false, false, false,
+        render::TextureFormat::RGBA,
+        fontFilename
+    );
+
+    const auto atlasCharOffset = font.atlasCharOffset;
+    const auto atlasSize = font.atlasSize;
 
     auto atlasTextureData = std::vector<unsigned char>(atlasSize.x * atlasSize.y * 4);
 
@@ -220,6 +270,13 @@ buildAtlas(Font& font)
         const auto w = fontCharacter.size.x;
         const auto h = fontCharacter.size.y;
 
+        auto fontCharacterBoxMin = math::ivec2();
+        auto fontCharacterBoxMax = math::ivec2();
+        if (!getCharacterBox(font, std::string{ fontCharacter.c }, 1.f, fontCharacterBoxMin, fontCharacterBoxMax))
+            continue;
+        const auto fontCharacterSize = fontCharacterBoxMax - fontCharacterBoxMin;
+        assert(fontCharacterSize == math::ivec2(w, h) && "Inconsistent computed character box");
+
         const auto offset = i * atlasCharOffset.x * atlasCharOffset.y * 4;
 
         auto fontCharacterData = std::vector<unsigned char>(atlasCharOffset.x * atlasCharOffset.y * 4);
@@ -228,7 +285,7 @@ buildAtlas(Font& font)
         {
             for (auto x = 0; x < w; ++x)
             {
-                const auto dstOffset = (y * atlasCharOffset.y + x) * 4;
+                const auto dstOffset = (y * atlasCharOffset.x + x) * 4;
                 const auto srcOffset = y * w + x;
                 const auto srcValue = fontCharacter.textureData.at(srcOffset);
 
@@ -241,10 +298,10 @@ buildAtlas(Font& font)
 
         const auto uDivisions = atlasSize.x / atlasCharOffset.x;
 
-        for (auto y = 0; y < atlasCharOffset.y; ++y)
+        for (auto y = 0; y < fontCharacter.size.y; ++y)
         {
-            const auto dstOffsetY = (y + (i / uDivisions) * atlasCharOffset.y);
-            const auto dstOffsetX = (i % uDivisions) * atlasCharOffset.x;
+            const auto dstOffsetY = atlasCharOffset.y - referenceBaseLine + fontCharacterBoxMin.y + y + (i / uDivisions) * atlasCharOffset.y;
+            const auto dstOffsetX = fontCharacterBoxMin.x + (i % uDivisions) * atlasCharOffset.x;
 
             const auto dstOffset = (dstOffsetY * atlasSize.x + dstOffsetX) * 4;
             const auto srcOffset = (y * atlasCharOffset.x) * 4;
@@ -258,17 +315,39 @@ buildAtlas(Font& font)
         }
     }
 
-    font.atlas->data(atlasTextureData.data());
+    auto texture = std::dynamic_pointer_cast<render::Texture>(font.atlas);
+
+    if (!texture)
+    {
+        LOG_ERROR("The atlas texture cannot be written to");
+        return false;
+    }
+
+    texture->data(atlasTextureData.data());
 
     return true;
 }
 
-math::vec2
-getTextSize(const Font& font, const std::string& text, float scale)
+bool
+getCharacterBox(const Font&         font,
+                const std::string&  text,
+                float               scale,
+                math::ivec2&        boxMin,
+                math::ivec2&        boxMax,
+                int                 characterIndex)
 {
-    auto size = math::vec2(0.f, -std::numeric_limits<float>::max());
+    boxMin = math::vec2(0.f, -std::numeric_limits<float>::max());
 
-    for (auto i = 0; i < text.size(); ++i)
+    if (characterIndex < 0)
+        characterIndex = text.size();
+
+    if (characterIndex > text.size())
+    {
+        LOG_WARNING("Character index is out of bounds");
+        return false;
+    }
+
+    for (auto i = 0; i < characterIndex; ++i)
     {
         const auto c = text.at(i);
 
@@ -285,27 +364,46 @@ getTextSize(const Font& font, const std::string& text, float scale)
 
         const auto& fontCharacter = *it;
 
-        const auto w = fontCharacter.size.x * scale;
-        const auto h = fontCharacter.size.y * scale;
-        const auto horizontalBearing = i == 0 ? 0.f : fontCharacter.bearing.x;
-        const auto min = math::vec3(
-            horizontalBearing * scale,
-            -(fontCharacter.size.y - fontCharacter.bearing.y) * scale,
-            0.f
-        );
-        const auto max = min + math::vec3(w, h, 0.f);
-
-        if (i == 0)
-            size.x += ((fontCharacter.advance >> 6) - fontCharacter.bearing.x) * scale;
-        else if (i < text.size() - 1)
-            size.x += (fontCharacter.advance >> 6) * scale;
+        if (i == 0 && characterIndex > 1)
+            boxMin.x += (fontCharacter.advance - fontCharacter.bearing.x) * scale;
+        else if (i < characterIndex - 1)
+            boxMin.x += fontCharacter.advance * scale;
         else
-            size.x += (fontCharacter.bearing.x + fontCharacter.size.x) * scale;
+        {
+            boxMin.x += fontCharacter.bearing.x * scale;
+            boxMax.x = boxMin.x + fontCharacter.size.x * scale;
 
-        size.y = math::max(size.y, (max - min).y);
+            boxMin.y = -fontCharacter.bearing.y * scale;
+            boxMax.y = boxMin.y + fontCharacter.size.y;
+        }
     }
 
-    return size;
+    return true;
+}
+#endif
+
+const std::vector<char>&
+getCharacterSet()
+{
+    static auto characters = std::vector<char>();
+
+    if (characters.empty())
+    {
+        characters.reserve(256);
+        for (int i = std::numeric_limits<char>::min(); i <= std::numeric_limits<char>::max(); ++i)
+            characters.push_back(static_cast<char>(i));
+    }
+
+    return characters;
+}
+
+math::vec2
+getTextSize(const Font& font, const std::string& text, float scale)
+{
+    return math::vec2(
+        font.atlasCharOffset.x * static_cast<float>(text.size()),
+        font.atlasCharOffset.y
+    ) * scale;
 }
 
 bool
@@ -330,8 +428,8 @@ buildGeometry(render::AbstractContext::Ptr          context,
     // Origin point is at text center
     const auto textSize = getTextSize(font, text, scale);
     auto positionOffset = centerOrigin
-		? math::vec3(-math::vec2(textSize.x, textSize.y) / 2.f, 0.f)
-		: math::vec3();
+		? -math::vec2(textSize.x, textSize.y) / 2.f
+		: math::vec2();
 
     for (auto i = 0; i < text.size(); ++i)
     {
@@ -351,9 +449,6 @@ buildGeometry(render::AbstractContext::Ptr          context,
         const auto& fontCharacter = *it;
         const auto indexOfCharacter = static_cast<unsigned int>(it - fontCharacters.begin());
 
-        const auto w = fontCharacter.size.x * scale;
-        const auto h = fontCharacter.size.y * scale;
-
         const auto uDivisions = atlasSize.x / atlasCharOffset.x;
         const auto vDivisions = atlasSize.y / atlasCharOffset.y;
 
@@ -361,23 +456,14 @@ buildGeometry(render::AbstractContext::Ptr          context,
             (indexOfCharacter % uDivisions) / static_cast<float>(uDivisions),
             (indexOfCharacter / uDivisions) / static_cast<float>(vDivisions)
         );
-        const auto nextUvOffset = uvOffset + math::vec2(fontCharacter.size.x, fontCharacter.size.y) / math::vec2(atlasSize.x, atlasSize.y);
-
-        // Ignore front character bearing
-        // See https://www.freetype.org/freetype2/docs/glyphs/glyphs-3.html
-        const auto horizontalBearing = i == 0 ? 0.f : fontCharacter.bearing.x;
-        const auto min = positionOffset + math::vec3(
-            horizontalBearing * scale,
-            -(fontCharacter.size.y - fontCharacter.bearing.y) * scale,
-            0.f
+        const auto nextUvOffset = uvOffset + math::vec2(
+            1.f / static_cast<float>(uDivisions),
+            1.f / static_cast<float>(vDivisions)
         );
-        const auto max = min + math::vec3(w, h, 0.f);
 
-        // See https://learnopengl.com/code_viewer.php?code=in-practice/text_rendering.
-        if (i == 0)
-            positionOffset.x += ((fontCharacter.advance >> 6) - fontCharacter.bearing.x) * scale;
-        else
-            positionOffset.x += (fontCharacter.advance >> 6) * scale;
+        const auto min = positionOffset;
+        const auto max = min + math::vec2(atlasCharOffset.x, atlasCharOffset.y) * scale;
+        positionOffset += math::vec2(atlasCharOffset.x, 0.f) * scale;
 
         vertexData.insert(vertexData.end(), {
             min.x, min.y, 0.f, uvOffset.x, nextUvOffset.y,

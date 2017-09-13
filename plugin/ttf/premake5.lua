@@ -14,3 +14,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
         "lib/freetype/include/freetype2",
         "lib/freetype/include"
 	}
+
+    configuration { "windows" }
+        defines { "MINKO_PLUGIN_TTF_FREETYPE" }

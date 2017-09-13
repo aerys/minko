@@ -49,8 +49,17 @@ namespace minko
                 return instance;
             }
 
+#ifdef MINKO_PLUGIN_TTF_FREETYPE
             Ptr
             setText(const std::string& fontFilename, const std::string& text, float scale, bool centerOrigin = true);
+#endif
+
+            Ptr
+            setText(std::shared_ptr<render::AbstractTexture>    atlasTexture,
+                    const std::string&                          text,
+                    float                                       scale,
+                    bool                                        centerOrigin = true,
+                    int                                         stride = 16);
 
             std::shared_ptr<render::AbstractTexture>
             atlasTexture()
