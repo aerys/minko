@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/log/Logger.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/IndexBuffer.hpp"
-#include "minko/render/Texture.hpp"
+#include "minko/render/RectangleTexture.hpp"
 #include "minko/render/VertexBuffer.hpp"
 
 using namespace minko;
@@ -251,10 +251,9 @@ buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& 
 
     font.atlasCharOffset = fontCharacterMaxSize;
     font.atlasSize = fontCharacterStride * font.atlasCharOffset;
-    font.atlas = render::Texture::create(
+    font.atlas = render::RectangleTexture::create(
         context,
         font.atlasSize.x, font.atlasSize.y,
-        false, false, false,
         render::TextureFormat::RGBA,
         fontFilename
     );
@@ -315,15 +314,15 @@ buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& 
         }
     }
 
-    auto texture = std::dynamic_pointer_cast<render::Texture>(font.atlas);
+    auto texture = std::dynamic_pointer_cast<render::RectangleTexture>(font.atlas);
 
     if (!texture)
     {
-        LOG_ERROR("The atlas texture cannot be written to");
+        LOG_ERROR("Atlas texture must be an instance of RectangleTexture");
         return false;
     }
 
-    texture->data(atlasTextureData.data());
+    texture->data(atlasTextureData.data(), font.atlasSize.x, font.atlasSize.y);
 
     return true;
 }
