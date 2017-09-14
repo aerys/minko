@@ -56,7 +56,7 @@ build:html5:
   stage: build
   image: trzeci/emscripten:sdk-tag-1.37.3-64bit
   script:
-    - ./script/solution_gmake_min.sh --no-glsl-optimizer
+    - ./script/solution_gmake_min.sh
     - make -j$(nproc) config=html5_release
 
 build:android:
@@ -69,7 +69,7 @@ build:android:
     - ln -s /opt/android-ndk-r13b /opt/android-sdk-linux/ndk/android-ndk-r13b
     - ln -s /opt/android-sdk-linux/build-tools/25.0.2/zipalign /opt/android-sdk-linux/tools/zipalign
     - ./script/install_jni.sh
-    - ./script/solution_gmake_min.sh --no-glsl-optimizer --with-nodejs-worker
+    - ./script/solution_gmake_min.sh --with-nodejs-worker
     - make config=android_release
 
 build:linux:
@@ -87,7 +87,7 @@ build:linux_offscreen:
   image: gcc:4.9.4
   script:
     - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
-    - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay --no-glsl-optimizer
+    - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay
     - make -j$(nproc) config=linux64_release
 
 test:linux_offscreen:
@@ -102,7 +102,7 @@ test:linux_offscreen:
       - test
   script:
     - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
-    - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --no-glsl-optimizer
+    - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay
     - make -j$(nproc) config=linux64_release -C test
     - ./test/bin/linux64/release/minko-test
 
