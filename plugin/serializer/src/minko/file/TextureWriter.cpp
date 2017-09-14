@@ -38,7 +38,7 @@ using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
 
-std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction, Hash<TextureFormat>> TextureWriter::_formatWriterFunctions = 
+std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction, Hash<TextureFormat>> TextureWriter::_formatWriterFunctions =
 {
     { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
@@ -47,7 +47,7 @@ std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction, Hash<Text
     { TextureFormat::RGBA_DXT1, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA_DXT3, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA_DXT5, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    
+
     { TextureFormat::RGB_ETC1, std::bind(writePvrCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
 
     { TextureFormat::RGB_PVRTC1_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGB_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
@@ -156,8 +156,8 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
         }
     }
 
-    const auto width = texture->width();
-    const auto height = texture->height();
+    const auto width = texture->originalWidth();
+    const auto height = texture->originalHeight();
 
     const auto numFaces = static_cast<unsigned char>((texture->type() == TextureType::Texture2D ? 1 : 6));
     const auto numMipmaps = static_cast<unsigned char>((generateMipmaps ? math::getp2(width) + 1 : 0));
@@ -193,8 +193,8 @@ TextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
                                         WriterOptions::Ptr      writerOptions,
                                         const std::string&      textureType)
 {
-    const auto width = texture->width();
-    const auto height = texture->height();
+    const auto width = texture->originalWidth();
+    const auto height = texture->originalHeight();
 
     auto newWidth = width;
     auto newHeight = height;
@@ -242,7 +242,7 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr    abstractTexture,
     {
         auto writer = PNGWriter::create();
 
-        writer->writeToStream(textureData, texture->data(), texture->width(), texture->height());
+        writer->writeToStream(textureData, texture->data(), texture->originalWidth(), texture->originalHeight());
 
         break;
     }
@@ -253,8 +253,8 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr    abstractTexture,
         writer->encode(
             textureData,
             texture->data(),
-            texture->width(),
-            texture->height(),
+            texture->originalWidth(),
+            texture->originalHeight(),
             texture->format() == TextureFormat::RGB ? 3 : 4,
             writerOptions->jpegImageQualityFactor(textureType)
         );
