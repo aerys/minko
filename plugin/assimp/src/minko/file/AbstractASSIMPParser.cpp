@@ -135,16 +135,18 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 							const std::vector<unsigned char>&	data,
 							std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
-    Assimp::DefaultLogger::create(nullptr, Assimp::Logger::VERBOSE, aiDefaultLogStream::aiDefaultLogStream_FILE);
-
-    const auto severity =
-        Assimp::Logger::Debugging |
-        Assimp::Logger::Info |
-        Assimp::Logger::Err |
-        Assimp::Logger::Warn;
+    auto logger = Assimp::DefaultLogger::create(nullptr, Assimp::Logger::VERBOSE);
 
 #ifdef DEBUG
-    Assimp::DefaultLogger::get()->attachStream(new minko::file::Logger(), severity);
+    logger->attachStream(
+        new minko::file::Logger(minko::log::Logger::Debug),
+        Assimp::Logger::Debugging | Assimp::Logger::Debugging |
+        Assimp::Logger::Debugging | Assimp::Logger::Info |
+        Assimp::Logger::Debugging | Assimp::Logger::Err |
+        Assimp::Logger::Debugging | Assimp::Logger::Warn
+    );
+#else
+    logger->attachStream(new minko::file::Logger(minko::log::Logger::Error), Assimp::Logger::Err);
 #endif
 
 	int pos = resolvedFilename.find_last_of("\\/");
