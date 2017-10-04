@@ -95,6 +95,7 @@ namespace minko
         time_point                                                              _startTime;
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
+        bool                                                                    _desiredFramerateChanged;
         float                                                                   _desiredEventrate;
         bool                                                                    _swapBuffersAtEnterFrame;
 
