@@ -968,13 +968,16 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     auto height = static_cast<int>(bottomLeft.y - topRight.y);
     auto singleClick = false;
 
-    // Make sure the area is not null
+    // Handle single click
     if (width == 0 && height == 0)
-    {
-        width = 1;
-        height = 1;
         singleClick = true;
-    }
+
+    // Make sure the area is not null
+    if (width == 0)
+        width = 1;
+
+    if (height == 0)
+        height = 1;
 
     _multiselecting = true;
     _multiselectionStartPosition = bottomLeft;
