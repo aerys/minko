@@ -22,10 +22,8 @@ minko.plugin["websocket"] = {}
 
 minko.plugin["websocket"].enable = function()
     configuration { "not html5" }
-        minko.plugin.enable { "ssl" }
+        minko.plugin.enable("ssl")
 
-
-    configuration { "not html5" }
         -- websocket++
         includedirs {
             minko.plugin.path("websocket") .. "/lib/websocketpp",
