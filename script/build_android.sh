@@ -22,7 +22,6 @@ TARGET=$1
 
 [[ -z ${ANDROID_KEYSTORE_PASSWORD} ]] && {
     echo "Warning: Missing environment variable ANDROID_KEYSTORE_PASSWORD, generated APK will be unsigned."
-    exit 1
 }
 
 [[ -z ${ANDROID_HOME} ]] && {
@@ -43,6 +42,10 @@ ZIPALIGN="${ANDROID_HOME}/tools/zipalign"
     echo "${ZIPALIGN} is not executable" > /dev/stderr
     exit 1
 }
+
+if [ -z "${VERSION_CODE}" ]; then
+    VERSION_CODE="0"
+fi
 
 if [ ${OSTYPE} == "cygwin" ]; then
     MINKO_HOME=`cygpath -u "${MINKO_HOME}"`
@@ -68,6 +71,9 @@ mv src/*.java src/${PACKAGE//.//}
 
 sed -i "s/{{APP_NAME}}/${APP_NAME}/" res/values/strings.xml build.xml
 sed -i "s/{{PACKAGE}}/${PACKAGE}/" AndroidManifest.xml src/${PACKAGE//.//}/*.java
+
+# Update version info
+sed -i "s/{{VERSION_CODE}}/$VERSION_CODE/" AndroidManifest.xml
 
 mkdir -p libs/armeabi-v7a/
 # mkdir -p libs/x86/
