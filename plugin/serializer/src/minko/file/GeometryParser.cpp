@@ -110,12 +110,22 @@ GeometryParser::parse(const std::string&                filename,
         return;
 
 	std::string				folderPathName = extractFolderPath(resolvedFilename);
-	geometry::Geometry::Ptr geom	= geometry::Geometry::create(filename);
+	geometry::Geometry::Ptr geom	= geometry::Geometry::Ptr();
     SerializedGeometry          serializedGeometry;
 
     extractDependencies(assetLibrary, data, _headerSize, _dependencySize, options, folderPathName);
 
     unpack(serializedGeometry, data, _sceneDataSize, _headerSize + _dependencySize);
+
+    static auto nameId = 0;
+    auto uniqueName = serializedGeometry.get<1>();
+
+    while (assetLibrary->geometry(uniqueName) != nullptr)
+        uniqueName = "geometry" + std::to_string(nameId++);
+
+    geom = geometry::Geometry::create(uniqueName);
+	assetLibrary->geometry(uniqueName, geom);
+	_lastParsedAssetName = uniqueName;
 
     uint indexBufferFunction = 0;
     uint vertexBufferFunction = 0;
@@ -140,15 +150,6 @@ GeometryParser::parse(const std::string&                filename,
     {
         geom->disposeVertexBufferData();
     }
-
-    static auto nameId = 0;
-    auto uniqueName = serializedGeometry.get<1>();
-
-    while (assetLibrary->geometry(uniqueName) != nullptr)
-        uniqueName = "geometry" + std::to_string(nameId++);
-
-	assetLibrary->geometry(uniqueName, geom);
-	_lastParsedAssetName = uniqueName;
 
     complete()->execute(shared_from_this());
 }

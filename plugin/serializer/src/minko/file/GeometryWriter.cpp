@@ -103,7 +103,7 @@ GeometryWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 
 	msgpack::type::tuple<unsigned short, std::string, std::string, std::vector<std::string>> res(
 		metaData,
-		assetLibrary->geometryName(geometry),
+		geometry->name(),
 		serializedIndexBuffer,
 		serializedVertexBuffers);
 	msgpack::pack(sbuf, res);

@@ -285,7 +285,7 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
     serialize::AssetType        assetType;
     std::string                 content;
 
-    auto filename = assetLibrary->geometryName(geometry);
+    const auto filename = geometry->name();
 
     const auto outputFilename = writerOptions->geometryNameFunction()(filename);
     const auto writeFilename = writerOptions->geometryUriFunction()(outputFilename);
