@@ -210,8 +210,8 @@ namespace minko
 				std::list<Any>					                _targetSlots;
                 Signal<SceneMgrPtr, uint, AbsTexPtr>::Slot      _renderingBeginSlot;
 
-                std::list<NodePtr>                              _toAdd;
-                std::list<NodePtr>                              _toRemove;
+                std::unordered_set<NodePtr>                     _toAdd;
+                std::unordered_set<NodePtr>                     _toRemove;
 
                 std::unordered_map<
                     NodePtr,

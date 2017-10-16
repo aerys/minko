@@ -147,7 +147,7 @@ Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 
     if (target->hasComponent<Transform>())
     {
-        _toAdd.push_back(target);
+        _toAdd.insert(target);
         _invalidLists = true;
     }
 
@@ -180,14 +180,15 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
     {
         if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
         {
-            auto removeIt = std::find(_toRemove.begin(), _toRemove.end(), target);
-            auto addIt = std::find(_toAdd.begin(), _toAdd.end(), target);
+            auto removeIt = _toRemove.find(target);
+            auto addIt = _toAdd.insert(target);
 
             if (removeIt != _toRemove.end())
                 _toRemove.erase(removeIt);
-            else if (addIt == _toAdd.end())
+
+            if (addIt.second)
             {
-                _toAdd.push_back(target);
+                // New node was properly inserted into '_toAdd'
                 _invalidLists = true;
             }
         }
@@ -207,13 +208,15 @@ Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr			node,
     {
         if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
         {
-            auto addIt = std::find(_toAdd.begin(), _toAdd.end(), target);
+            auto addIt = _toAdd.find(target);
+            auto removeIt = _toRemove.insert(target);
 
             if (addIt != _toAdd.end())
                 _toAdd.erase(addIt);
-            else
+
+            if (removeIt.second)
             {
-                _toRemove.push_back(target);
+                // New node was properly inserted into '_toRemove'
                 _invalidLists = true;
             }
         }
@@ -231,17 +234,12 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
         
         if (otherRoot != nullptr)
         {
-            _toAdd.insert(_toAdd.begin(), otherRoot->_nodes.begin(), otherRoot->_nodes.end());
-            _toAdd.insert(_toAdd.begin(), otherRoot->_toAdd.begin(), otherRoot->_toAdd.end());
+            _toAdd.insert(otherRoot->_nodes.begin(), otherRoot->_nodes.end());
+            _toAdd.insert(otherRoot->_toAdd.begin(), otherRoot->_toAdd.end());
+            _toRemove.insert(otherRoot->_toRemove.begin(), otherRoot->_toRemove.end());
 
-            _toAdd.unique();
-            _toRemove.unique();
-
-            _toAdd.remove_if([this, &otherRoot](scene::Node::Ptr node)
-            {
-                return std::find(_toRemove.begin(), _toRemove.end(), node) != _toRemove.end() &&
-                       std::find(otherRoot->_toAdd.begin(), otherRoot->_toAdd.end(), node) == otherRoot->_toAdd.end();
-            });
+            for (auto nodeToRemove : _toRemove)
+                _toAdd.erase(nodeToRemove);
 
             _invalidLists = true;
 
@@ -260,7 +258,7 @@ Transform::RootTransform::removedHandler(scene::Node::Ptr node,
     auto withTransforms = scene::NodeSet::create(target)
         ->descendants(true, false)
         ->where([](scene::Node::Ptr n){ return n->hasComponent<Transform>(); });
-    _toRemove.insert(_toRemove.begin(), withTransforms->nodes().begin(), withTransforms->nodes().end());
+    _toRemove.insert(withTransforms->nodes().begin(), withTransforms->nodes().end());
 }
 
 void
@@ -268,9 +266,6 @@ Transform::RootTransform::updateTransformsList()
 {
     if (_toAdd.empty() && _toRemove.empty())
         return;
-
-    _toAdd.unique();
-    _toRemove.unique();
 
     for (const auto& toRemove : _toRemove)
     {
