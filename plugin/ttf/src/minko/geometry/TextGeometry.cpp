@@ -88,8 +88,8 @@ buildGeometry(render::AbstractContext::Ptr  context,
               const Font&                   font,
 		      bool							centerOrigin);
 
-TextGeometry::TextGeometry() :
-    Geometry("text"),
+TextGeometry::TextGeometry(const std::string& name) :
+    Geometry(name),
     _context(),
     _atlasTexture(),
     _textSize(0.f)
