@@ -139,7 +139,7 @@ GeometryParser::parse(const std::string&                filename,
         geom->addVertexBuffer(vertexBufferParserFunctions[vertexBufferFunction](serializedVertexBuffer, options->context()));
 	}
 
-    geom = options->geometryFunction()(serializedGeometry.get<1>(), geom);
+    geom = options->geometryFunction()(geom->name(), geom);
 
     if (options->disposeIndexBufferAfterLoading())
     {

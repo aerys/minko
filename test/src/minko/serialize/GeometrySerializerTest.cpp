@@ -39,7 +39,7 @@ TEST_F(GeometrySerializerTest, Index32BitSerialization)
     auto sourceAssetLibrary = file::AssetLibrary::create(MinkoTests::canvas()->context());
     auto exportAssetLibrary = file::AssetLibrary::create(MinkoTests::canvas()->context());
     auto geometryWriter = file::GeometryWriter::create();
-    auto geometry = geometry::Geometry::create();
+    auto geometry = geometry::Geometry::create(geometryFilename);
     auto loader = file::Loader::create(exportAssetLibrary->loader());
     loader->options(loader->options()->clone());
 

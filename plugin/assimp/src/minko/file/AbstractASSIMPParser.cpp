@@ -635,7 +635,7 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     }
 
 	// create the geometry's vertex and index buffers
-	auto geometry		= Geometry::create();
+	auto geometry		= Geometry::create(meshName);
 	auto vertexBuffer	= render::VertexBuffer::create(_assetLibrary->context(), vertexData);
 
 	unsigned int attrOffset = 0u;
