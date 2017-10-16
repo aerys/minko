@@ -180,11 +180,8 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
     {
         if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
         {
-            auto removeIt = _toRemove.find(target);
+            _toRemove.erase(target);
             auto addIt = _toAdd.insert(target);
-
-            if (removeIt != _toRemove.end())
-                _toRemove.erase(removeIt);
 
             if (addIt.second)
             {
@@ -208,11 +205,8 @@ Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr			node,
     {
         if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
         {
-            auto addIt = _toAdd.find(target);
+            _toAdd.erase(target);
             auto removeIt = _toRemove.insert(target);
-
-            if (addIt != _toAdd.end())
-                _toAdd.erase(addIt);
 
             if (removeIt.second)
             {
