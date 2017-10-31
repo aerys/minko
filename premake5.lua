@@ -122,6 +122,7 @@ solution "minko"
 			['serializer']			= true,
 			['sky-box']				= true,
 			['stencil']				= true,
+            ['ttf']                 = true,
 			['visibility']			= false,
 			['video-camera']		= true,
 			['vr']				    = minko.plugin.requested('sensors'),

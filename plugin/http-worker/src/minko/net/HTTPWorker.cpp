@@ -39,6 +39,7 @@ namespace minko
             auto numAdditionalHeaders = 0;
             auto verifyPeer = true;
             auto buffered = false;
+            auto postFieldsSize = 0;
 
             inputStream.read(reinterpret_cast<char*>(&urlSize), 4);
             auto urlData = std::vector<char>(urlSize);
@@ -92,7 +93,15 @@ namespace minko
             inputStream.read(reinterpret_cast<char*>(&verifyPeer), 1);
             inputStream.read(reinterpret_cast<char*>(&buffered), 1);
 
-            HTTPRequest request(url, username, password, additionalHeaders.empty() ? nullptr : &additionalHeaders);
+            inputStream.read(reinterpret_cast<char*>(&postFieldsSize), 4);
+            auto postFieldsData = std::vector<char>(postFieldsSize);
+
+            if (postFieldsSize > 0)
+                inputStream.read(postFieldsData.data(), postFieldsSize);
+
+            const auto postFields = std::string(postFieldsData.begin(), postFieldsData.end());
+
+            HTTPRequest request(url, username, password, additionalHeaders.empty() ? nullptr : &additionalHeaders, postFields);
 
             request.verifyPeer(verifyPeer);
             request.buffered(buffered);

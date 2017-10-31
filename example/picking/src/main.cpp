@@ -21,6 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
 
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+# include "sparsehash/sparse_hash_map"
+#endif
+
 using namespace minko;
 using namespace minko::component;
 
@@ -29,11 +33,16 @@ Signal<scene::Node::Ptr>::Slot pickingMouseRightClick;
 Signal<scene::Node::Ptr>::Slot pickingMouseOver;
 Signal<scene::Node::Ptr>::Slot pickingMouseOut;
 
+Signal<input::Mouse::Ptr>::Slot mouseLeftButtonDown;
+Signal<input::Mouse::Ptr>::Slot mouseLeftButtonUp;
+
+math::vec2 multiSelectFirstPoint;
+math::vec2 multiSelectSecondPoint;
+
 int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Picking");
-
     auto sceneManager = SceneManager::create(canvas);
 
     // Setup assets
@@ -50,7 +59,7 @@ main(int argc, char** argv)
     redMaterial->diffuseColor(0xFF0000FF);
 
     auto greenMaterial = material::BasicMaterial::create();
-    greenMaterial->diffuseColor(0xF0FF00FF);
+    greenMaterial->diffuseColor(0x00FF00FF);
 
     auto blueMaterial = material::BasicMaterial::create();
     blueMaterial->diffuseColor(0x0000FFFF);
@@ -66,11 +75,24 @@ main(int argc, char** argv)
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager);
 
+    auto fov = .785f;
+    auto aspectRatio = canvas->aspectRatio();
+    auto zNear = 0.1f;
+    auto zFar = 1000.f;
+
+    auto cameraComponent = Camera::create(math::perspective(fov, aspectRatio, zNear, zFar));
+
     auto camera = scene::Node::create("camera")
         ->addComponent(Transform::create(
             math::inverse(math::lookAt(math::vec3(0.f, 0.f, 4.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
         ))
-        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
+        ->addComponent(cameraComponent);
+
+    cameraComponent->data()
+        ->set("fov", fov)
+        ->set("aspectRatio", aspectRatio)
+        ->set("zNear", zNear)
+        ->set("zFar", zFar);
 
     root->addChild(camera);
 
@@ -106,26 +128,61 @@ main(int argc, char** argv)
             ->addChild(sphere)
             ->addChild(quad);
 
-        root->addComponent(Picking::create(camera, false, true));
+        // Picking component
+        auto picking = Picking::create(camera, false, true);
+        //picking->debug(true);
 
-        pickingMouseClick = root->component<Picking>()->mouseClick()->connect([&](scene::Node::Ptr node)
+        root->addComponent(picking);
+
+        pickingMouseClick = picking->mouseClick()->connect([&](scene::Node::Ptr node)
         {
             std::cout << "Click: " << node->name() << std::endl;
         });
 
-        pickingMouseRightClick = root->component<Picking>()->mouseRightClick()->connect([&](scene::Node::Ptr node)
+        pickingMouseRightClick = picking->mouseRightClick()->connect([&](scene::Node::Ptr node)
         {
             std::cout << "Right Click: " << node->name() << std::endl;
         });
 
-        pickingMouseOver = root->component<Picking>()->mouseOver()->connect([&](scene::Node::Ptr node)
+        pickingMouseOver = picking->mouseOver()->connect([&](scene::Node::Ptr node)
         {
             std::cout << "Mouse In: " << node->name() << std::endl;
         });
 
-        pickingMouseOut = root->component<Picking>()->mouseOut()->connect([&](scene::Node::Ptr node)
+        pickingMouseOut = picking->mouseOut()->connect([&](scene::Node::Ptr node)
         {
             std::cout << "Mouse Out: " << node->name() << std::endl;
+        });
+
+        // Multiselect area
+        mouseLeftButtonDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
+        {
+            multiSelectFirstPoint = math::vec2(m->x(), m->y());
+        });
+
+        mouseLeftButtonUp = canvas->mouse()->leftButtonUp()->connect([=](input::Mouse::Ptr m)
+        {
+            multiSelectSecondPoint = math::vec2(m->x(), m->y());
+
+            auto bottomLeft = math::vec2(
+                math::min(multiSelectFirstPoint.x, multiSelectSecondPoint.x),
+                math::max(multiSelectFirstPoint.y, multiSelectSecondPoint.y)
+            );
+
+            auto topRight = math::vec2(
+                math::max(multiSelectFirstPoint.x, multiSelectSecondPoint.x),
+                math::min(multiSelectFirstPoint.y, multiSelectSecondPoint.y)
+            );
+
+            auto width = static_cast<int>(topRight.x - bottomLeft.x);
+            auto height = static_cast<int>(bottomLeft.y - topRight.y);
+
+            LOG_INFO("Picking nodes from an area of size: " << width << "x" << height << " pixels");
+
+            auto pickedNodes = picking->pickArea(bottomLeft, topRight, true);
+
+            for (auto node : pickedNodes)
+                LOG_INFO(node.first->name());
         });
     });
 
@@ -133,10 +190,10 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
+        camera->component<Camera>()->projectionMatrix(math::perspective(fov, aspectRatio, zNear, zFar));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
         sceneManager->nextFrame(time, deltaTime);
     });

@@ -31,6 +31,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/math/Ray.hpp"
+#include "minko/log/Logger.hpp"
+
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+# include "sparsehash/sparse_hash_map"
+#endif
 
 using namespace minko;
 using namespace component;
@@ -69,7 +74,9 @@ Picking::Picking() :
     _frameBeginSlot(nullptr),
     _enabled(false),
     _renderDepth(true),
-    _debug(false)
+    _debug(false),
+    _multiselecting(false),
+    _multiselectionStartPosition()
 {
 }
 
@@ -246,26 +253,33 @@ Picking::targetAdded(NodePtr target)
         _pickingEffect = _sceneManager->assets()->effect("effect/Picking.effect");
 
     auto priority = _debug ? -1000.0f : 1000.0f;
+    auto pickingRendererColor = 0x000000FF;
+
+    if (_debug)
+        pickingRendererColor = 0xFFFF00FF;
 
     _renderer = Renderer::create(
-        0xFFFF00FF,
+        pickingRendererColor,
         nullptr,
         _pickingEffect,
         "default",
         priority,
         "Picking Renderer"
     );
+
     if (!_debug)
+    {
         _renderer->scissorBox(0, 0, 1, 1);
-    _renderer->layoutMask(scene::BuiltinLayout::PICKING);
-    if (!_debug)
         _renderer->enabled(false);
+    }
+
+    _renderer->layoutMask(scene::BuiltinLayout::PICKING);
 
     if (_pickingDepthEffect == nullptr)
         _pickingDepthEffect = _sceneManager->assets()->effect("effect/PickingDepth.effect");
 
     _depthRenderer = Renderer::create(
-        0xFFFF00FF,
+        pickingRendererColor,
         nullptr,
         _pickingDepthEffect,
         "default",
@@ -418,7 +432,7 @@ Picking::addSurface(SurfacePtr surface)
 {
 	if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
 	{
-		_pickingId += 2;
+		_pickingId++;
 
 		_surfaceToPickingId[surface] = _pickingId;
 		_pickingIdToSurface[_pickingId] = surface;
@@ -530,12 +544,7 @@ Picking::enabled(bool enabled)
 void
 Picking::frameBeginHandler(SceneManagerPtr, float, float)
 {
-    if (_debug)
-        return;
-
-    _renderer->enabled(true);
-    _renderer->render(_sceneManager->canvas()->context());
-    _renderer->enabled(false);
+    renderPickingFrame();
 }
 
 void
@@ -545,6 +554,17 @@ Picking::renderingBegin(RendererPtr renderer)
         return;
 
     updatePickingProjection();
+}
+
+void
+Picking::renderPickingFrame()
+{
+    if (_debug)
+        return;
+
+    _renderer->enabled(true);
+    _renderer->render(_sceneManager->canvas()->context());
+    _renderer->enabled(false);
 }
 
 void
@@ -647,8 +667,14 @@ Picking::depthRenderingEnd(RendererPtr renderer)
 void
 Picking::updatePickingProjection()
 {
-	const auto mouseX = static_cast<float>(_mouse->x());
-	const auto mouseY = static_cast<float>(_mouse->y());
+	auto mouseX = static_cast<float>(_mouse->x());
+	auto mouseY = static_cast<float>(_mouse->y());
+
+    if (_multiselecting && _multiselectionStartPosition != math::vec2(0))
+    {
+        mouseX = _multiselectionStartPosition.x;
+        mouseY = _multiselectionStartPosition.y;
+    }
 
 	auto perspectiveCamera	= _camera->component<component::Camera>();
 	auto projection	= perspectiveCamera->projectionMatrix();
@@ -931,4 +957,117 @@ Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
         _executeRightClickHandler = true;
         enabled(true);
     }
+}
+
+Picking::map<scene::Node::Ptr, std::set<unsigned char>>
+Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
+{
+    auto pickedNodes = Picking::map<scene::Node::Ptr, std::set<unsigned char>>();
+
+    const auto width = static_cast<int>(topRight.x - bottomLeft.x);
+    const auto height = static_cast<int>(bottomLeft.y - topRight.y);
+
+    if (width == 0 || height == 0)
+        return pickedNodes;
+
+    _multiselecting = true;
+    _multiselectionStartPosition = bottomLeft;
+
+    // Change the scissor box size and make sure to update the projection
+    _renderer->scissorBox(0, 0, width, height);
+    updatePickingProjection();
+
+    // Force picking renderer to render a frame
+    renderPickingFrame();
+
+    if (_debug)
+        return pickedNodes;
+
+    // Read and store all pixels in the selection area
+    auto pixelSize = 4;
+    std::vector<unsigned char> selectAreaPixelBuffer(pixelSize * width * height);
+    _context->readPixels(0, 0, width, height, &selectAreaPixelBuffer[0]);
+
+    // Retrieve all surface ids in the selection area
+    auto maxSurfaceId = 0;
+    if (!_pickingIdToSurface.empty())
+        maxSurfaceId = _pickingIdToSurface.rbegin()->first;
+
+    uint lastPickedSurfaceId = 0;
+    unsigned char lastAlphaValue = 0;
+    auto elementsToRemove = map<scene::Node::Ptr, std::set<unsigned char>>();
+    for (auto i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
+    {
+        auto currentPixel = &selectAreaPixelBuffer[i];
+        uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
+        auto alpha = currentPixel[3];
+
+        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || fullyInside) && pickedSurfaceId <= maxSurfaceId)
+        {
+            lastPickedSurfaceId = pickedSurfaceId;
+            lastAlphaValue = alpha;
+
+            auto surfaceIt = _pickingIdToSurface.find(pickedSurfaceId);
+
+            if (surfaceIt != _pickingIdToSurface.end())
+            {
+                auto pickedSurface = surfaceIt->second;
+
+                if (fullyInside)
+                {
+                    auto pixelBufferWidth = pixelSize * width;
+
+                    // Check that the read pixel is not on the edge of the picking rendering
+                    if ((
+                        i <= pixelBufferWidth ||                                // Bottom border
+                        i >= (pixelSize * width * height) - pixelBufferWidth || // Top border
+                        i % pixelBufferWidth == 0 ||                            // Right border
+                        i % pixelBufferWidth == pixelBufferWidth - pixelSize    // Left border
+                        ))
+                    {
+                        // Store the combinaison node / alpha value to remove afterward
+                        auto surfaceAlphaValuesToRemove = elementsToRemove.find(pickedSurface->target());
+                        if (surfaceAlphaValuesToRemove == elementsToRemove.end())
+                            elementsToRemove.insert(std::make_pair(pickedSurface->target(), std::set<unsigned char> { alpha }));
+                        else
+                            surfaceAlphaValuesToRemove->second.insert(alpha);
+
+                        continue;
+                    }
+                }
+
+                // Store the combinaison node / alpha value to return as picked
+                auto surfaceAlphaValues = pickedNodes.find(pickedSurface->target());
+                if (surfaceAlphaValues == pickedNodes.end())
+                    pickedNodes.insert(std::make_pair(pickedSurface->target(), std::set<unsigned char> { alpha }));
+                else
+                    surfaceAlphaValues->second.insert(alpha);
+            }
+        }
+    }
+
+    if (fullyInside)
+    {
+        for (const auto& element : elementsToRemove)
+        {
+            auto& subSurfaces = pickedNodes[element.first];
+
+            for (const auto& a : element.second)
+                subSurfaces.erase(a);
+
+            if (subSurfaces.empty())
+                pickedNodes.erase(element.first);
+        }
+    }
+
+    // Make sure to reset the scissor box size
+    _renderer->scissorBox(0, 0, 1, 1);
+
+    _multiselecting = false;
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    _sceneManager->nextFrame(0.f, 0.f);
+#endif
+
+    return pickedNodes;
 }

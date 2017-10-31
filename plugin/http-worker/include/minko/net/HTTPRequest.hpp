@@ -31,7 +31,8 @@ namespace minko
             HTTPRequest(const std::string& url,
                         const std::string& username = "",
                         const std::string& password = "",
-                        const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr);
+                        const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr,
+                        const std::string& postFields = "");
 
             inline
             void
@@ -128,6 +129,7 @@ namespace minko
             std::string _password;
             std::unordered_map<std::string, std::string> _additionalHeaders;
             bool _verifyPeer;
+            std::string _postFields;
             bool _buffered;
         };
     }

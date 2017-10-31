@@ -32,6 +32,14 @@ namespace minko
 			public AbstractComponent
 		{
 		public:
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+            template <typename... H>
+            using map = google::sparse_hash_map<H...>;
+#else
+            template <class K, typename... V>
+            using map = std::unordered_map<K, V...>;
+#endif
+
 			typedef std::shared_ptr<Picking>					Ptr;
 			typedef std::shared_ptr<Renderer>					RendererPtr;
 			typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
@@ -144,6 +152,8 @@ namespace minko
 
             bool                                        _debug;
 
+            bool                                        _multiselecting;
+            minko::math::vec2                           _multiselectionStartPosition;
 		public:
 			inline static
 			Ptr
@@ -303,6 +313,9 @@ namespace minko
 			    return _lastMergingMask;
 			}
 
+            map<NodePtr, std::set<unsigned char>>
+            pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true);
+
             inline
             void
             debug(bool v)
@@ -431,6 +444,9 @@ namespace minko
 
             void
             updatePickingOrigin();
+
+            void
+            renderPickingFrame();
 		};
 	}
 }

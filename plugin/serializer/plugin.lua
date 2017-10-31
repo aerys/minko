@@ -5,6 +5,7 @@ function minko.plugin.serializer:enable()
 
     minko.plugin.enable("jpeg")
     minko.plugin.enable("png")
+    minko.plugin.enable("ttf")
 
 	minko.plugin.links { "serializer" }
 	includedirs {
