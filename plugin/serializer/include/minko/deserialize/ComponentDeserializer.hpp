@@ -122,7 +122,7 @@ namespace minko
                                        std::string&	            serializedAnimation,
                                        AssetLibraryPtr          assetLibrary,
                                        DependencyPtr            dependencies);
-			
+
             static
             AbsComponentPtr
             deserializeSkinning(file::SceneVersion  sceneVersion,
@@ -137,12 +137,19 @@ namespace minko
                                    AssetLibraryPtr      assetLibrary,
                                    DependencyPtr        dependencies);
 
-		    static
-			std::shared_ptr<component::AbstractComponent>
-			deserializeMetadata(file::SceneVersion	sceneVersion,
-			                    std::string&        packed,
-			                    AssetLibraryPtr   	assetLibrary,
-			                    DependencyPtr     	dependencies);
+            static
+            std::shared_ptr<component::AbstractComponent>
+            deserializeMetadata(file::SceneVersion  sceneVersion,
+                                std::string&        packed,
+                                AssetLibraryPtr     assetLibrary,
+                                DependencyPtr       dependencies);
+
+            static
+            std::shared_ptr<component::AbstractComponent>
+            deserializeASCIIText(file::SceneVersion  sceneVersion,
+                                 std::string&        packed,
+                                 AssetLibraryPtr     assetLibrary,
+                                 DependencyPtr       dependencies);
         };
     }
 }

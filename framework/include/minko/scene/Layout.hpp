@@ -39,7 +39,8 @@ namespace minko
             static const Layout INSIDE_FRUSTUM;
             static const Layout MINOR_OBJECT;
             static const Layout PICKING_DEPTH;
-            static const Layout CAST_SHADOW;
+			static const Layout CAST_SHADOW;
+			static const Layout TEXT;
         };
 
         struct LayoutMask

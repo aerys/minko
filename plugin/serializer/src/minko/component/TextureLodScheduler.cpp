@@ -146,30 +146,27 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
 
         if (resourceIt == _textureResources.end())
         {
-            textureRegistered(textureData);
-            textureReady(resourceIt->second, textureData, { material->data() }, textureType, texture);
+            auto& textureResource = textureRegistered(textureData);
+            textureReady(textureResource, textureData, { material->data() }, textureType, texture);
         }
     }
 }
 
-void
+TextureLodScheduler::TextureResourceInfo&
 TextureLodScheduler::textureRegistered(ProviderPtr data)
 {
     auto resourceIt = _textureResources.find(data->uuid());
 
-    if (resourceIt == _textureResources.end())
-    {
-        auto& resourceBase = registerResource(data);
+    if (resourceIt != _textureResources.end())
+        return resourceIt->second;
 
-        auto newResourceIt = _textureResources.insert(std::make_pair(
-            resourceBase.uuid(),
-            TextureResourceInfo()
-        ));
+    auto& resourceBase = registerResource(data);
 
-        auto& newResource = newResourceIt.first->second;
+    auto newResourceIt = _textureResources.emplace(resourceBase.uuid(), TextureResourceInfo());
+    auto& newResource = newResourceIt.first->second;
+    newResource.base = &resourceBase;
 
-        newResource.base = &resourceBase;
-    }
+    return newResource;
 }
 
 void

@@ -17,6 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <iomanip>
+
 #include "minko/log/Logger.hpp"
 #include "minko/net/HTTPRequest.hpp"
 
@@ -62,7 +64,8 @@ extern "C"
 HTTPRequest::HTTPRequest(const std::string& url,
                          const std::string& username,
                          const std::string& password,
-                         const std::unordered_map<std::string, std::string>* additionalHeaders) :
+                         const std::unordered_map<std::string, std::string>* additionalHeaders,
+                         const std::string& postFields) :
     _url(url),
     _progress(Signal<float>::create()),
     _error(Signal<int, const std::string&>::create()),
@@ -71,7 +74,8 @@ HTTPRequest::HTTPRequest(const std::string& url,
     _username(username),
     _password(password),
     _verifyPeer(true),
-    _buffered(false)
+    _buffered(false),
+    _postFields(postFields)
 {
     if (additionalHeaders == nullptr)
         _additionalHeaders = std::unordered_map<std::string, std::string>();
@@ -81,11 +85,11 @@ HTTPRequest::HTTPRequest(const std::string& url,
 
 static
 std::string
-encodeUrl(const std::string& url)
+urlEscape(const std::string& url)
 {
     static const auto authorizedCharacters = std::set<char>
     {
-         '/', ':', '~', '-', '.', '_', '?', '&', '='
+        '/', ':', '~', '-', '.', '_', '?', '&', '='
     };
 
     std::stringstream encodedUrlStream;
@@ -109,7 +113,10 @@ encodeUrl(const std::string& url)
         }
         else
         {
-            encodedUrlStream << "%" << std::hex << static_cast<int>(c);
+            encodedUrlStream << std::hex;
+            encodedUrlStream << std::uppercase;
+            encodedUrlStream << '%' << std::setw(2) << int((unsigned char) c);
+            encodedUrlStream << std::nouppercase;
         }
     }
 
@@ -123,6 +130,7 @@ createCurl(const std::string&                                   url,
            const std::string&                                   password,
            const std::unordered_map<std::string, std::string>&  additionalHeaders,
            bool                                                 verifyPeer,
+           const std::string&                                   postFields,
            curl_slist*&                                         curlHeaderList,
            char*                                                curlErrorBuffer)
 {
@@ -131,13 +139,20 @@ createCurl(const std::string&                                   url,
     if (!curl)
         return nullptr;
 
-    const auto encodedUrl = encodeUrl(url);
+    const auto escapedUrl = urlEscape(url);
 
-    curl_easy_setopt(curl, CURLOPT_URL, encodedUrl.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, escapedUrl.c_str());
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verifyPeer ? 1L : 0L);
     if (!verifyPeer)
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+    // POST method
+    if (!postFields.empty())
+    {
+        curl_easy_setopt(curl, CURLOPT_POST, 1);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postFields.c_str());
+    }
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
@@ -199,7 +214,7 @@ HTTPRequest::run()
     char curlErrorBuffer[CURL_ERROR_SIZE];
     memset(curlErrorBuffer, 0, CURL_ERROR_SIZE);
 
-    auto curl = createCurl(url, _username, _password, _additionalHeaders, _verifyPeer, curlHeaderList, curlErrorBuffer);
+    auto curl = createCurl(url, _username, _password, _additionalHeaders, _verifyPeer, _postFields, curlHeaderList, curlErrorBuffer);
 
     if (!curl)
     {
@@ -332,6 +347,7 @@ HTTPRequest::fileExists(const std::string& filename,
         password,
         additionalHeaders ? *additionalHeaders : std::unordered_map<std::string, std::string>(),
         verifyPeer,
+        "",
         curlHeaderList,
         curlErrorBuffer
     );

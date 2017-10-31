@@ -158,7 +158,7 @@ namespace minko
         private:
             TextureLodScheduler(AssetLibraryPtr assetLibrary);
 
-            void
+            TextureResourceInfo&
             textureRegistered(ProviderPtr data);
 
             void

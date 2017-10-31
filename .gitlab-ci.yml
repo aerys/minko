@@ -54,7 +54,7 @@ stages:
 build:html5:
   <<: *build_with_artifacts_template
   stage: build
-  image: trzeci/emscripten:sdk-tag-1.37.3-64bit
+  image: trzeci/emscripten:sdk-tag-1.37.21-64bit
   script:
     - ./script/solution_gmake_min.sh --no-glsl-optimizer
     - make -j$(nproc) config=html5_release
@@ -70,14 +70,14 @@ build:android:
     - ln -s /opt/android-sdk-linux/build-tools/25.0.2/zipalign /opt/android-sdk-linux/tools/zipalign
     - ./script/install_jni.sh
     - ./script/solution_gmake_min.sh --no-glsl-optimizer --with-nodejs-worker
-    - make -j$(nproc) config=android_release
+    - make config=android_release
 
 build:linux:
   <<: *build_with_artifacts_template
   stage: build
   image: gcc:4.9.4
   script:
-    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev p7zip-full
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev libfreetype6-dev
     - ./script/solution_gmake_min.sh
     - make -j$(nproc) config=linux64_release
 
@@ -86,7 +86,7 @@ build:linux_offscreen:
   stage: build
   image: gcc:4.9.4
   script:
-    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev libfreetype6-dev
     - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay --no-glsl-optimizer
     - make -j$(nproc) config=linux64_release
 
@@ -101,7 +101,7 @@ test:linux_offscreen:
     paths:
       - test
   script:
-    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev
+    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev libfreetype6-dev
     - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --no-glsl-optimizer
     - make -j$(nproc) config=linux64_release -C test
     - ./test/bin/linux64/release/minko-test

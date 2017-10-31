@@ -153,6 +153,13 @@ SceneParser::SceneParser()
         std::placeholders::_2,
         std::placeholders::_3,
         std::placeholders::_4));
+
+    registerComponent(serialize::ASCII_TEXT,
+        std::bind(&deserialize::ComponentDeserializer::deserializeASCIIText,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 }
 
 void
@@ -424,8 +431,8 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
 }
 
 void
-SceneParser::handleMetadata(std::shared_ptr<scene::Node> node, 
-                            std::shared_ptr<component::Metadata> metadata, 
+SceneParser::handleMetadata(std::shared_ptr<scene::Node> node,
+                            std::shared_ptr<component::Metadata> metadata,
                             std::shared_ptr<file::Options> options)
 {
     auto data = metadata->data();

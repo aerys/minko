@@ -130,12 +130,6 @@ MaterialParser::deserializeComplexProperty(MaterialPtr            material,
         material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
         material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
         material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
-
-        if (!(blendingMode & render::Blending::Destination::ZERO))
-        {
-            material->data()->set("priority", render::Priority::TRANSPARENT);
-            material->data()->set("zSorted", true);
-        }
     }
     else if (type == TRIANGLECULLING)
     {
