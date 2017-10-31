@@ -54,7 +54,7 @@ stages:
 build:html5:
   <<: *build_with_artifacts_template
   stage: build
-  image: trzeci/emscripten:sdk-tag-1.37.21-64bit
+  image: aerysinnovation/smartshape-build:html5
   script:
     - ./script/solution_gmake_min.sh --no-glsl-optimizer
     - make -j$(nproc) config=html5_release
@@ -62,7 +62,7 @@ build:html5:
 build:android:
   <<: *build_with_artifacts_template
   stage: build
-  image: alexisduque/android-ndk-gradle-docker:latest
+  image: aerysinnovation/smartshape-build:android
   script:
     # https://github.com/aerys/minko/blob/master/doc/tutorial/Compiling_the_SDK_for_Android.md
     - mkdir -p /opt/android-sdk-linux/ndk
@@ -75,7 +75,7 @@ build:android:
 build:linux:
   <<: *build_with_artifacts_template
   stage: build
-  image: gcc:4.9.4
+  image: aerysinnovation/smartshape-build:linux64
   script:
     - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev libfreetype6-dev
     - ./script/solution_gmake_min.sh
@@ -84,7 +84,7 @@ build:linux:
 build:linux_offscreen:
   <<: *build_with_artifacts_template
   stage: build
-  image: gcc:4.9.4
+  image: aerysinnovation/smartshape-build:linux64
   script:
     - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev libfreetype6-dev
     - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay --no-glsl-optimizer
@@ -92,7 +92,7 @@ build:linux_offscreen:
 
 test:linux_offscreen:
   stage: test
-  image: gcc:4.9.4
+  image: aerysinnovation/smartshape-build:linux64
   dependencies:
     - build:linux_offscreen
   artifacts:
