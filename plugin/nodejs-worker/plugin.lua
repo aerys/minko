@@ -6,7 +6,7 @@ minko.plugin["nodejs-worker"].enable = function (self)
 
     defines { "MINKO_PLUGIN_NODEJS_WORKER" }
 
-    configuration { "not html5 and not android" }
+    configuration { "not html5" }
         minko.plugin.enable("ssl")
 
     configuration { "android" }
