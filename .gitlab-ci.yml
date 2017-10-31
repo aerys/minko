@@ -64,10 +64,6 @@ build:android:
   stage: build
   image: aerysinnovation/smartshape-build:android
   script:
-    # https://github.com/aerys/minko/blob/master/doc/tutorial/Compiling_the_SDK_for_Android.md
-    - mkdir -p /opt/android-sdk-linux/ndk
-    - ln -s /opt/android-ndk-r13b /opt/android-sdk-linux/ndk/android-ndk-r13b
-    - ln -s /opt/android-sdk-linux/build-tools/25.0.2/zipalign /opt/android-sdk-linux/tools/zipalign
     - ./script/install_jni.sh
     - ./script/solution_gmake_min.sh --no-glsl-optimizer --with-nodejs-worker
     - make -j$(nproc) config=android_release
@@ -77,7 +73,6 @@ build:linux:
   stage: build
   image: aerysinnovation/smartshape-build:linux64
   script:
-    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev libfreetype6-dev
     - ./script/solution_gmake_min.sh
     - make -j$(nproc) config=linux64_release
 
@@ -86,7 +81,6 @@ build:linux_offscreen:
   stage: build
   image: aerysinnovation/smartshape-build:linux64
   script:
-    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev libfreetype6-dev
     - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay --no-glsl-optimizer
     - make -j$(nproc) config=linux64_release
 
@@ -101,7 +95,6 @@ test:linux_offscreen:
     paths:
       - test
   script:
-    - apt-get update && apt-get install -y libgl1-mesa-dev libglu1-mesa-dev libosmesa6-dev libglew-dev libsdl2-dev libgtk2.0-dev libgtk-3-dev libgtkglext1-dev libcurl4-openssl-dev libfreetype6-dev
     - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --no-glsl-optimizer
     - make -j$(nproc) config=linux64_release -C test
     - ./test/bin/linux64/release/minko-test
