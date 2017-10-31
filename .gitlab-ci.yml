@@ -54,7 +54,7 @@ stages:
 build:html5:
   <<: *build_with_artifacts_template
   stage: build
-  image: trzeci/emscripten:sdk-tag-1.37.3-64bit
+  image: trzeci/emscripten:sdk-tag-1.37.21-64bit
   script:
     - ./script/solution_gmake_min.sh --no-glsl-optimizer
     - make -j$(nproc) config=html5_release
