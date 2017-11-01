@@ -64,7 +64,6 @@ build:android:
   stage: build
   image: aerysinnovation/smartshape-build:android
   script:
-    - ./script/install_jni.sh
     - ./script/solution_gmake_min.sh --no-glsl-optimizer --with-nodejs-worker
     - make -j$(nproc) config=android_release
 
