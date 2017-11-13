@@ -56,7 +56,9 @@ namespace minko
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
 
-            std::shared_ptr<AbstractCanvas>                     _canvas;
+            std::shared_ptr<AbstractCanvas>                 _canvas;
+
+            bool                                            _forceRenderNextFrame;
 
 	    public:
 		    inline static
@@ -91,6 +93,13 @@ namespace minko
             assets()
             {
                 return _assets;
+            }
+
+            inline
+            void
+            forceRenderNextFrame()
+            {
+                _forceRenderNextFrame = true;
             }
 
             inline

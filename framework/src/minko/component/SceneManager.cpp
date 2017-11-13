@@ -40,7 +40,8 @@ SceneManager::SceneManager(const std::shared_ptr<AbstractCanvas>& canvas) :
 	_cullEnd(Signal<Ptr>::create()),
 	_renderBegin(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
 	_renderEnd(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
-	_data(data::Provider::create())
+	_data(data::Provider::create()),
+    _forceRenderNextFrame(false)
 {
 }
 
@@ -87,12 +88,14 @@ SceneManager::nextFrame(float time, float deltaTime, bool shouldRender, render::
 	_data->set("time", _time);
 
 	_frameBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), time, deltaTime);
-    if (shouldRender)
+    if (shouldRender || _forceRenderNextFrame)
     {
         _cullBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
         _cullEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
         _renderBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
         _renderEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
+
+        _forceRenderNextFrame = false;
     }
     _frameEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), time, deltaTime);
 

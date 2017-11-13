@@ -339,7 +339,7 @@ namespace minko
         }
 
         void
-            desiredEventrate(float desiredEventRate) override;
+        desiredEventrate(float desiredEventRate) override;
 
         // Current frame execution time in milliseconds.
         inline
