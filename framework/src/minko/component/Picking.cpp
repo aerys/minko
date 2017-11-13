@@ -565,6 +565,8 @@ Picking::renderPickingFrame()
     _renderer->enabled(true);
     _renderer->render(_sceneManager->canvas()->context());
     _renderer->enabled(false);
+
+    _sceneManager->forceRenderNextFrame();
 }
 
 void
