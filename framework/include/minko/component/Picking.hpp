@@ -61,8 +61,8 @@ namespace minko
 			MousePtr							        _mouse;
             TouchPtr                                    _touch;
 			NodePtr								        _camera;
-			math::mat4							        _pickingProjection;	
-			std::map<SurfacePtr, uint>			        _surfaceToPickingId; 
+			math::mat4							        _pickingProjection;
+			std::map<SurfacePtr, uint>			        _surfaceToPickingId;
 			std::map<uint, SurfacePtr>			        _pickingIdToSurface;
 			uint							        	_pickingId;
 			ContextPtr					        		_context;
@@ -332,10 +332,10 @@ namespace minko
 
 		private:
             void
-            initialize(NodePtr      camera, 
-                       bool         addPickingLayout, 
-                       bool         emulateMouseWithTouch, 
-                       EffectPtr    pickingEffect = nullptr, 
+            initialize(NodePtr      camera,
+                       bool         addPickingLayout,
+                       bool         emulateMouseWithTouch,
+                       EffectPtr    pickingEffect = nullptr,
                        EffectPtr    pickingDepthEffect = nullptr);
 
 			void
@@ -396,7 +396,7 @@ namespace minko
 
 			void
 			mouseLeftClickHandler(MousePtr mouse);
-			
+
 			void
             mouseRightUpHandler(MousePtr mouse);
 
@@ -438,7 +438,7 @@ namespace minko
 
             void
             dispatchEvents(SurfacePtr pickedSurface, float depth);
-            
+
             void
             updatePickingProjection();
 
