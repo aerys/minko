@@ -43,6 +43,14 @@ function minko.plugin.ttf:enable()
             minko.action.copy(minko.plugin.path("ttf") .. "/lib/freetype/lib/windows64/*.dll")
         }
 
+    configuration { "windows" }
+        defines { "MINKO_PLUGIN_TTF_FREETYPE" }
+        links { "freetype28" }
+
+    configuration { "linux" }
+        defines { "MINKO_PLUGIN_TTF_FREETYPE" }
+        links { "freetype" }
+
     configuration { "vs*" }
         linkoptions {
             "/NODEFAULTLIB:msvcrt.lib"
