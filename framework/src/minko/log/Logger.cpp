@@ -27,16 +27,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::log;
 
-// Logging on Android might trigger a crash,
-// probably for non thread safety, and is disabled for now.
-// See https://git.aerys.in/aerys/smartshape-engine/issues/8
-// #if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-//   Logger::Ptr
-//   Logger::_default = Logger::create(Logger::Level::Debug, AndroidLogSink::create());
-// #else
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+  Logger::Ptr
+  Logger::_default = Logger::create(Logger::Level::Debug, AndroidLogSink::create());
+#else
   Logger::Ptr
   Logger::_default = Logger::create(Logger::Level::Debug, ConsoleSink::create());
-// #endif
+#endif
 
 void
 Logger::operator()(const std::string&	message,
