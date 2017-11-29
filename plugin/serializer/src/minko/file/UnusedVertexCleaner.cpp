@@ -86,18 +86,30 @@ UnusedVertexCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPtr asset
     if (numVertices == 0u)
         return;
 
-    auto* u16IndexData = geometry->indices()->dataPointer<unsigned short>();
-    auto* u32IndexData = geometry->indices()->dataPointer<unsigned int>();
+    auto indices = std::vector<unsigned int>();
+
+    auto ushortIndexDataPointer = geometry->indices()->dataPointer<unsigned short>();
+
+    if (ushortIndexDataPointer)
+    {
+        indices.resize(ushortIndexDataPointer->size());
+
+        for (auto i = 0u; i < ushortIndexDataPointer->size(); ++i)
+            indices[i] = static_cast<unsigned int>(ushortIndexDataPointer->at(i));
+    }
+    else
+    {
+        indices = *geometry->indices()->dataPointer<unsigned int>();
+    }
 
     auto vertexUseCount = std::vector<unsigned int>(numVertices, 0u);
 
     for (auto i = 0u; i < numIndices; ++i)
     {
-        const auto index = u16IndexData
-            ? static_cast<unsigned int>(u16IndexData->at(i))
-            : u32IndexData->at(i);
+        const auto index = indices.at(i);
 
-        ++vertexUseCount[index];
+        if (index < numVertices)
+            ++vertexUseCount[index];
     }
 
     auto indexMap = std::vector<unsigned int>(numVertices);
@@ -115,19 +127,14 @@ UnusedVertexCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPtr asset
 
     const auto newNumVertices = currentNewIndex;
 
-    for (auto i = 0u; i < numIndices; ++i)
-    {
-        const auto index = u16IndexData
-            ? static_cast<unsigned int>(u16IndexData->at(i))
-            : u32IndexData->at(i);
+    render::IndexBuffer::Ptr newIndexBuffer = nullptr;
 
-        const auto newIndex = indexMap.at(index);
+    if (newNumVertices > std::numeric_limits<unsigned short>::max())
+        newIndexBuffer = createIndexBuffer<unsigned int>(indices, indexMap, assetLibrary);
+    else
+        newIndexBuffer = createIndexBuffer<unsigned short>(indices, indexMap, assetLibrary);
 
-        if (u16IndexData)
-            (*u16IndexData)[i] = static_cast<unsigned short>(newIndex);
-        else if (u32IndexData)
-            (*u32IndexData)[i] = newIndex;
-    }
+    geometry->indices(newIndexBuffer);
 
     const auto vertexBuffers = geometry->vertexBuffers();
     auto newVertexBuffers = std::vector<render::VertexBuffer::Ptr>();
@@ -173,4 +180,19 @@ UnusedVertexCleaner::processGeometry(GeometryPtr geometry, AssetLibraryPtr asset
 
     for (auto vertexBuffer : newVertexBuffers)
         geometry->addVertexBuffer(vertexBuffer);
+}
+
+template <typename T>
+render::IndexBuffer::Ptr
+UnusedVertexCleaner::createIndexBuffer(const std::vector<unsigned int>&    indices,
+                                       const std::vector<unsigned int>&    indexMap,
+                                       AssetLibrary::Ptr                   assetLibrary)
+{
+    const auto numIndices = indices.size();
+
+    auto newIndices = std::vector<T>(numIndices, 0);
+    for (auto i = 0u; i < numIndices; ++i)
+        newIndices[i] = indexMap.at(indices[i]);
+
+    return render::IndexBuffer::create(assetLibrary->context(), newIndices);
 }

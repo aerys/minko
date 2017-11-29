@@ -35,11 +35,9 @@ namespace minko
             typedef std::shared_ptr<UnusedVertexCleaner>                        Ptr;
 
             typedef std::shared_ptr<component::Surface>                         SurfacePtr;
-
             typedef std::shared_ptr<AssetLibrary>                               AssetLibraryPtr;
-
+            typedef std::shared_ptr<render::IndexBuffer>                        IndexBufferPtr;
             typedef std::shared_ptr<geometry::Geometry>                         GeometryPtr;
-
             typedef std::shared_ptr<scene::Node>                                NodePtr;
 
         private:
@@ -78,6 +76,12 @@ namespace minko
 
             void
             processGeometry(GeometryPtr geometry, AssetLibraryPtr assetLibrary);
+
+            template <typename T>
+            IndexBufferPtr
+            createIndexBuffer(const std::vector<unsigned int>&  indices,
+                              const std::vector<unsigned int>&  indexMap,
+                              AssetLibraryPtr                   assetLibrary);
         };
     }
 }
