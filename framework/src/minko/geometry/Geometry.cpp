@@ -581,13 +581,10 @@ Geometry::getHitNormal(uint triangle, math::vec3* hitNormal)
 	auto& indicesData = _indexBuffer->data();
 
 	auto v0 = math::make_vec3(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
-	auto v1 = math::make_vec3(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
-	auto v2 = math::make_vec3(normalPtr + indicesData[triangle] * normalVertexSize + normalOffset);
+	auto v1 = math::make_vec3(normalPtr + indicesData[triangle + 1] * normalVertexSize + normalOffset);
+	auto v2 = math::make_vec3(normalPtr + indicesData[triangle + 2] * normalVertexSize + normalOffset);
 
-	auto edge1 = math::normalize(v1 - v0);
-	auto edge2 = math::normalize(v2 - v0);
-
-	*hitNormal = math::cross(edge2, edge1);
+    *hitNormal = math::normalize((v0 + v1 + v2) / 3.f);
 }
 
 void
