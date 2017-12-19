@@ -26,7 +26,6 @@ using namespace minko::geometry;
 using namespace minko::component;
 using namespace minko::material;
 using namespace minko::data;
-using namespace minko::math;
 using namespace minko::render;
 
 struct Star
@@ -57,12 +56,16 @@ main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+            math::inverse(
+                math::lookAt(
+                    math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0, 1, 0)
+                )
+            )
         ))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
 
     root->addChild(camera);
-    root->data()->addProvider(canvas->data()); // FIXME
+    root->data().addProvider(canvas->data()); // FIXME
 
     std::vector<Star> stars;
     auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
@@ -78,15 +81,15 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float t, float dt)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float t, float dt, bool shouldRender)
     {
         for (auto& star : stars)
-            star.node->component<Transform>()->matrix()->appendRotationY(star.angRate);
+            star.node->component<Transform>()->matrix(math::rotate(star.angRate, math::vec3(0.f, 1.f, 0.f)) * star.node->component<Transform>()->matrix());
 
-        sceneManager->nextFrame(t, dt);
+        sceneManager->nextFrame(t, dt, shouldRender);
     });
 
     sceneManager->assets()->loader()->load();
@@ -114,12 +117,13 @@ addStar(Node::Ptr root, file::AssetLibrary::Ptr assets, std::vector<Star>& stars
     auto starNode = Node::create("star_" + std::to_string(stars.size()))
         ->addComponent(Surface::create(
             createStarLineGeometry(numBranches, inRadius, outRadius, assets->context()),
-            material::Material::create("material")
-                ->set("diffuseColor", Color::hslaToRgba(rand() / float(RAND_MAX), 0.75f, 0.6f, 1.0f))
-                ->set("lineThickness", 1.0f + 3.0f * (rand() / float(RAND_MAX))),
+            material::Material::create("material")->set({
+                { "diffuseColor", math::vec4((rand() / float(RAND_MAX), 0.75f, 0.6f, 1.0f)) },
+                { "lineThickness", 1.0f + 3.0f * (rand() / float(RAND_MAX)) }
+            }),
             assets->effect("line")
         ))
-        ->addComponent(Transform::create(Matrix4x4::create()->appendRotationZ(2.0f * float(M_PI) * rand() / (float) RAND_MAX)));
+        ->addComponent(Transform::create(math::rotate(2.0f * float(M_PI) * rand() / (float) RAND_MAX, math::vec3(0.f, 0.f, 1.f))));
 
     stars.push_back(Star());
 
