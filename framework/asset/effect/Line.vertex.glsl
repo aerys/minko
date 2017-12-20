@@ -17,6 +17,9 @@ uniform	mat4 uWorldToScreenMatrix;
 uniform	vec4 uViewport;
 uniform	float uLineThickness;
 
+varying float vPosW;
+varying float vWeight;
+
 void
 main()
 {
@@ -37,6 +40,9 @@ main()
 
 	vec4 pos = wStart * startPos + wStop * stopPos;
 	float posW = pos.w;
+
+    vPosW = posW;
+    vWeight = (wStop - wStart);
 
 	// account for perspective division for screen-space offsetting
 	startPos /= startPos.w;
