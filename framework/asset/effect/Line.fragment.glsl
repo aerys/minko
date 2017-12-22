@@ -8,7 +8,18 @@
     #endif
 #endif
 
+uniform float uTime;
 uniform vec4 uDiffuseColor;
+
+#ifdef LINE_DASH_LENGTH
+uniform float uLineDashLength;
+#ifdef LINE_DASH_SPEED
+uniform float uLineDashSpeed;
+#endif
+#endif
+
+varying float vPosW;
+varying float vWeight;
 
 void
 main()
@@ -18,6 +29,16 @@ main()
 	#ifdef DIFFUSE_COLOR
 		color = uDiffuseColor;
 	#endif // DIFFUSE_COLOR
+
+#ifdef LINE_DASH_LENGTH
+    float timeTerm = 0.0;
+    #ifdef LINE_DASH_SPEED
+        // uTime is in ms
+        timeTerm = uLineDashSpeed * uTime / 1000.0;
+    #endif
+
+    color.a *= sign(sin(vWeight / vPosW / uLineDashLength * 1000.0 + timeTerm));
+#endif
 
 	gl_FragColor = color;
 }
