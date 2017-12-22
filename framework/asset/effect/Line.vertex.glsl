@@ -42,7 +42,7 @@ main()
 	float posW = pos.w;
 
     vPosW = posW;
-    vWeight = (wStop - wStart);
+    vWeight = (wStop - wStart) * distance(startPos, stopPos) / uViewport.z;
 
 	// account for perspective division for screen-space offsetting
 	startPos /= startPos.w;
