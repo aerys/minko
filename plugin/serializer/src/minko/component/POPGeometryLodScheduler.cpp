@@ -114,7 +114,8 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
         resource->minLod = availableLods->begin()->second._level;
 
         auto maxLodIt = availableLods->rbegin();
-        if (maxLodIt->second._level == resource->fullPrecisionLod)
+        if (maxLodIt->second._level == resource->fullPrecisionLod &&
+            availableLods->size() > 1)
             ++maxLodIt;
 
         resource->maxLod = maxLodIt->second._level;
