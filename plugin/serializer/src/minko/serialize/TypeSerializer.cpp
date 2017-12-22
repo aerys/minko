@@ -178,16 +178,14 @@ TypeSerializer::serializeCulling(Any value)
 std::tuple<uint, std::string>
 TypeSerializer::serializeTexture(Any value)
 {
-	short textureId = Any::cast<uint>(value);
+	const auto textureId = Any::cast<uint>(value);
 
 	uint type = 0x00000000;
 
 	type += TEXTURE << 24;
-
 	type += textureId;
 
 	return std::tuple<uint, std::string>(type, "");
-
 }
 
 std::tuple<uint, std::string>

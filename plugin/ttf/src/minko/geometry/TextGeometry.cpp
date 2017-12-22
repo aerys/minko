@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/log/Logger.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/IndexBuffer.hpp"
-#include "minko/render/Texture.hpp"
+#include "minko/render/RectangleTexture.hpp"
 #include "minko/render/VertexBuffer.hpp"
 
 using namespace minko;
@@ -88,8 +88,8 @@ buildGeometry(render::AbstractContext::Ptr  context,
               const Font&                   font,
 		      bool							centerOrigin);
 
-TextGeometry::TextGeometry() :
-    Geometry("text"),
+TextGeometry::TextGeometry(const std::string& name) :
+    Geometry(name),
     _context(),
     _atlasTexture(),
     _textSize(0.f)
@@ -231,9 +231,13 @@ bool
 buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& fontFilename, float scale, unsigned int fontCharacterStride)
 {
     const auto& fontCharacters = font.characters;
+    const auto referenceChar = 'A';
 
     auto fontCharacterMaxSize = math::ivec2(std::numeric_limits<int>::min());
-    auto referenceBaseLine = 0;
+    auto yBounds = math::ivec2(std::numeric_limits<int>::max(), std::numeric_limits<int>::min());
+    auto referenceCharBoxMin = math::ivec2();
+    auto referenceCharBoxMax = math::ivec2();
+
     for (auto i = 0; i < fontCharacters.size(); ++i)
     {
         auto fontCharacterBoxMin = math::ivec2();
@@ -241,20 +245,31 @@ buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& 
         if (!getCharacterBox(font, std::string{ fontCharacters.at(i).c }, 1.f, fontCharacterBoxMin, fontCharacterBoxMax))
             continue;
 
+        if (fontCharacters.at(i).c == referenceChar)
+        {
+            referenceCharBoxMin = fontCharacterBoxMin;
+            referenceCharBoxMax = fontCharacterBoxMax;
+        }
+
         const auto fontCharacterSize = fontCharacterBoxMax - fontCharacterBoxMin;
 
         fontCharacterMaxSize.x = math::max(fontCharacterMaxSize.x, fontCharacterSize.x);
         fontCharacterMaxSize.y = math::max(fontCharacterMaxSize.y, fontCharacterSize.y);
 
-        referenceBaseLine = math::max(referenceBaseLine, fontCharacterBoxMin.y + fontCharacterSize.y);
+        yBounds.x = math::min(yBounds.x, fontCharacterBoxMin.y);
+        yBounds.y = math::max(yBounds.y, fontCharacterBoxMax.y);
     }
 
-    font.atlasCharOffset = fontCharacterMaxSize;
+    // Characters are centered base on a reference 'A' character
+    // They all share the same box and are offsetted according
+    // to the reference char baseline
+    const auto referenceCharOffset = -(referenceCharBoxMin.y + referenceCharBoxMax.y) / 2;
+
+    font.atlasCharOffset = math::ivec2(fontCharacterMaxSize.x, (yBounds.y - yBounds.x) + referenceCharOffset);
     font.atlasSize = fontCharacterStride * font.atlasCharOffset;
-    font.atlas = render::Texture::create(
+    font.atlas = render::RectangleTexture::create(
         context,
         font.atlasSize.x, font.atlasSize.y,
-        false, false, false,
         render::TextureFormat::RGBA,
         fontFilename
     );
@@ -279,13 +294,13 @@ buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& 
 
         const auto offset = i * atlasCharOffset.x * atlasCharOffset.y * 4;
 
-        auto fontCharacterData = std::vector<unsigned char>(atlasCharOffset.x * atlasCharOffset.y * 4);
+        auto fontCharacterData = std::vector<unsigned char>(w * h * 4);
 
         for (auto y = 0; y < h; ++y)
         {
             for (auto x = 0; x < w; ++x)
             {
-                const auto dstOffset = (y * atlasCharOffset.x + x) * 4;
+                const auto dstOffset = (y * w + x) * 4;
                 const auto srcOffset = y * w + x;
                 const auto srcValue = fontCharacter.textureData.at(srcOffset);
 
@@ -300,12 +315,12 @@ buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& 
 
         for (auto y = 0; y < fontCharacter.size.y; ++y)
         {
-            const auto dstOffsetY = atlasCharOffset.y - referenceBaseLine + fontCharacterBoxMin.y + y + (i / uDivisions) * atlasCharOffset.y;
+            const auto dstOffsetY = atlasCharOffset.y - referenceCharOffset + fontCharacterBoxMin.y + y + (i / uDivisions) * atlasCharOffset.y;
             const auto dstOffsetX = fontCharacterBoxMin.x + (i % uDivisions) * atlasCharOffset.x;
 
             const auto dstOffset = (dstOffsetY * atlasSize.x + dstOffsetX) * 4;
-            const auto srcOffset = (y * atlasCharOffset.x) * 4;
-            const auto srcLength = atlasCharOffset.x * 4;
+            const auto srcOffset = (y * fontCharacter.size.x) * 4;
+            const auto srcLength = fontCharacter.size.x * 4;
 
             std::copy(
                 fontCharacterData.begin() + srcOffset,
@@ -315,15 +330,15 @@ buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& 
         }
     }
 
-    auto texture = std::dynamic_pointer_cast<render::Texture>(font.atlas);
+    auto texture = std::dynamic_pointer_cast<render::RectangleTexture>(font.atlas);
 
     if (!texture)
     {
-        LOG_ERROR("The atlas texture cannot be written to");
+        LOG_ERROR("Atlas texture must be an instance of RectangleTexture");
         return false;
     }
 
-    texture->data(atlasTextureData.data());
+    texture->data(atlasTextureData.data(), font.atlasSize.x, font.atlasSize.y);
 
     return true;
 }
@@ -374,7 +389,7 @@ getCharacterBox(const Font&         font,
             boxMax.x = boxMin.x + fontCharacter.size.x * scale;
 
             boxMin.y = -fontCharacter.bearing.y * scale;
-            boxMax.y = boxMin.y + fontCharacter.size.y;
+            boxMax.y = boxMin.y + fontCharacter.size.y * scale;
         }
     }
 

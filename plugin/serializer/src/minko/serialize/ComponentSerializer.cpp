@@ -489,6 +489,7 @@ ComponentSerializer::serializeASCIIText(NodePtr              node,
 	file::DependencyId materialId = text->material() ? dependencies->registerDependency(text->material()) : file::DependencyId(0);
 	file::DependencyId effectId = text->effect() ? dependencies->registerDependency(text->effect()) : file::DependencyId(0);
 
+    const auto type = static_cast<int8_t>(serialize::ASCII_TEXT);
 	msgpack::type::tuple<std::string, file::DependencyId, file::DependencyId> src(
         text->text(),
 		materialId,
@@ -496,8 +497,8 @@ ComponentSerializer::serializeASCIIText(NodePtr              node,
     );
 
     std::stringstream buffer;
-    msgpack::pack(buffer, text->text());
-    msgpack::pack(buffer, (int8_t)serialize::ASCII_TEXT);
+    msgpack::pack(buffer, src);
+    msgpack::pack(buffer, type);
 
     return buffer.str();
 }

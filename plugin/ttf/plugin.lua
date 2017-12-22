@@ -25,7 +25,11 @@ function minko.plugin.ttf:enable()
 
     includedirs { minko.plugin.path("ttf") .. "/include" }
 
-    minko.plugin.links { "ttf" }
+	minko.plugin.links { "ttf" }
+
+    configuration { "windows" }
+        links { "freetype28" }
+        defines { "MINKO_PLUGIN_TTF_FREETYPE" }
 
     configuration { "windows32", "ConsoleApp or WindowedApp" }
         libdirs { minko.plugin.path("ttf") .. "/lib/freetype/lib/windows32" }

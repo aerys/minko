@@ -565,6 +565,8 @@ Picking::renderPickingFrame()
     _renderer->enabled(true);
     _renderer->render(_sceneManager->canvas()->context());
     _renderer->enabled(false);
+
+    _sceneManager->forceRenderNextFrame();
 }
 
 void
@@ -964,11 +966,20 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
 {
     auto pickedNodes = Picking::map<scene::Node::Ptr, std::set<unsigned char>>();
 
-    const auto width = static_cast<int>(topRight.x - bottomLeft.x);
-    const auto height = static_cast<int>(bottomLeft.y - topRight.y);
+    auto width = static_cast<int>(topRight.x - bottomLeft.x);
+    auto height = static_cast<int>(bottomLeft.y - topRight.y);
+    auto singleClick = false;
 
-    if (width == 0 || height == 0)
-        return pickedNodes;
+    // Handle single click
+    if (width == 0 && height == 0)
+        singleClick = true;
+
+    // Make sure the area is not null
+    if (width == 0)
+        width = 1;
+
+    if (height == 0)
+        height = 1;
 
     _multiselecting = true;
     _multiselectionStartPosition = bottomLeft;
@@ -979,6 +990,9 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
 
     // Force picking renderer to render a frame
     renderPickingFrame();
+
+    // Make sure to reset the scissor box size
+    _renderer->scissorBox(0, 0, 1, 1);
 
     if (_debug)
         return pickedNodes;
@@ -1002,7 +1016,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
         uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
         auto alpha = currentPixel[3];
 
-        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || fullyInside) && pickedSurfaceId <= maxSurfaceId)
+        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || (fullyInside && !singleClick)) && pickedSurfaceId <= maxSurfaceId)
         {
             lastPickedSurfaceId = pickedSurfaceId;
             lastAlphaValue = alpha;
@@ -1013,7 +1027,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
             {
                 auto pickedSurface = surfaceIt->second;
 
-                if (fullyInside)
+                if (fullyInside && !singleClick)
                 {
                     auto pixelBufferWidth = pixelSize * width;
 
@@ -1046,7 +1060,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
         }
     }
 
-    if (fullyInside)
+    if (fullyInside && !singleClick)
     {
         for (const auto& element : elementsToRemove)
         {
@@ -1060,14 +1074,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
         }
     }
 
-    // Make sure to reset the scissor box size
-    _renderer->scissorBox(0, 0, 1, 1);
-
     _multiselecting = false;
-
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    _sceneManager->nextFrame(0.f, 0.f);
-#endif
 
     return pickedNodes;
 }

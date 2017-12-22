@@ -94,6 +94,16 @@ main(int argc, char** argv)
             textMeshes.at(i)->addComponent(Surface::create(geometry, material, sceneManager->assets()->effect(EFFECT_FILENAME)));
             root->addChild(textMeshes.at(i));
         }
+
+        root->addChild(scene::Node::create("ASCIIText")
+            ->addComponent(Transform::create(math::scale(math::vec3(.006f))))
+            ->addComponent(ASCIIText::create(
+                textGeometries.front()->atlasTexture(),
+                "ASCIIText component example",
+                material::Material::create()->set({ { "diffuseColor", math::vec4(1.f) } }),
+                sceneManager->assets()->effect(EFFECT_FILENAME))
+            )
+        );
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)

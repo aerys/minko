@@ -56,7 +56,7 @@ build:html5:
   stage: build
   image: aerysinnovation/smartshape-build:html5
   script:
-    - ./script/solution_gmake_min.sh --no-glsl-optimizer
+    - ./script/solution_gmake_min.sh
     - make -j$(nproc) config=html5_release
 
 build:android:
@@ -64,7 +64,7 @@ build:android:
   stage: build
   image: aerysinnovation/smartshape-build:android
   script:
-    - ./script/solution_gmake_min.sh --no-glsl-optimizer --with-nodejs-worker
+    - ./script/solution_gmake_min.sh --with-nodejs-worker
     - make -j$(nproc) config=android_release
 
 build:linux:
@@ -80,7 +80,7 @@ build:linux_offscreen:
   stage: build
   image: aerysinnovation/smartshape-build:linux64
   script:
-    - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay --no-glsl-optimizer
+    - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay
     - make -j$(nproc) config=linux64_release
 
 test:linux_offscreen:
@@ -94,7 +94,7 @@ test:linux_offscreen:
     paths:
       - test
   script:
-    - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --no-glsl-optimizer
+    - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay
     - make -j$(nproc) config=linux64_release -C test
     - ./test/bin/linux64/release/minko-test
 

@@ -74,6 +74,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _startTime(std::chrono::high_resolution_clock::now()),
     _framerate(0.f),
     _desiredFramerate(60.f),
+    _desiredFramerateChanged(false),
     _desiredEventrate(60.f),
 	_swapBuffersAtEnterFrame(true),
     _enterFrame(Signal<AbstractCanvas::Ptr, float, float, bool>::create()),
@@ -1020,7 +1021,7 @@ Canvas::step()
     _deltaRenderTime  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - _previousRenderTime).count(); // in milliseconds
     _previousTime = absoluteTime;
 
-    auto shouldRender = (_desiredEventrate == _desiredFramerate) || _deltaRenderTime >= (1000.f / _desiredFramerate);
+    auto shouldRender = _desiredFramerateChanged || (_desiredEventrate == _desiredFramerate) || _deltaRenderTime >= (1000.f / _desiredFramerate);
 
     if (shouldRender)
         _previousRenderTime = absoluteTime;
@@ -1045,6 +1046,9 @@ Canvas::step()
         _backend->wait(that, uint(remainingTime));
 		_framerate = _desiredEventrate;
     }
+
+    if (_desiredFramerateChanged)
+        _desiredFramerateChanged = false;
 }
 
 void
@@ -1097,6 +1101,9 @@ Canvas::swapBuffers()
 void
 Canvas::desiredFramerate(float desiredFramerate)
 {
+    if (_desiredFramerate != desiredFramerate)
+        _desiredFramerateChanged = true;
+
     _desiredFramerate = desiredFramerate;
 
     if (_desiredEventrate < _desiredFramerate)

@@ -31,8 +31,13 @@ namespace minko
         class Logger :
             public Assimp::LogStream
         {
+        private:
+            minko::log::Logger::Level _level;
+
         public:
-            Logger()
+            explicit
+            Logger(minko::log::Logger::Level level) :
+                _level(level)
             {
             }
 
@@ -42,7 +47,7 @@ namespace minko
 
             void write(const char* message)
             {
-                LOG_INFO(message);
+                LOG((*minko::log::Logger::defaultLogger()), message, _level);
             }
         };
     }

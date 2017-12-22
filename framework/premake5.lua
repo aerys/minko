@@ -68,8 +68,8 @@ minko.project.library "minko-framework"
 		}
 	configuration {}
 
-	-- handle no-glsl-optimizer option
-	if not _OPTIONS["no-glsl-optimizer"] then
+	-- handle with-glsl-optimizer option
+	if _OPTIONS["with-glsl-optimizer"] then
 		defines { "MINKO_GLSL_OPTIMIZER_ENABLED" }
 
 		-- glsl-optimizer
@@ -139,6 +139,6 @@ minko.project.library "minko-framework"
 		}
 
 	newoption {
-		trigger     = "no-glsl-optimizer",
-		description = "Use this option to disable the GLSL optimizer"
+		trigger     = "with-glsl-optimizer",
+		description = "Use this option to enable the GLSL optimizer"
 	}

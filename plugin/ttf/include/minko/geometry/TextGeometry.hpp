@@ -40,9 +40,9 @@ namespace minko
         public:
             static
             Ptr
-            create(std::shared_ptr<render::AbstractContext> context)
+            create(std::shared_ptr<render::AbstractContext> context, const std::string& name = "")
             {
-                auto instance = Ptr(new TextGeometry());
+                auto instance = Ptr(new TextGeometry(name));
 
                 instance->_context = context;
 
@@ -74,7 +74,8 @@ namespace minko
             }
 
         private:
-            TextGeometry();
+            explicit
+            TextGeometry(const std::string& name);
         };
     }
 }
