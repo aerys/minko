@@ -780,11 +780,17 @@ Renderer::removeOutOfSceneSurfaces()
 	// it at the same time.
 	std::list<Surface::Ptr> surfaceToRemove;
 
-	for (auto& surfaceAndDrawCallIt : _surfaceToDrawCallIterator)
-		if (surfaceAndDrawCallIt.first->target() == nullptr
-			|| surfaceAndDrawCallIt.first->target()->root() != target()->root())
+    std::list<Surface::Ptr> surfaceToCheck;
+    surfaceToCheck.insert(surfaceToCheck.end(), _toCollect.begin(), _toCollect.end());
+
+    for (const auto& surfaceAndDrawCallIt : _surfaceToDrawCallIterator)
+        surfaceToCheck.push_back(surfaceAndDrawCallIt.first);
+
+	for (const auto surface : surfaceToCheck)
+		if (surface->target() == nullptr
+			|| surface->target()->root() != target()->root())
 		{
-			surfaceToRemove.push_back(surfaceAndDrawCallIt.first);
+			surfaceToRemove.push_back(surface);
 		}
 
 	for (auto& surface : surfaceToRemove)

@@ -68,6 +68,9 @@ namespace minko
 			ContextPtr					        		_context;
             ProviderPtr				        		    _pickingProvider;
 
+            scene::Layout                               _layout;
+            scene::Layout                               _depthLayout;
+
             EffectPtr                                   _pickingEffect;
             EffectPtr                                   _pickingDepthEffect;
 
@@ -165,6 +168,12 @@ namespace minko
 
 				return picking;
 			}
+
+            Ptr
+            layout(scene::Layout value);
+
+            Ptr
+            depthLayout(scene::Layout value);
 
 			inline
 			Signal<NodePtr>::Ptr
@@ -447,6 +456,9 @@ namespace minko
 
             void
             renderPickingFrame();
+
+            void
+            pickingLayoutChanged(scene::Layout previousValue, scene::Layout value);
 		};
 	}
 }

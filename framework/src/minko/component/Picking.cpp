@@ -38,17 +38,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 using namespace minko;
-using namespace component;
+using namespace minko::component;
 
 Picking::Picking() :
-    _sceneManager(nullptr),
-    _context(nullptr),
-    _mouse(nullptr),
-    _touch(nullptr),
-    _camera(nullptr),
+    _renderTarget(),
+    _renderer(),
+    _sceneManager(),
+    _mouse(),
+    _touch(),
+    _camera(),
+    _pickingProjection(),
+    _surfaceToPickingId(),
+    _pickingIdToSurface(),
     _pickingId(0),
-    _pickingProjection(1.f),
+    _context(),
     _pickingProvider(data::Provider::create()),
+    _layout(scene::BuiltinLayout::PICKING),
+    _depthLayout(scene::BuiltinLayout::PICKING_DEPTH),
     _pickingEffect(nullptr),
     _pickingDepthEffect(nullptr),
 	_mouseMove(Signal<NodePtr>::create()),
@@ -78,6 +84,37 @@ Picking::Picking() :
     _multiselecting(false),
     _multiselectionStartPosition()
 {
+}
+
+Picking::Ptr
+Picking::layout(scene::Layout value)
+{
+    if (_layout == value)
+        return std::static_pointer_cast<Picking>(shared_from_this());
+
+    const auto previousValue = _layout;
+    _layout = value;
+
+    if (_renderer)
+        _renderer->layoutMask(_layout);
+
+    pickingLayoutChanged(previousValue, value);
+
+    return std::static_pointer_cast<Picking>(shared_from_this());
+}
+
+Picking::Ptr
+Picking::depthLayout(scene::Layout value)
+{
+    if (_depthLayout == value)
+        return std::static_pointer_cast<Picking>(shared_from_this());
+
+    _depthLayout = value;
+
+    if (_depthRenderer)
+        _depthRenderer->layoutMask(_depthLayout);
+
+    return std::static_pointer_cast<Picking>(shared_from_this());
 }
 
 void
@@ -273,7 +310,7 @@ Picking::targetAdded(NodePtr target)
         _renderer->enabled(false);
     }
 
-    _renderer->layoutMask(scene::BuiltinLayout::PICKING);
+    _renderer->layoutMask(_layout);
 
     if (_pickingDepthEffect == nullptr)
         _pickingDepthEffect = _sceneManager->assets()->effect("effect/PickingDepth.effect");
@@ -287,7 +324,7 @@ Picking::targetAdded(NodePtr target)
         "Depth Picking Renderer"
     );
     _depthRenderer->scissorBox(0, 0, 1, 1);
-    _depthRenderer->layoutMask(scene::BuiltinLayout::PICKING_DEPTH);
+    _depthRenderer->layoutMask(_depthLayout);
     _depthRenderer->enabled(false);
 
 	updateDescendants(target);
@@ -424,7 +461,7 @@ Picking::componentRemovedHandler(NodePtr							target,
 		removeSurface(surfaceCtrl, node);
 
 	if (!node->hasComponent<Surface>() && _addPickingLayout)
-		node->layout(node->layout() & ~scene::BuiltinLayout::PICKING);
+		node->layout(node->layout() & ~_layout);
 }
 
 void
@@ -445,9 +482,9 @@ Picking::addSurface(SurfacePtr surface)
 		));
 
         if (_addPickingLayout)
-            surface->target()->layout(target()->layout() | scene::BuiltinLayout::PICKING);
+            surface->target()->layout(target()->layout() | _layout);
 
-        surface->layoutMask(surface->layoutMask() & ~scene::BuiltinLayout::PICKING_DEPTH);
+        surface->layoutMask(surface->layoutMask() & ~_depthLayout);
 	}
 }
 
@@ -503,7 +540,8 @@ Picking::removeSurfacesForNode(NodePtr node)
 
 	for (auto surfaceNode : surfaces->nodes())
 	{
-		surfaceNode->layout(surfaceNode->layout() & ~scene::BuiltinLayout::PICKING);
+        if (_addPickingLayout)
+		    surfaceNode->layout(surfaceNode->layout() & ~_layout);
 
 		for (auto surface : surfaceNode->components<Surface>())
 			removeSurface(surface, surfaceNode);
@@ -604,15 +642,15 @@ Picking::renderDepth(RendererPtr renderer, SurfacePtr pickedSurface)
 
     auto pickedSurfaceTarget = pickedSurface->target();
 
-    pickedSurfaceTarget->layout(pickedSurfaceTarget->layout() | scene::BuiltinLayout::PICKING_DEPTH);
-    pickedSurface->layoutMask(pickedSurface->layoutMask() | scene::BuiltinLayout::PICKING_DEPTH);
+    pickedSurfaceTarget->layout(pickedSurfaceTarget->layout() | _depthLayout);
+    pickedSurface->layoutMask(pickedSurface->layoutMask() | _depthLayout);
 
     renderer->enabled(true);
     renderer->render(_sceneManager->canvas()->context());
     renderer->enabled(false);
 
-    pickedSurfaceTarget->layout(pickedSurfaceTarget->layout() & ~scene::BuiltinLayout::PICKING_DEPTH);
-    pickedSurface->layoutMask(pickedSurface->layoutMask() & ~scene::BuiltinLayout::PICKING_DEPTH);
+    pickedSurfaceTarget->layout(pickedSurfaceTarget->layout() & ~_depthLayout);
+    pickedSurface->layoutMask(pickedSurface->layoutMask() & ~_depthLayout);
 }
 
 static
@@ -1077,4 +1115,23 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     _multiselecting = false;
 
     return pickedNodes;
+}
+
+void
+Picking::pickingLayoutChanged(scene::Layout previousValue, scene::Layout value)
+{
+    if (!_addPickingLayout)
+        return;
+
+    // Update automatically assigned layout
+
+    for (auto node : _descendants)
+    {
+        auto nodeLayout = node->layout();
+
+        nodeLayout = nodeLayout & ~previousValue;
+        nodeLayout = nodeLayout | value;
+
+        node->layout(nodeLayout);
+    }
 }
