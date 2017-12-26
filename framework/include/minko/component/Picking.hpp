@@ -68,6 +68,9 @@ namespace minko
 			ContextPtr					        		_context;
             ProviderPtr				        		    _pickingProvider;
 
+            scene::Layout                               _layout;
+            scene::Layout                               _depthLayout;
+
             EffectPtr                                   _pickingEffect;
             EffectPtr                                   _pickingDepthEffect;
 
