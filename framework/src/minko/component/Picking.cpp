@@ -86,6 +86,37 @@ Picking::Picking() :
 {
 }
 
+Picking::Ptr
+Picking::layout(scene::Layout value)
+{
+    if (_layout == value)
+        return std::static_pointer_cast<Picking>(shared_from_this());
+
+    const auto previousValue = _layout;
+    _layout = value;
+
+    if (_renderer)
+        _renderer->layoutMask(_layout);
+
+    pickingLayoutChanged(previousValue, value);
+
+    return std::static_pointer_cast<Picking>(shared_from_this());
+}
+
+Picking::Ptr
+Picking::depthLayout(scene::Layout value)
+{
+    if (_depthLayout == value)
+        return std::static_pointer_cast<Picking>(shared_from_this());
+
+    _depthLayout = value;
+
+    if (_depthRenderer)
+        _depthRenderer->layoutMask(_depthLayout);
+
+    return std::static_pointer_cast<Picking>(shared_from_this());
+}
+
 void
 Picking::initialize(NodePtr             camera,
                     bool                addPickingLayout,
@@ -1084,4 +1115,23 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     _multiselecting = false;
 
     return pickedNodes;
+}
+
+void
+Picking::pickingLayoutChanged(scene::Layout previousValue, scene::Layout value)
+{
+    if (!_addPickingLayout)
+        return;
+
+    // Update automatically assigned layout
+
+    for (auto node : _descendants)
+    {
+        auto nodeLayout = node->layout();
+
+        nodeLayout = nodeLayout & ~previousValue;
+        nodeLayout = nodeLayout | value;
+
+        node->layout(nodeLayout);
+    }
 }

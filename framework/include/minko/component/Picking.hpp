@@ -169,6 +169,12 @@ namespace minko
 				return picking;
 			}
 
+            Ptr
+            layout(scene::Layout value);
+
+            Ptr
+            depthLayout(scene::Layout value);
+
 			inline
 			Signal<NodePtr>::Ptr
 			mouseOver()
@@ -450,6 +456,9 @@ namespace minko
 
             void
             renderPickingFrame();
+
+            void
+            pickingLayoutChanged(scene::Layout previousValue, scene::Layout value);
 		};
 	}
 }
