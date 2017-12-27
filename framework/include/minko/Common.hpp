@@ -225,7 +225,8 @@ namespace minko
 		class AbstractShape;
 		class Box;
 		class Frustum;
-		class OctTree;
+        class OctTree;
+		class Plane;
 
 		inline
 		vec4

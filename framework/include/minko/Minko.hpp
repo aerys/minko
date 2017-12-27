@@ -43,6 +43,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Box.hpp"
 #include "minko/math/Frustum.hpp"
 #include "minko/math/OctTree.hpp"
+#include "minko/math/Plane.hpp"
 #include "minko/math/Ray.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
