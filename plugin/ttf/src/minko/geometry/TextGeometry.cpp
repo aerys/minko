@@ -37,7 +37,7 @@ using namespace minko::geometry;
 
 struct FontCharacter
 {
-    char                        c;
+    signed char                 c;
     std::vector<unsigned char>  textureData;
     math::ivec2                 size;
     math::ivec2                 bearing;
@@ -53,7 +53,7 @@ struct Font
 };
 
 static
-const std::vector<char>&
+const std::vector<signed char>&
 getCharacterSet();
 
 #ifdef MINKO_PLUGIN_TTF_FREETYPE
@@ -397,16 +397,16 @@ getCharacterBox(const Font&         font,
 }
 #endif
 
-const std::vector<char>&
+const std::vector<signed char>&
 getCharacterSet()
 {
-    static auto characters = std::vector<char>();
+    static auto characters = std::vector<signed char>();
 
     if (characters.empty())
     {
         characters.reserve(256);
-        for (int i = std::numeric_limits<char>::min(); i <= std::numeric_limits<char>::max(); ++i)
-            characters.push_back(static_cast<char>(i));
+        for (int i = std::numeric_limits<signed char>::min(); i <= std::numeric_limits<signed char>::max(); ++i)
+            characters.push_back(static_cast<signed char>(i));
     }
 
     return characters;
