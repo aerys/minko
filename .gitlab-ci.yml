@@ -65,7 +65,7 @@ build:android:
   image: aerysinnovation/smartshape-build:android
   script:
     - ./script/solution_gmake_min.sh --with-nodejs-worker
-    - make -j$(nproc) config=android_release
+    - make config=android_release
 
 build:linux:
   <<: *build_with_artifacts_template
