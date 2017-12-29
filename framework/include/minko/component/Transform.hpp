@@ -255,6 +255,9 @@ namespace minko
 
 				void
 				sortNodes();
+
+                void
+                removeOutOfSceneTransforms();
 			};
 		};
 	}
