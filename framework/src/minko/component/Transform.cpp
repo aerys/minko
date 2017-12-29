@@ -253,6 +253,24 @@ Transform::RootTransform::removedHandler(scene::Node::Ptr node,
         ->descendants(true, false)
         ->where([](scene::Node::Ptr n){ return n->hasComponent<Transform>(); });
     _toRemove.insert(withTransforms->nodes().begin(), withTransforms->nodes().end());
+
+	// Because scene signals bubble down before bubbling up, some nodes with Transform might
+	// have been removed from the scene without being noticed
+    removeOutOfSceneTransforms();
+}
+
+void
+Transform::RootTransform::removeOutOfSceneTransforms()
+{
+    for (auto node : _nodes)
+    {
+        if (node->root() == target())
+            continue;
+
+        // node does not exist in the scene this RootTransform belongs to
+        _toRemove.insert(node);
+        _invalidLists = true;
+    }
 }
 
 void
