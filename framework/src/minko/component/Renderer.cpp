@@ -806,7 +806,8 @@ Renderer::removeOutOfSceneSurfaces()
 	// And we still can't both iterate and delete stuff.
 	std::list<Node::Ptr> nodeToRemove;
 	for (auto& nodeAndLayoutChangedSlot : _nodeLayoutChangedSlot)
-		if (!nodeAndLayoutChangedSlot.first->hasComponent<Surface>())
+		if (!nodeAndLayoutChangedSlot.first->hasComponent<Surface>() ||
+            nodeAndLayoutChangedSlot.first->root() != target()->root())
 			nodeToRemove.push_back(nodeAndLayoutChangedSlot.first);
 	for (auto& node : nodeToRemove)
 		_nodeLayoutChangedSlot.erase(node);
