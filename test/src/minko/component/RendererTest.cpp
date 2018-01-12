@@ -104,6 +104,61 @@ TEST_F(RendererTest, AddAndRemoveSurfaceBubbleUp)
     ASSERT_EQ(renderer->numDrawCalls(), 1);
 }
 
+TEST_F(RendererTest, CascadedRemoveNodeAndOutOfSceneNodeChangeLayout)
+{
+    // Related to smartshape-app#193
+
+    const auto fx = MinkoTests::loadEffect("effect/Basic.effect");
+    const auto renderer = Renderer::create();
+    const auto root = scene::Node::create()
+        ->addComponent(SceneManager::create(MinkoTests::canvas()))
+        ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)))
+        ->addComponent(renderer);
+    const auto material = material::BasicMaterial::create();
+    const auto surface = Surface::create(
+        geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
+        material,
+        fx
+    );
+
+    // root
+    // |- a
+    //    |- b (Surface)
+
+    const auto a = scene::Node::create();
+    const auto b = scene::Node::create()
+        ->addComponent(surface);
+    b->layout(scene::BuiltinLayout::DEFAULT);
+
+    a->addChild(b);
+    root->addChild(a);
+
+    renderer->render(MinkoTests::canvas()->context());
+    ASSERT_EQ(renderer->numDrawCalls(), 1);
+
+    auto removedSlot = Signal<scene::Node::Ptr, scene::Node::Ptr, scene::Node::Ptr>::Slot();
+    removedSlot = a->removed().connect([&removedSlot, &a, &b](scene::Node::Ptr node,
+                                                              scene::Node::Ptr target,
+                                                              scene::Node::Ptr parent)
+    {
+        removedSlot = nullptr;
+
+        // Cascaded node deletion
+        a->removeChild(b);
+    });
+
+    // Remove parent node
+    root->removeChild(a);
+
+    // Change layout of out-of-scene node
+    // It can be any arbitrary layout as long as
+    // it still matches the Renderer's layoutMask
+    b->layout(b->layout() | scene::BuiltinLayout::PICKING);
+
+    renderer->render(MinkoTests::canvas()->context());
+    ASSERT_EQ(renderer->numDrawCalls(), 0);
+}
+
 TEST_F(RendererTest, OneSurfaceLayoutMaskFail)
 {
     auto fx = MinkoTests::loadEffect("effect/Basic.effect");
