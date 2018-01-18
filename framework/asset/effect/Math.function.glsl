@@ -52,15 +52,16 @@ vec4 saturate(vec4 x)
 
 // Ref https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/
 
-#define ACOS_C0 1.56467
-#define ACOS_C1 -0.155972
+#define ACOS_C0 1.57018
+#define ACOS_C1 -0.201877
+#define ACOS_C2 0.0464619
 
 // polynomial degree 1
 // input [-1, 1] and output [0, PI]
 float ACos(float inX)
 {
     float x = abs(inX);
-    float res = ACOS_C1 * x + ACOS_C0; // p(x)
+    float res = (ACOS_C1 + ACOS_C2 * x) * x + ACOS_C0; // p(x)
     res *= sqrt(1.0 - x);
 
     return (inX >= 0.0) ? res : PI - res; // Undo range reduction
