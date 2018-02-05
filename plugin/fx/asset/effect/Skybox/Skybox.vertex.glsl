@@ -10,19 +10,25 @@
 
 attribute vec3 aPosition;
 
-uniform mat4 uProjectionMatrix;
 uniform mat4 uViewMatrix;
+
+uniform float uZNear;
+uniform float uZFar;
+uniform float uAspectRatio;
+uniform float uFov;
 
 varying vec3 vDirection;
 
 void main() {
-    vec4 position = vec4(aPosition, 1.0) * vec4(1.0, -1.0, 1.0, 0.5);
-    mat4 inverseProjection = inverse(uProjectionMatrix);
-    mat3 inverseModelview = transpose(mat3(uViewMatrix));
-    vec3 unprojected = (inverseProjection * position).xyz;
-    vDirection = inverseModelview * unprojected;
+    float zpos = (uZNear + uZFar) * 0.5;
+    float height = tan(uFov * 0.5) * zpos;
+    float width = height * uAspectRatio;
 
-    position.z =  position.w * ((1000.0 - EPSILON) / 1000.0);
+    vec4 position = vec4(aPosition.xy, 1.0, 1.0) * vec4(2.0, -2.0, 1.0, 1.0);
+    mat3 inverseModelview = transpose(mat3(uViewMatrix));
+    vDirection = inverseModelview * (position.xyz * vec3(width, height, -zpos)); 
+
+    position.z =  (1000.0 - EPSILON) / 1000.0;
 
     gl_Position = position;
 }

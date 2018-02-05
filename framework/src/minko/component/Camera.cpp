@@ -133,16 +133,20 @@ Camera::unproject(float x, float y)
     const auto viewport = math::vec4(-1.f, -1.f, 2.f, 2.f);
 
     // GLM unProject function expect coordinates with the origin at the lower left corner
-    const auto unprojectedWorldPosition = math::unProject(
+    const auto rayWorldOrigin = math::unProject(
         math::vec3(x, -y, 0.f),
         _view,
         _projection,
         viewport
     );
 
-    const auto rayWorldOrigin =
-        math::vec3(target()->component<Transform>()->modelToWorldMatrix() *
-        math::vec4(0.f, 0.f, 0.f, 1.f));
+    const auto unprojectedWorldPosition = math::unProject(
+        math::vec3(x, -y, 2.f),
+        _view,
+        _projection,
+        viewport
+    );
+
     const auto rayWorldDirection = math::normalize(unprojectedWorldPosition - rayWorldOrigin);
 
     return math::Ray::create(rayWorldOrigin, rayWorldDirection);
