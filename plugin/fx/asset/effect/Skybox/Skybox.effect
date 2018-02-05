@@ -19,9 +19,11 @@
                 "uOrientation" : "material[${materialUuid}].orientation",
                 "uBrightness" : "material[${materialUuid}].brightness",
                 "uGammaCorrection"  : { "binding" : { "property" : "gammaCorrection", "source" : "renderer" }, "default" : 2.2 },
-                "uWorldToScreenMatrix" : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
                 "uViewMatrix" : { "binding" : { "property" : "viewMatrix", "source" : "renderer" } },
-                "uProjectionMatrix" : { "binding" : { "property" : "projectionMatrix", "source" : "renderer" } },
+                "uZNear" : { "binding" : { "property" : "zNear", "source" : "renderer" } },
+                "uZFar" : { "binding" : { "property" : "zFar", "source" : "renderer" } },
+                "uAspectRatio" : { "binding" : { "property" : "aspectRatio", "source" : "renderer" } },
+                "uFov" : { "binding" : { "property" : "fov", "source" : "renderer" } },
                 "uFogColor"	: "material[${materialUuid}].fogColor"
             },
 

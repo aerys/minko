@@ -719,8 +719,12 @@ Picking::updatePickingProjection()
 	auto perspectiveCamera	= _camera->component<component::Camera>();
 	auto projection	= perspectiveCamera->projectionMatrix();
 
-	projection[2][0] = mouseX / _context->viewportWidth() * 2.f;
-	projection[2][1] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
+    math::vec2 normalizedMouse(mouseX / _context->viewportWidth() * 2.f, (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f);
+	projection[2][0] = -normalizedMouse.x * projection[2][3];
+	projection[2][1] = -normalizedMouse.y * projection[2][3];
+
+    projection[3][0] = -normalizedMouse.x * projection[3][3];
+    projection[3][1] = -normalizedMouse.y * projection[3][3];
 
 	_pickingProvider->set("pickingProjection", projection);
 }
