@@ -141,7 +141,7 @@ Camera::unproject(float x, float y)
     );
 
     const auto unprojectedWorldPosition = math::unProject(
-        math::vec3(x, -y, 2.f),
+        math::vec3(x, -y, 1.f),
         _view,
         _projection,
         viewport
