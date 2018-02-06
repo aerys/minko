@@ -41,7 +41,7 @@ namespace minko
             void
             write(const std::string& log, Logger::Level level) override
             {
-                std::cout << getLevelName(level) << ": " << log << std::endl;
+                std::cout << Logger::today() << " " << getLevelName(level) << ": " << log << std::endl;
             }
 
             std::string
