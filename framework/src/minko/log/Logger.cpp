@@ -54,3 +54,15 @@ Logger::operator()(const std::string&	message,
 
     _sink->write(os.str(), level);
 }
+
+std::string
+Logger::today()
+{
+    time_t     now = time(0);
+    char       buf[40];
+    struct tm  tstruct = *localtime(&now);
+
+    strftime(buf, sizeof(buf), "[%Y/%m/%d %r]", &tstruct);
+
+    return std::string(buf);
+}
