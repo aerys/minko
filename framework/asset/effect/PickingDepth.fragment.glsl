@@ -11,6 +11,7 @@
 #pragma include "Pack.function.glsl"
 
 uniform vec3 uPickingOrigin;
+uniform float uZNear;
 uniform float uZFar;
 
 varying vec3 vWorldPosition;
@@ -20,7 +21,7 @@ void main(void)
 {
     float distance = distance(uPickingOrigin, vWorldPosition);
 
-    distance = clamp(distance / uZFar, 0.0, 1.0);
+    distance = clamp(distance / (uZFar - uZNear), 0.0, 1.0);
 
     vec4 color = vec4(packFloat8bitRGB(distance), 0.0);
 

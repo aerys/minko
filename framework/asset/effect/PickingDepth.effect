@@ -15,6 +15,7 @@
     "uniforms"   : {
         "uTime"                 : { "binding" : { "property" : "time", "source" : "root" } },
         "uPickingOrigin"        : { "binding" : { "property" : "pickingOrigin", "source" : "renderer" } },
+        "uZNear"                : { "binding" : { "property" : "zNear", "source" : "renderer" } },
         "uZFar"                 : { "binding" : { "property" : "zFar", "source" : "renderer" } },
         "uModelToWorldMatrix"   : "modelToWorldMatrix",
         "uWorldToViewMatrix"    : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },

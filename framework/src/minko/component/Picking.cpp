@@ -692,9 +692,10 @@ Picking::depthRenderingEnd(RendererPtr renderer)
 
         _context->readPixels(0, 0, 1, 1, &_lastDepth[0]);
 
+        const auto zNear = _camera->data().get<float>("zNear");
         const auto zFar = _camera->data().get<float>("zFar");
 
-        const auto normalizedDepth = unpack(math::vec3(_lastDepth[0], _lastDepth[1], _lastDepth[2]) / 255.f) * zFar;
+        const auto normalizedDepth = unpack(math::vec3(_lastDepth[0], _lastDepth[1], _lastDepth[2]) / 255.f) * (zFar - zNear);
 
         _lastDepthValue = normalizedDepth;
 
