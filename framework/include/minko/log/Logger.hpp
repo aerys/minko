@@ -93,6 +93,10 @@ namespace minko
                 return _initializing;
             }
 
+            static
+            std::string
+            today();
+
         private:
             Logger(Level level, Sink::Ptr sink) :
                 _level(level),

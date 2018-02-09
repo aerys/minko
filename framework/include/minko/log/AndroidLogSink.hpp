@@ -54,7 +54,8 @@ namespace minko
                 else if (level == Logger::Level::Error)
                     logLevel = ANDROID_LOG_ERROR;
 
-                __android_log_print(logLevel, "Minko/Native", log.c_str());
+                std::string dated_log = Logger::today() + " " + log;
+                __android_log_print(logLevel, "Minko/Native", dated_log.c_str());
             }
 
         private:

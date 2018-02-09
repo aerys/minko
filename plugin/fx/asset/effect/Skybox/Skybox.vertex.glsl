@@ -12,7 +12,6 @@ attribute vec3 aPosition;
 
 uniform mat4 uViewMatrix;
 
-uniform float uZNear;
 uniform float uZFar;
 uniform float uAspectRatio;
 uniform float uFov;
@@ -20,7 +19,7 @@ uniform float uFov;
 varying vec3 vDirection;
 
 void main() {
-    float zpos = (uZNear + uZFar) * 0.5;
+    float zpos = uZFar * 0.5;
     float height = tan(uFov * 0.5) * zpos;
     float width = height * uAspectRatio;
 
