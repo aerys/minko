@@ -52,6 +52,8 @@ namespace minko
             math::vec3                                      _direction;
             math::mat4                                      _postProjection;
 
+            Signal<>::Ptr                                   _projectionMatrixChanged;
+
             Signal<AbsCtrlPtr, NodePtr>::Slot               _targetAddedSlot;
             Signal<AbsCtrlPtr, NodePtr>::Slot               _targetRemovedSlot;
             data::Store::PropertyChangedSignal::Slot        _modelToWorldChangedSlot;
@@ -107,6 +109,14 @@ namespace minko
             {
                 _projection = projection;
                 updateWorldToScreenMatrix();
+                _projectionMatrixChanged->execute();
+            }
+
+            inline
+            Signal<>::Ptr
+            projectionMatrixChanged()
+            {
+                return _projectionMatrixChanged;
             }
 
             ~Camera()
