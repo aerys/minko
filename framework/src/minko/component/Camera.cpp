@@ -37,7 +37,8 @@ Camera::Camera(const math::mat4&    projection,
     _view(math::mat4(1.f)),
     _position(),
     _direction(0.f, 0.f, 1.f),
-    _postProjection(postProjection)
+    _postProjection(postProjection),
+    _projectionMatrixChanged(Signal<>::create())
 {
     _data
         ->set("eyeDirection", _direction)
