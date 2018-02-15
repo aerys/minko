@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SkinningMethod.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/render/TextureFormat.hpp"
+#include "minko/render/VertexAttribute.hpp"
 #include "minko/Hash.hpp"
 
 namespace minko
@@ -91,6 +92,7 @@ namespace minko
             bool                                                        _isRectangleTexture;
             bool                                                        _generateSmoothNormals;
             float                                                       _normalMaxSmoothingAngle;
+            render::VertexAttribute::Type                               _vertexAttributes;
             bool                                                        _includeAnimation;
 			bool										                _startAnimation;
 			bool										                _loadAsynchronously;
@@ -122,7 +124,7 @@ namespace minko
             int                                                         _seekedLength;
             AbstractCachePtr                                            _cache;
             bool                                                        _buffered;
-            
+
             static std::unordered_map<
                 Flyweight<std::string>,
                 ProtocolHandler
@@ -377,6 +379,22 @@ namespace minko
             normalMaxSmoothingAngle(float value)
             {
                 _normalMaxSmoothingAngle = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            render::VertexAttribute::Type
+            vertexAttributes() const
+            {
+                return _vertexAttributes;
+            }
+
+            inline
+            Ptr
+            vertexAttributes(render::VertexAttribute::Type value)
+            {
+                _vertexAttributes = value;
 
                 return shared_from_this();
             }

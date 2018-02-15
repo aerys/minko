@@ -29,6 +29,17 @@ namespace minko
         class VertexAttribute
         {
         public:
+            using Type = uint32_t;
+
+        public:
+            static const Type NONE;
+            static const Type POSITION;
+            static const Type UV;
+            static const Type NORMAL;
+            static const Type TANGENT;
+            static const Type COLOR;
+            static const Type ANY;
+
             const int* resourceId;
             const uint* vertexSize;
             Flyweight<std::string> name;

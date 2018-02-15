@@ -568,13 +568,13 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 
 	unsigned int vertexSize = 0u;
 
-    if (mesh->HasPositions())
+    if ((_options->vertexAttributes() & render::VertexAttribute::POSITION) && mesh->HasPositions())
         vertexSize += 3u;
-    if (mesh->HasNormals())
+    if ((_options->vertexAttributes() & render::VertexAttribute::NORMAL) && mesh->HasNormals())
         vertexSize += 3u;
-    if (mesh->GetNumUVChannels() > 0u)
+    if ((_options->vertexAttributes() & render::VertexAttribute::UV) && mesh->GetNumUVChannels() > 0u)
         vertexSize += std::min(mesh->GetNumUVChannels() * 2u, MAX_NUM_UV_CHANNELS * 2u);
-    if (mesh->HasVertexColors(0u))
+    if ((_options->vertexAttributes() & render::VertexAttribute::COLOR) && mesh->HasVertexColors(0u))
         vertexSize += 4u;
 
     const auto numVertices = mesh->mNumVertices;
@@ -583,7 +583,7 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	unsigned int		vId			= 0;
 	for (unsigned int vertexId = 0; vertexId < numVertices; ++vertexId)
 	{
-		if (mesh->HasPositions())
+		if ((_options->vertexAttributes() & render::VertexAttribute::POSITION) && mesh->HasPositions())
         {
 			const aiVector3D&	vec	= mesh->mVertices[vertexId];
 
@@ -592,7 +592,7 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 			vertexData[vId++]	= vec.z;
 		}
 
-		if (mesh->HasNormals())
+		if ((_options->vertexAttributes() & render::VertexAttribute::NORMAL) && mesh->HasNormals())
 		{
 			const aiVector3D&	vec	= mesh->mNormals[vertexId];
 
@@ -601,15 +601,18 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 			vertexData[vId++]	= vec.z;
 		}
 
-        for (auto i = 0u; i < std::min(mesh->GetNumUVChannels(), MAX_NUM_UV_CHANNELS); ++i)
-		{
-			const aiVector3D&	vec = mesh->mTextureCoords[i][vertexId];
+        if (_options->vertexAttributes() & render::VertexAttribute::UV)
+        {
+            for (auto i = 0u; i < std::min(mesh->GetNumUVChannels(), MAX_NUM_UV_CHANNELS); ++i)
+            {
+                const aiVector3D&	vec = mesh->mTextureCoords[i][vertexId];
 
-			vertexData[vId++]	= vec.x;
-			vertexData[vId++]	= vec.y;
-		}
+                vertexData[vId++] = vec.x;
+                vertexData[vId++] = vec.y;
+            }
+        }
 
-        if (mesh->HasVertexColors(0u))
+        if ((_options->vertexAttributes() & render::VertexAttribute::COLOR) && mesh->HasVertexColors(0u))
         {
             const auto& color = mesh->mColors[0u][vertexId];
 
@@ -639,24 +642,27 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	auto vertexBuffer	= render::VertexBuffer::create(_assetLibrary->context(), vertexData);
 
 	unsigned int attrOffset = 0u;
-	if (mesh->HasPositions())
+	if ((_options->vertexAttributes() & render::VertexAttribute::POSITION) && mesh->HasPositions())
 	{
 		vertexBuffer->addAttribute("position", 3, attrOffset);
 		attrOffset	+= 3u;
 	}
-	if (mesh->HasNormals())
+	if ((_options->vertexAttributes() & render::VertexAttribute::NORMAL) && mesh->HasNormals())
 	{
 		vertexBuffer->addAttribute("normal", 3, attrOffset);
 		attrOffset	+= 3u;
 	}
-    for (auto i = 0u; i < std::min(mesh->GetNumUVChannels(), MAX_NUM_UV_CHANNELS); ++i)
+    if (_options->vertexAttributes() & render::VertexAttribute::UV)
     {
-        const auto attributeName = std::string("uv") + (i > 0u ? std::to_string(i) : std::string());
+        for (auto i = 0u; i < std::min(mesh->GetNumUVChannels(), MAX_NUM_UV_CHANNELS); ++i)
+        {
+            const auto attributeName = std::string("uv") + (i > 0u ? std::to_string(i) : std::string());
 
-        vertexBuffer->addAttribute(attributeName, 2, attrOffset);
-        attrOffset += 2u;
+            vertexBuffer->addAttribute(attributeName, 2, attrOffset);
+            attrOffset += 2u;
+        }
     }
-    if (mesh->HasVertexColors(0u))
+    if ((_options->vertexAttributes() & render::VertexAttribute::COLOR) && mesh->HasVertexColors(0u))
     {
         vertexBuffer->addAttribute("color", 4u, attrOffset);
         attrOffset += 4u;
