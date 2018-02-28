@@ -59,7 +59,7 @@ namespace minko
             }
 
             Ptr
-            addPoint(const math::vec3& position);
+            addPoint(const math::vec3& position, const math::vec3& scale = math::vec3(1.f));
 
             Ptr
             clearPoints();

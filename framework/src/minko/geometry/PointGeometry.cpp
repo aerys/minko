@@ -16,7 +16,7 @@ PointGeometry::PointGeometry() :
 }
 
 PointGeometry::Ptr
-PointGeometry::addPoint(const math::vec3& position)
+PointGeometry::addPoint(const math::vec3& position, const math::vec3& scale)
 {
     ++_numPoints;
 
@@ -32,13 +32,13 @@ PointGeometry::addPoint(const math::vec3& position)
     );
     indexData.insert(indexData.end(), newIndexData.begin(), newIndexData.end());
 
-    static const auto halfSize = .5f;
+    const auto halfSize = math::vec3(.5f) * scale;
     auto& vertexData = _vertexBuffer->data();
     auto newVertexData = std::vector<float> {
-        position.x - halfSize, position.y - halfSize, position.z, 0.f, 0.f,
-        position.x - halfSize, position.y + halfSize, position.z, 0.f, 1.f,
-        position.x + halfSize, position.y + halfSize, position.z, 1.f, 1.f,
-        position.x + halfSize, position.y - halfSize, position.z, 0.f, 1.f
+        position.x - halfSize.x, position.y - halfSize.y, position.z, 0.f, 0.f,
+        position.x - halfSize.x, position.y + halfSize.y, position.z, 0.f, 1.f,
+        position.x + halfSize.x, position.y + halfSize.y, position.z, 1.f, 1.f,
+        position.x + halfSize.x, position.y - halfSize.y, position.z, 0.f, 1.f
     };
     vertexData.insert(vertexData.end(), newVertexData.begin(), newVertexData.end());
 
