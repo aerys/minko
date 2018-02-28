@@ -95,6 +95,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/QuadGeometry.hpp"
 #include "minko/geometry/TeapotGeometry.hpp"
 #include "minko/geometry/LineGeometry.hpp"
+#include "minko/geometry/PointGeometry.hpp"
 #include "minko/file/File.hpp"
 #include "minko/file/JSON.hpp"
 #include "minko/file/Options.hpp"
