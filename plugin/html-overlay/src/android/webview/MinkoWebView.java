@@ -82,15 +82,15 @@ public class MinkoWebView extends WebView
 
         // Returns canvas attached to OpenGL texture to draw on
         Canvas glAttachedCanvas = _minkoWebViewRenderer.onDrawViewBegin();
-        
+
         if (glAttachedCanvas != null)
         {
             // Translate canvas to reflect view scrolling
             float xScale = glAttachedCanvas.getWidth() / (float)canvas.getWidth();
             glAttachedCanvas.scale(xScale, xScale);
             glAttachedCanvas.translate(-getScrollX(), -getScrollY());
-            
-            Log.i(TAG, "[MinkoWebView] Draw on the OpenGL ES attached canvas.");
+
+            // Log.i(TAG, "[MinkoWebView] Draw on the OpenGL ES attached canvas.");
 
             // Don't forget to clear the canvas before to write
             glAttachedCanvas.drawColor(Color.TRANSPARENT, Mode.MULTIPLY);
@@ -103,7 +103,7 @@ public class MinkoWebView extends WebView
         }
         else
         {
-            Log.w(TAG, "[MinkoWebView] Attached canvas is null.");
+            // Log.w(TAG, "[MinkoWebView] Attached canvas is null.");
             super.draw(canvas);
             return;
         }
