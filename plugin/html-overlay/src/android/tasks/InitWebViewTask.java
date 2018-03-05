@@ -19,13 +19,16 @@ import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.lang.Exception;
-import org.libsdl.app.*;
 import android.webkit.CookieManager;
+import android.view.ViewGroup.OnHierarchyChangeListener;
+import android.view.Surface;
+import org.libsdl.app.*;
 
 public class InitWebViewTask implements Runnable
 {
     private Activity _sdlActivity;
-    private WebView _webView;
+    private MinkoWebView _webView;
+    private MinkoWebViewRenderer _minkoWebViewRenderer;
     private WebViewJSInterface _jsInterface;
 
     // Native functions
@@ -44,6 +47,10 @@ public class InitWebViewTask implements Runnable
 
         // Create the WebView from SDLActivity context
         _webView = new MinkoWebView(SDLActivity.getContext());
+
+        // Set WebView renderer to render into a texture
+        _minkoWebViewRenderer = new MinkoWebViewRenderer();
+        _webView.setRenderer(_minkoWebViewRenderer);
 
         // Enable the JS for the WebView
         _webView.getSettings().setJavaScriptEnabled(true);
@@ -180,5 +187,10 @@ public class InitWebViewTask implements Runnable
         WebSettings settings = _webView.getSettings();
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(true);
+    }
+
+    public void setWebViewRendererSurface(Surface surface)
+    {
+        _minkoWebViewRenderer.setWebViewSurface(surface);
     }
 }

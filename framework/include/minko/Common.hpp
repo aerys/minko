@@ -130,7 +130,8 @@ namespace minko
 		enum class TextureType
 		{
 			Texture2D	= 0,
-			CubeTexture	= 1
+            CubeTexture = 1,
+            SharedTexture = 2
 		};
 
         enum class TextureFormat;
@@ -138,6 +139,7 @@ namespace minko
 		class Texture;
         class RectangleTexture;
 		class CubeTexture;
+        class SharedTexture;
         struct TextureSampler;
 
 		typedef std::function<std::string(const std::string&)> FormatNameFunction;

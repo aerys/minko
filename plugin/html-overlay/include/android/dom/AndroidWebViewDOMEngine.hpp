@@ -27,176 +27,203 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace android
 {
-	namespace dom
-	{
-		class AndroidWebViewDOMEngine : 
+      namespace dom
+      {
+            class AndroidWebViewDOMEngine : 
                   public minko::dom::AbstractDOMEngine,
                   public std::enable_shared_from_this<AndroidWebViewDOMEngine>
-		{
-		public:
-			typedef std::shared_ptr<AndroidWebViewDOMEngine> Ptr;
-
-		private:
-			AndroidWebViewDOMEngine();
-
-		public:
-
-		~AndroidWebViewDOMEngine()
-		{
-		}
-
-		void
-		initialize(minko::AbstractCanvas::Ptr, minko::component::SceneManager::Ptr);
-
-		void
-		enterFrame(float);
-
-		minko::dom::AbstractDOM::Ptr
-		load(std::string uri);
-
-		static
-		Ptr
-		create();
-
-		void
-		clear();
-
-		minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
-		onload();
-
-		minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
-		onmessage();
-
-		minko::dom::AbstractDOM::Ptr
-		mainDOM();
-
-		void
-		visible(bool);
-
-            bool
-            visible();
-
-            inline
-            AndroidWebViewDOM::Ptr
-            currentDOM()
             {
-                return _currentDOM;
-            }
+            public:
+                  typedef std::shared_ptr<AndroidWebViewDOMEngine> Ptr;
 
-            std::string
-		eval(const std::string&);
+            private:
+                  AndroidWebViewDOMEngine();
 
-            inline
-            bool
-            isReady()
-            {
-                return _isReady;
-            }
+            public:
 
-            inline
-            void
-            updateNextFrame()
-            {
-                _updateNextFrame = true;
-            }
+                  ~AndroidWebViewDOMEngine()
+                  {
+                  }
 
-            inline
-            void
-            pollRate(int rate)
-            {
-                _pollRate = rate;
-            }
+                  void
+                  initialize(minko::AbstractCanvas::Ptr, minko::component::SceneManager::Ptr);
 
-		private:
+                  void
+                  enterFrame(float);
 
-		void
-		createNewDom();
+                  minko::dom::AbstractDOM::Ptr
+                  load(std::string uri);
 
-            void
-            registerDomEvents();
+                  static
+                  Ptr
+                  create();
 
-            void
-            updateWebViewResolution(int width, int height);
+                  void
+                  clear();
 
-            void
-            updateEvents();
+                  minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
+                  onload();
 
-        public:
-            static
-            int _domUid;
+                  minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
+                  onmessage();
 
-            static 
-            std::vector<std::string> messages;
+                  minko::dom::AbstractDOM::Ptr
+                  mainDOM();
 
-            static 
-            std::vector<minko::dom::AbstractDOMEvent::Ptr> events;
+                  void
+                  visible(bool);
 
-            // WebView Signals
-            static minko::Signal<>::Ptr onWebViewInitialized;
-            static minko::Signal<>::Ptr onWebViewPageLoaded;
+                  bool
+                  visible();
 
-            static
-            std::mutex eventMutex;
+                  inline
+                  AndroidWebViewDOM::Ptr
+                  currentDOM()
+                  {
+                      return _currentDOM;
+                  }
 
-            static
-            std::mutex messageMutex;
+                  std::string
+                  eval(const std::string&);
 
-            static
-            Ptr currentEngine;
+                  inline
+                  bool
+                  isReady()
+                  {
+                      return _isReady;
+                  }
 
-            static
-            int numTouches;
+                  inline
+                  void
+                  updateNextFrame()
+                  {
+                      _updateNextFrame = true;
+                  }
 
-            static
-            int firstIdentifier;
-        private:
+                  inline
+                  void
+                  pollRate(int rate)
+                  {
+                      _pollRate = rate;
+                  }
 
-            // WebView Slots
-            minko::Signal<>::Slot _onWebViewInitializedSlot;
-            minko::Signal<>::Slot _onWebViewPageLoadedSlot;
+                  // Render to texture
 
-            // Inputs Slots
-            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousemoveSlot;
-            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousedownSlot;
-            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmouseupSlot;
-            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchstartSlot;
-            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchendSlot;
-            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchmoveSlot;
+                  void
+                  enableRenderToTexture(std::shared_ptr<minko::render::AbstractTexture> texture) override;
 
-		AndroidWebViewDOM::Ptr _currentDOM;
+                  void
+                  disableRenderToTexture() override;
 
-		minko::AbstractCanvas::Ptr _canvas;
-		minko::component::SceneManager::Ptr _sceneManager;
+            private:
 
-		minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
-		minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
+                  void
+                  createNewDom();
 
-		minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
-		minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
+                  void
+                  registerDomEvents();
 
-            bool _visible;
+                  void
+                  updateWebViewResolution(int width, int height);
 
-            bool _waitingForLoad;
-            std::string _uriToLoad;
-            bool _isReady;
+                  void
+                  updateEvents();
+                  
+              public:
+                  
+                  static
+                  int _domUid;
 
-            bool _webViewInitialized;
-            bool _webViewPageLoaded;
+                  static 
+                  std::vector<std::string> messages;
 
-            float _lastUpdateTime;
-            int _pollRate;
-            bool _updateNextFrame;
+                  static 
+                  std::vector<minko::dom::AbstractDOMEvent::Ptr> events;
 
-            // JNI part
+                  // WebView Signals
+                  static minko::Signal<>::Ptr onWebViewInitialized;
+                  static minko::Signal<>::Ptr onWebViewPageLoaded;
 
-            // Java Objects
-            jobject _initWebViewTask = nullptr;
+                  static
+                  std::mutex eventMutex;
 
-            // Java Method IDs
-            jmethodID _evalJSMethod = nullptr;
-            jmethodID _loadUrlMethod = nullptr;
-            jmethodID _changeResolutionMethod = nullptr;
-            jmethodID _hideMethod = nullptr;
-		};
-	}
+                  static
+                  std::mutex messageMutex;
+
+                  static
+                  Ptr currentEngine;
+
+                  static
+                  int numTouches;
+
+                  static
+                  int firstIdentifier;
+
+                  static
+                  bool shouldUpdateWebViewTexture;
+              private:
+
+                  // WebView Slots
+                  minko::Signal<>::Slot _onWebViewInitializedSlot;
+                  minko::Signal<>::Slot _onWebViewPageLoadedSlot;
+
+                  // Inputs Slots
+                  minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousemoveSlot;
+                  minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousedownSlot;
+                  minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmouseupSlot;
+                  minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchstartSlot;
+                  minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchendSlot;
+                  minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchmoveSlot;
+
+                  AndroidWebViewDOM::Ptr _currentDOM;
+
+                  minko::AbstractCanvas::Ptr _canvas;
+                  minko::component::SceneManager::Ptr _sceneManager;
+
+                  minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
+                  minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
+
+                  minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
+                  minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
+
+                  bool _visible;
+
+                  bool _waitingForLoad;
+                  std::string _uriToLoad;
+                  bool _isReady;
+
+                  bool _webViewInitialized;
+                  bool _webViewPageLoaded;
+
+                  float _lastUpdateTime;
+                  int _pollRate;
+                  bool _updateNextFrame;
+
+                  // JNI part
+
+                  // Java Objects
+                  jobject _initWebViewTask = nullptr;
+                  jobject _jniSurfaceTexture = nullptr;
+                  jobject _jniSurface = nullptr;
+
+                  // Java Classes
+                  jclass _surfaceTextureClass = nullptr;
+                  jclass _surfaceClass = nullptr;
+
+                  // Java Method IDs
+                  jmethodID _evalJSMethod = nullptr;
+                  jmethodID _loadUrlMethod = nullptr;
+                  jmethodID _changeResolutionMethod = nullptr;
+                  jmethodID _hideMethod = nullptr;
+                  jmethodID _setWebViewRendererSurfaceMethod = nullptr;
+
+                  // SurfaceTexture
+                  jmethodID _surfaceTextureConstructor = nullptr;
+                  jmethodID _updateTexImageMethodId = nullptr;
+                  jmethodID _setDefaultBufferSizeMethodId = nullptr;
+
+                  // Surface
+                  jmethodID _surfaceConstructor = nullptr;
+            };
+      }
 }

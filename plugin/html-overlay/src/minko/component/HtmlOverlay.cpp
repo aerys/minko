@@ -105,3 +105,15 @@ HtmlOverlay::visible(bool value)
 {
 	_domEngine->visible(value);
 }
+
+void
+HtmlOverlay::enableRenderToTexture(std::shared_ptr<minko::render::AbstractTexture> texture)
+{
+    _domEngine->enableRenderToTexture(texture);
+}
+
+void
+HtmlOverlay::disableRenderToTexture()
+{
+    _domEngine->disableRenderToTexture();
+}

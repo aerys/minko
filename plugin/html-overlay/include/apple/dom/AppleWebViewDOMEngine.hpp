@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Touch.hpp"
 #include "minko/dom/AbstractDOM.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
+#include "minko/render/Texture.hpp"
 
 #include "apple/dom/AppleWebViewDOM.hpp"
 
@@ -128,8 +129,16 @@ namespace apple
             void
             pollRate(int rate)
             {
-                _pollRate = rate;
+            	    _pollRate = rate;
             }
+            
+            // Render to texture
+            
+            void
+            enableRenderToTexture(std::shared_ptr<minko::render::AbstractTexture> texture) override;
+            
+            void
+            disableRenderToTexture() override;
             
 		private:
 
@@ -188,12 +197,17 @@ namespace apple
             // WebView
             UIWindow* _window;
             IOSWebView* _webView;
-            
+            minko::render::Texture::Ptr _webViewTexture;
+            GLubyte* _webViewTexturePixelBuffer;
+            CGContextRef _graphicContext;
 #elif TARGET_OS_MAC // OSX
             // WebView
             NSWindow* _window;
             OSXWebView* _webView;
 #endif
+            
+            CGRect _originalWebViewSize;
+            float _webViewRenderToTextureTime;
             
             WebViewJavascriptBridge* _bridge;
             
