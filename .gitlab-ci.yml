@@ -43,6 +43,7 @@ stages:
     - dev
     - /^client\/.*$/
     - feature/gitlab-ci
+    - /^feature\/.*$/
     - tags
   script:
     - pip install b2
