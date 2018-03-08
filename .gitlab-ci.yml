@@ -141,6 +141,7 @@ trigger:
       - dev
       - /^client\/.*$/
       - feature/gitlab-ci
+      - /^feature\/.*$/
       - tags
   script:
     - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://git.aerys.in/api/v4/projects/17/trigger/pipeline
