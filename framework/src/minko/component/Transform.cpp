@@ -424,11 +424,10 @@ Transform::RootTransform::updateTransforms()
     for (const auto& node : _nodes)
 	{
         auto& nodeCacheEntry = _nodeTransformCache.at(nodeId);
+		auto parentId = nodeCacheEntry._parentId;
 
-		if (nodeCacheEntry._dirty)
+        if (nodeCacheEntry._dirty || (parentId >= 0 && _nodeTransformCache[parentId]._dirty))
 		{
-			auto parentId = nodeCacheEntry._parentId;
-
 			if (parentId < 0)
 				modelToWorldMatrix = *nodeCacheEntry._matrix;
             else
@@ -456,31 +455,24 @@ Transform::RootTransform::updateTransforms()
                 if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
                     nodeData.propertyChanged("modelToWorldMatrix").execute(nodeData, provider, propertyName);
 
-			    auto numChildren = nodeCacheEntry._numChildren;
-
-                if (numChildren > 0)
-                {
-                    auto firstChildId = nodeCacheEntry._firstChildId;
-                    auto lastChildId = firstChildId + numChildren;
-
-                    for (auto childId = firstChildId; childId < lastChildId; ++childId)
-                    {
-                        auto& childCacheEntry = _nodeTransformCache.at(childId);
-
-                        childCacheEntry._dirty = true;
-                    }
-                }
+                nodeCacheEntry._dirty = true;
             }
-
-	       	nodeCacheEntry._dirty = false;
-
-            auto transform = node->component<Transform>();
-
-            transform->_dirty = false;
 		}
-
         ++nodeId;
 	}
+
+    nodeId = 0;
+    for (const auto& node : _nodes)
+    {
+        auto& nodeCacheEntry = _nodeTransformCache.at(nodeId);
+
+        if (nodeCacheEntry._dirty)
+        {
+            nodeCacheEntry._dirty = false;
+            auto transform = node->component<Transform>();
+            transform->_dirty = false;
+        }
+    }
 }
 
 void
