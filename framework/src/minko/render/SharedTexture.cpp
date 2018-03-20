@@ -54,8 +54,6 @@ SharedTexture::SharedTexture(AbstractContext::Ptr    context,
 void
 SharedTexture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
 {
-    assert(math::isp2(width) && math::isp2(height));
-
     const auto previousWidth = this->width();
     const auto previousHeight = this->height();
 
