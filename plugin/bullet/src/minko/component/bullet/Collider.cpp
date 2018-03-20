@@ -185,13 +185,6 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
     // The target has just been added to another node, we need to update the modelToWorldMatrix
     auto modelToWorldMatrix = _graphicsTransform->modelToWorldMatrix(true);
 
-    if (fabsf(math::determinant(modelToWorldMatrix)) < 1e-4f)
-    {
-        LOG_ERROR("The node's model-to-world matrix cannot be inverted.");
-
-        throw std::logic_error("The node's model-to-world matrix cannot be inverted.");
-    }
-
     // Identify physics world
     auto withPhysicsWorld = NodeSet::create(node)
         ->ancestors(true)
@@ -217,7 +210,11 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 void
 bullet::Collider::synchronizePhysicsWithGraphics(bool forceTransformUpdate)
 {
-    assert(_graphicsTransform);
+    if (_graphicsTransform == nullptr)
+    {
+        initializeFromNode(target());
+        return;
+    }
 
     auto graphicsTransform = _graphicsTransform->modelToWorldMatrix(forceTransformUpdate);
     static auto graphicsNoScale = math::mat4();
