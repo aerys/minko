@@ -110,8 +110,6 @@ Texture::data(unsigned char*    data,
 void
 Texture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
 {
-    assert(math::isp2(width) && math::isp2(height));
-
     const auto previousWidth = this->width();
     const auto previousHeight = this->height();
 
