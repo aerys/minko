@@ -80,7 +80,8 @@ build:linux_offscreen:
   stage: build
   image: aerysinnovation/smartshape-build:linux64
   script:
-    - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay
+    - ./plugin/serializer/script/download_dependencies.sh .
+    - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay --with-texture-compressor
     - make -j$(nproc) config=linux64_release
 
 test:linux_offscreen:
@@ -94,7 +95,7 @@ test:linux_offscreen:
     paths:
       - test
   script:
-    - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay
+    - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --with-texture-compressor
     - make -j$(nproc) config=linux64_release -C test
     - ./test/bin/linux64/release/minko-test
 
