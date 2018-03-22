@@ -209,19 +209,20 @@ TextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
     auto newWidth = width;
     auto newHeight = height;
 
-    if (writerOptions->generateMipMaps(_textureType) &&
-        newWidth != newHeight)
+    if (writerOptions->generateMipMaps(textureType))
     {
-        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipMapping(_textureType)
-            ? std::max<uint>(newWidth, newHeight)
-            : std::min<uint>(newWidth, newHeight);
+        const auto maxSize = std::max<unsigned int>(newWidth, newHeight);
+
+        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipMapping(textureType)
+            ? math::clp2(maxSize)
+            : math::flp2(maxSize);
     }
 
-    newWidth = static_cast<uint>(newWidth * writerOptions->textureScale(_textureType).x);
-    newHeight = static_cast<uint>(newHeight * writerOptions->textureScale(_textureType).y);
+    newWidth = static_cast<uint>(newWidth * writerOptions->textureScale(textureType).x);
+    newHeight = static_cast<uint>(newHeight * writerOptions->textureScale(textureType).y);
 
-    newWidth = std::min<uint>(newWidth, writerOptions->textureMaxSize(_textureType).x);
-    newHeight = std::min<uint>(newHeight, writerOptions->textureMaxSize(_textureType).y);
+    newWidth = std::min<uint>(newWidth, writerOptions->textureMaxSize(textureType).x);
+    newHeight = std::min<uint>(newHeight, writerOptions->textureMaxSize(textureType).y);
 
     if (width != newWidth ||
         height != newHeight)

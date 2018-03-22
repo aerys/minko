@@ -87,7 +87,7 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
         TextureWriter::gammaDecode(texture2D->data(), texture2D->data(), TextureWriter::defaultGamma());
     }
 
-    ensureTextureSizeIsValid(texture, writerOptions, _textureType);
+    TextureWriter::ensureTextureSizeIsValid(texture, writerOptions, _textureType);
 
     const auto textureFormats = writerOptions->textureFormats(_textureType, assetLibrary->textureName(texture));
 
@@ -168,41 +168,6 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
     }
 
     return result.str();
-}
-
-void
-StreamedTextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
-                                                WriterOptions::Ptr      writerOptions,
-                                                const std::string&      textureType)
-{
-    const auto width = texture->originalWidth();
-    const auto height = texture->originalHeight();
-
-    auto newWidth = width;
-    auto newHeight = height;
-
-    if (newWidth != newHeight)
-    {
-        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipMapping(_textureType)
-            ? std::max<uint>(newWidth, newHeight)
-            : std::min<uint>(newWidth, newHeight);
-    }
-
-    newWidth = static_cast<uint>(newWidth * writerOptions->textureScale(_textureType).x);
-    newHeight = static_cast<uint>(newHeight * writerOptions->textureScale(_textureType).y);
-
-    newWidth = std::min<uint>(newWidth, writerOptions->textureMaxSize(_textureType).x);
-    newHeight = std::min<uint>(newHeight, writerOptions->textureMaxSize(_textureType).y);
-
-    if (width != newWidth ||
-        height != newHeight)
-    {
-        texture->resize(
-            newWidth,
-            newHeight,
-            writerOptions->textureFilter(textureType) == TextureFilter::LINEAR
-        );
-    }
 }
 
 bool
