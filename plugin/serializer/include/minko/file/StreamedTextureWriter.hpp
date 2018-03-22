@@ -97,7 +97,7 @@ namespace minko
                            const std::vector<unsigned char>&              data,
                            std::vector<msgpack::type::tuple<int, int>>&   mipLevels,
                            msgpack::sbuffer&                              blob);
-            
+
             static
             bool
             writeRGBATexture(std::shared_ptr<render::AbstractTexture>       texture,

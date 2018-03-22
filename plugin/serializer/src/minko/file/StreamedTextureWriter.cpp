@@ -124,7 +124,7 @@ StreamedTextureWriter::embed(AssetLibrary::Ptr              assetLibrary,
     const auto width = texture->originalWidth();
     const auto height = texture->originalHeight();
     const auto numFaces = static_cast<unsigned char>(texture->type() == TextureType::Texture2D ? 1 : 6);
-    const auto numMipMaps = static_cast<unsigned char>(writerOptions->generateMipMaps(_textureType) && texture->originalWidth() == texture->originalHeight() ? math::getp2(texture->width()) + 1 : 0);
+    const auto numMipMaps = static_cast<unsigned char>(writerOptions->generateMipMaps(_textureType) && width == height ? TextureWriter::numMipLevels(width, height) : 0);
 
     auto textureHeaderData = msgpack::type::tuple<int, int, unsigned char, unsigned char>(
         width,
@@ -213,7 +213,7 @@ StreamedTextureWriter::writeMipLevels(TextureFormat                             
                                       std::vector<msgpack::type::tuple<int, int>>&   mipLevels,
                                       msgpack::sbuffer&                              blob)
 {
-    const auto numMipMaps = math::getp2(std::max<int>(textureWidth, textureHeight)) + 1;
+    const auto numMipMaps = TextureWriter::numMipLevels(textureWidth, textureHeight);
 
     mipLevels.resize(numMipMaps);
 
@@ -276,7 +276,7 @@ StreamedTextureWriter::writeRGBATexture(AbstractTexture::Ptr                    
 
     mipLevelTemplate->data(texture->data().data());
 
-    const auto numMipLevels = math::getp2(baseWidth) + 1;
+    const auto numMipLevels = TextureWriter::numMipLevels(baseWidth, baseHeight);
 
     mipLevels.resize(numMipLevels);
 

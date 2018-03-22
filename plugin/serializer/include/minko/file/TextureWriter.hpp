@@ -69,6 +69,10 @@ namespace minko
             }
 
             static
+            int
+            numMipLevels(unsigned int textureWidth, unsigned int textureHeight);
+
+            static
             float
             defaultGamma()
             {
