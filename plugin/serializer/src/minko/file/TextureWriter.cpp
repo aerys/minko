@@ -136,6 +136,11 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 
     const auto textureFormats = writerOptions->textureFormats(_textureType, assetLibrary->textureName(texture));
 
+    LOG_INFO("write texture: "
+        << _textureType << "; "
+        << texture->width() << "x" << texture->height()
+        << "; num formats: " << textureFormats.size());
+
     std::stringstream headerStream;
     std::stringstream blobStream;
 

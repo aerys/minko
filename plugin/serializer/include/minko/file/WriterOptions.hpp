@@ -707,10 +707,19 @@ namespace minko
                 return _nullAssetUuids.find(uuid) != _nullAssetUuids.end();
             }
 
-        private:
-            WriterOptions();
+            /**
+             * Specify writer options for the given texture type
+             * The entry is created only if there is no existing options
+             * for the given texture type
+             */
+            Ptr
+            registerTextureOptions(const std::string& textureType, const TextureOptions& options)
+            {
+                _textureOptions.emplace(textureType, options);
 
-            inline
+                return shared_from_this();
+            }
+
             TextureOptions&
             textureOptions(const std::string& textureType)
             {
@@ -722,17 +731,19 @@ namespace minko
                 return _textureOptions.at("");
             }
 
-            inline
             const TextureOptions&
             textureOptions(const std::string& textureType) const
             {
-                auto textureOptionsIt = _textureOptions.find(textureType);
+                const auto textureOptionsIt = _textureOptions.find(textureType);
 
                 if (textureOptionsIt != _textureOptions.end())
                     return textureOptionsIt->second;
 
                 return _textureOptions.at("");
             }
+
+        private:
+            WriterOptions();
         };
     }
 }
