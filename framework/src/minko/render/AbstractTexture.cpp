@@ -143,6 +143,20 @@ AbstractTexture::resizeData(unsigned int 				width,
 #endif // DEBUG_TEXTURE
 }
 
+int
+AbstractTexture::numMipMaps(unsigned int width, unsigned int height, unsigned int depth)
+{
+    // https://stackoverflow.com/a/25640078/7512344
+    // https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_texture_non_power_of_two.txt
+
+    const auto maxExtent = math::max(
+        static_cast<float>(width),
+        math::max(static_cast<float>(height), static_cast<float>(depth))
+    );
+
+    return 1 + math::floor(math::log2(maxExtent));
+}
+
 void
 AbstractTexture::activateMipMapping()
 {
