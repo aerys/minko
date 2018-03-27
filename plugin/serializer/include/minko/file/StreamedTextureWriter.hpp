@@ -84,11 +84,6 @@ namespace minko
         private:
             StreamedTextureWriter();
 
-            void
-            ensureTextureSizeIsValid(std::shared_ptr<render::AbstractTexture>   texture,
-                                     std::shared_ptr<WriterOptions>             writerOptions,
-                                     const std::string&                         textureType);
-
             static
             bool
             writeMipLevels(render::TextureFormat                          textureFormat,
@@ -97,7 +92,7 @@ namespace minko
                            const std::vector<unsigned char>&              data,
                            std::vector<msgpack::type::tuple<int, int>>&   mipLevels,
                            msgpack::sbuffer&                              blob);
-            
+
             static
             bool
             writeRGBATexture(std::shared_ptr<render::AbstractTexture>       texture,

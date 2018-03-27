@@ -72,6 +72,16 @@ TextureWriter::TextureWriter() :
     _magicNumber = 0x00000054 | MINKO_SCENE_MAGIC_NUMBER;
 }
 
+int
+TextureWriter::numMipLevels(unsigned int textureWidth, unsigned int textureHeight)
+{
+    const auto maxSize = std::max<unsigned int>(textureWidth, textureHeight);
+
+    // First, round to the next power of two
+    // Then return the corresponding exponent
+    return static_cast<int>(math::getp2(math::clp2(maxSize)));
+}
+
 void
 TextureWriter::gammaEncode(const std::vector<unsigned char>&    src,
                            std::vector<unsigned char>&          dst,
@@ -126,6 +136,11 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 
     const auto textureFormats = writerOptions->textureFormats(_textureType, assetLibrary->textureName(texture));
 
+    LOG_INFO("write texture: "
+        << _textureType << "; "
+        << texture->width() << "x" << texture->height()
+        << "; num formats: " << textureFormats.size());
+
     std::stringstream headerStream;
     std::stringstream blobStream;
 
@@ -160,7 +175,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
     const auto height = texture->originalHeight();
 
     const auto numFaces = static_cast<unsigned char>((texture->type() == TextureType::Texture2D ? 1 : 6));
-    const auto numMipmaps = static_cast<unsigned char>((generateMipmaps ? math::getp2(width) + 1 : 0));
+    const auto numMipmaps = static_cast<unsigned char>((generateMipmaps ? numMipLevels(width, height) : 0));
 
     msgpack::type::tuple<int, int, unsigned char, unsigned char> textureHeaderData(
         width,
@@ -199,19 +214,20 @@ TextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
     auto newWidth = width;
     auto newHeight = height;
 
-    if (writerOptions->generateMipMaps(_textureType) &&
-        newWidth != newHeight)
+    if (writerOptions->generateMipMaps(textureType))
     {
-        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipMapping(_textureType)
-            ? std::max<uint>(newWidth, newHeight)
-            : std::min<uint>(newWidth, newHeight);
+        const auto maxSize = std::max<unsigned int>(newWidth, newHeight);
+
+        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipMapping(textureType)
+            ? math::clp2(maxSize)
+            : math::flp2(maxSize);
     }
 
-    newWidth = static_cast<uint>(newWidth * writerOptions->textureScale(_textureType).x);
-    newHeight = static_cast<uint>(newHeight * writerOptions->textureScale(_textureType).y);
+    newWidth = static_cast<uint>(newWidth * writerOptions->textureScale(textureType).x);
+    newHeight = static_cast<uint>(newHeight * writerOptions->textureScale(textureType).y);
 
-    newWidth = std::min<uint>(newWidth, writerOptions->textureMaxSize(_textureType).x);
-    newHeight = std::min<uint>(newHeight, writerOptions->textureMaxSize(_textureType).y);
+    newWidth = std::min<uint>(newWidth, writerOptions->textureMaxSize(textureType).x);
+    newHeight = std::min<uint>(newHeight, writerOptions->textureMaxSize(textureType).y);
 
     if (width != newWidth ||
         height != newHeight)

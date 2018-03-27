@@ -69,6 +69,10 @@ namespace minko
             }
 
             static
+            int
+            numMipLevels(unsigned int textureWidth, unsigned int textureHeight);
+
+            static
             float
             defaultGamma()
             {
@@ -108,15 +112,16 @@ namespace minko
                   WriterOptionsPtr              writerOptions,
                   std::vector<unsigned char>&   embeddedHeaderData);
 
-        protected:
-            TextureWriter();
-
-        private:
+            static
             void
             ensureTextureSizeIsValid(std::shared_ptr<render::AbstractTexture>   texture,
                                      std::shared_ptr<WriterOptions>             writerOptions,
                                      const std::string&                         textureType);
 
+        protected:
+            TextureWriter();
+
+        private:
             static
             bool
             writeRGBATexture(AbstractTexturePtr abstractTexture,

@@ -115,7 +115,7 @@ if [[ "${CONFIG}" == release && -n "${ANDROID_KEYSTORE_PATH}" && -n "${ANDROID_K
 
     # Don't forget to uninstall the app to avoid INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES error
     if [[ "${DEVICE_STATE}" == "device" ]]; then
-        "${ADB}" uninstall $PACKAGE
+        "${ADB}" uninstall $PACKAGE &> /dev/null  || true
     fi
 else
     mv "${UNSIGNED_APK_PATH}" "${ARTIFACT_PATH}"
