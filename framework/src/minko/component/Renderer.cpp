@@ -438,8 +438,12 @@ Renderer::render(render::AbstractContext::Ptr	context,
     // the corresponding draw calls before rendering
     for (auto& surface : _toCollect)
 	{
-		watchSurface(surface);
-        addSurface(surface);
+		if (surface->target() != nullptr
+			&& surface->target()->root() == target()->root())
+		{
+			watchSurface(surface);
+			addSurface(surface);
+		}
 	}
     _toCollect.clear();
 
