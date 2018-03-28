@@ -498,11 +498,11 @@ TextureLodScheduler::distanceFromEye(const TextureResourceInfo&  resource,
 int
 TextureLodScheduler::lodToMipLevel(int lod, int textureWidth, int textureHeight)
 {
-    return math::getp2(textureWidth) - lod;
+    return AbstractTexture::numMipMaps(textureWidth, textureHeight) - 1 - lod;
 }
 
 int
 TextureLodScheduler::mipLevelToLod(int mipLevel, int textureWidth, int textureHeight)
 {
-    return math::getp2(textureWidth) - mipLevel;
+    return AbstractTexture::numMipMaps(textureWidth, textureHeight) - 1 - mipLevel;
 }

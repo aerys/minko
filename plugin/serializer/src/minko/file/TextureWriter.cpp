@@ -72,16 +72,6 @@ TextureWriter::TextureWriter() :
     _magicNumber = 0x00000054 | MINKO_SCENE_MAGIC_NUMBER;
 }
 
-int
-TextureWriter::numMipLevels(unsigned int textureWidth, unsigned int textureHeight)
-{
-    const auto maxSize = std::max<unsigned int>(textureWidth, textureHeight);
-
-    // First, round to the next power of two
-    // Then return the corresponding exponent
-    return static_cast<int>(math::getp2(math::clp2(maxSize)));
-}
-
 void
 TextureWriter::gammaEncode(const std::vector<unsigned char>&    src,
                            std::vector<unsigned char>&          dst,
@@ -175,7 +165,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
     const auto height = texture->originalHeight();
 
     const auto numFaces = static_cast<unsigned char>((texture->type() == TextureType::Texture2D ? 1 : 6));
-    const auto numMipmaps = static_cast<unsigned char>((generateMipmaps ? numMipLevels(width, height) : 0));
+    const auto numMipmaps = static_cast<unsigned char>((generateMipmaps ? AbstractTexture::numMipMaps(width, height) : 0));
 
     msgpack::type::tuple<int, int, unsigned char, unsigned char> textureHeaderData(
         width,
