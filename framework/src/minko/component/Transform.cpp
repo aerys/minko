@@ -402,16 +402,39 @@ Transform::RootTransform::updateTransformsList()
 void
 Transform::RootTransform::sortNodes()
 {
-    auto sortedNodeSet = scene::NodeSet::create(_nodes.front()->root())
-        ->descendants(true, false)
-        ->where([this](scene::Node::Ptr descendant) -> bool
+    // This sort is in-between a breadth-first and depth-first
+    // sort, so we can't just use a NodeSet here.
+    std::list<std::shared_ptr<scene::Node>> nodesStack;
+    nodesStack.push_front(_nodes.front()->root());
+    _nodes.clear();
+
+    while (nodesStack.size() != 0)
     {
+        auto descendant = nodesStack.front();
+
+        nodesStack.pop_front();
+
+
         auto transform = descendant->component<Transform>();
+ 
+        if (transform != nullptr && transform->_dirty) {
+            _nodes.push_back(descendant);
 
-        return transform != nullptr && transform->_dirty;
-    });
-
-    _nodes.assign(sortedNodeSet->nodes().begin(), sortedNodeSet->nodes().end());
+            // Continue breadth-first.
+            nodesStack.insert(
+                nodesStack.end(),
+                descendant->children().begin(),
+                descendant->children().end()
+            );
+        } else {
+            // Continue depth-first.
+            nodesStack.insert(
+                nodesStack.begin(),
+                descendant->children().begin(),
+                descendant->children().end()
+            );
+        }
+    }
 }
 
 void
@@ -424,10 +447,11 @@ Transform::RootTransform::updateTransforms()
     for (const auto& node : _nodes)
 	{
         auto& nodeCacheEntry = _nodeTransformCache.at(nodeId);
-		auto parentId = nodeCacheEntry._parentId;
 
-        if (nodeCacheEntry._dirty || (parentId >= 0 && _nodeTransformCache[parentId]._dirty))
+		if (nodeCacheEntry._dirty)
 		{
+			auto parentId = nodeCacheEntry._parentId;
+
 			if (parentId < 0)
 				modelToWorldMatrix = *nodeCacheEntry._matrix;
             else
@@ -455,24 +479,31 @@ Transform::RootTransform::updateTransforms()
                 if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
                     nodeData.propertyChanged("modelToWorldMatrix").execute(nodeData, provider, propertyName);
 
-                nodeCacheEntry._dirty = true;
+			    auto numChildren = nodeCacheEntry._numChildren;
+
+                if (numChildren > 0)
+                {
+                    auto firstChildId = nodeCacheEntry._firstChildId;
+                    auto lastChildId = firstChildId + numChildren;
+
+                    for (auto childId = firstChildId; childId < lastChildId; ++childId)
+                    {
+                        auto& childCacheEntry = _nodeTransformCache.at(childId);
+
+                        childCacheEntry._dirty = true;
+                    }
+                }
             }
+
+	       	nodeCacheEntry._dirty = false;
+
+            auto transform = node->component<Transform>();
+
+            transform->_dirty = false;
 		}
+
         ++nodeId;
 	}
-
-    nodeId = 0;
-    for (const auto& node : _nodes)
-    {
-        auto& nodeCacheEntry = _nodeTransformCache.at(nodeId);
-
-        if (nodeCacheEntry._dirty)
-        {
-            nodeCacheEntry._dirty = false;
-            auto transform = node->component<Transform>();
-            transform->_dirty = false;
-        }
-    }
 }
 
 void
