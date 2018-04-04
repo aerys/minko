@@ -438,6 +438,10 @@ Renderer::render(render::AbstractContext::Ptr	context,
     // the corresponding draw calls before rendering
     for (auto& surface : _toCollect)
 	{
+		// XXX: this is a workaround to fix https://git.aerys.in/aerys/smartshape-engine/issues/22.
+		// Strangely, this should not be needed as the `removeOutOfSceneSurfaces` method should
+		// already have removed from `_toCollect` all surfaces without a valid target or root…
+		// Though for some reasons this still happens here.
 		if (surface->target() != nullptr
 			&& surface->target()->root() == target()->root())
 		{
