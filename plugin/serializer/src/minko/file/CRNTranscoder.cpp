@@ -78,7 +78,7 @@ fillTextureData(const crn_uint32*                           data[6][16],
     {
         const auto width = texture->width();
         const auto height = texture->height();
-        const auto numMipMaps = math::getp2(texture->width()) + 1u;
+        const auto numMipMaps = AbstractTexture::numMipMaps(width, height);
 
         auto offset = 0u;
 
@@ -120,7 +120,7 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
     const auto startTimeStamp = std::clock();
 
     const auto generateMipmaps = writerOptions->generateMipMaps(textureType);
-    const auto numMipMaps = generateMipmaps ? math::getp2(texture->width()) + 1u : 1u;
+    const auto numMipMaps = generateMipmaps ? AbstractTexture::numMipMaps(texture->width(), texture->height()) : 1u;
 
     switch (texture->type())
     {

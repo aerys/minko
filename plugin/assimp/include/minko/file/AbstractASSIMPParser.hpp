@@ -67,7 +67,7 @@ namespace minko
 			typedef std::shared_ptr<geometry::Skin>					            SkinPtr;
 			typedef std::shared_ptr<material::Material>				            MaterialPtr;
 			typedef std::shared_ptr<render::Effect>					            EffectPtr;
-			typedef std::shared_ptr<render::AbstractTexture>		            AbstracTexturePtr;
+			typedef std::shared_ptr<render::AbstractTexture>		            AbstractTexturePtr;
 
 			typedef Signal<LoaderPtr>::Slot		                                LoaderCompleteSignalSlot;
             typedef Signal<LoaderPtr, const file::Error&>::Slot                 LoaderErrorSignalSlot;
@@ -313,7 +313,7 @@ namespace minko
             textureCompleteHandler(std::shared_ptr<file::Loader> loader, const aiScene* scene);
 
             void
-            textureSet(MaterialPtr material, const std::string& textureTypeName, AbstracTexturePtr texture);
+            textureSet(MaterialPtr material, const std::string& textureTypeName, AbstractTexturePtr texture);
 
             const std::string&
             getValidAssetName(const std::string& name);

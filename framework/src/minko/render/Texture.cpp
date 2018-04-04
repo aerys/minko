@@ -114,11 +114,11 @@ Texture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
     const auto previousHeight = this->height();
 
     const auto previousNumMipMaps = data().size() > TextureFormatInfo::textureSize(_format, previousWidth, previousHeight)
-        ? math::getp2(previousWidth) + 1u
+        ? AbstractTexture::numMipMaps(previousWidth, previousHeight)
         : 1u;
 
     const auto numMipMaps = previousNumMipMaps > 1u
-        ? math::getp2(width) + 1u
+        ? AbstractTexture::numMipMaps(width, height)
         : 1u;
 
     auto dataOffset = 0u;

@@ -138,6 +138,10 @@ namespace minko
 					   bool 						resizeSmoothly,
 					   std::vector<unsigned char>&	newData);
 
+            static
+            int
+            numMipMaps(unsigned int width, unsigned int height, unsigned int depth = 1u);
+
 		protected:
 			AbstractTexture(TextureType			type,
 							AbstractContextPtr	context,
