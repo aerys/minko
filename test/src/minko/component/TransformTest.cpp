@@ -657,3 +657,69 @@ TEST_F(TransformTest, UpdateMatrixAfterRemovingNodeFromRoot)
 
     ASSERT_EQ(n0->component<Transform>()->matrix(), matrix);
 }
+
+
+TEST_F(TransformTest, TransformUpdateWithNoncontiguousDirtyDescendantsIssue)
+{
+    // Issue https://git.aerys.in/aerys/smartshape-engine/issues/24
+    auto sceneManager = SceneManager::create(MinkoTests::canvas());
+
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager)
+        ->addComponent(Transform::create());
+
+    // Nodes have the same name as in the issue #24.
+    auto n1 = Node::create("");
+    auto n2 = Node::create("");
+
+    auto n1_1 = Node::create("A");
+    auto n1_2 = Node::create("");
+
+    auto n2_1 = Node::create("D");
+    auto n2_2 = Node::create("");
+
+    auto n1_2_1 = Node::create("B");
+    auto n1_2_2 = Node::create("C");
+
+    // NOTE: n1_2 does not have a transform component.
+    n1->addComponent(Transform::create());
+    n2->addComponent(Transform::create());
+    n1_1->addComponent(Transform::create());
+    n2_1->addComponent(Transform::create());
+    n2_2->addComponent(Transform::create());
+    n1_2_1->addComponent(Transform::create());
+    n1_2_2->addComponent(Transform::create());
+
+    root->addChild(n1);
+    root->addChild(n2);
+
+    n1->addChild(n1_1);
+    n1->addChild(n1_2);
+
+    n2->addChild(n2_1);
+    n2->addChild(n2_2);
+
+    n1_2->addChild(n1_2_1);
+    n1_2->addChild(n1_2_2);
+
+
+    sceneManager->nextFrame(0.0f, 0.0f);
+
+    root->component<Transform>()->matrix(math::translate(
+        root->component<Transform>()->matrix(),
+        math::vec3(0.f, -1.f, 0.f)
+    ));
+
+    sceneManager->nextFrame(0.0f, 0.0f);
+
+    auto zero = math::vec4(0.f, 0.f, 0.f, 1.f);
+
+    ASSERT_EQ((root->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(0.f, -1.f, 0.f));
+    ASSERT_EQ((n1->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(0.f, -1.f, 0.f));
+    ASSERT_EQ((n2->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(0.f, -1.f, 0.f));
+    ASSERT_EQ((n1_1->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(0.f, -1.f, 0.f));
+    ASSERT_EQ((n2_1->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(0.f, -1.f, 0.f));
+    ASSERT_EQ((n2_2->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(0.f, -1.f, 0.f));
+    ASSERT_EQ((n1_2_1->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(0.f, -1.f, 0.f));
+    ASSERT_EQ((n1_2_2->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(0.f, -1.f, 0.f));
+}

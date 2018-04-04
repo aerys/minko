@@ -402,16 +402,39 @@ Transform::RootTransform::updateTransformsList()
 void
 Transform::RootTransform::sortNodes()
 {
-    auto sortedNodeSet = scene::NodeSet::create(_nodes.front()->root())
-        ->descendants(true, false)
-        ->where([this](scene::Node::Ptr descendant) -> bool
+    // This sort is in-between a breadth-first and depth-first
+    // sort, so we can't just use a NodeSet here.
+    std::list<std::shared_ptr<scene::Node>> nodesStack;
+    nodesStack.push_front(_nodes.front()->root());
+    _nodes.clear();
+
+    while (nodesStack.size() != 0)
     {
+        auto descendant = nodesStack.front();
+
+        nodesStack.pop_front();
+
+
         auto transform = descendant->component<Transform>();
+ 
+        if (transform != nullptr && transform->_dirty) {
+            _nodes.push_back(descendant);
 
-        return transform != nullptr && transform->_dirty;
-    });
-
-    _nodes.assign(sortedNodeSet->nodes().begin(), sortedNodeSet->nodes().end());
+            // Continue breadth-first.
+            nodesStack.insert(
+                nodesStack.end(),
+                descendant->children().begin(),
+                descendant->children().end()
+            );
+        } else {
+            // Continue depth-first.
+            nodesStack.insert(
+                nodesStack.begin(),
+                descendant->children().begin(),
+                descendant->children().end()
+            );
+        }
+    }
 }
 
 void
