@@ -37,7 +37,7 @@ stages:
 
 .archive_template: &archive_template
   stage: archive
-  image: python:3.6
+  image: registry.aerys.in/aerys/smartshape-docker/archive:2221
   only:
     - master
     - dev
@@ -55,7 +55,7 @@ stages:
 build:html5:
   <<: *build_with_artifacts_template
   stage: build
-  image: aerysinnovation/smartshape-build:html5
+  image: registry.aerys.in/aerys/smartshape-docker/html5:2896
   script:
     - ./script/solution_gmake_min.sh
     - make -j$(nproc) config=html5_release
@@ -63,7 +63,7 @@ build:html5:
 build:android:
   <<: *build_with_artifacts_template
   stage: build
-  image: aerysinnovation/smartshape-build:android
+  image: registry.aerys.in/aerys/smartshape-docker/android:2226 
   script:
     - ./script/solution_gmake_min.sh --with-nodejs-worker
     - make config=android_release
@@ -71,7 +71,7 @@ build:android:
 build:linux:
   <<: *build_with_artifacts_template
   stage: build
-  image: aerysinnovation/smartshape-build:linux64
+  image: registry.aerys.in/aerys/smartshape-docker/linux64:2223
   script:
     - ./script/solution_gmake_min.sh
     - make -j$(nproc) config=linux64_release
@@ -79,7 +79,7 @@ build:linux:
 build:linux_offscreen:
   <<: *build_with_artifacts_template
   stage: build
-  image: aerysinnovation/smartshape-build:linux64
+  image: registry.aerys.in/aerys/smartshape-docker/linux64:2223
   script:
     - ./plugin/serializer/script/download_dependencies.sh .
     - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay --with-texture-compressor
@@ -87,7 +87,7 @@ build:linux_offscreen:
 
 test:linux_offscreen:
   stage: test
-  image: aerysinnovation/smartshape-build:linux64
+  image: registry.aerys.in/aerys/smartshape-docker/linux64:2223
   dependencies:
     - build:linux_offscreen
   artifacts:
