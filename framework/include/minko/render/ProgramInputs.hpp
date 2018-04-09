@@ -46,7 +46,8 @@ namespace minko
 				float9,
 				float16,
 				sampler2d,
-				samplerCube
+				samplerCube,
+                samplerExternalOES
 			};
 
             struct AbstractInput
@@ -125,6 +126,8 @@ namespace minko
 						return "sampler2d";
 					case Type::samplerCube:
 						return "samplerCube";
+                    case Type::samplerExternalOES:
+                        return "samplerExternalOES";
 					default:
 						throw std::invalid_argument("type");
 				}

@@ -102,7 +102,7 @@ namespace android
 
             int
             runScriptInt(const std::string& script);
-
+            
 		private:
             std::string
             escapeJsonString(const std::string& input);

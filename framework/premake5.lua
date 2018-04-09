@@ -66,6 +66,17 @@ minko.project.library "minko-framework"
 		includedirs {
 			"lib/sparsehash/include"
 		}
+		
+	configuration { "android" }
+        files {
+            "lib/android/**.cpp",
+            "lib/android/**.h",
+        }
+
+        includedirs {
+            "lib/android"
+        }
+		
 	configuration {}
 
 	-- handle with-glsl-optimizer option

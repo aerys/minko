@@ -243,7 +243,6 @@ namespace minko
                                     uint    		height,
                                     bool            mipMapping) override;
 
-
             uint
             createRectangleTexture(TextureType  type,
                                    unsigned int width,
@@ -461,6 +460,9 @@ namespace minko
 
 			TextureType
 			getTextureType(uint textureId) const;
+
+            int
+            getTextureTarget(TextureType type) const;
 
             void
             setUniformFloat(uint location, uint count, const float* v) override;

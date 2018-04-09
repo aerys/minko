@@ -63,6 +63,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
 # include <dlfcn.h>
+# include <EGL/egl.h>
+# include <EGL/eglext.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include <GLES2/gl2.h>
 # include <GLES2/gl2ext.h>
@@ -731,9 +733,7 @@ OpenGLES2Context::createTexture(TextureType     type,
 	// texture Specifies the name of a texture.
 	//
 	// glBindTexture bind a named texture to a texturing target
-	const auto glTarget = type == TextureType::Texture2D
-		? GL_TEXTURE_2D
-		: GL_TEXTURE_CUBE_MAP;
+    const auto glTarget = getTextureTarget(type);
 
 	glBindTexture(glTarget, texture);
 
@@ -784,7 +784,7 @@ OpenGLES2Context::createTexture(TextureType     type,
 		{
 			if (type == TextureType::Texture2D)
 				glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-			else
+            else if (type == TextureType::CubeTexture)
 			{
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -801,7 +801,7 @@ OpenGLES2Context::createTexture(TextureType     type,
 	{
 		if (type == TextureType::Texture2D)
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-		else
+        else if (type == TextureType::CubeTexture)
 		{
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
@@ -939,6 +939,27 @@ OpenGLES2Context::getTextureType(uint textureId) const
 	return foundTypeIt->second;
 }
 
+int
+OpenGLES2Context::getTextureTarget(TextureType type) const
+{
+    switch (type)
+    {
+    case TextureType::Texture2D:
+        return GL_TEXTURE_2D;
+        break;
+    case TextureType::CubeTexture:
+        return GL_TEXTURE_CUBE_MAP;
+        break;
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    case TextureType::SharedTexture:
+        return GL_TEXTURE_EXTERNAL_OES;
+        break;
+#endif
+    default:
+        throw std::logic_error("Invalid TextureType: " + std::to_string(static_cast<int>(type)));
+    }
+}
+
 void
 OpenGLES2Context::uploadTexture2dData(uint 		texture,
 									  uint 		width,
@@ -949,7 +970,7 @@ OpenGLES2Context::uploadTexture2dData(uint 		texture,
 	assert(getTextureType(texture) == TextureType::Texture2D);
 
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexSubImage2D(GL_TEXTURE_2D, mipLevel, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	_currentBoundTexture = texture;
 
@@ -1085,9 +1106,7 @@ OpenGLES2Context::setTextureAt(uint	position,
 	if (position >= _currentTexture.size())
 		return;
 
-	const auto glTarget	= getTextureType(texture) == TextureType::Texture2D
-		? GL_TEXTURE_2D
-		: GL_TEXTURE_CUBE_MAP;
+    const auto glTarget = getTextureTarget(getTextureType(texture));
 
 	if (_currentTexture[position] != texture || _currentBoundTexture != texture)
 	{
@@ -1111,9 +1130,7 @@ OpenGLES2Context::setSamplerStateAt(uint			position,
 									MipFilter		mipFiltering)
 {
 	const auto	texture		= _currentTexture[position];
-	const auto	glTarget	= getTextureType(texture) == TextureType::Texture2D
-		? GL_TEXTURE_2D
-		: GL_TEXTURE_CUBE_MAP;
+    const auto glTarget = getTextureTarget(getTextureType(texture));
 
 	auto active	= false;
 
@@ -1428,6 +1445,10 @@ OpenGLES2Context::convertInputType(unsigned int type)
 			return ProgramInputs::Type::sampler2d;
 		case GL_SAMPLER_CUBE:
 			return ProgramInputs::Type::samplerCube;
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+        case GL_SAMPLER_EXTERNAL_OES:
+            return ProgramInputs::Type::samplerExternalOES;
+#endif
 		default:
 			throw std::logic_error("unsupported type");
 			return ProgramInputs::Type::unknown;

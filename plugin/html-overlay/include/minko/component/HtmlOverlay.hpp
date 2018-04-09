@@ -123,6 +123,14 @@ namespace minko
                 return _secure;
             }
 
+            // Render to texture
+
+            void
+            enableRenderToTexture(std::shared_ptr<minko::render::AbstractTexture> texture);
+
+            void
+            disableRenderToTexture();
+
         private:
 
 			minko::dom::AbstractDOMEngine::Ptr

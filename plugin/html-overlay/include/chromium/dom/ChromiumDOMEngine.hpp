@@ -88,6 +88,18 @@ namespace chromium
 			minko::dom::AbstractDOM::Ptr
 			mainDOM();
 
+            void
+            enableRenderToTexture(std::shared_ptr<minko::render::AbstractTexture> texture) override
+            {
+                throw std::runtime_error("Not implemented");
+            }
+
+            void
+            disableRenderToTexture() override
+            {
+                throw std::runtime_error("Not implemented");
+            }
+
 		private:
 			void
 			loadOverlayEffect();
