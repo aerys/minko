@@ -46,7 +46,6 @@ stages:
     - /^fix\/.*$/
     - tags
   script:
-    - pip install b2
     - cd "${CI_PROJECT_DIR}"
     - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
     - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
