@@ -466,6 +466,7 @@ Canvas::step()
     std::vector<char16_t> chars;
 
     auto executeMouseMove = false;
+    auto executePinchZoom = false;
 
     _mouse->dX(0);
     _mouse->dY(0);
@@ -825,46 +826,7 @@ Canvas::step()
                 _touch->swipeUp()->execute(_touch);
             }
 
-            if (_touch->numTouches() == 2)
-            {
-                input::Touch::TouchPoint touch2;
-                auto hasTouch2 = false;
-
-                for (auto i = 0u; i < _touch->identifiers().size(); ++i)
-                {
-                    if (_touch->identifiers()[i] != id)
-                    {
-                        hasTouch2 = true;
-                        touch2 = _touch->touch(_touch->identifiers()[i]);
-                    }
-                }
-
-                if (hasTouch2)
-                {
-                    auto touch2NormalizedX = touch2.x / static_cast<float>(_width);
-                    auto touch2NormalizedY = touch2.y / static_cast<float>(_height);
-
-                    auto dX1 = (normalizedX - normalizedDX) - touch2NormalizedX;
-                    auto dY1 = (normalizedY - normalizedDY) - touch2NormalizedY;
-
-                    auto dX2 = normalizedX - touch2NormalizedX;
-                    auto dY2 = normalizedY - touch2NormalizedY;
-
-                    auto dist1 = std::sqrt(std::pow(dX1, 2) + std::pow(dY1, 2));
-                    auto dist2 = std::sqrt(std::pow(dX2, 2) + std::pow(dY2, 2));
-
-                    auto normalizedDeltaDistance = dist2 - dist1;
-
-                    if (normalizedDeltaDistance != 0.f)
-                    {
-                        // normalizedDeltaDistance is a percentage of the screen
-                        auto deltaDistance = normalizedDeltaDistance * 100.f;
-
-                        _touch->pinchZoom()->execute(_touch, deltaDistance);
-                    }
-                }
-            }
-
+            executePinchZoom = _touch->numTouches() == 2;
             break;
         }
         case SDL_JOYAXISMOTION:
@@ -995,6 +957,35 @@ Canvas::step()
         }
     }
 
+    // Execute Pinch-Zoom event if needed.
+    if (_touch->numTouches() == 2)
+    {
+        input::Touch::TouchPoint touch1 = _touch->touch(_touch->identifiers()[0]);
+        input::Touch::TouchPoint touch2 = _touch->touch(_touch->identifiers()[1]);
+
+        auto normalizedPos1 = math::vec2(touch1.x / static_cast<float>(_width), touch1.y / static_cast<float>(_height));
+        auto normalizedDPos1 = math::vec2(touch1.dX / static_cast<float>(_width), touch1.dY / static_cast<float>(_height));
+        auto normalizedPos2 = math::vec2(touch2.x / static_cast<float>(_width), touch2.y / static_cast<float>(_height));
+        auto normalizedDPos2 = math::vec2(touch2.dX / static_cast<float>(_width), touch2.dY / static_cast<float>(_height));
+
+        auto previousDelta = (normalizedPos2 - normalizedDPos2) - (normalizedPos1 - normalizedDPos1);
+        auto currentDelta = normalizedPos2 - normalizedPos1;
+
+        auto previousDist = math::length(previousDelta);
+        auto currentDist = math::length(currentDelta);
+
+        auto normalizedDeltaDistance = currentDist - previousDist;
+
+        if (normalizedDeltaDistance != 0.0)
+        {
+            // normalizedDeltaDistance is a percentage of the screen
+            auto deltaDistance = normalizedDeltaDistance * 100.f;
+
+            _touch->pinchZoom()->execute(_touch, deltaDistance);
+        }
+    }
+
+    // Update delta mouse pos.
     if (mouseDX != 0)
         _mouse->dX(mouseDX);
     if (mouseDY != 0)
