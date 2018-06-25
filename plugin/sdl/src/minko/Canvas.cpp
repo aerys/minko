@@ -958,7 +958,7 @@ Canvas::step()
     }
 
     // Execute Pinch-Zoom event if needed.
-    if (_touch->numTouches() == 2)
+    if (executePinchZoom && _touch->numTouches() == 2)
     {
         input::Touch::TouchPoint touch1 = _touch->touch(_touch->identifiers()[0]);
         input::Touch::TouchPoint touch2 = _touch->touch(_touch->identifiers()[1]);
