@@ -48,7 +48,7 @@ Picking::Picking() :
     _touch(),
     _camera(),
     _pickingProjection(),
-    _surfaceToPickingId(),
+    _surfaceToPickingIds(),
     _pickingIdToSurface(),
     _pickingId(0),
     _context(),
@@ -57,6 +57,7 @@ Picking::Picking() :
     _depthLayout(scene::BuiltinLayout::PICKING_DEPTH),
     _pickingEffect(nullptr),
     _pickingDepthEffect(nullptr),
+    _pickingColorSet(Signal<Ptr, SurfacePtr, uint, const minko::math::vec4&>::create()),
 	_mouseMove(Signal<NodePtr>::create()),
 	_mouseLeftClick(Signal<NodePtr>::create()),
 	_mouseRightClick(Signal<NodePtr>::create()),
@@ -467,39 +468,34 @@ Picking::componentRemovedHandler(NodePtr							target,
 void
 Picking::addSurface(SurfacePtr surface)
 {
-	if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
+	if (_surfaceToPickingIds.find(surface) == _surfaceToPickingIds.end())
 	{
-		_pickingId++;
+        auto pickingId = createPickingId(surface);
 
-		_surfaceToPickingId[surface] = _pickingId;
-		_pickingIdToSurface[_pickingId] = surface;
-
-		surface->data()->set("pickingColor", math::vec4(
-			((_pickingId >> 16) & 0xff) / 255.f,
-			((_pickingId >> 8) & 0xff) / 255.f,
-			((_pickingId)& 0xff) / 255.f,
-			1
-		));
+		surface->data()->set("pickingColor", pickingId.second);
 
         if (_addPickingLayout)
             surface->target()->layout(target()->layout() | _layout);
 
         surface->layoutMask(surface->layoutMask() & ~_depthLayout);
+        _pickingColorSet->execute(std::static_pointer_cast<Picking>(shared_from_this()), surface, pickingId.first, pickingId.second);
 	}
 }
 
 void
 Picking::removeSurface(SurfacePtr surface, NodePtr node)
 {
-	if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
+	if (_surfaceToPickingIds.find(surface) == _surfaceToPickingIds.end())
 		return;
 
     surface->data()->unset("pickingColor");
 
-	auto surfacePickingId = _surfaceToPickingId[surface];
+	const auto& surfacePickingIds = _surfaceToPickingIds[surface];
 
-	_surfaceToPickingId.erase(surface);
-	_pickingIdToSurface.erase(surfacePickingId);
+    for (const auto& pickingId : surfacePickingIds)
+	    _pickingIdToSurface.erase(pickingId);
+
+	_surfaceToPickingIds.erase(surface);
 }
 
 void
@@ -621,6 +617,7 @@ Picking::renderingEnd(RendererPtr renderer)
 
     if (surfaceIt != _pickingIdToSurface.end())
     {
+        _lastPickedSurfaceId = pickedSurfaceId;
         auto pickedSurface = surfaceIt->second;
 
         if (_renderDepth)
@@ -1139,4 +1136,21 @@ Picking::pickingLayoutChanged(scene::Layout previousValue, scene::Layout value)
 
         node->layout(nodeLayout);
     }
+}
+
+std::pair<uint, math::vec4>
+Picking::createPickingId(SurfacePtr surface)
+{
+    _pickingId++;
+    _surfaceToPickingIds[surface].push_back(_pickingId);
+    _pickingIdToSurface[_pickingId] = surface;
+
+    math::vec4 color(
+        ((_pickingId >> 16) & 0xff) / 255.f,
+        ((_pickingId >> 8) & 0xff) / 255.f,
+        ((_pickingId)& 0xff) / 255.f,
+        1
+    );
+
+    return std::make_pair(_pickingId, color);
 }
