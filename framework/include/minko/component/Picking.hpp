@@ -62,8 +62,8 @@ namespace minko
             TouchPtr                                    _touch;
 			NodePtr								        _camera;
 			math::mat4							        _pickingProjection;
-			std::map<SurfacePtr, uint>			        _surfaceToPickingId;
-			std::map<uint, SurfacePtr>			        _pickingIdToSurface;
+			std::map<SurfacePtr, std::vector<uint>>     _surfaceToPickingIds;
+			std::map<uint, SurfacePtr>                  _pickingIdToSurface;
 			uint							        	_pickingId;
 			ContextPtr					        		_context;
             ProviderPtr				        		    _pickingProvider;
@@ -113,6 +113,7 @@ namespace minko
             unsigned char                               _lastDepth[4];
             float                                       _lastDepthValue;
             unsigned char                               _lastMergingMask;
+            uint                                        _lastPickedSurfaceId;
 
 			Signal<MousePtr, int, int>::Slot			_mouseMoveSlot;
 			Signal<MousePtr>::Slot						_mouseRightDownSlot;
@@ -128,6 +129,8 @@ namespace minko
             Signal<TouchPtr, float, float>::Slot        _touchTapSlot;
             Signal<TouchPtr, float, float>::Slot        _touchDoubleTapSlot;
             Signal<TouchPtr, float, float>::Slot        _touchLongHoldSlot;
+
+            Signal<Ptr, SurfacePtr, uint, const minko::math::vec4&>::Ptr _pickingColorSet;
 
 			bool										_executeMoveHandler;
 			bool										_executeRightClickHandler;
@@ -174,6 +177,13 @@ namespace minko
 
             Ptr
             depthLayout(scene::Layout value);
+
+            inline
+            Signal<Ptr, SurfacePtr, uint, const minko::math::vec4&>::Ptr
+            pickingColorSet()
+            {
+                return _pickingColorSet;
+            }
 
 			inline
 			Signal<NodePtr>::Ptr
@@ -295,6 +305,13 @@ namespace minko
 			}
 
             inline
+            uint
+            pickedSurfaceId()
+            {
+                return _lastPickedSurfaceId;
+            }
+
+            inline
             bool
             renderDepth() const
             {
@@ -331,6 +348,9 @@ namespace minko
             {
                 _debug = v;
             }
+
+            std::pair<uint, minko::math::vec4>
+            createPickingId(SurfacePtr surface);
 
         protected:
 			void
