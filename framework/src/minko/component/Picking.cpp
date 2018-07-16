@@ -58,15 +58,15 @@ Picking::Picking() :
     _pickingEffect(nullptr),
     _pickingDepthEffect(nullptr),
     _pickingColorSet(Signal<Ptr, SurfacePtr, uint, const minko::math::vec4&>::create()),
-	_mouseMove(Signal<NodePtr>::create()),
-	_mouseLeftClick(Signal<NodePtr>::create()),
-	_mouseRightClick(Signal<NodePtr>::create()),
-	_mouseLeftDown(Signal<NodePtr>::create()),
-	_mouseRightDown(Signal<NodePtr>::create()),
-	_mouseLeftUp(Signal<NodePtr>::create()),
-	_mouseRightUp(Signal<NodePtr>::create()),
-	_mouseOut(Signal<NodePtr>::create()),
-	_mouseOver(Signal<NodePtr>::create()),
+    _mouseMove(Signal<NodePtr>::create()),
+    _mouseLeftClick(Signal<NodePtr>::create()),
+    _mouseRightClick(Signal<NodePtr>::create()),
+    _mouseLeftDown(Signal<NodePtr>::create()),
+    _mouseRightDown(Signal<NodePtr>::create()),
+    _mouseLeftUp(Signal<NodePtr>::create()),
+    _mouseRightUp(Signal<NodePtr>::create()),
+    _mouseOut(Signal<NodePtr>::create()),
+    _mouseOver(Signal<NodePtr>::create()),
     _mouseWheel(Signal<NodePtr>::create()),
     _touchDown(Signal<NodePtr>::create()),
     _touchMove(Signal<NodePtr>::create()),
@@ -131,42 +131,42 @@ Picking::initialize(NodePtr             camera,
     _pickingEffect = pickingEffect;
     _pickingDepthEffect = pickingDepthEffect;
 
-	_pickingProvider->set("pickingProjection", _pickingProjection);
-	_pickingProvider->set("pickingOrigin", math::vec3());
+    _pickingProvider->set("pickingProjection", _pickingProjection);
+    _pickingProvider->set("pickingOrigin", math::vec3());
 }
 
 void
 Picking::bindSignals()
 {
-	_mouseMoveSlot = _mouse->move()->connect(std::bind(
-		&Picking::mouseMoveHandler,
-		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
+    _mouseMoveSlot = _mouse->move()->connect(std::bind(
+        &Picking::mouseMoveHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
     ));
 
-	_mouseLeftDownSlot = _mouse->leftButtonDown()->connect(std::bind(
-		&Picking::mouseLeftDownHandler,
-		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1
+    _mouseLeftDownSlot = _mouse->leftButtonDown()->connect(std::bind(
+        &Picking::mouseLeftDownHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1
     ));
 
-	_mouseRightDownSlot = _mouse->rightButtonDown()->connect(std::bind(
-		&Picking::mouseRightDownHandler,
-		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1
+    _mouseRightDownSlot = _mouse->rightButtonDown()->connect(std::bind(
+        &Picking::mouseRightDownHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1
     ));
 
     _mouseLeftClickSlot = _mouse->leftButtonClick()->connect(std::bind(
-		&Picking::mouseLeftClickHandler,
-		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1
+        &Picking::mouseLeftClickHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1
     ));
 
     _mouseRightClickSlot = _mouse->rightButtonClick()->connect(std::bind(
-		&Picking::mouseRightClickHandler,
-		std::static_pointer_cast<Picking>(shared_from_this()),
+        &Picking::mouseRightClickHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
         std::placeholders::_1));
 
     _mouseLeftUpSlot = _mouse->leftButtonUp()->connect(std::bind(
@@ -328,36 +328,36 @@ Picking::targetAdded(NodePtr target)
     _depthRenderer->layoutMask(_depthLayout);
     _depthRenderer->enabled(false);
 
-	updateDescendants(target);
+    updateDescendants(target);
 
-	_addedSlot = target->added().connect(std::bind(
-		&Picking::addedHandler,
-		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+    _addedSlot = target->added().connect(std::bind(
+        &Picking::addedHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
+    ));
 
-	_removedSlot = target->removed().connect(std::bind(
-		&Picking::removedHandler,
-		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+    _removedSlot = target->removed().connect(std::bind(
+        &Picking::removedHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
+    ));
 
-	if (target->parent() != nullptr || target->hasComponent<SceneManager>())
-		addedHandler(target, target, target->parent());
+    if (target->parent() != nullptr || target->hasComponent<SceneManager>())
+        addedHandler(target, target, target->parent());
 
-	target->addComponent(_renderer);
+    target->addComponent(_renderer);
     target->addComponent(_depthRenderer);
 
-	auto perspectiveCamera = _camera->component<component::Camera>();
+    auto perspectiveCamera = _camera->component<component::Camera>();
 
-	target->data().addProvider(_pickingProvider);
-	target->data().addProvider(perspectiveCamera->data());
+    target->data().addProvider(_pickingProvider);
+    target->data().addProvider(perspectiveCamera->data());
 
-	addSurfacesForNode(target);
+    addSurfacesForNode(target);
 }
 
 void
@@ -375,181 +375,181 @@ Picking::targetRemoved(NodePtr target)
     _sceneManager = nullptr;
     _enabled = false;
 
-	removedHandler(target->root(), target, target->parent());
+    removedHandler(target->root(), target, target->parent());
 }
 
 void
 Picking::addedHandler(NodePtr target, NodePtr child, NodePtr parent)
 {
-	updateDescendants(target);
+    updateDescendants(target);
 
-	if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
-		return;
+    if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
+        return;
 
-	if (child == target && _renderingBeginSlot == nullptr)
-	{
-		_renderingBeginSlot = _renderer->renderingBegin()->connect(std::bind(
-			&Picking::renderingBegin,
-			std::static_pointer_cast<Picking>(shared_from_this()),
-			std::placeholders::_1
+    if (child == target && _renderingBeginSlot == nullptr)
+    {
+        _renderingBeginSlot = _renderer->renderingBegin()->connect(std::bind(
+            &Picking::renderingBegin,
+            std::static_pointer_cast<Picking>(shared_from_this()),
+            std::placeholders::_1
         ));
 
-		_renderingEndSlot = _renderer->beforePresent()->connect(std::bind(
-			&Picking::renderingEnd,
-			std::static_pointer_cast<Picking>(shared_from_this()),
-			std::placeholders::_1
+        _renderingEndSlot = _renderer->beforePresent()->connect(std::bind(
+            &Picking::renderingEnd,
+            std::static_pointer_cast<Picking>(shared_from_this()),
+            std::placeholders::_1
         ));
 
-		_depthRenderingBeginSlot = _depthRenderer->renderingBegin()->connect(std::bind(
-			&Picking::depthRenderingBegin,
-			std::static_pointer_cast<Picking>(shared_from_this()),
-			std::placeholders::_1
+        _depthRenderingBeginSlot = _depthRenderer->renderingBegin()->connect(std::bind(
+            &Picking::depthRenderingBegin,
+            std::static_pointer_cast<Picking>(shared_from_this()),
+            std::placeholders::_1
         ));
 
-		_depthRenderingEndSlot = _depthRenderer->beforePresent()->connect(std::bind(
-			&Picking::depthRenderingEnd,
-			std::static_pointer_cast<Picking>(shared_from_this()),
-			std::placeholders::_1
+        _depthRenderingEndSlot = _depthRenderer->beforePresent()->connect(std::bind(
+            &Picking::depthRenderingEnd,
+            std::static_pointer_cast<Picking>(shared_from_this()),
+            std::placeholders::_1
         ));
 
-		_componentAddedSlot = child->componentAdded().connect(std::bind(
-			&Picking::componentAddedHandler,
-			std::static_pointer_cast<Picking>(shared_from_this()),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			std::placeholders::_3
-		));
+        _componentAddedSlot = child->componentAdded().connect(std::bind(
+            &Picking::componentAddedHandler,
+            std::static_pointer_cast<Picking>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3
+        ));
 
-		_componentRemovedSlot = child->componentRemoved().connect(std::bind(
-			&Picking::componentRemovedHandler,
-			std::static_pointer_cast<Picking>(shared_from_this()),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			std::placeholders::_3
-		));
-	}
+        _componentRemovedSlot = child->componentRemoved().connect(std::bind(
+            &Picking::componentRemovedHandler,
+            std::static_pointer_cast<Picking>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3
+        ));
+    }
 
-	if (std::find(_descendants.begin(), _descendants.end(), child) != _descendants.end())
-		addSurfacesForNode(child);
+    if (std::find(_descendants.begin(), _descendants.end(), child) != _descendants.end())
+        addSurfacesForNode(child);
 }
 
 void
 Picking::componentAddedHandler(NodePtr								target,
-							   NodePtr								node,
-							   std::shared_ptr<AbstractComponent>	ctrl)
+                               NodePtr								node,
+                               std::shared_ptr<AbstractComponent>	ctrl)
 {
-	if (std::find(_descendants.begin(), _descendants.end(), node) == _descendants.end())
-		return;
+    if (std::find(_descendants.begin(), _descendants.end(), node) == _descendants.end())
+        return;
 
-	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
+    auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 
-	if (surfaceCtrl)
-		addSurface(surfaceCtrl);
+    if (surfaceCtrl)
+        addSurface(surfaceCtrl);
 }
 
 void
 Picking::componentRemovedHandler(NodePtr							target,
-								 NodePtr							node,
-								 std::shared_ptr<AbstractComponent>	ctrl)
+                                 NodePtr							node,
+                                 std::shared_ptr<AbstractComponent>	ctrl)
 {
-	if (std::find(_descendants.begin(), _descendants.end(), node) == _descendants.end())
-		return;
+    if (std::find(_descendants.begin(), _descendants.end(), node) == _descendants.end())
+        return;
 
-	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
-	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+    auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
+    auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
-	if (surfaceCtrl)
-		removeSurface(surfaceCtrl, node);
+    if (surfaceCtrl)
+        removeSurface(surfaceCtrl, node);
 
-	if (!node->hasComponent<Surface>() && _addPickingLayout)
-		node->layout(node->layout() & ~_layout);
+    if (!node->hasComponent<Surface>() && _addPickingLayout)
+        node->layout(node->layout() & ~_layout);
 }
 
 void
 Picking::addSurface(SurfacePtr surface)
 {
-	if (_surfaceToPickingIds.find(surface) == _surfaceToPickingIds.end())
-	{
+    if (_surfaceToPickingIds.find(surface) == _surfaceToPickingIds.end())
+    {
         auto pickingId = createPickingId(surface);
 
-		surface->data()->set("pickingColor", pickingId.second);
+        surface->data()->set("pickingColor", pickingId.second);
 
         if (_addPickingLayout)
             surface->target()->layout(target()->layout() | _layout);
 
         surface->layoutMask(surface->layoutMask() & ~_depthLayout);
         _pickingColorSet->execute(std::static_pointer_cast<Picking>(shared_from_this()), surface, pickingId.first, pickingId.second);
-	}
+    }
 }
 
 void
 Picking::removeSurface(SurfacePtr surface, NodePtr node)
 {
-	if (_surfaceToPickingIds.find(surface) == _surfaceToPickingIds.end())
-		return;
+    if (_surfaceToPickingIds.find(surface) == _surfaceToPickingIds.end())
+        return;
 
     surface->data()->unset("pickingColor");
 
-	const auto& surfacePickingIds = _surfaceToPickingIds[surface];
+    const auto& surfacePickingIds = _surfaceToPickingIds[surface];
 
     for (const auto& pickingId : surfacePickingIds)
-	    _pickingIdToSurface.erase(pickingId);
+        _pickingIdToSurface.erase(pickingId);
 
-	_surfaceToPickingIds.erase(surface);
+    _surfaceToPickingIds.erase(surface);
 }
 
 void
 Picking::removedHandler(NodePtr target, NodePtr child, NodePtr parent)
 {
-	if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
-		return;
+    if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
+        return;
 
-	removeSurfacesForNode(child);
+    removeSurfacesForNode(child);
 
-	updateDescendants(target);
+    updateDescendants(target);
 }
 
 void
 Picking::addSurfacesForNode(NodePtr node)
 {
-	auto surfaces = scene::NodeSet::create(node)
-		->descendants(true)
-		->where([](scene::Node::Ptr node)
-	{
-		return node->hasComponent<Surface>();
-	});
+    auto surfaces = scene::NodeSet::create(node)
+        ->descendants(true)
+        ->where([](scene::Node::Ptr node)
+    {
+        return node->hasComponent<Surface>();
+    });
 
-	for (auto surfaceNode : surfaces->nodes())
-		for (auto surface : surfaceNode->components<Surface>())
-			addSurface(surface);
+    for (auto surfaceNode : surfaces->nodes())
+        for (auto surface : surfaceNode->components<Surface>())
+            addSurface(surface);
 }
 
 void
 Picking::removeSurfacesForNode(NodePtr node)
 {
-	auto surfaces = scene::NodeSet::create(node)
-		->descendants(true)
-		->where([](scene::Node::Ptr node)
-	{
-		return node->hasComponent<Surface>();
-	});
+    auto surfaces = scene::NodeSet::create(node)
+        ->descendants(true)
+        ->where([](scene::Node::Ptr node)
+    {
+        return node->hasComponent<Surface>();
+    });
 
-	for (auto surfaceNode : surfaces->nodes())
-	{
+    for (auto surfaceNode : surfaces->nodes())
+    {
         if (_addPickingLayout)
-		    surfaceNode->layout(surfaceNode->layout() & ~_layout);
+            surfaceNode->layout(surfaceNode->layout() & ~_layout);
 
-		for (auto surface : surfaceNode->components<Surface>())
-			removeSurface(surface, surfaceNode);
-	}
+        for (auto surface : surfaceNode->components<Surface>())
+            removeSurface(surface, surfaceNode);
+    }
 }
 
 void
 Picking::updateDescendants(NodePtr target)
 {
-	auto nodeSet = scene::NodeSet::create(target)->descendants(true);
+    auto nodeSet = scene::NodeSet::create(target)->descendants(true);
 
-	_descendants = nodeSet->nodes();
+    _descendants = nodeSet->nodes();
 }
 
 void
@@ -560,11 +560,11 @@ Picking::enabled(bool enabled)
         _enabled = true;
 
         _frameBeginSlot = _sceneManager->frameBegin()->connect(std::bind(
-		    &Picking::frameBeginHandler,
-		    std::static_pointer_cast<Picking>(shared_from_this()),
-		    std::placeholders::_1,
-		    std::placeholders::_2,
-		    std::placeholders::_3
+            &Picking::frameBeginHandler,
+            std::static_pointer_cast<Picking>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3
         ), 1000.0f);
     }
     else if (!enabled && _frameBeginSlot != nullptr)
@@ -705,8 +705,8 @@ Picking::depthRenderingEnd(RendererPtr renderer)
 void
 Picking::updatePickingProjection()
 {
-	auto mouseX = static_cast<float>(_mouse->x());
-	auto mouseY = static_cast<float>(_mouse->y());
+    auto mouseX = static_cast<float>(_mouse->x());
+    auto mouseY = static_cast<float>(_mouse->y());
 
     if (_multiselecting && _multiselectionStartPosition != math::vec2(0))
     {
@@ -714,23 +714,23 @@ Picking::updatePickingProjection()
         mouseY = _multiselectionStartPosition.y;
     }
 
-	auto perspectiveCamera	= _camera->component<component::Camera>();
-	auto projection	= perspectiveCamera->projectionMatrix();
+    auto perspectiveCamera	= _camera->component<component::Camera>();
+    auto projection	= perspectiveCamera->projectionMatrix();
 
     math::vec2 normalizedMouse(mouseX / _context->viewportWidth() * 2.f, (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f);
-	projection[2][0] = -normalizedMouse.x * projection[2][3];
-	projection[2][1] = -normalizedMouse.y * projection[2][3];
+    projection[2][0] = -normalizedMouse.x * projection[2][3];
+    projection[2][1] = -normalizedMouse.y * projection[2][3];
 
     projection[3][0] = -normalizedMouse.x * projection[3][3];
     projection[3][1] = -normalizedMouse.y * projection[3][3];
 
-	_pickingProvider->set("pickingProjection", projection);
+    _pickingProvider->set("pickingProjection", projection);
 }
 
 void
 Picking::updatePickingOrigin()
 {
-	auto perspectiveCamera	= _camera->component<component::Camera>();
+    auto perspectiveCamera	= _camera->component<component::Camera>();
 
     const auto normalizedMouseX = _mouse->normalizedX();
     const auto normalizedMouseY = _mouse->normalizedY();
@@ -839,11 +839,11 @@ Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
 void
 Picking::mouseMoveHandler(MousePtr mouse, int dx, int dy)
 {
-	if (_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0 || _mouseMove->numCallbacks() > 0)
-	{
-		_executeMoveHandler = true;
-		enabled(true);
-	}
+    if (_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0 || _mouseMove->numCallbacks() > 0)
+    {
+        _executeMoveHandler = true;
+        enabled(true);
+    }
 }
 
 void
@@ -870,30 +870,30 @@ void
 Picking::mouseRightClickHandler(MousePtr mouse)
 {
     if (_mouseRightClick->numCallbacks() > 0)
-	{
-		_executeRightClickHandler = true;
-		enabled(true);
-	}
+    {
+        _executeRightClickHandler = true;
+        enabled(true);
+    }
 }
 
 void
 Picking::mouseLeftClickHandler(MousePtr mouse)
 {
     if (_mouseLeftClick->numCallbacks() > 0)
-	{
-		_executeLeftClickHandler = true;
-		enabled(true);
-	}
+    {
+        _executeLeftClickHandler = true;
+        enabled(true);
+    }
 }
 
 void
 Picking::mouseRightDownHandler(MousePtr mouse)
 {
     if (_mouseRightDown->numCallbacks() > 0)
-	{
-		_executeRightDownHandler = true;
-		enabled(true);
-	}
+    {
+        _executeRightDownHandler = true;
+        enabled(true);
+    }
 }
 
 void

@@ -62,8 +62,8 @@ namespace minko
             TouchPtr                                    _touch;
 			NodePtr								        _camera;
 			math::mat4							        _pickingProjection;
-			std::map<SurfacePtr, std::vector<uint>>		_surfaceToPickingIds;
-			std::map<uint, SurfacePtr>			        _pickingIdToSurface;
+			std::map<SurfacePtr, std::vector<uint>>     _surfaceToPickingIds;
+			std::map<uint, SurfacePtr>                  _pickingIdToSurface;
 			uint							        	_pickingId;
 			ContextPtr					        		_context;
             ProviderPtr				        		    _pickingProvider;
@@ -305,11 +305,11 @@ namespace minko
 			}
 
             inline
-			uint
-			pickedSurfaceId()
-			{
-				return _lastPickedSurfaceId;
-			}
+            uint
+            pickedSurfaceId()
+            {
+                return _lastPickedSurfaceId;
+            }
 
             inline
             bool
