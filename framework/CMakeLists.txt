@@ -27,10 +27,13 @@ if (UNIX)
     set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -MMD -m${BITNESS}")
     set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -MMD -m${BITNESS}")
 elseif (WIN32)
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_USE_MATH_DEFINES -D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS")
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_USE_MATH_DEFINES")
     set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_USE_MATH_DEFINES")
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D_USE_MATH_DEFINES -D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS")
+    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D_USE_MATH_DEFINES")
     set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -D_USE_MATH_DEFINES")
+    # add a flag to remove the error C2338 on Visual Studio 15 2017 (https://stackoverflow.com/a/30811901/10069938)
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS")
+    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS")
 endif ()
 
 option (WITH_GLSL_OPTIMIZER
@@ -79,6 +82,15 @@ if (WIN32)
     endif ()
 endif ()
 
+if (ANDROID)
+    file (GLOB_RECURSE ANDROID_SRC
+        "lib/android/*.cpp"
+        "lib/android/*.h"
+    )
+    add_definitions(-DANDROID)
+endif ()
+
+
 add_library (minko-framework
     STATIC
     ${JSON_CPP_SRC}
@@ -94,9 +106,12 @@ target_include_directories (minko-framework
     "include" "src" "lib/jsoncpp/src" "lib/glm" "lib/sparsehash/src"
     if (WIN32)
         "lib/sparsehash/include/windows"
-	"lib/glew/include"
+        "lib/glew/include"
     else ()
         "lib/sparsehash/include"
+    endif ()
+    if (ANDROID)
+        "lib/android"
     endif ()
 )
 
