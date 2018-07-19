@@ -98,6 +98,7 @@ add_library (minko-framework
     ${FRAMEWORK_SRC}
     $<$<CONFIG:Release>:${SPARSEHASH_SRC}>
     ${GLEW_SRC}
+    ${ANDROID_SRC}
 )
 
 
