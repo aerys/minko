@@ -75,9 +75,6 @@ file (GLOB_RECURSE GLM_SRC
 file (GLOB_RECURSE SPARSEHASH_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.cc"
-    $<$<NOT:$<BOOL:WIN32>>:${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/windows/*.h>
-    $<$<BOOL:WIN32>:${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/*.h>
-    endif ()
 )
 
 
@@ -86,10 +83,17 @@ if (WIN32)
     file (GLOB_RECURSE GLEW_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/lib/glew/*.h"
     )
+    file (GLOB_RECURSE SPARSEHASH_SRC_ADDITIONAL
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/windows/*.h"
+    )
     link_directories("${CMAKE_CURRENT_SOURCE_DIR}/lib/glew/lib/windows${BITNESS}")
     if (BITNESS EQUAL 32)
         add_definitions("/wd4503")
     endif ()
+else ()
+    file (GLOB_RECURSE SPARSEHASH_SRC_ADDITIONAL
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/*.h"
+    )
 endif ()
 
 if (ANDROID)
@@ -100,18 +104,24 @@ if (ANDROID)
     add_definitions(-DANDROID)
 endif ()
 
-
 add_library (minko-framework
     STATIC
     ${JSON_CPP_SRC}
     ${GLM_SRC}
     ${FRAMEWORK_SRC}
-    $<$<CONFIG:Release>:${SPARSEHASH_SRC}>
     ${GLEW_SRC}
-    ${ANDROID_SRC}
 )
 
-file(GLOB MINKO_INCLUDES
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_sources (minko-framework
+        PUBLIC
+        ${SPARSEHASH_SRC}
+        ${SPARSEHASH_SRC_ADDITIONAL}
+    )
+endif ()
+
+target_include_directories (minko-framework
+    PUBLIC
     "include"
     "src"
     "lib/jsoncpp/src"
@@ -119,14 +129,29 @@ file(GLOB MINKO_INCLUDES
     "lib/sparsehash/src"
 )
 
-target_include_directories (minko-framework
-    PUBLIC
-    ${MINKO_INCLUDES}
-    $<$<NOT:$<BOOL:WIN32>>:${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/windows>
-    $<$<NOT:$<BOOL:WIN32>>:${CMAKE_CURRENT_SOURCE_DIR}/lib/glew/include>
-    $<$<BOOL:WIN32>:${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include>
-    $<$<NOT:$<BOOL:ANDROID>>:${CMAKE_CURRENT_SOURCE_DIR}/lib/android>
+if (WIN32)
+    target_include_directories (minko-framework
+        PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/windows"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glew/include"
+    )
+else ()
+    target_include_directories (minko-framework
+        PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include"
+    )
+endif()
+
+if (ANDROID)
+    target_include_directories (minko-framework
+        PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/android"
+    )
+    target_sources (minko-framework
+        PUBLIC
+        ${ANDROID_SRC}
 )
+endif()
 
 if (WITH_GLSL_OPTIMIZER)
     file (GLOB_RECURSE GLSL_OPTIMIZER_SRC
