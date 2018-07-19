@@ -75,10 +75,8 @@ file (GLOB_RECURSE GLM_SRC
 file (GLOB_RECURSE SPARSEHASH_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.cc"
-    if (WIN32)
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/windows/*.h"
-    else ()
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/*.h"
+    $<$<NOT:$<BOOL:WIN32>>:${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/windows/*.h>
+    $<$<BOOL:WIN32>:${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/*.h>
     endif ()
 )
 
@@ -113,19 +111,21 @@ add_library (minko-framework
     ${ANDROID_SRC}
 )
 
+file(GLOB MINKO_INCLUDES
+    "include"
+    "src"
+    "lib/jsoncpp/src"
+    "lib/glm"
+    "lib/sparsehash/src"
+)
 
 target_include_directories (minko-framework
     PUBLIC
-    "include" "src" "lib/jsoncpp/src" "lib/glm" "lib/sparsehash/src"
-    if (WIN32)
-        "lib/sparsehash/include/windows"
-        "lib/glew/include"
-    else ()
-        "lib/sparsehash/include"
-    endif ()
-    if (ANDROID)
-        "lib/android"
-    endif ()
+    ${MINKO_INCLUDES}
+    $<$<NOT:$<BOOL:WIN32>>:${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/windows>
+    $<$<NOT:$<BOOL:WIN32>>:${CMAKE_CURRENT_SOURCE_DIR}/lib/glew/include>
+    $<$<BOOL:WIN32>:${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include>
+    $<$<NOT:$<BOOL:ANDROID>>:${CMAKE_CURRENT_SOURCE_DIR}/lib/android>
 )
 
 if (WITH_GLSL_OPTIMIZER)
