@@ -182,7 +182,7 @@ if (WITH_GLSL_OPTIMIZER)
 
     list (REMOVE_ITEM
         GLSL_OPTIMIZER_SRC
-        "lib/glsl-optimizer/src/glsl/main.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/glsl/main.cpp"
     )
     
     target_sources (minko-framework
@@ -204,6 +204,15 @@ if (WITH_GLSL_OPTIMIZER)
     #Explanation about this ignored warning : https://tinyurl.com/y8bksdkf
     if (WIN32)
         add_definitions("/wd4291")
+    endif ()
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+        add_definitions("-DHAVE___BUILTIN_FFS")
+        list(REMOVE_ITEM
+            GLSL_OPTIMIZER_SRC
+            "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/getopt/getopt.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/getopt/getopt_long.c"
+            )
     endif ()
 
 endif ()
