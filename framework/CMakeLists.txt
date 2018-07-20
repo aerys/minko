@@ -53,9 +53,9 @@ option (WITH_GLSL_OPTIMIZER
     OFF
 )
 
-option (BINARYEN_METHOD
+option (WASM
     "choose the emscripten method"
-    "off"
+    OFF
 )
 
 file (GLOB_RECURSE FRAMEWORK_SRC
@@ -110,10 +110,8 @@ if (ANDROID)
 endif ()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
-    if (BINARYEN_METHOD STREQUAL "wasm")
-        add_definitions("-s BINARYEN_METHOD=native-wasm")
-    elseif (BINARYEN_METHOD STREQUAL "asm.js")
-        add_definitions("-s BINARYEN_METHOD=asmjs")
+    if (WASM)
+        add_definitions("-s WASM=1")
     endif()
 endif()
 
