@@ -53,6 +53,11 @@ option (WITH_GLSL_OPTIMIZER
     OFF
 )
 
+option (BINARYEN_METHOD
+    "choose the emscripten method"
+    "off"
+)
+
 file (GLOB_RECURSE FRAMEWORK_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
@@ -103,6 +108,14 @@ if (ANDROID)
     )
     add_definitions(-DANDROID)
 endif ()
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    if (BINARYEN_METHOD STREQUAL "wasm")
+        add_definitions("-s BINARYEN_METHOD=native-wasm")
+    elseif (BINARYEN_METHOD STREQUAL "asm.js")
+        add_definitions("-s BINARYEN_METHOD=asmjs")
+    endif()
+endif()
 
 add_library (minko-framework
     STATIC
