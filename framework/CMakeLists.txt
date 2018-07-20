@@ -201,6 +201,11 @@ if (WITH_GLSL_OPTIMIZER)
         COMPILE_FLAGS "-fno-strict-aliasing")
     endif ()
 
+    #Explanation about this ignored warning : https://tinyurl.com/y8bksdkf
+    if (WIN32)
+        add_definitions("/wd4291")
+    endif ()
+
 endif ()
 
 add_custom_command (TARGET minko-framework
