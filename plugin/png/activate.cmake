@@ -1,0 +1,5 @@
+function(enable_png target)
+    plugin_link("png" target)
+    file(${PNG_PATH}/include)
+    add_definitions("-DMINKO_PLUGIN_PNG")
+endfunction()
