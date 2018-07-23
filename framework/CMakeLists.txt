@@ -1,0 +1,137 @@
+cmake_minimum_required (VERSION 3.5.1)
+
+if (NOT CMAKE_BUILD_TYPE)
+    set (CMAKE_BUILD_TYPE "Debug")
+endif ()
+
+set (CMAKE_CXX_FLAGS_DEBUG
+    "${CMAKE_CXX_FLAGS_DEBUG} -MMD -MP -m64 -std=c++11 -DDEBUG -DJSON_IS_AMALGAMATION"
+)
+
+set (CMAKE_C_FLAGS_DEBUG
+    "${CMAKE_C_FLAGS_DEBUG} -MMD -MP -m64 -std=c++11 -DDEBUG -DJSON_IS_AMALGAMATION"
+)
+
+set (CMAKE_CXX_FLAGS_RELEASE
+    "${CMAKE_CXX_FLAGS_RELEASE} -MMD -MP -m64 -std=c++11 -DNDEBUG -DJSON_IS_AMALGAMATION"
+)
+
+set (CMAKE_C_FLAGS_RELEASE
+    "${CMAKE_C_FLAGS_RELEASE} -MMD -MP -m64 -std=c++11 -DNDEBUG -DJSON_IS_AMALGAMATION"
+)
+
+option (WITH_GLSL_OPTIMIZER
+    "handle with-glsl-optimizer option"
+    OFF
+)
+
+file (GLOB_RECURSE FRAMEWORK_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/*"
+)
+
+file (GLOB_RECURSE JSON_CPP_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/jsoncpp/src/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/jsoncpp/src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/jsoncpp/src/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/jsoncpp/src/*.c"
+)
+
+file (GLOB_RECURSE GLM_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/glm/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/glm/*.inl"
+)
+
+file (GLOB_RECURSE SPARSEHASH_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.h"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/*.h"
+)
+
+
+add_library (minko-framework
+    STATIC
+    ${JSON_CPP_SRC} ${GLM_SRC} ${FRAMEWORK_SRC} $<$<CONFIG:Release>:${SPARSEHASH_SRC}>
+)
+
+
+target_include_directories (minko-framework
+    PUBLIC
+    "include" "src" "lib/jsoncpp/src" "lib/glm" "lib/sparsehash/include" "lib/sparsehash/src"
+)
+
+if (WITH_GLSL_OPTIMIZER)
+    file (GLOB_RECURSE GLSL_OPTIMIZER_SRC
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/getopt/*.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/getopt/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/glsl/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/glsl/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/glsl/*.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/mesa/main/*.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/mesa/main/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/mesa/program/*.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/mesa/program/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/util/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/util/*.c"
+    )
+
+    file (GLOB GLSL_INCLUDE
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/getopt"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/glsl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/glsl/glcpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/mesa"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/mesa/main"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/mesa/program"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/util"
+    )
+
+    list (REMOVE_ITEM
+        GLSL_OPTIMIZER_SRC
+        "lib/glsl-optimizer/src/glsl/main.cpp"
+    )
+    
+    target_sources (minko-framework
+        PUBLIC
+        ${GLSL_OPTIMIZER_SRC}
+    )
+
+    target_include_directories (minko-framework
+        PUBLIC
+        ${GLSL_INCLUDE}
+    )
+
+    if (UNIX OR ANDROID)
+        set_target_properties (minko-framework
+        PROPERTIES
+        COMPILE_FLAGS "-fno-strict-aliasing")
+    endif ()
+
+endif ()
+
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(BITNESS 64)
+else ()
+    set(BITNESS 32)
+endif ()
+
+string (TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
+string (TOLOWER ${CMAKE_SYSTEM_NAME} CMAKE_SYSTEM_NAME)
+
+set (OUTPUT_FRAMEWORK_PATH
+    "${CMAKE_BINARY_DIR}/bin/${CMAKE_SYSTEM_NAME}${BITNESS}/${CMAKE_BUILD_TYPE}"
+)
+
+add_custom_command (TARGET minko-framework
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTPUT_FRAMEWORK_PATH}
+)
+
+set_target_properties (minko-framework
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY
+    ${OUTPUT_FRAMEWORK_PATH}
+)
