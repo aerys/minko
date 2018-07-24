@@ -38,5 +38,9 @@ target_include_directories (${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE} ${
     enable_sdl(${PROJECT_NAME})
     enable_png(${PROJECT_NAME})
 #endforeach()
+#do function
+target_link_libraries(${PROJECT_NAME} "minko-framework")
+link_directories("/usr/lib64")
+target_link_libraries(${PROJECT_NAME} "GL" "m" "pthread")
 
 package_assets(".png;.glsl;.effect")

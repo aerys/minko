@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-set (PROJECT_NAME "minko-plugin-${PLUGIN}")
+set (PROJECT_NAME "minko-plugin-sdl")
 #do a function
 set (OUTPUT_PATH
     "${CMAKE_CURRENT_BINARY_DIR}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"

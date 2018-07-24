@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-set (PROJECT_NAME "minko-plugin-${PLUGIN}")
+set (PROJECT_NAME "minko-plugin-png")
 
 #do a function
 set (OUTPUT_PATH
@@ -10,7 +10,6 @@ set (OUTPUT_PATH
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_PATH})
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_PATH})
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_PATH})
-
 
 file(GLOB_RECURSE
     ${PROJECT_NAME}_SRC

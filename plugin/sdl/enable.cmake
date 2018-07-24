@@ -1,5 +1,5 @@
 function (enable_sdl target)
-    target_link_libraries(${target} minko-plugin-${name})
+    target_link_libraries(${target} "minko-plugin-sdl")
 
     #plugin_link("sdl" target)
     add_definitions("-DMINKO_PLUGIN_SDL")
