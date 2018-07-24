@@ -1,0 +1,7 @@
+function(enable_png target)
+    #plugin_link("png" target)
+    set(PNG_PATH "${MINKO_HOME}/plugin/png")
+    target_link_libraries(${target} minko-plugin-${name})
+    target_include_directories(${target} PUBLIC ${PNG_PATH}/include)
+    add_definitions("-DMINKO_PLUGIN_PNG")
+endfunction()

@@ -10,6 +10,14 @@ if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")
 endif ()
 
+set (OUTPUT_PATH
+    "${CMAKE_CURRENT_BINARY_DIR}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+)
+
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_PATH})
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_PATH})
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_PATH})
+
 option (WITH_GLSL_OPTIMIZER
     "handle with-glsl-optimizer option"
     OFF
@@ -70,12 +78,6 @@ if (ANDROID)
     )
     add_definitions(-DANDROID)
 endif ()
-
-if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
-    if (WASM)
-        add_definitions("-s WASM=1")
-    endif()
-endif()
 
 add_library (minko-framework
     STATIC

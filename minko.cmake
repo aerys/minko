@@ -41,4 +41,11 @@ function(add_flags)
         "${CMAKE_C_FLAGS_RELEASE} -MP -DNDEBUG -DJSON_IS_AMALGAMATION"
         PARENT_SCOPE
     )
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+        if (WASM)
+            add_definitions("-s WASM=1")
+        endif()
+    endif()
+
 endfunction()
