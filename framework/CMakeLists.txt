@@ -1,24 +1,37 @@
 cmake_minimum_required (VERSION 3.5.1)
 
+if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(BITNESS 64)
+else ()
+    set(BITNESS 32)
+endif ()
+
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")
 endif ()
-
 set (CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -MMD -MP -m64 -std=c++11 -DDEBUG -DJSON_IS_AMALGAMATION"
+    "${CMAKE_CXX_FLAGS_DEBUG} -MP -std=c++11 -DDEBUG -DJSON_IS_AMALGAMATION"
 )
-
 set (CMAKE_C_FLAGS_DEBUG
-    "${CMAKE_C_FLAGS_DEBUG} -MMD -MP -m64 -std=c++11 -DDEBUG -DJSON_IS_AMALGAMATION"
+    "${CMAKE_C_FLAGS_DEBUG} -MP -std=c++11 -DDEBUG -DJSON_IS_AMALGAMATION"
 )
-
 set (CMAKE_CXX_FLAGS_RELEASE
-    "${CMAKE_CXX_FLAGS_RELEASE} -MMD -MP -m64 -std=c++11 -DNDEBUG -DJSON_IS_AMALGAMATION"
+    "${CMAKE_CXX_FLAGS_RELEASE} -MP -std=c++11 -DNDEBUG -DJSON_IS_AMALGAMATION"
 )
-
 set (CMAKE_C_FLAGS_RELEASE
-    "${CMAKE_C_FLAGS_RELEASE} -MMD -MP -m64 -std=c++11 -DNDEBUG -DJSON_IS_AMALGAMATION"
+    "${CMAKE_C_FLAGS_RELEASE} -MP -std=c++11 -DNDEBUG -DJSON_IS_AMALGAMATION"
 )
+if (UNIX)
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -MMD -m${BITNESS}")
+    set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -MMD -m${BITNESS}")
+    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -MMD -m${BITNESS}")
+    set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -MMD -m${BITNESS}")
+elseif (WIN32)
+    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_USE_MATH_DEFINES -D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS")
+    set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_USE_MATH_DEFINES")
+    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D_USE_MATH_DEFINES -D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS")
+    set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -D_USE_MATH_DEFINES")
+endif ()
 
 option (WITH_GLSL_OPTIMIZER
     "handle with-glsl-optimizer option"
@@ -47,19 +60,44 @@ file (GLOB_RECURSE GLM_SRC
 file (GLOB_RECURSE SPARSEHASH_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/*.h"
+    if (WIN32)
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/windows/*.h"
+    else ()
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/include/*.h"
+    endif ()
 )
 
 
+if (WIN32)
+    add_definitions("/wd4996")
+    file (GLOB_RECURSE GLEW_SRC
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/glew/*.h"
+    )
+    link_directories("${CMAKE_CURRENT_SOURCE_DIR}/lib/glew/lib/windows${BITNESS}")
+    if (BITNESS EQUAL 32)
+        add_definitions("/wd4503")
+    endif ()
+endif ()
+
 add_library (minko-framework
     STATIC
-    ${JSON_CPP_SRC} ${GLM_SRC} ${FRAMEWORK_SRC} $<$<CONFIG:Release>:${SPARSEHASH_SRC}>
+    ${JSON_CPP_SRC}
+    ${GLM_SRC}
+    ${FRAMEWORK_SRC}
+    $<$<CONFIG:Release>:${SPARSEHASH_SRC}>
+    ${GLEW_SRC}
 )
 
 
 target_include_directories (minko-framework
     PUBLIC
-    "include" "src" "lib/jsoncpp/src" "lib/glm" "lib/sparsehash/include" "lib/sparsehash/src"
+    "include" "src" "lib/jsoncpp/src" "lib/glm" "lib/sparsehash/src"
+    if (WIN32)
+        "lib/sparsehash/include/windows"
+	"lib/glew/include"
+    else ()
+        "lib/sparsehash/include"
+    endif ()
 )
 
 if (WITH_GLSL_OPTIMIZER)
@@ -110,12 +148,6 @@ if (WITH_GLSL_OPTIMIZER)
         COMPILE_FLAGS "-fno-strict-aliasing")
     endif ()
 
-endif ()
-
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(BITNESS 64)
-else ()
-    set(BITNESS 32)
 endif ()
 
 string (TOLOWER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE)
