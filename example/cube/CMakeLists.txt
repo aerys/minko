@@ -1,6 +1,18 @@
 cmake_minimum_required(VERSION 3.5.1)
 
 set (PROJECT_NAME "minko-example-cube")
+
+#do a function
+set (OUTPUT_PATH
+    "${CMAKE_CURRENT_BINARY_DIR}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+)
+
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_PATH})
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_PATH})
+set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_PATH})
+set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_PATH})
+
+
 function(call _id)
     if (NOT COMMAND ${_id})
         message(FATAL_ERROR "Unsupported function/macro \"${_id}\"")

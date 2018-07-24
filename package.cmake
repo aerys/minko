@@ -16,7 +16,7 @@ function(package_assets extensions)
         math(EXPR RESULT ${LEN}-${DIR_SIZE})
         string(SUBSTRING ${SUB_OBJ} ${DIR_SIZE} ${RESULT} NEW_DIR)
             configure_file("${SUB_OBJ}"
-                "${CMAKE_CURRENT_BINARY_DIR}/${NEW_DIR}"
+                "${OUTPUT_PATH}/${NEW_DIR}"
                 COPYONLY
             )
         endforeach()
