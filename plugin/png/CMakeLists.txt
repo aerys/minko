@@ -13,7 +13,7 @@ file(GLOB_RECURSE
 )
 
 file(GLOB
-    ${PRJECT_NAME}_INCLUDE
+    ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/lodepng/src"
@@ -22,3 +22,14 @@ file(GLOB
 if(WIN32)
     add_definitions("-D_CRT_SECURE_NO_WARNINGS")
 endif()
+
+add_library (${PROJECT_NAME}
+    STATIC
+    ${${PROJECT_NAME}_SRC}
+)
+
+target_include_directories (${PROJECT_NAME}
+    PUBLIC
+    ${FRAMEWORK_INCLUDES}
+    ${${PROJECT_NAME}_INCLUDE}
+)

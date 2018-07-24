@@ -6,8 +6,8 @@ include("minko.cmake")
 
 add_flags()
 
-string(REPLACE "," ";" PLUGIN ${PLUGIN})
-message(${PLUGIN})
+#string(REPLACE "," ";" PLUGIN ${PLUGIN})
+#message(${PLUGIN})
 
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")
@@ -28,8 +28,11 @@ add_subdirectory("framework")
 
 get_property(FRAMEWORK_INCLUDES TARGET minko-framework PROPERTY INCLUDE_DIRECTORIES)
 
+include("plugins.cmake")
+
 list (APPEND PLUGINS
     sdl
+    png
 )
 foreach (PLUGIN IN LISTS PLUGINS)
     if (${PLUGIN})
