@@ -12,12 +12,12 @@ if [[ "$2" != "debug" && "$2" != "release" ]]; then
     exit 2;
 fi
 
-if [[ "$3" != "" && "$3" != "-j4" && "$3" != "-j8" ]]; then
+if [[ "$3" != "-j2" && "$3" != "-j4" && "$3" != "-j8" ]]; then
     echo "invalid '-j' number!"
     exit 2;
 fi
 
-if [[ "$4" != "reset" ]]; then
+if [[ "$4" == "reset" ]]; then
     sudo rm -rf build
 fi
 
