@@ -29,9 +29,14 @@ target_include_directories (${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE} ${
 foreach (${PROJECT_NAME}_PLUGIN ${${PROJECT_NAME}_PLUGINS})
     call_plugin(enable_${${PROJECT_NAME}_PLUGIN} ${${PROJECT_NAME}_PLUGIN} ${PROJECT_NAME})
 endforeach()
-#do function
+# do function
 target_link_libraries(${PROJECT_NAME} "minko-framework")
 link_directories("/usr/lib64")
 target_link_libraries(${PROJECT_NAME} "GL" "m" "pthread")
 
-package_assets(".png;.glsl;.effect")
+if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    package_assets(".png;.glsl;.effect" "on")
+    package_assets(".png;.glsl;.effect" "off")
+elseif()
+    package_assets(".png;.glsl;.effect" "off")
+endif()
