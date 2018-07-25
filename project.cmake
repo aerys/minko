@@ -186,7 +186,10 @@ function(project_application target)
         target_sources(${target} PUBLIC ${APPLE_SRC})
     endif ()
     if (ANDROID)
-    #cpjf
+        add_custom_command(TARGET ${target}
+            PRE_LINK
+            COMMAND ${MINKO_HOME}/script/cpjf.sh ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src/com/minko
+        )
         target_link_libraries(${target}
             "minko-framework"
             "GLESv1_CM"
@@ -204,6 +207,7 @@ function(project_application target)
             "-Wl -shared -pthread -Wl,--no-undefined"
             "-Wl,--udefined=Java_org_libsdl_app_SDLActivity_nativeInit"
         )
+        copy ("${MINKO_HOME}/template/android/*" ${CMAKE_CURRENT_SOURCE_DIR})
         add_custom_command(TARGET ${target}
             POST_BUILD
             COMMAND ${MINKO_HOME}/script/build_android.sh ${target}
