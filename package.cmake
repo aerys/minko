@@ -6,7 +6,7 @@ function (package_assets extensions embed)
             "${MINKO_HOME}/framework/asset/*${OBJ}"
             "${CMAKE_CURRENT_SOURCE_DIR}/asset/*${OBJ}"
         )
-    endforeach()
+    endforeach ()
 
     foreach (OBJ IN LISTS extensions)
         foreach (SUB_OBJ IN LISTS ASSETS_${OBJ})
@@ -16,13 +16,13 @@ function (package_assets extensions embed)
         string (SUBSTRING ${SUB_OBJ} ${DIR_SIZE} ${RESULT} NEW_DIR)
         if (embed STREQUAL "on")
             string (CONCAT FINAL_DIR "embed/" ${NEW_DIR})
-        else()
+        else ()
             set (FINAL_DIR ${NEW_DIR})
-        endif()
+        endif ()
             configure_file ("${SUB_OBJ}"
                 "${OUTPUT_PATH}/${FINAL_DIR}"
                 COPYONLY
             )
-        endforeach()
-    endforeach()
-endfunction()
+        endforeach ()
+    endforeach ()
+endfunction ()
