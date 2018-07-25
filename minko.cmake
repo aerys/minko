@@ -47,5 +47,24 @@ function(add_flags)
             add_definitions("-s WASM=1")
         endif()
     endif()
-
 endfunction()
+
+function (config_output_path)
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(BITNESS 64)
+    else ()
+        set(BITNESS 32)
+    endif ()
+
+    string (TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
+    string (TOLOWER ${CMAKE_SYSTEM_NAME} SYSTEM_NAME)
+
+    set (OUTPUT_PATH
+        "${CMAKE_CURRENT_BINARY_DIR}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+        PARENT_SCOPE
+    )
+
+    set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_PATH} PARENT_SCOPE)
+    set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_PATH} PARENT_SCOPE)
+    set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_PATH} PARENT_SCOPE)
+endfunction ()

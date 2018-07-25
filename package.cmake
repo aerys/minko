@@ -1,5 +1,4 @@
 function(package_assets extensions)
-    message("list=${extensions}")
     
     foreach(OBJ IN LISTS extensions)
         file(GLOB_RECURSE
