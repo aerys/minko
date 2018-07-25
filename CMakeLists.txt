@@ -4,7 +4,8 @@ set(MINKO_HOME ${CMAKE_CURRENT_SOURCE_DIR})
 
 include ("plugins.cmake")
 include ("package.cmake")
-include("minko.cmake")
+include ("minko.cmake")
+include ("project.cmake")
 
 add_flags()
 

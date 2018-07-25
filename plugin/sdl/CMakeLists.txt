@@ -60,9 +60,10 @@ add_library (${PROJECT_NAME}
 
 target_include_directories (${PROJECT_NAME}
     PUBLIC
-    ${FRAMEWORK_INCLUDES}
     ${${PROJECT_NAME}_INCLUDE}
 )
+
+project_application(${PROJECT_NAME})
 
 #add requested offscreen
 

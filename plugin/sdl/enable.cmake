@@ -23,13 +23,14 @@ function (enable_sdl target)
             "SDL2main"
             "SDL2_mixer"
         )
-        if (BITNESS EQUAL 32)
-            link_directories("{SDL_PATH}/lib/sdl/lib/windows32")
-            configure_file("{SDL_PATH}/lib/sdl/lib/windows32/*.dll" "${CMAKE_CURRENT_SOURCE_DIR}" COPYONLY)
-        else ()
-            link_directories("{SDL_PATH}/lib/sdl/lib/windows64")
-            configure_file("{SDL_PATH}/lib/sdl/lib/windows64/*.dll" "${CMAKE_CURRENT_SOURCE_DIR}" COPYONLY)
-        endif ()
+        link_directories("${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
+        file (GLOB
+            WINDOWS_DLL
+            "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}/*.dll"
+        )
+        foreach (DLL ${WINDOWS_DLL})
+            configure_file("${DLL}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
+        endforeach ()
     elseif (UNIX AND NOT APPLE)
         target_link_libraries(${target}
             "SDL2"
@@ -45,14 +46,14 @@ function (enable_sdl target)
             "AudioUnit.framework"
             "ForceFeedback.framework"
         )
-        link_directories("{SDL_PATH}/lib/sdl/lib/osx64")
-        link_directories("{SDL_PATH}/lib/sdl/lib/ios")
+        link_directories("${SDL_PATH}/lib/sdl/lib/osx64")
+        link_directories("${SDL_PATH}/lib/sdl/lib/ios")
     elseif (ANDROID)
         target_link_libraries(${target}
             "SDL2"
             "SDL2_mixer"
         )
-        link_directories("{SDL_PATH}/lib/sdl/lib/android")
+        link_directories("${SDL_PATH}/lib/sdl/lib/android")
         target_include_directories(${target}
             "${SDL_PATH}/lib/sdl/src/core/android"
         )

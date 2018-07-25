@@ -31,9 +31,7 @@ foreach (${PROJECT_NAME}_PLUGIN ${${PROJECT_NAME}_PLUGINS})
 endforeach ()
 # do function
 target_link_libraries (${PROJECT_NAME} "minko-framework")
-link_directories ("/usr/lib64")
-target_link_libraries (${PROJECT_NAME} "GL" "m" "pthread")
-
+project_application(${PROJECT_NAME})
 if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     package_assets (".png;.glsl;.effect" "on")
     package_assets (".png;.glsl;.effect" "off")
