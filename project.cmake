@@ -101,16 +101,11 @@ function(project_application target)
             "minko-framework"
         )
         set_target_properties (${target} PROPERTIES LINK_FLAGS "-Wl --no-as-needed")
-        set_target_properties (${target} PROPRETIES SUFFIX ".bc")
+        set_target_properties (${target} PROPERTIES SUFFIX ".bc")
         set_target_properties (${target}
-            PROPRETIES 
+            PROPERTIES 
             COMPILE_FLAGS 
-            "-o ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html"
-            # add minko-specific emscripten library extension
-            "--js-library ${MINKO_HOME}/module/emscripten/library.js"
-            # use a separate *.mem file to initialize the app memory
-            "--memory-init-file 1"
-            "-s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\""
+            "-o ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\""
         )
         if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/template.html")
             set_target_properties(${target}
@@ -127,43 +122,26 @@ function(project_application target)
         endif ()
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             set_target_properties (${target}
-                PROPRETIES 
+                PROPERTIES 
                 COMPILE_FLAGS 
                 # optimization
-                "-O3"
-                # enable the closure compiler
-                "--closure 1"
-                # treat undefined symbol warnings as errors
-                "-s ERROR_ON_UNDEFINED_SYMBOLS=1"
-                # disable exception catching
-                "-s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1"
-                #[[
-                    optimize (very) long functions by breaking them into smaller ones
-
-                    from emscripten's settings.js:
-                    "OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
-                    large functions (JS engines often compile them very slowly, compile them with lower optimizations,
-                     -s OUTLINING_LIMIT=20000or do not optimize them at all)"
-                ]]
-                "-s OUTLINING_LIMIT=20000"
+                "-O3 --closure 1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s OUTLINING_LIMIT=20000"
                 # set the app (or the sdk) template.html
-
             )
         else ()
             set_target_properties (${target}
-                PROPRETIES 
+                PROPERTIES 
                 COMPILE_FLAGS 
                 # treat undefined symbol warnings as errors
                 # cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
                 # disable exception catching
-                "-s DISABLE_EXCEPTION_CATCHING=0"
-                "-s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s DEMANGLE_SUPPORT=1"
-                 #[[
+                "-s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s DEMANGLE_SUPPORT=1"
+                #[[
                 optimize (very) long functions by breaking them into smaller ones
                 from emscripten's settings.js:
                 "OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
                 large functions (JS engines often compile them very slowly, compile them with lower optimizations,
-                 -s OUTLINING_LIMIT=20000or do not optimize them at all)"
+                -s OUTLINING_LIMIT=20000or do not optimize them at all)"
                 ]]
             )
         endif ()
@@ -186,10 +164,10 @@ function(project_application target)
         target_sources(${target} PUBLIC ${APPLE_SRC})
     endif ()
     if (ANDROID)
-        add_custom_command(TARGET ${target}
+        #[[add_custom_command(TARGET ${target}
             PRE_LINK
             COMMAND ${MINKO_HOME}/script/cpjf.sh ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src/com/minko
-        )
+        )]]
         target_link_libraries(${target}
             "minko-framework"
             "GLESv1_CM"
@@ -201,16 +179,15 @@ function(project_application target)
             "android"
             "stdc++"
         )
-        set_target_properties (${target} PROPRETIES PREFIX "lib")
-        set_target_properties (${target} PROPRETIES PREFIX ".so")
+        set_target_properties (${target} PROPERTIES PREFIX "lib")
+        set_target_properties (${target} PROPERTIES PREFIX ".so")
         set_target_properties (${target} PROPERTIES LINK_FLAGS 
-            "-Wl -shared -pthread -Wl,--no-undefined"
-            "-Wl,--udefined=Java_org_libsdl_app_SDLActivity_nativeInit"
+            "-Wl -shared -pthread -Wl,--no-undefined -Wl,--udefined=Java_org_libsdl_app_SDLActivity_nativeInit"
         )
-        copy ("${MINKO_HOME}/template/android/*" ${CMAKE_CURRENT_SOURCE_DIR})
-        add_custom_command(TARGET ${target}
+        # copy ("${MINKO_HOME}/template/android/*" ${CMAKE_CURRENT_SOURCE_DIR})
+        #[[add_custom_command(TARGET ${target}
             POST_BUILD
             COMMAND ${MINKO_HOME}/script/build_android.sh ${target}
-        )
+        )]]
     endif ()
 endfunction()
