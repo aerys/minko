@@ -6,13 +6,13 @@ function (copy source dest)
     )
     if (dest)
         set (DEST ${dest})
-    elseif()
+    elseif ()
         set (DEST ${CMAKE_CURRENT_SOURCE_DIR})
-    endif()
+    endif ()
     foreach (OBJ IN LISTS SOURCE)
-        configure_file("${OBJ}"
+        configure_file ("${OBJ}"
             "${DEST}"
             COPYONLY
         )
-    endforeach()
+    endforeach ()
 endfunction ()
