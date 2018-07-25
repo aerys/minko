@@ -37,18 +37,16 @@ function (project_library target)
 
     if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
         if (CMAKE_BUILD_TYPE STREQUAL "Release")
-            target_compile_options(${target}
-                PUBLIC 
-                "-03" 
-                "--llvm-lto 1" 
+            set_target_properties(${target}
+                PROPERTIES
+                COMPILE_FLAGS 
+                "-O3 --llvm-lto 1 -std=c++11"
             )
         else ()
-            target_compile_options(${target}
-                PUBLIC 
-                "-02" 
-                "--llvm-opts 0"
-                "--js-opts 0"
-                "-g4" 
+            set_target_properties(${target}
+                PROPERTIES
+                COMPILE_FLAGS 
+                "-O2 --llvm-opts 0 --js-opts 0 -g4 -std=c++11" 
             )
         endif ()
     endif ()
@@ -100,32 +98,14 @@ function(project_application target)
         target_link_libraries(${target}
             "minko-framework"
         )
-        set_target_properties (${target} PROPERTIES LINK_FLAGS "-Wl --no-as-needed")
-        set_target_properties (${target} PROPERTIES SUFFIX ".bc")
-        set_target_properties (${target}
-            PROPERTIES 
-            COMPILE_FLAGS 
-            "-o ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\""
-        )
-        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/template.html")
-            set_target_properties(${target}
-                PROPERTIES 
-                COMPILE_FLAGS
-                "--shell-file \"${CMAKE_CURRENT_SOURCE_DIR}/template.html\""
-        )
-        else ()
-            set_target_properties(${target}
-            PROPERTIES 
-            COMPILE_FLAGS
-            "--shell-file \"${MINKO_HOME}/skeleton/template.html\""
-        )
-        endif ()
+        set_target_properties (${target} PROPERTIES LINK_FLAGS "-Wl --no-as-needed -s USE_SDL=2")
+        set_target_properties (${target} PROPERTIES SUFFIX ".html")
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             set_target_properties (${target}
                 PROPERTIES 
                 COMPILE_FLAGS 
                 # optimization
-                "-O3 --closure 1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s OUTLINING_LIMIT=20000"
+                "-DJSON_IS_AMALGAMATION -o ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html -std=c++11 --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -O3 --closure 1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s OUTLINING_LIMIT=20000"
                 # set the app (or the sdk) template.html
             )
         else ()
@@ -135,7 +115,7 @@ function(project_application target)
                 # treat undefined symbol warnings as errors
                 # cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
                 # disable exception catching
-                "-s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s DEMANGLE_SUPPORT=1"
+                "-DJSON_IS_AMALGAMATION -o ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html -std=c++11 --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s DEMANGLE_SUPPORT=1"
                 #[[
                 optimize (very) long functions by breaking them into smaller ones
                 from emscripten's settings.js:
@@ -145,7 +125,17 @@ function(project_application target)
                 ]]
             )
         endif ()
-
+        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/template.html")
+            target_compile_options(${target}
+                PUBLIC
+                "--shell-file \"${CMAKE_CURRENT_SOURCE_DIR}/template.html\""
+            )
+        else ()
+            target_compile_options(${target}
+                PUBLIC
+                "--shell-file \"${MINKO_HOME}/skeleton/template.html\""
+            )
+        endif ()
     endif ()
     if (APPLE)
         target_link_libraries(${target}
@@ -182,7 +172,7 @@ function(project_application target)
         set_target_properties (${target} PROPERTIES PREFIX "lib")
         set_target_properties (${target} PROPERTIES PREFIX ".so")
         set_target_properties (${target} PROPERTIES LINK_FLAGS 
-            "-Wl -shared -pthread -Wl,--no-undefined -Wl,--udefined=Java_org_libsdl_app_SDLActivity_nativeInit"
+            "-Wl -shared -pthread -Wl,--no-undefined -Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
         )
         # copy ("${MINKO_HOME}/template/android/*" ${CMAKE_CURRENT_SOURCE_DIR})
         #[[add_custom_command(TARGET ${target}

@@ -31,7 +31,7 @@ function (enable_sdl target)
         foreach (DLL ${WINDOWS_DLL})
             configure_file("${DLL}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
         endforeach ()
-    elseif (UNIX AND NOT APPLE)
+    elseif (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
         target_link_libraries(${target}
             "SDL2"
         )
@@ -56,6 +56,11 @@ function (enable_sdl target)
         link_directories("${SDL_PATH}/lib/sdl/lib/android")
         target_include_directories(${target}
             "${SDL_PATH}/lib/sdl/src/core/android"
+        )
+    endif ()
+    if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+        target_link_libraries(${target}
+            "SDL"
         )
     endif ()
     # add off screen

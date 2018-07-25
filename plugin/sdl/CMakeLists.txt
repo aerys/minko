@@ -63,7 +63,7 @@ target_include_directories (${PROJECT_NAME}
     ${${PROJECT_NAME}_INCLUDE}
 )
 
-project_application(${PROJECT_NAME})
+project_library(${PROJECT_NAME})
 
 #add requested offscreen
 

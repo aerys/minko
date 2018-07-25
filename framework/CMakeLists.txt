@@ -81,7 +81,7 @@ add_library (minko-framework
     ${GLEW_SRC}
 )
 
-project_library ("minko-framework")
+project_library (minko-framework)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
     target_sources (minko-framework
