@@ -50,3 +50,4 @@ if (NOT WITH_PLUGINS MATCHES OFF)
 endif ()
 
 add_subdirectory("example/cube")
+#----------------------#

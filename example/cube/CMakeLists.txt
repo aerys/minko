@@ -4,6 +4,8 @@ set (PROJECT_NAME "minko-example-cube")
 
 config_output_path ()
 
+message("${CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE}")
+
 if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
     package_assets (".png;.glsl;.effect" "on")
     package_assets (".png;.glsl;.effect" "off")
@@ -38,3 +40,7 @@ foreach (${PROJECT_NAME}_PLUGIN ${${PROJECT_NAME}_PLUGINS})
 endforeach ()
 # do function
 target_link_libraries (${PROJECT_NAME} "minko-framework")
+if (ANDROID)
+include("${MINKO_HOME}/android.apk.cmake")
+android_create_apk("minko-example-cube" "minko-example-cube" "${MINKO_HOME}/apk" ${OUTPUT_PATH} "${MINKO_HOME}/template/android" "${OUTPUT_PATH}/asset")
+endif ()

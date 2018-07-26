@@ -18,7 +18,7 @@ function (project_library target)
         target_include_directories(${target} PUBLIC "/framework/lib/sparsehash/include")
     endif ()
 
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_compile_options(${target} PUBLIC "-DDEBUG")
     else ()
         target_compile_options(${target} PUBLIC "-DNDEBUG")
@@ -53,6 +53,11 @@ function (project_library target)
 endfunction ()
 
 function(project_application target)
+    if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_compile_options(${target} PUBLIC "-DDEBUG")
+    else ()
+        target_compile_options(${target} PUBLIC "-DNDEBUG")
+    endif ()
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         set (BITNESS 64)
     else ()
@@ -101,7 +106,7 @@ function(project_application target)
         )
         set_target_properties (${target} PROPERTIES LINK_FLAGS "-Wl --no-as-needed -s USE_SDL=2")
         set_target_properties (${target} PROPERTIES SUFFIX ".html")
-        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
             set_target_properties (${target}
                 PROPERTIES 
                 COMPILE_FLAGS 
@@ -175,10 +180,6 @@ function(project_application target)
         set_target_properties (${target} PROPERTIES LINK_FLAGS 
             "-Wl -shared -pthread -Wl,--no-undefined -Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
         )
-        copy ("${MINKO_HOME}/template/android/" "${OUTPUT_PATH}/../../../" ${target})
-        add_custom_command(TARGET ${target}
-            POST_BUILD
-            COMMAND ${MINKO_HOME}/script/build_android.sh ${target}
-        )
+        #set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
     endif ()
 endfunction()

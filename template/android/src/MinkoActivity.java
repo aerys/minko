@@ -1,4 +1,4 @@
-package {{PACKAGE}};
+package minko.example.cube;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
