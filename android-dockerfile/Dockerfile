@@ -11,10 +11,17 @@ RUN cd / && \
    rm -rf cmake.sh
 
 # Install the platform-tools
-RUN cd /opt/android-sdk-linux/tools/bin && ./sdkmanager "platforms;android-25" && ./sdkmanager --update
+RUN cd /opt/android-sdk-linux/tools/bin && \
+    ./sdkmanager "platforms;android-25" && ./sdkmanager --update
 
 # Install rsync
 RUN apt-get -y install rsync
 
 # Install ant
 RUN apt-get -y install ant
+
+# Install old tool dir
+RUN wget -q https://dl.google.com/android/repository/tools_r25.2.5-linux.zip && \
+    unzip tools_r25.2.5-linux.zip && \
+    rm -rf android-sdk-linux/tools tools_r25.2.5-linux.zip && \
+    mv tools android-sdk-linux
