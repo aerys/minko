@@ -12,3 +12,9 @@ RUN cd / && \
 
 # Install the platform-tools
 RUN cd /opt/android-sdk-linux/tools/bin && ./sdkmanager "platforms;android-25" && ./sdkmanager --update
+
+# Install rsync
+RUN apt-get -y install rsync
+
+# Install ant
+RUN apt-get -y install ant
