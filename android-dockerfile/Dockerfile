@@ -1,4 +1,4 @@
-FROM lakoo/android-ndk:latest
+FROM lakoo/android-ndk:26-27.0.3-r17
 
 # Intall make
 RUN apt-get update && apt-get install make
