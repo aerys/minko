@@ -52,6 +52,7 @@ if (NOT ANDROID)
         "${CMAKE_CURRENT_SOURCE_DIR}/include/minko/file/APKProtocolWorker.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/minko/file/APKProtocolWorker.cpp"
     )
+endif ()
 
 add_library (${PROJECT_NAME}
     STATIC
@@ -66,5 +67,3 @@ target_include_directories (${PROJECT_NAME}
 project_library(${PROJECT_NAME})
 
 #add requested offscreen
-
-endif ()

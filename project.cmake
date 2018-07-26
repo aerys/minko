@@ -63,10 +63,11 @@ function(project_application target)
     string (TOLOWER ${CMAKE_SYSTEM_NAME} SYSTEM_NAME)
     link_directories("${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}")
     if (WIN32)
+        find_library(GLEW32_LIB glew32 HINTS "${MINKO_HOME}/framework/lib/glew/lib/windows${BITNESS}")
         target_link_libraries(${target}
             "minko-framework"
             "OpenGL32"
-            "glew32"
+            ${GLEW32_LIB}
         )
         file (GLOB
             WINDOWS_DLL
@@ -76,7 +77,7 @@ function(project_application target)
             configure_file("${DLL}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
         endforeach ()
     endif ()
-    if (UNIX AND NOT APPLE)
+    if (UNIX AND NOT APPLE AND NOT ANDROID)
         set (CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -Wl --no-as-needed")
         link_directories ("/usr/lib64")
         target_link_libraries(${target}
@@ -154,10 +155,10 @@ function(project_application target)
         target_sources(${target} PUBLIC ${APPLE_SRC})
     endif ()
     if (ANDROID)
-        #[[add_custom_command(TARGET ${target}
+        add_custom_command(TARGET ${target}
             PRE_LINK
             COMMAND ${MINKO_HOME}/script/cpjf.sh ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src/com/minko
-        )]]
+        )
         target_link_libraries(${target}
             "minko-framework"
             "GLESv1_CM"
@@ -170,14 +171,14 @@ function(project_application target)
             "stdc++"
         )
         set_target_properties (${target} PROPERTIES PREFIX "lib")
-        set_target_properties (${target} PROPERTIES PREFIX ".so")
+        set_target_properties (${target} PROPERTIES SUFFIX ".so")
         set_target_properties (${target} PROPERTIES LINK_FLAGS 
             "-Wl -shared -pthread -Wl,--no-undefined -Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
         )
-        # copy ("${MINKO_HOME}/template/android/*" ${CMAKE_CURRENT_SOURCE_DIR})
-        #[[add_custom_command(TARGET ${target}
+        copy ("${MINKO_HOME}/template/android/*" ${CMAKE_CURRENT_SOURCE_DIR})
+        add_custom_command(TARGET ${target}
             POST_BUILD
             COMMAND ${MINKO_HOME}/script/build_android.sh ${target}
-        )]]
+        )
     endif ()
 endfunction()

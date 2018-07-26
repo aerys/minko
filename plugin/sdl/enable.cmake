@@ -18,20 +18,23 @@ function (enable_sdl target)
         ${SDL_INCLUDE}
     )
     if (WIN32)
+        message("${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
+        find_library(SDL2_LIB SDL2 HINTS "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
+        find_library(SDL2_MAIN_LIB SDL2main HINTS "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
+        find_library(SDL2_MIXER_LIB SDL2_mixer HINTS "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
         target_link_libraries(${target}
-            "SDL2"
-            "SDL2main"
-            "SDL2_mixer"
+            ${SDL2_LIB}
+            ${SDL2_MAIN_LIB}
+            ${SDL2_MIXER_LIB}
         )
-        link_directories("${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
         file (GLOB
             WINDOWS_DLL
             "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}/*.dll"
         )
         foreach (DLL ${WINDOWS_DLL})
-            configure_file("${DLL}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
+            configure_file("${DLL}" "${OUTPUT_PATH}" COPYONLY)
         endforeach ()
-    elseif (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    elseif (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND NOT ANDROID)
         target_link_libraries(${target}
             "SDL2"
         )
@@ -49,12 +52,12 @@ function (enable_sdl target)
         link_directories("${SDL_PATH}/lib/sdl/lib/osx64")
         link_directories("${SDL_PATH}/lib/sdl/lib/ios")
     elseif (ANDROID)
-        target_link_libraries(${target}
-            "SDL2"
-            "SDL2_mixer"
-        )
         link_directories("${SDL_PATH}/lib/sdl/lib/android")
-        target_include_directories(${target}
+        target_link_libraries(${target}
+            "${SDL_PATH}/lib/sdl/lib/android/libSDL2_mixer.a"
+            "${SDL_PATH}/lib/sdl/lib/android/libSDL2.a"
+        )
+        target_include_directories(${target} PUBLIC
             "${SDL_PATH}/lib/sdl/src/core/android"
         )
     endif ()
