@@ -175,7 +175,7 @@ function(project_application target)
         set_target_properties (${target} PROPERTIES LINK_FLAGS 
             "-Wl -shared -pthread -Wl,--no-undefined -Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
         )
-        copy ("${MINKO_HOME}/template/android/*" ${CMAKE_CURRENT_SOURCE_DIR})
+        copy ("${MINKO_HOME}/template/android/" "${OUTPUT_PATH}/../../../" ${target})
         add_custom_command(TARGET ${target}
             POST_BUILD
             COMMAND ${MINKO_HOME}/script/build_android.sh ${target}

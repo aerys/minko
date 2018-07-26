@@ -31,7 +31,7 @@ TARGET=$1
 
 ANDROID="${ANDROID_HOME}"
 ADB="${ANDROID_HOME}/platform-tools/adb"
-ZIPALIGN="${ANDROID_HOME}/tools/zipalign"
+ZIPALIGN="${ANDROID_HOME}/build-tools/27.0.3/zipalign"
 
 [[ -x ${ADB} ]] || {
     echo "${ADB} is not executable" > /dev/stderr
