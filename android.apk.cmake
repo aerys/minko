@@ -72,7 +72,7 @@ macro(android_create_apk name apk_package_name apk_directory libs_directory andr
     COMMAND ${CMAKE_COMMAND} -E make_directory "${apk_directory}/libs")
   add_custom_command(TARGET ${ANDROID_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${libs_directory}" "${apk_directory}/libs/")
+    "${libs_directory}" "${apk_directory}/libs/armeabi-v7a/lol/lol/lol/")
   
   # Create "build.xml", "default.properties", "local.properties" and "proguard.cfg" files
   if(CMAKE_BUILD_TYPE MATCHES Release)
