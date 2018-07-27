@@ -20,6 +20,9 @@ RUN apt-get -y install rsync
 # Install ant
 RUN apt-get -y install ant
 
+# Install zipalign
+RUN apt-get -y install zipalign
+
 # Install old tool dir
 RUN wget -q https://dl.google.com/android/repository/tools_r25.2.5-linux.zip && \
     unzip tools_r25.2.5-linux.zip && \
