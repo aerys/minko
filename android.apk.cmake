@@ -116,19 +116,19 @@ macro(android_create_apk name apk_package_name apk_directory libs_directory andr
 
     # Sign the apk file
     add_custom_command(TARGET ${ANDROID_NAME}
-      COMMAND jarsigner -verbose -keystore ${ANDROID_APK_SIGNER_KEYSTORE} bin/${ANDROID_NAME}-unsigned.apk ${ANDROID_APK_SIGNER_ALIAS}
+      COMMAND jarsigner -tsa "http://timestamp.digicert.com" -verbose -keystore ${ANDROID_APK_SIGNER_KEYSTORE} -sigalg SHA1withRSA -digestalg SHA1 /srv/smartshape-engine/apk/bin/${ANDROID_NAME}-release-unsigned.apk ${ANDROID_APK_SIGNER_ALIAS}
       WORKING_DIRECTORY "${apk_directory}")
 
     # Align the apk file
     add_custom_command(TARGET ${ANDROID_NAME}
-      COMMAND zipalign -v -f 4 bin/${ANDROID_NAME}-unsigned.apk bin/${ANDROID_NAME}.apk
+      COMMAND zipalign -v -f 4 /srv/smartshape-engine/apk/bin/${ANDROID_NAME}-release-unsigned.apk bin/${ANDROID_NAME}.apk
       WORKING_DIRECTORY "${apk_directory}")
     
     # Install current version on the device/emulator
     if(ANDROID_APK_INSTALL OR ANDROID_APK_RUN)
       add_custom_command(TARGET ${ANDROID_NAME}
-	COMMAND adb install -r bin/${ANDROID_NAME}.apk
-	WORKING_DIRECTORY "${apk_directory}")
+	    COMMAND adb install -r bin/${ANDROID_NAME}.apk
+	    WORKING_DIRECTORY "${apk_directory}")
     endif()
   else()
     # Let Ant create the unsigned apk file
