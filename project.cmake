@@ -6,7 +6,6 @@ function (project_library target)
         "${MINKO_HOME}/framework/lib/jsoncpp/src"
     )
     target_include_directories(${target} PUBLIC ${FRAMEWORK_INCLUDES})
-    target_compile_options(${target} PUBLIC "-DJSON_IS_AMALGAMATION")
     if (WIN32)
         target_include_directories(${target}
             PUBLIC 
@@ -79,7 +78,7 @@ function(project_application target)
             "${MINKO_HOME}/framework/lib/glew/lib/windows${BITNESS}/*.dll"
         )
         foreach (DLL ${WINDOWS_DLL})
-            configure_file("${DLL}" "${CMAKE_CURRENT_BINARY_DIR}" COPYONLY)
+            configure_file("${DLL}" "${OUTPUT_PATH}" COPYONLY)
         endforeach ()
     endif ()
     if (UNIX AND NOT APPLE AND NOT ANDROID)
@@ -104,32 +103,21 @@ function(project_application target)
         target_link_libraries(${target}
             "minko-framework"
         )
-        set_target_properties (${target} PROPERTIES LINK_FLAGS "-Wl --no-as-needed -s USE_SDL=2")
-        set_target_properties (${target} PROPERTIES SUFFIX ".html")
+        set_target_properties (${target} PROPERTIES LINK_FLAGS "-Wl --no-as-needed -s USE_SDL=2  -s FORCE_FILESYSTEM=1 -o ${OUTPUT_PATH}/${PROJECT_NAME}.bc")
+        set_target_properties (${target} PROPERTIES SUFFIX ".bc")
         if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set_target_properties (${target}
-                PROPERTIES 
-                COMPILE_FLAGS 
-                # optimization
-                "-DJSON_IS_AMALGAMATION -o ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html -std=c++11 --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -O3 --closure 1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s OUTLINING_LIMIT=20000"
-                # set the app (or the sdk) template.html
+            add_custom_command(TARGET
+                ${target}
+                POST_BUILD
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -O3 --closure 1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s OUTLINING_LIMIT=20000  -s FORCE_FILESYSTEM=1 -s USE_SDL=2 --preload-file ${OUTPUT_PATH}/embed/asset@asset #--shell-file \"${MINKO_HOME}/skeleton/template.html\"
             )
+
         else ()
-            set_target_properties (${target}
-                PROPERTIES 
-                COMPILE_FLAGS 
-                # treat undefined symbol warnings as errors
-                # cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
-                # disable exception catching
-                "-DJSON_IS_AMALGAMATION -o ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.html -std=c++11 --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s DEMANGLE_SUPPORT=1"
-                #[[
-                optimize (very) long functions by breaking them into smaller ones
-                from emscripten's settings.js:
-                "OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
-                large functions (JS engines often compile them very slowly, compile them with lower optimizations,
-                -s OUTLINING_LIMIT=20000or do not optimize them at all)"
-                ]]
-            )
+            add_custom_command(TARGET
+            ${target}
+            POST_BUILD
+            COMMAND ${MINKO_HOME}/module/emscripten/emcc.sh ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=0 -s NO_EXIT_RUNTIME=1 -s DEMANGLE_SUPPORT=1  -s FORCE_FILESYSTEM=1 -s USE_SDL=2 --preload-file ${OUTPUT_PATH}/embed/asset@asset #--shell-file \"${MINKO_HOME}/skeleton/template.html\"
+        )
         endif ()
         if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/template.html")
             target_compile_options(${target}

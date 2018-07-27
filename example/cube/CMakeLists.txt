@@ -23,6 +23,7 @@ file (GLOB_RECURSE
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
     "src"
+    "asset"
 )
 
 list (APPEND
@@ -33,7 +34,7 @@ list (APPEND
 
 add_executable (${PROJECT_NAME} ${${PROJECT_NAME}_SRC})
 
-target_include_directories (${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE} ${FRAMEWORK_INCLUDES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE} ${FRAMEWORK_INCLUDES})
 project_application(${PROJECT_NAME})
 foreach (${PROJECT_NAME}_PLUGIN ${${PROJECT_NAME}_PLUGINS})
     call_plugin (enable_${${PROJECT_NAME}_PLUGIN} ${${PROJECT_NAME}_PLUGIN} ${PROJECT_NAME})
