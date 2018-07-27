@@ -7,7 +7,7 @@ if [[ "$1" != "linux" && "$1" != "android" && "$1" != "asmjs" && "$1" != "wasm" 
     exit 2;
 fi
 
-if [[ "$2" != "debug" && "$2" != "release" ]]; then
+if [[ "$2" != "Debug" && "$2" != "Release" ]]; then
     echo "buid type error!"
     exit 2;
 fi
