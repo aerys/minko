@@ -1,4 +1,4 @@
-function (build_android target_name)
+function (build_android target target_name)
 
     set (APP_NAME "Minko Example Cube")
     set (PACKAGE "com.minko.example.cube")
@@ -36,9 +36,11 @@ function (build_android target_name)
     #    ARTIFACT_NAME
     #)
     
-    execute_process(
-        COMMAND cp ${MINKO_HOME}/template/android/* ${OUTPUT_PATH}
-        COMMAND temp_android_minko=${PACKAGE}
+    add_custom_command(TARGET ${target}
+        COMMAND cp -r ${MINKO_HOME}/template/android/* ${OUTPUT_PATH}
+        COMMAND export temp_android_minko=${PACKAGE}
+        #make a regex replace
+        COMMAND echo "\${temp_android_minko//.//}"
         COMMAND mkdir -p "src/\${temp_android_minko//.//}"
         COMMAND mv "src/*.java src/\${temp_android_minko//.//}"
         COMMAND sed -i 's/{{APP_NAME}}/${APP_NAME}/' ${OUTPUT_PATH}/res/values/strings.xml ${OUTPUT_PATH}/build.xml
@@ -57,18 +59,16 @@ function (build_android target_name)
         set (UNSIGNED_APK_PATH "bin/${APP_NAME}-${CMAKE_BUILD_TYPE}-unsigned.apk")
     endif ()
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "release")
-        execute_process(
+        add_custom_command(TARGET ${target}
             COMMAND jarsigner -tsa "http://timestamp.digicert.com" -keystore ${ANDROID_KEYSTORE_PATH} -storepass ${ANDROID_KEYSTORE_PASSWORD} -verbose -sigalg SHA1withRSA -digestalg SHA1 ${UNSIGNED_APK_PATH} ${ANDROID_KEYSTORE_ALIAS}
             COMMAND jarsigner -verify -verbose -certs ${UNSIGNED_APK_PATH}
             COMMAND zipalign -fv 4 ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
             COMMAND rm -f ${UNSIGNED_APK_PATH}
         )
     else ()
-        execute_process(
+        add_custom_command(TARGET ${target}
             COMMAND mv ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
         )
     endif ()
 
 endfunction()
-
-build_android("${OUTPUT_PATH}/libminko-example-cube.so")
