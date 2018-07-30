@@ -42,6 +42,5 @@ endforeach ()
 # do function
 target_link_libraries (${PROJECT_NAME} "minko-framework")
 if (ANDROID)
-include("${MINKO_HOME}/android.apk.cmake")
-android_create_apk("minko-example-cube" "minko-example-cube" "${MINKO_HOME}/apk" ${OUTPUT_PATH} "${MINKO_HOME}/template/android" "${OUTPUT_PATH}/asset")
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -DOUTPUT_PATH=${OUTPUT_PATH} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -P ${MINKO_HOME}/android-build.cmake)
 endif ()
