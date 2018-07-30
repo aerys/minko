@@ -65,14 +65,27 @@ macro(android_create_apk name apk_package_name apk_directory libs_directory andr
   set(ANDROID_NAME ${name})
   set(ANDROID_APK_PACKAGE ${apk_package_name})
 
-  # Create the directory for the libraries
+  # Remove the directory for the libraries
   add_custom_command(TARGET ${ANDROID_NAME} PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E remove_directory "${apk_directory}/libs")
   add_custom_command(TARGET ${ANDROID_NAME} PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${apk_directory}/libs")
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${apk_directory}/armeabi")
+  add_custom_command(TARGET ${ANDROID_NAME} PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E remove_directory "${apk_directory}/armeabi-v7a")
+  
+  # Copy new ones
   add_custom_command(TARGET ${ANDROID_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${libs_directory}" "${apk_directory}/libs/armeabi-v7a/lol/lol/lol/")
+    "${libs_directory}" "${apk_directory}/libs/armeabi-v7a/")
+  add_custom_command(TARGET ${ANDROID_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${libs_directory}" "${apk_directory}/libs/armeabi/")
+  add_custom_command(TARGET ${ANDROID_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${libs_directory}" "${apk_directory}/armeabi-v7a/")
+  add_custom_command(TARGET ${ANDROID_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${libs_directory}" "${apk_directory}/armeabi/")
   
   # Create "build.xml", "default.properties", "local.properties" and "proguard.cfg" files
   if(CMAKE_BUILD_TYPE MATCHES Release)

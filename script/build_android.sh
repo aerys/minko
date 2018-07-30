@@ -84,6 +84,8 @@ mv libs/armeabi-v7a/"${TARGET_NAME}" libs/armeabi-v7a/libmain.so
 
 # cp *.so libs/x86/libmain.so
 
+# HERE!
+
 rm -rf assets
 mv asset assets
 chmod u+rwx -R assets
