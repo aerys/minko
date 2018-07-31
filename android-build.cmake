@@ -46,7 +46,13 @@ function (build_android target target_name)
         COMMAND sed -i 's/{{APP_NAME}}/${APP_NAME}/' ${OUTPUT_PATH}/res/values/strings.xml ${OUTPUT_PATH}/build.xml
         COMMAND sed -i 's/{{PACKAGE}}/${PACKAGE}/' ${OUTPUT_PATH}/AndroidManifest.xml ${OUTPUT_PATH}/src/${FORMATED_PACKAGE}/*.java
         COMMAND sed -i 's/{{VERSION_CODE}}/${VERSION}/' ${OUTPUT_PATH}/AndroidManifest.xml
+        
+        COMMAND mkdir -p ${OUTPUT_PATH}/libs/armeabi/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/armeabi/ && mv ${OUTPUT_PATH}/libs/armeabi/${target_name} ${OUTPUT_PATH}/libs/armeabi/libmain.so
         COMMAND mkdir -p ${OUTPUT_PATH}/libs/armeabi-v7a/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/armeabi-v7a/ && mv ${OUTPUT_PATH}/libs/armeabi-v7a/${target_name} ${OUTPUT_PATH}/libs/armeabi-v7a/libmain.so
+        COMMAND mkdir -p ${OUTPUT_PATH}/libs/x86/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/x86/ && mv ${OUTPUT_PATH}/libs/x86/${target_name} ${OUTPUT_PATH}/libs/x86/libmain.so
+        COMMAND mkdir -p ${OUTPUT_PATH}/libs/x86_64/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/x86_64/ && mv ${OUTPUT_PATH}/libs/x86_64/${target_name} ${OUTPUT_PATH}/libs/x86_64/libmain.so
+        COMMAND mkdir -p ${OUTPUT_PATH}/libs/arm64-v8a/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/arm64-v8a/ && mv ${OUTPUT_PATH}/libs/arm64-v8a/${target_name} ${OUTPUT_PATH}/libs/arm64-v8a/libmain.so
+
         COMMAND rm -rf ${OUTPUT_PATH}/assets
         COMMAND mv ${OUTPUT_PATH}/asset ${OUTPUT_PATH}/assets
         COMMAND chmod u+rwx -R ${OUTPUT_PATH}/assets
