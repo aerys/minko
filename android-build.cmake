@@ -12,6 +12,8 @@ function (build_android target target_name)
     set (ANDROID_KEYSTORE_ALIAS "myalias")
     set (ANDROID_KEYSTORE_PASSWORD "passwd")
     set (ANDROID_KEYSTORE_PATH "/root/my-release-key.keystore")
+    # needs to get changed
+    set (ARTIFACT_PATH "${OUTPUT_PATH}/bin/${ARTIFACT_NAME}-release.apk")
     
     # regex commands
 
@@ -43,19 +45,20 @@ function (build_android target target_name)
         COMMAND mv "${OUTPUT_PATH}/src/*.java" "${OUTPUT_PATH}/src/${FORMATED_PACKAGE}"
         COMMAND sed -i 's/{{APP_NAME}}/${APP_NAME}/' ${OUTPUT_PATH}/res/values/strings.xml ${OUTPUT_PATH}/build.xml
         COMMAND sed -i 's/{{PACKAGE}}/${PACKAGE}/' ${OUTPUT_PATH}/AndroidManifest.xml ${OUTPUT_PATH}/src/${FORMATED_PACKAGE}/*.java
-        COMMAND sed -i 's/{{VERSION_CODE}}/${VERSION_CODE}/' ${OUTPUT_PATH}/AndroidManifest.xml
+        COMMAND sed -i 's/{{VERSION_CODE}}/${VERSION}/' ${OUTPUT_PATH}/AndroidManifest.xml
         COMMAND mkdir -p ${OUTPUT_PATH}/libs/armeabi-v7a/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/armeabi-v7a/ && mv ${OUTPUT_PATH}/libs/armeabi-v7a/${target_name} ${OUTPUT_PATH}/libs/armeabi-v7a/libmain.so
         COMMAND rm -rf ${OUTPUT_PATH}/assets
         COMMAND mv ${OUTPUT_PATH}/asset ${OUTPUT_PATH}/assets
         COMMAND chmod u+rwx -R ${OUTPUT_PATH}/assets
-        #make cmake buildtype to lower
+        # make cmake buildtype to lower
         COMMAND ant "release"
         WORKING_DIRECTORY ${OUTPUT_PATH}
     )
     if (${CMAKE_BUILD_TYPE} STREQUAL "debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-        set (UNSIGNED_APK_PATH "bin/${APP_NAME}-${CMAKE_BUILD_TYPE}.apk")
+        set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${CMAKE_BUILD_TYPE}.apk")
     else ()
-        set (UNSIGNED_APK_PATH "bin/${APP_NAME}-${CMAKE_BUILD_TYPE}-unsigned.apk")
+    # need to get replaced
+        set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-release-unsigned.apk")
     endif ()
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "release")
         add_custom_command(TARGET ${target}
