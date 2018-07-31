@@ -35,23 +35,22 @@ function (build_android target target_name)
     #    OUTPUT_VARIABLE
     #    ARTIFACT_NAME
     #)
-    
+    string(REGEX REPLACE "[.]" "/" FORMATED_PACKAGE ${PACKAGE})
     add_custom_command(TARGET ${target}
+        POST_BUILD
         COMMAND cp -r ${MINKO_HOME}/template/android/* ${OUTPUT_PATH}
-        COMMAND export temp_android_minko=${PACKAGE}
-        #make a regex replace
-        COMMAND echo "\${temp_android_minko//.//}"
-        COMMAND mkdir -p "src/\${temp_android_minko//.//}"
-        COMMAND mv "src/*.java src/\${temp_android_minko//.//}"
+        COMMAND mkdir -p "${OUTPUT_PATH}/src/${FORMATED_PACKAGE}"
+        COMMAND mv "${OUTPUT_PATH}/src/*.java" "${OUTPUT_PATH}/src/${FORMATED_PACKAGE}"
         COMMAND sed -i 's/{{APP_NAME}}/${APP_NAME}/' ${OUTPUT_PATH}/res/values/strings.xml ${OUTPUT_PATH}/build.xml
-        COMMAND sed -i 's/{{PACKAGE}}/${PACKAGE}/' ${OUTPUT_PATH}/AndroidManifest.xml ${OUTPUT_PATH}/src/\${temp_android_minko//.//}/*.java
+        COMMAND sed -i 's/{{PACKAGE}}/${PACKAGE}/' ${OUTPUT_PATH}/AndroidManifest.xml ${OUTPUT_PATH}/src/${FORMATED_PACKAGE}/*.java
         COMMAND sed -i 's/{{VERSION_CODE}}/${VERSION_CODE}/' ${OUTPUT_PATH}/AndroidManifest.xml
         COMMAND mkdir -p ${OUTPUT_PATH}/libs/armeabi-v7a/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/armeabi-v7a/ && mv ${OUTPUT_PATH}/libs/armeabi-v7a/${target_name} ${OUTPUT_PATH}/libs/armeabi-v7a/libmain.so
         COMMAND rm -rf ${OUTPUT_PATH}/assets
         COMMAND mv ${OUTPUT_PATH}/asset ${OUTPUT_PATH}/assets
         COMMAND chmod u+rwx -R ${OUTPUT_PATH}/assets
-        COMMAND cd ${OUTPUT_PATH}
-        COMMAND ant ${CMAKE_BUILD_TYPE}
+        #make cmake buildtype to lower
+        COMMAND ant "release"
+        WORKING_DIRECTORY ${OUTPUT_PATH}
     )
     if (${CMAKE_BUILD_TYPE} STREQUAL "debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
         set (UNSIGNED_APK_PATH "bin/${APP_NAME}-${CMAKE_BUILD_TYPE}.apk")
@@ -60,6 +59,7 @@ function (build_android target target_name)
     endif ()
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "release")
         add_custom_command(TARGET ${target}
+            POST_BUILD
             COMMAND jarsigner -tsa "http://timestamp.digicert.com" -keystore ${ANDROID_KEYSTORE_PATH} -storepass ${ANDROID_KEYSTORE_PASSWORD} -verbose -sigalg SHA1withRSA -digestalg SHA1 ${UNSIGNED_APK_PATH} ${ANDROID_KEYSTORE_ALIAS}
             COMMAND jarsigner -verify -verbose -certs ${UNSIGNED_APK_PATH}
             COMMAND zipalign -fv 4 ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
@@ -67,6 +67,7 @@ function (build_android target target_name)
         )
     else ()
         add_custom_command(TARGET ${target}
+            POST_BUILD
             COMMAND mv ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
         )
     endif ()
