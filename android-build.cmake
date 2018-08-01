@@ -6,9 +6,7 @@ function (build_android target target_name)
 
     # define all the needed variables
     set (ANDROID_HOME "/opt/android-sdk-linux")
-    set (ADB "${ANDROID_HOME}/platform-tools/adb")
     set (VERSION "0")
-    set (TEMPLATE_PATH "${MINKO_HOME}/template/android")
     set (ANDROID_KEYSTORE_ALIAS "myalias")
     set (ANDROID_KEYSTORE_PASSWORD "passwd")
     set (ANDROID_KEYSTORE_PATH "/root/my-release-key.keystore")
