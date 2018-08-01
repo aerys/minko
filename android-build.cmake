@@ -17,26 +17,34 @@ function (build_android target target_name)
     
     # regex commands
 
-    #execute_process(COMMAND
+    # execute_process(COMMAND
     #    sed -r "s/lib(.*).so/\\1/;s/-/ /g;s/([A-Za-z])([A-Za-z]+)/\\U\\1\\L\\2/g;s/([0-9]+)//g;s/[^[:alpha:]]\\s//g" "<<<" ${target_name}
     #    OUTPUT_VARIABLE
     #    APP_NAME
-    #)
+    # )
 
-    #string(REGEX MATCHALL "s/lib(.*).so/\\1/;s/-/ /g;s/([A-Za-z])([A-Za-z]+)/\\U\\1\\L\\2/g;s/([0-9]+)//g;s/[^[:alpha:]]\\s//g" APP_NAME "libminko-example-cube.so")
+    # string(REGEX MATCHALL "s/lib(.*).so/\\1/;s/-/ /g;s/([A-Za-z])([A-Za-z]+)/\\U\\1\\L\\2/g;s/([0-9]+)//g;s/[^[:alpha:]]\\s//g" APP_NAME "libminko-example-cube.so")
 
-    #message("LOL: ${APP_NAME}")
+    # message("LOL: ${APP_NAME}")
 
-    #execute_process(COMMAND
+    # execute_process(COMMAND
     #    sed -r "s/lib(.*).so/com.\\1/;s/-/\\./g;s/\\.([0-9]+)//g;s/(.*)/\\L\\1/" "<<<" ${target_name}
     #    OUTPUT_VARIABLE
     #    PACKAGE
-    #)
-    #execute_process(COMMAND
+    # )
+    # execute_process(COMMAND
     #    sed -r "s/ /-/g;s/(.*)/\\L\\1/" "<<<" ${APP_NAME}
     #    OUTPUT_VARIABLE
     #    ARTIFACT_NAME
-    #)
+    # )
+
+    # pushd "${TARGET_DIR}" > /dev/nul
+
+    add_custom_command(TARGET ${target}
+        POST_BUILD
+        COMMAND rsync -vr "${MINKO_HOME}/build/example/cube/bin/android32" .
+    )
+
     string(REGEX REPLACE "[.]" "/" FORMATED_PACKAGE ${PACKAGE})
     add_custom_command(TARGET ${target}
         POST_BUILD
@@ -47,11 +55,11 @@ function (build_android target target_name)
         COMMAND sed -i 's/{{PACKAGE}}/${PACKAGE}/' ${OUTPUT_PATH}/AndroidManifest.xml ${OUTPUT_PATH}/src/${FORMATED_PACKAGE}/*.java
         COMMAND sed -i 's/{{VERSION_CODE}}/${VERSION}/' ${OUTPUT_PATH}/AndroidManifest.xml
         
-        COMMAND mkdir -p ${OUTPUT_PATH}/libs/armeabi/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/armeabi/ && mv ${OUTPUT_PATH}/libs/armeabi/${target_name} ${OUTPUT_PATH}/libs/armeabi/libmain.so
+        # COMMAND mkdir -p ${OUTPUT_PATH}/libs/armeabi/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/armeabi/ && mv ${OUTPUT_PATH}/libs/armeabi/${target_name} ${OUTPUT_PATH}/libs/armeabi/libmain.so
         COMMAND mkdir -p ${OUTPUT_PATH}/libs/armeabi-v7a/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/armeabi-v7a/ && mv ${OUTPUT_PATH}/libs/armeabi-v7a/${target_name} ${OUTPUT_PATH}/libs/armeabi-v7a/libmain.so
-        COMMAND mkdir -p ${OUTPUT_PATH}/libs/x86/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/x86/ && mv ${OUTPUT_PATH}/libs/x86/${target_name} ${OUTPUT_PATH}/libs/x86/libmain.so
-        COMMAND mkdir -p ${OUTPUT_PATH}/libs/x86_64/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/x86_64/ && mv ${OUTPUT_PATH}/libs/x86_64/${target_name} ${OUTPUT_PATH}/libs/x86_64/libmain.so
-        COMMAND mkdir -p ${OUTPUT_PATH}/libs/arm64-v8a/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/arm64-v8a/ && mv ${OUTPUT_PATH}/libs/arm64-v8a/${target_name} ${OUTPUT_PATH}/libs/arm64-v8a/libmain.so
+        # COMMAND mkdir -p ${OUTPUT_PATH}/libs/x86/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/x86/ && mv ${OUTPUT_PATH}/libs/x86/${target_name} ${OUTPUT_PATH}/libs/x86/libmain.so
+        # COMMAND mkdir -p ${OUTPUT_PATH}/libs/x86_64/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/x86_64/ && mv ${OUTPUT_PATH}/libs/x86_64/${target_name} ${OUTPUT_PATH}/libs/x86_64/libmain.so
+        # COMMAND mkdir -p ${OUTPUT_PATH}/libs/arm64-v8a/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/arm64-v8a/ && mv ${OUTPUT_PATH}/libs/arm64-v8a/${target_name} ${OUTPUT_PATH}/libs/arm64-v8a/libmain.so
 
         COMMAND rm -rf ${OUTPUT_PATH}/assets
         COMMAND mv ${OUTPUT_PATH}/asset ${OUTPUT_PATH}/assets
@@ -63,7 +71,7 @@ function (build_android target target_name)
     if (${CMAKE_BUILD_TYPE} STREQUAL "debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${CMAKE_BUILD_TYPE}.apk")
     else ()
-    # need to get replaced
+        # need to get replaced
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-release-unsigned.apk")
     endif ()
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "release")
