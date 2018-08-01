@@ -81,8 +81,6 @@ add_library (minko-framework
     ${GLEW_SRC}
 )
 
-project_library (minko-framework)
-
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
     target_sources (minko-framework
         PUBLIC
@@ -167,9 +165,7 @@ if (WITH_GLSL_OPTIMIZER)
     )
 
     if (UNIX OR ANDROID)
-        set_target_properties (minko-framework
-        PROPERTIES
-        COMPILE_FLAGS "-fno-strict-aliasing")
+        add_definitions ("-fno-strict-aliasing")
     endif ()
 
     #Explanation about this ignored warning : https://tinyurl.com/y8bksdkf
@@ -187,4 +183,6 @@ if (WITH_GLSL_OPTIMIZER)
     endif ()
 
 endif ()
+
+project_library(minko-framework)
 

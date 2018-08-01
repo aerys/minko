@@ -31,9 +31,11 @@ list (APPEND
     sdl
     png
 )
-
-add_executable (${PROJECT_NAME} ${${PROJECT_NAME}_SRC})
-
+if (NOT ANDROID)
+    add_executable (${PROJECT_NAME} ${${PROJECT_NAME}_SRC})
+else ()
+    add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SRC})
+endif ()
 target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE} ${FRAMEWORK_INCLUDES})
 project_application(${PROJECT_NAME})
 foreach (${PROJECT_NAME}_PLUGIN ${${PROJECT_NAME}_PLUGINS})

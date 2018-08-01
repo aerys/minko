@@ -34,7 +34,7 @@ function(add_flags)
         PARENT_SCOPE
     )
     set (CMAKE_CXX_FLAGS_RELEASE
-        "${CMAKE_CXX_FLAGS_RELEASE} -MP -DJSON_IS_AMALGAMATION" #-std=c++11 -DNDEBUG -DJSON_IS_AMALGAMATION"
+        "${CMAKE_CXX_FLAGS_RELEASE} -MP -DJSON_IS_AMALGAMATION -std=c++11" #-DNDEBUG -DJSON_IS_AMALGAMATION
         PARENT_SCOPE
     )
     set (CMAKE_C_FLAGS_RELEASE
@@ -43,9 +43,6 @@ function(add_flags)
     )
 
     if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
-        if (WASM)
-            add_definitions("-s WASM=1")
-        endif()
         add_definitions("-MMD -DEMSCRIPTEN")
     endif()
 endfunction()

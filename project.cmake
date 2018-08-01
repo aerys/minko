@@ -39,13 +39,13 @@ function (project_library target)
             set_target_properties(${target}
                 PROPERTIES
                 COMPILE_FLAGS 
-                "-O3 --llvm-lto 1 -std=c++11"
+                "-O3 --llvm-lto 1"
             )
         else ()
             set_target_properties(${target}
                 PROPERTIES
                 COMPILE_FLAGS 
-                "-O2 --llvm-opts 0 --js-opts 0 -g4 -std=c++11" 
+                "-O2 --llvm-opts 0 --js-opts 0 -g4" 
             )
         endif ()
     endif ()
@@ -103,20 +103,25 @@ function(project_application target)
         target_link_libraries(${target}
             "minko-framework"
         )
-        set_target_properties (${target} PROPERTIES LINK_FLAGS "-Wl --no-as-needed -s USE_SDL=2  -s FORCE_FILESYSTEM=1 -o ${OUTPUT_PATH}/${PROJECT_NAME}.bc")
+        if (WASM)
+            set (NB_WASM 1)
+        else ()
+            set (NB_WASM 0)
+        endif ()
+        set_target_properties (${target} PROPERTIES LINK_FLAGS "-Wl --no-as-needed -s USE_SDL=2  -s FORCE_FILESYSTEM=1 -o ${OUTPUT_PATH}/${PROJECT_NAME}.bc -s WASM=${NB_WASM}")
         set_target_properties (${target} PROPERTIES SUFFIX ".bc")
         if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
             add_custom_command(TARGET
                 ${target}
                 POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/emcc ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -O3 --closure 1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=1 -s FORCE_FILESYSTEM=1 -s USE_SDL=2 --preload-file ${OUTPUT_PATH}/embed/asset@asset --shell-file \"${MINKO_HOME}/skeleton/template.html\"
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -O3 --closure 1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=1 -s FORCE_FILESYSTEM=1 -s USE_SDL=2 --preload-file ${OUTPUT_PATH}/embed/asset@asset --shell-file \"${MINKO_HOME}/skeleton/template.html\" -s WASM=${NB_WASM}
             )
 
         else ()
             add_custom_command(TARGET
             ${target}
             POST_BUILD
-            COMMAND $ENV{EMSCRIPTEN}/emcc ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=1 -s DEMANGLE_SUPPORT=1  -s FORCE_FILESYSTEM=1 -s USE_SDL=2 --preload-file ${OUTPUT_PATH}/embed/asset@asset --shell-file \"${MINKO_HOME}/skeleton/template.html\"
+            COMMAND $ENV{EMSCRIPTEN}/emcc ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=1 -s DEMANGLE_SUPPORT=1  -s FORCE_FILESYSTEM=1 -s USE_SDL=2 --preload-file ${OUTPUT_PATH}/embed/asset@asset --shell-file \"${MINKO_HOME}/skeleton/template.html\" -s WASM=${NB_WASM}
         )
         endif ()
         if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/template.html")
@@ -150,7 +155,7 @@ function(project_application target)
     if (ANDROID)
         add_custom_command(TARGET ${target}
             PRE_LINK
-            COMMAND ${MINKO_HOME}/script/cpjf.sh ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src/com/minko
+            COMMAND ${MINKO_HOME}/script/cpjf.sh ${CMAKE_CURRENT_SOURCE_DIR}/src ${OUTPUT_PATH}/src/com/minko
         )
         target_link_libraries(${target}
             "minko-framework"
@@ -163,8 +168,8 @@ function(project_application target)
             "android"
             "stdc++"
         )
-        set_target_properties (${target} PROPERTIES PREFIX "lib")
-        set_target_properties (${target} PROPERTIES SUFFIX ".so")
+        #set_target_properties (${target} PROPERTIES PREFIX "lib")
+        #set_target_properties (${target} PROPERTIES SUFFIX ".so")
         set_target_properties (${target} PROPERTIES LINK_FLAGS 
             "-Wl -shared -pthread -Wl,--no-undefined -Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
         )
