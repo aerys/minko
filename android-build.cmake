@@ -11,13 +11,12 @@ function (build_android target target_name)
     set (ANDROID_KEYSTORE_PASSWORD "passwd")
     set (ANDROID_KEYSTORE_PATH "/root/my-release-key.keystore")
     
+    # using regex to get the app, package and artifact names
     string (REGEX REPLACE "lib(.*).so" "\\1" APP_CUT ${target_name})
     set (ARTIFACT_NAME ${APP_CUT})
     string (REGEX REPLACE "-" " " APP_NAME ${APP_CUT})
     string (REGEX REPLACE "lib(.*).so" "com.\\1" PACKAGE_CUT ${target_name})
     string (REGEX REPLACE "-" "." PACKAGE ${PACKAGE_CUT})
-    
-    message ("----------------> OMG: ${ARTIFACT_NAME}")
 
     # might need to add the rsync command (cf build_android.sh:65)
 
@@ -41,12 +40,8 @@ function (build_android target target_name)
         WORKING_DIRECTORY ${OUTPUT_PATH}
     )
     
-    if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" OR ${CMAKE_BUILD_TYPE} STREQUAL "debug")
-        set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}.apk")
-    else ()
-        set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}-unsigned.apk")
-    endif ()
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "release")
+        set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}-unsigned.apk")
         add_custom_command (TARGET ${target}
             POST_BUILD
             COMMAND jarsigner -tsa "http://timestamp.digicert.com" -keystore ${ANDROID_KEYSTORE_PATH} -storepass ${ANDROID_KEYSTORE_PASSWORD} -verbose -sigalg SHA1withRSA -digestalg SHA1 ${UNSIGNED_APK_PATH} ${ANDROID_KEYSTORE_ALIAS}
@@ -55,6 +50,7 @@ function (build_android target target_name)
             COMMAND rm -f ${UNSIGNED_APK_PATH}
         )
     else ()
+        set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}.apk")
         add_custom_command (TARGET ${target}
             POST_BUILD
             COMMAND mv ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
