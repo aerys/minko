@@ -16,7 +16,11 @@ function (project_library target)
     else ()
         target_include_directories(${target} PUBLIC "/framework/lib/sparsehash/include")
     endif ()
-
+    if (IOS)
+        set_target_properties(${target} PROPERTIES
+        XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 
+        "7.0")
+    endif ()
     if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_compile_options(${target} PUBLIC "-DDEBUG")
     else ()
@@ -90,14 +94,25 @@ function(project_application target)
             "m"
             "pthread"
         )
-    elseif (APPLE)
+    elseif (APPLE AND NOT IOS)
         target_link_libraries(${target}
             "minko-framework"
             "m"
-            "Cocoa.framework"
-            "OpenGL.framework"
-            "IOKit.framework"
+	    "-framework Cocoa"
+	    "-framework OpenGL"
+	    "-framework IOKit"
         )
+    elseif (IOS)
+        target_link_libraries(${target}
+            "minko-framework"
+            "m"
+            "-framework OpenGLES"
+            "-framework Foundation"
+            "-framework UIKit"
+            "-framework QuartzCore"
+            "-framework CoreGraphics"
+        )
+        configure_file(${MINKO_HOME}/skeleton/Info.plist ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist COPYONLY)
     endif ()
     if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
         target_link_libraries(${target}
@@ -136,21 +151,12 @@ function(project_application target)
             )
         endif ()
     endif ()
-    if (APPLE)
-        target_link_libraries(${target}
-            "minko-framework"
-            "m"
-            "OpenGLES.framework"
-            "Foundation.framework"
-            "UIKit.framework"
-            "QuartzCore.framework"
-            "CoreGraphics.framework"
-        )
+    if (IOS)
         file (GLOB_RECURSE 
-            APPLE_SRC
+            IOS_SRC
             "*.plist"
         )
-        target_sources(${target} PUBLIC ${APPLE_SRC})
+        target_sources(${target} PUBLIC ${IOS_SRC})
     endif ()
     if (ANDROID)
         add_custom_command(TARGET ${target}

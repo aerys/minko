@@ -27,6 +27,9 @@ function(add_flags)
     endif ()
     set (CMAKE_CXX_FLAGS_DEBUG
         "${CMAKE_CXX_FLAGS_DEBUG} -MP -std=c++11 -DJSON_IS_AMALGAMATION" # -DDEBUG -DJSON_IS_AMALGAMATION"
+    endif ()
+    set (CMAKE_CXX_FLAGS_DEBUG
+        "${CMAKE_CXX_FLAGS_DEBUG} -MP -std=c++11 -DJSON_IS_AMALGAMATION"# -DDEBUG -DJSON_IS_AMALGAMATION"
         PARENT_SCOPE
     )
     set (CMAKE_C_FLAGS_DEBUG

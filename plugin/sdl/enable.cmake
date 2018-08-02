@@ -38,19 +38,23 @@ function (enable_sdl target)
         target_link_libraries(${target}
             "SDL2"
         )
-    elseif (APPLE)
+    elseif (APPLE AND NOT IOS)
         target_link_libraries(${target}
-            "SDL2"
-            "SDL2_mixer"
-            "CoreAudio.framework"
-            "AudioToolbox.framework"
-            # "CoreFoundation.framework"
-            "Carbon.framework"
-            "AudioUnit.framework"
-            "ForceFeedback.framework"
+            "${SDL_PATH}/lib/sdl/lib/osx64/libSDL2.a"
+            "-framework CoreAudio"
+            "-framework Carbon"
+            "-framework AudioUnit"
+            "-framework ForceFeedback"
         )
         link_directories("${SDL_PATH}/lib/sdl/lib/osx64")
         link_directories("${SDL_PATH}/lib/sdl/lib/ios")
+    elseif (IOS)
+        target_link_libraries(${target}
+            "${SDL_PATH}/lib/sdl/lib/ios/libSDL2.a"
+      	    "${SDL_PATH}/lib/sdl/lib/ios/libSDL2_mixer.a"
+            "-framework CoreAudio"
+            "-framework AudioToolbox"
+        )
     elseif (ANDROID)
         link_directories("${SDL_PATH}/lib/sdl/lib/android")
         target_link_libraries(${target}
