@@ -1,8 +1,8 @@
 function (build_android target target_name)
 
-    set (APP_NAME "Minko Example Cube")
-    set (PACKAGE "com.minko.example.cube")
-    set (ARTIFACT_NAME "minko-example-cube")
+    # set (APP_NAME "Minko Example Cube")
+    # set (PACKAGE "com.minko.example.cube")
+    # set (ARTIFACT_NAME "minko-example-cube")
 
     # define all the needed variables
     set (ANDROID_HOME "/opt/android-sdk-linux")
@@ -11,30 +11,17 @@ function (build_android target target_name)
     set (ANDROID_KEYSTORE_PASSWORD "passwd")
     set (ANDROID_KEYSTORE_PATH "/root/my-release-key.keystore")
     
-    # execute_process(COMMAND
-    #    sed -r "s/lib(.*).so/\\1/;s/-/ /g;s/([A-Za-z])([A-Za-z]+)/\\U\\1\\L\\2/g;s/([0-9]+)//g;s/[^[:alpha:]]\\s//g" "<<<" ${target_name}
-    #    OUTPUT_VARIABLE
-    #    APP_NAME
-    # )
-
-    # string(REGEX MATCHALL "s/lib(.*).so/\\1/;s/-/ /g;s/([A-Za-z])([A-Za-z]+)/\\U\\1\\L\\2/g;s/([0-9]+)//g;s/[^[:alpha:]]\\s//g" APP_NAME "libminko-example-cube.so")
-
-    # message("LOL: ${APP_NAME}")
-
-    # execute_process(COMMAND
-    #    sed -r "s/lib(.*).so/com.\\1/;s/-/\\./g;s/\\.([0-9]+)//g;s/(.*)/\\L\\1/" "<<<" ${target_name}
-    #    OUTPUT_VARIABLE
-    #    PACKAGE
-    # )
-    # execute_process(COMMAND
-    #    sed -r "s/ /-/g;s/(.*)/\\L\\1/" "<<<" ${APP_NAME}
-    #    OUTPUT_VARIABLE
-    #    ARTIFACT_NAME
-    # )
+    string (REGEX REPLACE "lib(.*).so" "\\1" APP_CUT ${target_name})
+    set (ARTIFACT_NAME ${APP_CUT})
+    string (REGEX REPLACE "-" " " APP_NAME ${APP_CUT})
+    string (REGEX REPLACE "lib(.*).so" "com.\\1" PACKAGE_CUT ${target_name})
+    string (REGEX REPLACE "-" "." PACKAGE ${PACKAGE_CUT})
+    
+    message ("----------------> OMG: ${ARTIFACT_NAME}")
 
     # might need to add the rsync command (cf build_android.sh:65)
 
-    string (REGEX REPLACE "[.]" "/" FORMATED_PACKAGE ${PACKAGE})
+    string (REGEX REPLACE "\\." "/" FORMATED_PACKAGE ${PACKAGE})
     string (TOLOWER ${CMAKE_BUILD_TYPE} BUILD)
     set (ARTIFACT_PATH "${OUTPUT_PATH}/bin/${ARTIFACT_NAME}-${BUILD}.apk")
 
