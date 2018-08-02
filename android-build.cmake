@@ -11,7 +11,7 @@ function (build_android target target_name)
     set (ANDROID_KEYSTORE_PASSWORD "passwd")
     set (ANDROID_KEYSTORE_PATH "/root/my-release-key.keystore")
     
-    # using regex to get the app, package and artifact names
+    # use regex to get the names of the app, package and artifact
     string (REGEX REPLACE "lib(.*).so" "\\1" APP_CUT ${target_name})
     set (ARTIFACT_NAME ${APP_CUT})
     string (REGEX REPLACE "-" " " APP_NAME ${APP_CUT})
@@ -24,6 +24,7 @@ function (build_android target target_name)
     string (TOLOWER ${CMAKE_BUILD_TYPE} BUILD)
     set (ARTIFACT_PATH "${OUTPUT_PATH}/bin/${ARTIFACT_NAME}-${BUILD}.apk")
 
+    # prepare resources
     add_custom_command (TARGET ${target}
         POST_BUILD
         COMMAND cp -r ${MINKO_HOME}/template/android/* ${OUTPUT_PATH}
@@ -40,8 +41,11 @@ function (build_android target target_name)
         WORKING_DIRECTORY ${OUTPUT_PATH}
     )
     
+
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "release")
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}-unsigned.apk")
+        
+        # sign the apk (only when making a release)
         add_custom_command (TARGET ${target}
             POST_BUILD
             COMMAND jarsigner -tsa "http://timestamp.digicert.com" -keystore ${ANDROID_KEYSTORE_PATH} -storepass ${ANDROID_KEYSTORE_PASSWORD} -verbose -sigalg SHA1withRSA -digestalg SHA1 ${UNSIGNED_APK_PATH} ${ANDROID_KEYSTORE_ALIAS}
