@@ -14,9 +14,6 @@ RUN cd / && \
 RUN cd /opt/android-sdk-linux/tools/bin && \
     ./sdkmanager "platforms;android-25" && ./sdkmanager --update
 
-# Install rsync
-RUN apt-get -y install rsync
-
 # Install ant
 RUN apt-get -y install ant
 
@@ -28,3 +25,12 @@ RUN wget -q https://dl.google.com/android/repository/tools_r25.2.5-linux.zip && 
     unzip tools_r25.2.5-linux.zip && \
     rm -rf android-sdk-linux/tools tools_r25.2.5-linux.zip && \
     mv tools android-sdk-linux
+
+# Make keystore
+RUN keytool -genkey -alias myalias \
+    -keyalg RSA -keystore my-release-key.keystore \
+    -dname "CN=Name, OU=Unit, O=Organization, L=City, S=State, C=Coutry" \
+    -storepass password -keypass password
+
+# Move to root
+RUN mv my-release-key.keystore /root/

@@ -8,7 +8,7 @@ function (build_android target target_name)
     set (ANDROID_HOME "/opt/android-sdk-linux")
     set (VERSION "0")
     set (ANDROID_KEYSTORE_ALIAS "myalias")
-    set (ANDROID_KEYSTORE_PASSWORD "passwd")
+    set (ANDROID_KEYSTORE_PASSWORD "password")
     set (ANDROID_KEYSTORE_PATH "/root/my-release-key.keystore")
     
     # use regex to get the names of the app, package and artifact
