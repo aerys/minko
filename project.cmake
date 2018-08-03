@@ -112,6 +112,7 @@ function(project_application target)
             "-framework QuartzCore"
             "-framework CoreGraphics"
         )
+        set_target_properties (${target} PROPERTIES XCODE_PRODUCT_TYPE com.apple.product-type.application)
         configure_file(${MINKO_HOME}/skeleton/Info.plist ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist COPYONLY)
         configure_file(${MINKO_HOME}/skeleton/Default-568h@2x.png ${CMAKE_CURRENT_SOURCE_DIR}/Default-568h@2x.png COPYONLY)
     endif ()
