@@ -1,53 +1,5 @@
 cmake_minimum_required (VERSION 3.5.1)
 
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(BITNESS 64)
-else ()
-    set(BITNESS 32)
-endif ()
-
-if (NOT CMAKE_BUILD_TYPE)
-    set (CMAKE_BUILD_TYPE "Debug")
-endif ()
-
-string (TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
-string (TOLOWER ${CMAKE_SYSTEM_NAME} SYSTEM_NAME)
-
-set (OUTPUT_FRAMEWORK_PATH
-    "${CMAKE_BINARY_DIR}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
-)
-
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${OUTPUT_FRAMEWORK_PATH})
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${OUTPUT_FRAMEWORK_PATH})
-
-set (CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -MP -std=c++11 -DDEBUG -DJSON_IS_AMALGAMATION"
-)
-set (CMAKE_C_FLAGS_DEBUG
-    "${CMAKE_C_FLAGS_DEBUG} -MP -DDEBUG -DJSON_IS_AMALGAMATION"
-)
-set (CMAKE_CXX_FLAGS_RELEASE
-    "${CMAKE_CXX_FLAGS_RELEASE} -MP -std=c++11 -DNDEBUG -DJSON_IS_AMALGAMATION"
-)
-set (CMAKE_C_FLAGS_RELEASE
-    "${CMAKE_C_FLAGS_RELEASE} -MP -DNDEBUG -DJSON_IS_AMALGAMATION"
-)
-
-if (UNIX)
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -MMD -m${BITNESS}")
-    set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -MMD -m${BITNESS}")
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -MMD -m${BITNESS}")
-    set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -MMD -m${BITNESS}")
-elseif (WIN32)
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_USE_MATH_DEFINES")
-    set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_USE_MATH_DEFINES")
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D_USE_MATH_DEFINES")
-    set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -D_USE_MATH_DEFINES")
-    # add a flag to remove the error C2338 on Visual Studio 15 2017 (https://stackoverflow.com/a/30811901/10069938)
-    set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS")
-    set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS")
-endif ()
-
 option (WITH_GLSL_OPTIMIZER
     "handle with-glsl-optimizer option"
     OFF
@@ -109,19 +61,15 @@ if (ANDROID)
     add_definitions(-DANDROID)
 endif ()
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
-    if (WASM)
-        add_definitions("-s WASM=1")
-    endif()
-endif()
-
-add_library (minko-framework
-    STATIC
+list (APPEND 
+    COMMON_SOURCES
     ${JSON_CPP_SRC}
     ${GLM_SRC}
     ${FRAMEWORK_SRC}
     ${GLEW_SRC}
 )
+
+minko_add_library (minko-framework STATIC "${COMMON_SOURCES}")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
     target_sources (minko-framework
@@ -207,9 +155,7 @@ if (WITH_GLSL_OPTIMIZER)
     )
 
     if (UNIX OR ANDROID)
-        set_target_properties (minko-framework
-        PROPERTIES
-        COMPILE_FLAGS "-fno-strict-aliasing")
+        add_definitions ("-fno-strict-aliasing")
     endif ()
 
     #Explanation about this ignored warning : https://tinyurl.com/y8bksdkf
@@ -226,16 +172,4 @@ if (WITH_GLSL_OPTIMIZER)
             )
     endif ()
 
-endif ()
-
-add_custom_command (TARGET minko-framework
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTPUT_FRAMEWORK_PATH}
-)
-if (UNIX)
-set_target_properties (minko-framework
-    PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY
-    ${OUTPUT_FRAMEWORK_PATH}
-)
 endif ()

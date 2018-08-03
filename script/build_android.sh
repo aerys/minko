@@ -31,7 +31,7 @@ TARGET=$1
 
 ANDROID="${ANDROID_HOME}"
 ADB="${ANDROID_HOME}/platform-tools/adb"
-ZIPALIGN="${ANDROID_HOME}/tools/zipalign"
+ZIPALIGN="${ANDROID_HOME}/build-tools/27.0.3/zipalign"
 
 [[ -x ${ADB} ]] || {
     echo "${ADB} is not executable" > /dev/stderr
@@ -83,6 +83,8 @@ cp *.so libs/armeabi-v7a/
 mv libs/armeabi-v7a/"${TARGET_NAME}" libs/armeabi-v7a/libmain.so
 
 # cp *.so libs/x86/libmain.so
+
+# HERE!
 
 rm -rf assets
 mv asset assets
