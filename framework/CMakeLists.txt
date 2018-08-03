@@ -1,17 +1,5 @@
 cmake_minimum_required (VERSION 3.5.1)
 
-if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(BITNESS 64)
-else ()
-    set(BITNESS 32)
-endif ()
-
-if (NOT CMAKE_BUILD_TYPE)
-    set (CMAKE_BUILD_TYPE "Debug")
-endif ()
-
-config_output_path()
-
 option (WITH_GLSL_OPTIMIZER
     "handle with-glsl-optimizer option"
     OFF
@@ -73,13 +61,15 @@ if (ANDROID)
     add_definitions(-DANDROID)
 endif ()
 
-add_library (minko-framework
-    STATIC
+list (APPEND 
+    COMMON_SOURCES
     ${JSON_CPP_SRC}
     ${GLM_SRC}
     ${FRAMEWORK_SRC}
     ${GLEW_SRC}
 )
+
+minko_add_library (minko-framework STATIC "${COMMON_SOURCES}")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
     target_sources (minko-framework
@@ -183,6 +173,3 @@ if (WITH_GLSL_OPTIMIZER)
     endif ()
 
 endif ()
-
-project_library(minko-framework)
-

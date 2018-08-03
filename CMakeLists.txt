@@ -8,8 +8,6 @@ include ("minko.cmake")
 include ("project.cmake")
 include ("copy.cmake")
 
-add_flags()
-
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")
 endif ()
