@@ -113,6 +113,7 @@ function(project_application target)
             "-framework CoreGraphics"
         )
         configure_file(${MINKO_HOME}/skeleton/Info.plist ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist COPYONLY)
+        configure_file(${MINKO_HOME}/skeleton/Default-568h@2x.png ${CMAKE_CURRENT_SOURCE_DIR}/Default-568h@2x.png COPYONLY)
     endif ()
     if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
         target_link_libraries(${target}
