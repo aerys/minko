@@ -2,17 +2,19 @@ function (enable_serializer target)
     set (SERIALIZER_PATH "${MINKO_HOME}/plugin/serializer")
 
     list (APPEND
-        ${PROJECT_NAME}_PLUGINS
+        SER_PLUG
         jpeg
         png
         ttf
     )
 
-    foreach (${POJECT_NAME}_PLUGIN IN LIST ${PROJECT_NAME}_PLUGINS)
-        call_plugin (enable_${${PROJECT_NAME}_PLUGIN} ${${PROJECT_NAME}_PLUGIN} ${PROJECT_NAME})
+    message ("OMG2: ${SER_PLUG}")
+
+    foreach (SER_PLUGIN ${SER_PLUG})
+        call_plugin (enable_${SER_PLUGIN} ${SER_PLUGIN} ${PROJECT_NAME})
     endforeach ()
 
-    plugin_link("serializer" ${PROJECT})
+    plugin_link("serializer" ${PROJECT_NAME})
     
     file (GLOB
         ${PROJECT_NAME}_INCLUDE
@@ -22,7 +24,7 @@ function (enable_serializer target)
 
     target_compile_options (${PROJECT_NAME} PUBLIC -DMINKO_PLUGIN_SERIALIZER)
 
-    if (${WITH_TEXTURE_COMPRESSOR} STREQUAL "on")
+    if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
         if (WIN32 AND BITNESS EQUAL 32)
             find_library (RET_PATH
                 NAMES

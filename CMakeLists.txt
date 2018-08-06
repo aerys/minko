@@ -60,3 +60,4 @@ if (NOT WITH_PLUGINS MATCHES OFF)
 endif ()
 
 add_subdirectory("example/cube")
+add_subdirectory("example/hologram")
