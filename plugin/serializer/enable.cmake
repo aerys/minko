@@ -3,9 +3,9 @@ function (enable_serializer target)
 
     list (APPEND
         ${PROJECT_NAME}_PLUGINS
-        sdl
+        jpeg
         png
-        # tff (doesn't exists yet)
+        ttf
     )
 
     foreach (${POJECT_NAME}_PLUGIN IN LIST ${PROJECT_NAME}_PLUGINS)

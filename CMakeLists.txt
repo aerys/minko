@@ -21,10 +21,10 @@ option (WITH_PLUGINS "list off plugins to build" ON)
 list (APPEND PLUGINS
     sdl
     png
+    jpeg
     ttf
     serializer
     fx
-    jpeg
 )
 
 unset(CMAKE_OSX_DEPLOYMENT_TARGET CACHE)

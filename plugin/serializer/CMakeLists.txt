@@ -4,14 +4,10 @@ set (PROJECT_NAME "minko-plugin-serializer")
 
 list (APPEND
     ${PROJECT_NAME}_PLUGINS
-    sdl
+    jpeg
     png
-    # tff (doesn't exists yet)
+    ttf
 )
-
-foreach (${POJECT_NAME}_PLUGIN IN LIST ${PROJECT_NAME}_PLUGINS)
-    call_plugin (enable_${${PROJECT_NAME}_PLUGIN} ${${PROJECT_NAME}_PLUGIN} ${PROJECT_NAME})
-endforeach ()
 
 file (GLOB_RECURSE
     ${PROJECT_NAME}_SRC
@@ -24,6 +20,8 @@ file (GLOB_RECURSE
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/include/*.hpp"
 )
 
+message ("OMG: ${PROJECT_NAME}")
+
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -32,7 +30,12 @@ file (GLOB
 	"${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/src"
 )
 
-minko_add_library (${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SRC})
+minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")
+target_include_directories (${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE})
+
+foreach (${PROJECT_NAME}_PLUGIN ${${PROJECT_NAME}_PLUGINS})
+    call_plugin (enable_${${PROJECT_NAME}_PLUGIN} ${${PROJECT_NAME}_PLUGIN} ${PROJECT_NAME})
+endforeach ()
 
 if (WIN32)
     target_compile_options (${PROJECT_NAME} PUBLIC
@@ -59,10 +62,9 @@ if (UNIX AND NOT IOS AND NOT EMSCRIPTEN)
     )
 endif ()
 
-if (${WITH_TEXTURE_COMPRESSOR} STREQUAL "on")
+if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
     file (GLOB_RECURSE
         TEXTURE_COMP_SRC
-        # remove from list
         "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.h"
         "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.hpp"
         "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.c"
@@ -74,7 +76,7 @@ if (${WITH_TEXTURE_COMPRESSOR} STREQUAL "on")
         "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib"
 		"{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/inc"
     )
-    target_include_directories (${PROJECT_NAME} PUBLIC TEXTURE_COMP_INCLUDE)
+    target_include_directories (${PROJECT_NAME} PUBLIC ${TEXTURE_COMP_INCLUDE})
 
     list (REMOVE_ITEM
         TEXTURE_COMP_SRC
@@ -136,7 +138,7 @@ if (${WITH_TEXTURE_COMPRESSOR} STREQUAL "on")
             OPT_INCLUDE_1
             "{CMAKE_CURRENT_SOURCE_DIR}/lib/PVRTexTool/Include"
         )
-        target_include_directories (${PROJECT_NAME} PUBLIC OPT_INCLUDE_1)
+        target_include_directories (${PROJECT_NAME} PUBLIC ${OPT_INCLUDE_1})
     endif ()
 
     if (BITNESS EQUAL 32)
@@ -144,7 +146,7 @@ if (${WITH_TEXTURE_COMPRESSOR} STREQUAL "on")
             OPT_INCLUDE_2
             "lib/QCompress/Inc"
         )
-        target_include_directories (${PROJECT_NAME} PUBLIC OPT_INCLUDE_2)
+        target_include_directories (${PROJECT_NAME} PUBLIC ${OPT_INCLUDE_2})
     endif()
 else ()
     target_compile_options (${PROJECT_NAME} PUBLIC
@@ -154,10 +156,9 @@ else ()
     )
 endif ()
 
-target_include_directories (${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_INCLUDE)
+target_include_directories (${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE})
 
 target_sources (${PROJECT_NAME}
     PUBLIC
-    ${PROJECT_NAME}_SRC
-    TEXTURE_COMP_SRC
+    ${TEXTURE_COMP_SRC}
 )

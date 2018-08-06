@@ -5,7 +5,7 @@ function (enable_fx target)
     if (NOT ${target_type} STREQUAL "STATIC_LIBRARY")
         plugin_link("fx" ${target})
         target_include_directories(${target} PUBLIC "${FX_PATH}/include")
-        copy("${FX_PATH}/asset", "${OUTPUT_PATH}/asset")
+        copy("${FX_PATH}/asset" "${OUTPUT_PATH}/asset")
         #package asset ?
     endif ()
 endfunction ()
