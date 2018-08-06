@@ -2,19 +2,17 @@ function (enable_serializer target)
     set (SERIALIZER_PATH "${MINKO_HOME}/plugin/serializer")
 
     list (APPEND
-        SER_PLUG
+        ${PROJECT_NAME}_PLUGINS
         jpeg
         png
         ttf
     )
 
-    message ("OMG2: ${SER_PLUG}")
-
-    foreach (SER_PLUGIN ${SER_PLUG})
-        call_plugin (enable_${SER_PLUGIN} ${SER_PLUGIN} ${PROJECT_NAME})
+    foreach (NEEDED_PLUGIN ${${PROJECT_NAME}_PLUGINS})
+        call_plugin (enable_${NEEDED_PLUGIN} ${NEEDED_PLUGIN} ${PROJECT_NAME})
     endforeach ()
 
-    plugin_link("serializer" ${PROJECT_NAME})
+    plugin_link ("serializer" ${PROJECT_NAME})
     
     file (GLOB
         ${PROJECT_NAME}_INCLUDE

@@ -20,7 +20,7 @@ file (GLOB_RECURSE
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/include/*.hpp"
 )
 
-message ("OMG: ${PROJECT_NAME}")
+# message ("OMG: ${PROJECT_NAME}")
 
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
