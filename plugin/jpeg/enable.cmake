@@ -1,0 +1,6 @@
+function (enable_jpeg target)
+    set (JPEG_PATH "${MINKO_PATH}/plugin/jpeg")
+    plugin_link ("jpeg" ${target})
+    target_include_directories(${target} PUBLIC "${JPEG_PATH}/include")
+    target_compile_options(${target} PUBLIC "-DMINKO_PLUGIN_JPEG")
+endfunction ()

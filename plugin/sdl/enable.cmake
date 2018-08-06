@@ -1,6 +1,6 @@
 function (enable_sdl target)
     plugin_link("sdl" ${target})
-    add_definitions("-DMINKO_PLUGIN_SDL")
+    target_compile_options(${target} PUBLIC "-DMINKO_PLUGIN_SDL")
     set(SDL_PATH "${MINKO_HOME}/plugin/sdl")
     list (APPEND
         SDL_INCLUDE 

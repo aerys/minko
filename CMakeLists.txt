@@ -21,6 +21,10 @@ option (WITH_PLUGINS "list off plugins to build" ON)
 list (APPEND PLUGINS
     sdl
     png
+    jpeg
+    ttf
+    serializer
+    fx
 )
 
 unset(CMAKE_OSX_DEPLOYMENT_TARGET CACHE)
@@ -56,3 +60,4 @@ if (NOT WITH_PLUGINS MATCHES OFF)
 endif ()
 
 add_subdirectory("example/cube")
+add_subdirectory("example/hologram")
