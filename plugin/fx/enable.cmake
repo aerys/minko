@@ -1,0 +1,11 @@
+function (enable_fx target)
+    target_compile_options (${target} PUBLIC "-DMINKO_PLUGIN_FX")
+    get_target_property(target_type ${target} TYPE)
+    set(FX_PATH "${MINKO_HOME}/plugin/fx")
+    if (NOT ${target_type} STREQUAL "STATIC_LIBRARY")
+        plugin_link("fx" ${target})
+        target_include_directories(${target} PUBLIC "${FX_PATH}/include")
+        copy("${FX_PATH}/asset", "${OUTPUT_PATH}/asset")
+        #package asset ?
+    endif ()
+endfunction ()
