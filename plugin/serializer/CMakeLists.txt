@@ -6,7 +6,7 @@ list (APPEND
     ${PROJECT_NAME}_PLUGINS
     sdl
     png
-    # tff (doesn't exist yet)
+    # tff (doesn't exists yet)
 )
 
 foreach (${POJECT_NAME}_PLUGIN IN LIST ${PROJECT_NAME}_PLUGINS)
