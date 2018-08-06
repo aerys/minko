@@ -12,6 +12,7 @@ file (GLOB
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/zlib"  
 )
 
+# not too sure how to manage 'configuration { "vs*" }'
 if (WIN32)
     target_compile_options (${PROJECT_NAME} PUBLIC
         -D_CRT_SECURE_NO_WARNINGS
