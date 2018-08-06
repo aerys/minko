@@ -24,6 +24,7 @@ list (APPEND PLUGINS
     ttf
     serializer
     fx
+    jpeg
 )
 
 unset(CMAKE_OSX_DEPLOYMENT_TARGET CACHE)
