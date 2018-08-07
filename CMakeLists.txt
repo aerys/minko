@@ -25,7 +25,7 @@ list (APPEND PLUGINS
     jpeg
     ttf
     serializer
-    fx
+    # fx (trash plugin)
     assimp
 )
 
@@ -62,4 +62,5 @@ if (NOT WITH_PLUGINS MATCHES OFF)
 endif ()
 
 add_subdirectory("example/cube")
-add_subdirectory("example/hologram")
+# add_subdirectory("example/hologram") (trash example)
+add_subdirectory("example/serializer")

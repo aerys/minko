@@ -9,7 +9,7 @@ function (enable_serializer target)
     )
 
     foreach (NEEDED_PLUGIN ${${PROJECT_NAME}_PLUGINS_SERIALIZER})
-        call_plugin (enable_${NEEDED_PLUGIN} ${NEEDED_PLUGIN} ${PROJECT_NAME})
+        call_plugin (enable_${NEEDED_PLUGIN} ${NEEDED_PLUGIN} ${target})
     endforeach ()
 
     plugin_link ("serializer" ${PROJECT_NAME})

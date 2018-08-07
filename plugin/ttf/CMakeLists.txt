@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-set (PROJECT_NAME "minko-plugin-tff")
+set (PROJECT_NAME "minko-plugin-ttf")
 
 file (GLOB_RECURSE
     ${PROJECT_NAME}_SRC

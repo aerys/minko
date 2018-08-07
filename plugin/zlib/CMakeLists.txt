@@ -9,8 +9,13 @@ file (GLOB_RECURSE
 )
 
 file (GLOB
+    ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/zlib"  
 )
+
+minko_add_library (${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SRC})
+
+target_include_directories (${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE})
 
 # not too sure how to manage 'configuration { "vs*" }'
 if (WIN32)

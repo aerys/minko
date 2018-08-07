@@ -11,7 +11,7 @@ file (GLOB_RECURSE
     "include/*.hpp"
 )
 
-file (GLOB_RECURSE
+file (GLOB
     ${PROJECT_NAME}_INCLUDE
     "include"
     "src"

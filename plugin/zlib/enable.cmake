@@ -8,4 +8,6 @@ function (enable_zlib target)
     target_compile_options (${PROJECT_NAME} PUBLIC
         -DMINKO_PLUGIN_ZLIB
     )
+
+    target_link_libraries (${target} "z")
 endfunction ()

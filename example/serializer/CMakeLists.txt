@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.5.1)
 set (PROJECT_NAME "minko-example-serializer")
 
 file (GLOB_RECURSE
-²   ${PROJECT_NAME}_SRC
+    ${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/assets/*.cpp"
