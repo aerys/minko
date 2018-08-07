@@ -74,9 +74,9 @@ file (GLOB
     "lib/assimp/contrib/unzip"    
 )
 
-target_sources(${target} PUBLIC ${ASSIMP_LIB_SRC})
-target_include_directories(${target} PUBLIC ${ASSIMP_LIB_INCLUDE})
-target_compile_options(${target} PUBLIC 
+target_sources(${PROJECT_NAME} PUBLIC ${ASSIMP_LIB_SRC})
+target_include_directories(${PROJECT_NAME} PUBLIC ${ASSIMP_LIB_INCLUDE})
+target_compile_options(${PROJECT_NAME} PUBLIC 
     -DASSIMP_BUILD_NO_OWN_ZLIB
     -DASSIMP_BUILD_NO_EXPORT
     -DASSIMP_BUILD_BOOST_WORKAROUND
@@ -84,7 +84,7 @@ target_compile_options(${target} PUBLIC
 )
 
 if (MSVC)
-    target_compile_options(${target} PUBLIC 
+    target_compile_options(${PROJECT_NAME} PUBLIC 
         -D_CRT_SECURE_NO_WARNINGS
 	    -D_SCL_SECURE_NO_WARNINGS
 	    -DAI_LMW_MAX_WEIGHTS=4
@@ -94,7 +94,7 @@ if (MSVC)
 	    -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
     )
 else ()
-    target_compile_options(${target} PUBLIC 
+    target_compile_options(${PROJECT_NAME} PUBLIC 
         -DAI_LMW_MAX_WEIGHTS=4
         # OpenGL ES 2 max vertex count
         -DAI_SLM_DEFAULT_MAX_VERTICES=128000
@@ -104,21 +104,21 @@ else ()
 endif ()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR APPLE)
-    target_compile_options(${target} PUBLIC
+    target_compile_options(${PROJECT_NAME} PUBLIC
         -Wno-unknown-warning-option
         -Wno-deprecated-register
     )
 endif ()
 
 if (APPLE AND NOT IOS)
-    target_compile_options(${target} PUBLIC
+    target_compile_options(${PROJECT_NAME} PUBLIC
         -Wno-attributes
         -Wno-deprecated-register
     )
 endif ()
 
 if (EMSCRIPTEN)
-    target_compile_options(${target} PUBLIC
+    target_compile_options(${PROJECT_NAME} PUBLIC
         -Wno-attributes
         -Wimplicit-function-declaration
         -Wparentheses-equality
@@ -126,7 +126,7 @@ if (EMSCRIPTEN)
 endif ()
 
 if (ANDROID)
-    target_compile_options(${target} PUBLIC
+    target_compile_options(${PROJECT_NAME} PUBLIC
         -Wno-attributes
     )
 endif ()
