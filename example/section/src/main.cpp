@@ -18,10 +18,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoSDL.hpp"
+#include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoPNG.hpp"
-#include "minko/MinkoASSIMP.hpp"
+#include "minko/MinkoSDL.hpp"
+#include "minko/MinkoSerializer.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -64,7 +65,8 @@ int main(int argc, char** argv)
         ->registerParser<file::JPEGParser>("jpg")
         ->registerParser<file::OBJParser>("obj")
         ->registerParser<file::ColladaParser>("dae")
-        ->registerParser<file::FBXParser>("FBX");
+        ->registerParser<file::FBXParser>("FBX")
+        ->registerParser<file::SceneParser>("scene");
 
 	canvas->context()->errorsEnabled(true);
 
