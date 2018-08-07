@@ -19,8 +19,9 @@ RUN apt-get -y install libgl1-mesa-dev libglu1-mesa-dev libglew-dev libsdl2-dev
 # HTTP (optional) 
 RUN apt-get -y install libcurl4-openssl-dev
 
-# Oculus (optional) 
-RUN apt-get -y install libudev-dev libxinerama-dev
-
 # HTML overlay (optional) 
 RUN apt-get -y install libgtk2.0-dev libgtkglextmm-x11-1.2-dev
+
+# EMSDK
+RUN git clone https://github.com/juj/emsdk.git && cd emsdk && \
+    ./emsdk install latest && ./emsdk activate latest && ./emsdk_env.sh
