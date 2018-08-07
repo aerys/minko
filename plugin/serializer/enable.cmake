@@ -2,13 +2,13 @@ function (enable_serializer target)
     set (SERIALIZER_PATH "${MINKO_HOME}/plugin/serializer")
 
     list (APPEND
-        ${PROJECT_NAME}_PLUGINS
+        ${PROJECT_NAME}_PLUGINS_SERIALIZER
         jpeg
         png
         ttf
     )
 
-    foreach (NEEDED_PLUGIN ${${PROJECT_NAME}_PLUGINS})
+    foreach (NEEDED_PLUGIN ${${PROJECT_NAME}_PLUGINS_SERIALIZER})
         call_plugin (enable_${NEEDED_PLUGIN} ${NEEDED_PLUGIN} ${PROJECT_NAME})
     endforeach ()
 
