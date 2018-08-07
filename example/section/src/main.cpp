@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 				    )
 			    )
 		    )
-		    ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+		    ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
 
 	    root->addChild(camera);
 
@@ -295,17 +295,17 @@ int main(int argc, char** argv)
 			);
 
 			normalVector = math::normalize(math::mat3(transformMatrix) * normalVector);
-			auto clippingPlane = computeClippingPlane(transformMatrix[3].xyz, normalVector);
+            auto clippingPlane = computeClippingPlane(transformMatrix[3].xyz(), normalVector);
 			root->data().providers().front()->set("clippingPlane", clippingPlane);
 		}
 	});
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int w, unsigned int h)
 	{
-		root->children()[0]->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, float(w) / float(h), 0.1f, 1000.f));
 	});
 
-	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr c, float time, float deltaTime)
+	auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr c, float time, float deltaTime, bool shouldRender)
 	{
 		yaw += cameraRotationYSpeed;
 		cameraRotationYSpeed *= 0.9f;
@@ -331,7 +331,7 @@ int main(int argc, char** argv)
 			)
 		);
 
-		sceneManager->nextFrame(time, deltaTime);
+		sceneManager->nextFrame(time, deltaTime, shouldRender);
 	});
 
 	fxLoader->load();
