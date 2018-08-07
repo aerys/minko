@@ -31,7 +31,12 @@ foreach (${PROJECT_NAME}_PLUGIN ${${PROJECT_NAME}_PLUGINS})
 endforeach ()
 
 target_link_libraries (${PROJECT_NAME} "minko-framework")
-
+if (EMSCRIPTEN)
+    package_assets (".scene;.glsl;.effect" "on")
+    package_assets (".scene;.glsl;.effect" "off")
+else ()
+    package_assets (".scene;.glsl;.effect" "off")
+endif ()
 if (ANDROID)
     include(${MINKO_HOME}/android-build.cmake)
     build_android(${PROJECT_NAME} "libminko-example-serializer.so")

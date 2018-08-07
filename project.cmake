@@ -11,7 +11,11 @@ function (minko_add_library target_name type sources)
         "${MINKO_HOME}/framework/lib/jsoncpp/src"
     )
     target_include_directories(${target_name} PUBLIC ${FRAMEWORK_INCLUDES})
-
+    if (NOT ${target_name} STREQUAL "minko-framework")
+    target_link_libraries(${target_name}
+        "minko-framework"
+    )
+    endif ()
     if (WIN32)
         target_include_directories(${target_name}
             PUBLIC 
@@ -29,7 +33,6 @@ function (minko_add_library target_name type sources)
             "7.0"
         )
     endif ()
-    target_compile_options(${target_name} PUBLIC -frtti)
     if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_compile_options(${target_name} PUBLIC "-DDEBUG")
     else ()
@@ -70,6 +73,9 @@ function (minko_add_executable target_name sources)
     set (OUTPUT_PATH ${OUTPUT_PATH} PARENT_SCOPE)
     set (COMPILATION_FLAGS ${COMPILATION_FLAGS} PARENT_SCOPE)
     set_target_properties(${target_name} PROPERTIES LINKER_LANGUAGE CXX)
+    target_link_libraries(${target_name}
+        "minko-framework"
+    )
     if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_compile_options(${target_name} PUBLIC "-DDEBUG")
     else ()
@@ -83,7 +89,6 @@ function (minko_add_executable target_name sources)
     package_assets(".glsl;.effect" off)
     string (TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
     string (TOLOWER ${CMAKE_SYSTEM_NAME} SYSTEM_NAME)
-    target_compile_options(${target_name} PUBLIC -frtti)
     link_directories("${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}")
     if (WIN32)
         find_library(GLEW32_LIB glew32 HINTS "${MINKO_HOME}/framework/lib/glew/lib/windows${BITNESS}")
