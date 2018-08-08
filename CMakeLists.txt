@@ -21,16 +21,16 @@ option (WITH_PLUGINS "list off plugins to build" ON)
 list (APPEND PLUGINS
     sdl
     png
-    zlib
-    jpeg
-    ttf
-    serializer
+    # zlib
+    # jpeg
+    # ttf
+    # serializer
     # fx (trash plugin)
-    assimp
+    # assimp
 )
 
-unset(CMAKE_OSX_DEPLOYMENT_TARGET CACHE)
 if (IOS)
+    unset(CMAKE_OSX_DEPLOYMENT_TARGET CACHE)
     set (CMAKE_OSX_SYSROOT iphoneos)
     set (CMAKE_OSX_ARCHITECTURES "armv7")
     set (CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO")
@@ -63,4 +63,4 @@ endif ()
 
 add_subdirectory("example/cube")
 # add_subdirectory("example/hologram") (trash example)
-add_subdirectory("example/serializer")
+# add_subdirectory("example/serializer")

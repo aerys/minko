@@ -12,10 +12,33 @@ function (minko_add_library target_name type sources)
     )
     target_include_directories(${target_name} PUBLIC ${FRAMEWORK_INCLUDES})
     if (NOT ${target_name} STREQUAL "minko-framework")
-    target_link_libraries(${target_name}
-        "minko-framework"
-    )
+        target_link_libraries(${target_name}
+            "minko-framework"
+        )
     endif ()
+    
+    if (ANDROID)
+        message("TON PERRRREEOEHNUIBNJE")
+        add_custom_command(TARGET ${target_name}
+            PRE_LINK
+            COMMAND ${MINKO_HOME}/script/cpjf.sh ${CMAKE_CURRENT_SOURCE_DIR}/src ${OUTPUT_PATH}/src/com/minko
+        )
+        target_link_libraries(${target_name}
+            "GLESv1_CM"
+            "GLESv2"
+            "EGL"
+            "dl"
+            "z"
+            "log"
+            "android"
+            "stdc++"
+        )
+        set_target_properties (${target_name} PROPERTIES LINK_FLAGS 
+            "-Wl -shared -pthread -Wl,--no-undefined -Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
+        )
+        target_compile_options(${target_name} PUBLIC "-Wno-narrowing" "-Wno-tautological-compare" "-DEVL_EGLEXT_PROTOTYPES")
+    endif ()
+    
     if (WIN32)
         target_include_directories(${target_name}
             PUBLIC 
@@ -180,26 +203,5 @@ function (minko_add_executable target_name sources)
             "*.plist"
         )
         target_sources(${target_name} PUBLIC ${IOS_SRC})
-    endif ()
-    
-    if (ANDROID)
-        add_custom_command(TARGET ${target_name}
-            PRE_LINK
-            COMMAND ${MINKO_HOME}/script/cpjf.sh ${CMAKE_CURRENT_SOURCE_DIR}/src ${OUTPUT_PATH}/src/com/minko
-        )
-        target_link_libraries(${target_name}
-            "minko-framework"
-            "GLESv1_CM"
-            "GLESv2"
-            "EGL"
-            "dl"
-            "z"
-            "log"
-            "android"
-            "stdc++"
-        )
-        set_target_properties (${target_name} PROPERTIES LINK_FLAGS 
-            "-Wl -shared -pthread -Wl,--no-undefined -Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
-        )
     endif ()
 endfunction ()
