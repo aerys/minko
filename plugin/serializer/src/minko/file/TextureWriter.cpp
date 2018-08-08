@@ -138,7 +138,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
         msgpack::type::tuple<int, int, unsigned char, unsigned char>,
         std::vector<msgpack::type::tuple<int, int, int>>>();
 
-    auto formatHeaderData = std::vector<msgpack::type::tuple<int, int, int>>();
+    // auto formatHeaderData = std::vector<msgpack::type::tuple<int, int, int>>();
 
     for (auto textureFormat : textureFormats)
     {
@@ -153,11 +153,11 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
         {
             auto length = blobStream.str().size() - offset;
 
-            formatHeaderData.push_back(msgpack::type::make_tuple<int, int, int>(
+            /* formatHeaderData.push_back(msgpack::type::make_tuple<int, int, int>(
                 static_cast<int>(textureFormat),
                 offset,
                 length)
-            );
+            ); */
         }
     }
 
@@ -175,7 +175,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
     );
 
     headerData.get<0>() = textureHeaderData;
-    headerData.get<1>() = formatHeaderData;
+    //headerData.get<1>() = formatHeaderData;
 
     msgpack::pack(headerStream, headerData);
 

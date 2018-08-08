@@ -1,3 +1,4 @@
+
 FROM lakoo/android-ndk:26-27.0.3-r17
 
 # Intall make
@@ -19,6 +20,9 @@ RUN apt-get -y install ant
 
 # Install zipalign
 RUN apt-get -y install zipalign
+
+# Install freetype
+RUN apt-get -y install libfreetype6
 
 # Install old tool dir
 RUN wget -q https://dl.google.com/android/repository/tools_r25.2.5-linux.zip && \

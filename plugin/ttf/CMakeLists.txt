@@ -21,4 +21,6 @@ minko_add_library (${PROJECT_NAME} "STATIC" "${${PROJECT_NAME}_SRC}")
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE})
 
-target_compile_options(${PROJECT_NAME} PUBLIC "-DMINKO_PLUGIN_TTF_FREETYPE")
+if (WIN32 OR UNIX AND NOT APPLE AND NOT EMSCRIPTEN AND NOT ANDROID)
+    target_compile_options(${PROJECT_NAME} PUBLIC "-DMINKO_PLUGIN_TTF_FREETYPE")
+endif ()
