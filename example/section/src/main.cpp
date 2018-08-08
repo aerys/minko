@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 
 	root->data().providers().front()->set("clippingPlane", math::vec4());
 
-	sceneManager->assets()->geometry("teapot", geometry::TeapotGeometry::create(sceneManager->assets()->context()));
+	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
 	auto clippingPlaneMesh = scene::Node::create("clippingPlane");
 
@@ -153,7 +153,7 @@ int main(int argc, char** argv)
             sceneNode->addComponent(Transform::create());
         
         auto surface = Surface::create(
-			sceneManager->assets()->geometry("teapot"),
+			sceneManager->assets()->geometry("cube"),
 			material::BasicMaterial::create(),
 			sceneManager->assets()->effect("effect/ClippingPlane.effect")
 		);
@@ -162,8 +162,8 @@ int main(int argc, char** argv)
 		mesh->addComponent(surface);
 		mesh->addComponent(Transform::create());
 
-        mesh->layout(scene::BuiltinLayout::CLIPPED);
-        sceneNode->layout(scene::BuiltinLayout::CLIPPED);
+        mesh->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
+        sceneNode->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
 
         auto nodeSet = scene::NodeSet::create(sceneNode)->descendants(true)->where([&](std::shared_ptr<scene::Node> n)
         {
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
 
         for (auto node : nodeSet->nodes())
         {
-            node->layout(scene::BuiltinLayout::CLIPPED);
+            node->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
         }
 
 		auto transform = Transform::create();
@@ -195,12 +195,12 @@ int main(int argc, char** argv)
 			sceneManager->assets()->effect("effect/Basic.effect")
 		);
 
-        //surface->material()->data()->set("triangleCulling", minko::render::TriangleCulling::NONE);
+        surface->material()->data()->set("triangleCulling", minko::render::TriangleCulling::NONE);
 
 		clippingPlaneMesh->addComponent(transform);
 		clippingPlaneMesh->addComponent(clippingPlaneMeshSurface);
 
-        clippingPlaneMesh->layout(scene::BuiltinLayout::CLIPPING);
+        clippingPlaneMesh->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPING);
 
 		root->addChild(clippingPlaneMesh);
 		root->addChild(sceneNode);
