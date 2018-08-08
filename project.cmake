@@ -19,7 +19,6 @@ function (minko_add_library target_name type sources)
     endif ()
     
     if (ANDROID)
-        message("TON PERRRREEOEHNUIBNJE")
         add_custom_command(TARGET ${target_name}
             PRE_LINK
             COMMAND ${MINKO_HOME}/script/cpjf.sh ${CMAKE_CURRENT_SOURCE_DIR}/src ${OUTPUT_PATH}/src/com/minko
