@@ -1,13 +1,11 @@
 function (enable_zlib target)
     set (ZLIB_PATH "${MINKO_HOME}/plugin/zlib")
     
-    plugin_link ("zlib" ${PROJECT_NAME})
+    plugin_link ("zlib" ${target})
     
-    file (GLOB ${PROJECT_NAME}_INCLUDE "${ZLIB_PATH}/lib/zlib")
-
-    target_compile_options (${PROJECT_NAME} PUBLIC
+    file (GLOB ${ZLIB_INCLUDE} "${ZLIB_PATH}/lib/zlib")
+    target_include_directories(${target} PUBLIC ${ZLIB_INCLUDE})
+    target_compile_options (${target} PUBLIC
         -DMINKO_PLUGIN_ZLIB
     )
-
-    target_link_libraries (${target} "z")
 endfunction ()

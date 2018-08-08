@@ -73,9 +73,23 @@ file (GLOB
     "lib/assimp/contrib/poly2tri"
     "lib/assimp/contrib/unzip"    
 )
+minko_add_library ("libassimp" STATIC "${ASSIMP_LIB_SRC}")
+target_include_directories("libassimp" PUBLIC ${ASSIMP_LIB_INCLUDE})
 
-target_sources(${PROJECT_NAME} PUBLIC ${ASSIMP_LIB_SRC})
-target_include_directories(${PROJECT_NAME} PUBLIC ${ASSIMP_LIB_INCLUDE})
+target_link_libraries("libassimp" "minko-plugin-zlib")
+target_include_directories("libassimp" PUBLIC "${MINKO_HOME}/plugin/zlib/lib/zlib")
+target_compile_options ("libassimp" PUBLIC
+    -DMINKO_PLUGIN_ZLIB
+)
+target_link_libraries(${PROJECT_NAME} "libassimp")
+
+target_compile_options("libassimp" PUBLIC 
+    -DASSIMP_BUILD_NO_OWN_ZLIB
+    -DASSIMP_BUILD_NO_EXPORT
+    -DASSIMP_BUILD_BOOST_WORKAROUND
+    -DASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
+)
+
 target_compile_options(${PROJECT_NAME} PUBLIC 
     -DASSIMP_BUILD_NO_OWN_ZLIB
     -DASSIMP_BUILD_NO_EXPORT

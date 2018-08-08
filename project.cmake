@@ -175,19 +175,19 @@ function (minko_add_executable target_name sources)
             add_custom_command(TARGET
                 ${target_name}
                 POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/emcc ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -O3 --closure 1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=1 -s FORCE_FILESYSTEM=1 -s USE_SDL=2 --preload-file ${OUTPUT_PATH}/embed/asset@asset --shell-file \"${MINKO_HOME}/skeleton/template.html\" -s WASM=${NB_WASM}
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -O3 --closure 1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=1 -s FORCE_FILESYSTEM=1 -s USE_SDL=2 --preload-file ${OUTPUT_PATH}/embed/asset@asset -s WASM=${NB_WASM} #--shell-file \"${MINKO_HOME}/skeleton/template.html\"
             )
         else ()
             add_custom_command(TARGET
                 ${target_name}
                 POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/emcc ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=1 -s DEMANGLE_SUPPORT=1  -s FORCE_FILESYSTEM=1 -s USE_SDL=2 --preload-file ${OUTPUT_PATH}/embed/asset@asset --shell-file \"${MINKO_HOME}/skeleton/template.html\" -s WASM=${NB_WASM}
+                COMMAND $ENV{EMSCRIPTEN}/emcc ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}.html --js-library ${MINKO_HOME}/module/emscripten/library.js --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=1 -s NO_EXIT_RUNTIME=1 -s DEMANGLE_SUPPORT=1  -s FORCE_FILESYSTEM=1 -s USE_SDL=2 --preload-file ${OUTPUT_PATH}/embed/asset@asset -s WASM=${NB_WASM} #--shell-file \"${MINKO_HOME}/skeleton/template.html\"
             )
         endif ()
         if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/template.html")
             target_compile_options(${target_name}
                 PUBLIC
-                "--shell-file \"${CMAKE_CURRENT_SOURCE_DIR}/template.html\""
+                 "--shell-file \"${CMAKE_CURRENT_SOURCE_DIR}/template.html\""
             )
         else ()
             target_compile_options(${target_name}

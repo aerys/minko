@@ -21,12 +21,12 @@ option (WITH_PLUGINS "list off plugins to build" ON)
 list (APPEND PLUGINS
     sdl
     png
-    # zlib
-    # jpeg
-    # ttf
-    # serializer
+    zlib
+    jpeg
+    ttf
+    serializer
     # fx (trash plugin)
-    # assimp
+    assimp
 )
 
 if (IOS)
@@ -63,4 +63,4 @@ endif ()
 
 add_subdirectory("example/cube")
 # add_subdirectory("example/hologram") (trash example)
-# add_subdirectory("example/serializer")
+add_subdirectory("example/serializer")
