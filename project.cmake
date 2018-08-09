@@ -5,13 +5,20 @@ function (minko_add_library target_name type sources)
     set (BITNESS ${BITNESS} PARENT_SCOPE)
     set (COMPILATION_FLAGS ${COMPILATION_FLAGS} PARENT_SCOPE)
     set_target_properties(${target_name} PROPERTIES LINKER_LANGUAGE CXX)
+    if (APPLE)
+       message("test")
+        target_compile_options(${target_name}
+	    PUBLIC
+            -stdlib=libc++
+        )
+    endif ()
     list (APPEND FRAMEWORK_INCLUDES
         "${MINKO_HOME}/framework/include"
         "${MINKO_HOME}/framework/lib/glm"
         "${MINKO_HOME}/framework/lib/sparsehash/src"
         "${MINKO_HOME}/framework/lib/jsoncpp/src"
     )
-    target_include_directories(${target_name} PUBLIC ${FRAMEWORK_INCLUDES})
+    target_include_directories(${target_name} PUBLIC "${FRAMEWORK_INCLUDES}")
     if (NOT ${target_name} STREQUAL "minko-framework")
         target_link_libraries(${target_name}
             "minko-framework"
@@ -159,6 +166,12 @@ function (minko_add_executable target_name sources)
         set_target_properties (${target_name} PROPERTIES XCODE_PRODUCT_TYPE com.apple.product-type.application)
         configure_file(${MINKO_HOME}/skeleton/Info.plist ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist COPYONLY)
         configure_file(${MINKO_HOME}/skeleton/Default-568h@2x.png ${CMAKE_CURRENT_SOURCE_DIR}/Default-568h@2x.png COPYONLY)
+    endif ()
+    if (APPLE)
+        target_compile_options(${target_name}
+	    PUBLIC
+            "-std=c++11"
+        )
     endif ()
     if (EMSCRIPTEN)
         target_link_libraries(${target_name}

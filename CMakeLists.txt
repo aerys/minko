@@ -12,6 +12,13 @@ if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")
 endif ()
 
+if (APPLE AND NOT IOS)
+   set (CMAKE_OSX_DEPLOYMENT_TARGET "")
+   set (CMAKE_OSX_SYSROOT /)
+   set (CMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.7)
+   set (CMAKE_OSX_SYSROOT:STRING=macosx10.11)
+endif ()
+
 add_subdirectory("framework")
 
 get_property (FRAMEWORK_INCLUDES TARGET minko-framework PROPERTY INCLUDE_DIRECTORIES)

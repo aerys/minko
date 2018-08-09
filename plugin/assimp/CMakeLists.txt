@@ -83,14 +83,14 @@ target_compile_options ("libassimp" PUBLIC
 )
 target_link_libraries(${PROJECT_NAME} "libassimp")
 
-target_compile_options("libassimp" PUBLIC 
+target_compile_options("libassimp" PRIVATE 
     -DASSIMP_BUILD_NO_OWN_ZLIB
     -DASSIMP_BUILD_NO_EXPORT
     -DASSIMP_BUILD_BOOST_WORKAROUND
     -DASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 )
 
-target_compile_options(${PROJECT_NAME} PUBLIC 
+target_compile_options(${PROJECT_NAME} PRIVATE 
     -DASSIMP_BUILD_NO_OWN_ZLIB
     -DASSIMP_BUILD_NO_EXPORT
     -DASSIMP_BUILD_BOOST_WORKAROUND
@@ -98,7 +98,16 @@ target_compile_options(${PROJECT_NAME} PUBLIC
 )
 
 if (MSVC)
-    target_compile_options(${PROJECT_NAME} PUBLIC 
+    target_compile_options(${PROJECT_NAME} PRIVATE 
+        -D_CRT_SECURE_NO_WARNINGS
+	    -D_SCL_SECURE_NO_WARNINGS
+	    -DAI_LMW_MAX_WEIGHTS=4
+	    # OpenGL ES 2 max vertex count
+	    -DAI_SLM_DEFAULT_MAX_VERTICES=128000
+	    # OpenGL ES 2 max indices/triangles count
+	    -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
+    )
+    target_compile_options(libassimp PRIVATE 
         -D_CRT_SECURE_NO_WARNINGS
 	    -D_SCL_SECURE_NO_WARNINGS
 	    -DAI_LMW_MAX_WEIGHTS=4
@@ -108,7 +117,14 @@ if (MSVC)
 	    -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
     )
 else ()
-    target_compile_options(${PROJECT_NAME} PUBLIC 
+    target_compile_options(${PROJECT_NAME} PRIVATE 
+        -DAI_LMW_MAX_WEIGHTS=4
+        # OpenGL ES 2 max vertex count
+        -DAI_SLM_DEFAULT_MAX_VERTICES=128000
+        # OpenGL ES 2 max indices/triangles count
+        -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
+    )
+    target_compile_options(libassimp PRIVATE 
         -DAI_LMW_MAX_WEIGHTS=4
         # OpenGL ES 2 max vertex count
         -DAI_SLM_DEFAULT_MAX_VERTICES=128000
