@@ -24,6 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoSerializer.hpp"
 
+#include "ClippingPlaneScript.hpp"
+#include "ClippingPlane.hpp"
+
 using namespace minko;
 using namespace minko::component;
 using namespace minko::render;
@@ -54,6 +57,9 @@ int main(int argc, char** argv)
     }
 
     auto canvas = Canvas::create("Minko Example - Section", 1280, 720, Canvas::Flags::STENCIL);
+#ifdef DEBUG
+    canvas->context()->errorsEnabled(true);
+#endif
 	auto sceneManager = SceneManager::create(canvas);
 	auto defaultLoader = sceneManager->assets()->loader();
 	auto fxLoader = file::Loader::create(defaultLoader);
@@ -74,7 +80,8 @@ int main(int argc, char** argv)
 		->queue("effect/Basic.effect")
 		->queue("effect/CrossSectionDepth.effect")
 		->queue("effect/CrossSectionStencil.effect")
-		->queue("effect/ClippingPlane.effect");
+		->queue("effect/ClippingPlane.effect")
+		->queue("effect/Stripes.effect");
 
 	auto fxError = defaultLoader->error()->connect([&](file::Loader::Ptr loader, const file::Error& error)
 	{
@@ -83,16 +90,17 @@ int main(int argc, char** argv)
 	
 	auto root = scene::Node::create("root")->addComponent(sceneManager);
 
-	root->data().providers().front()->set("clippingPlane", math::vec4());
+	//root->data().providers().front()->set("clippingPlane", math::vec4());
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
-	auto clippingPlaneMesh = scene::Node::create("clippingPlane");
+	//auto clippingPlaneMesh = scene::Node::create("clippingPlane");
 
     auto camera = scene::Node::create("camera");
 
 	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
 	{
+/*
         auto depthBufferRenderer = Renderer::create(
 		    0x7f7f7fff, 
 		    nullptr, 
@@ -115,14 +123,16 @@ int main(int argc, char** argv)
         stencilBufferRenderer->layoutMask(scene::BuiltinLayout::CLIPPED);
         // We want to keep depth buffer data
         stencilBufferRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::STENCIL);
+*/
 
 	    auto mainRenderer = Renderer::create(0x7f7f7fff);
+        mainRenderer->layoutMask(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPING);
         // We want to keep stencil buffer data
-        mainRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH);
+        mainRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH );
 
 	    camera
-            ->addComponent(depthBufferRenderer)
-            ->addComponent(stencilBufferRenderer)
+            //->addComponent(depthBufferRenderer)
+            //->addComponent(stencilBufferRenderer)
 		    ->addComponent(mainRenderer)
 		    ->addComponent(
 		        Transform::create(
@@ -145,6 +155,8 @@ int main(int argc, char** argv)
         defaultLoader->load();
 	});
 
+    auto clippingPlaneScript = player::component::ClippingPlaneScript::create(nullptr);
+
      auto _ = defaultLoader->complete()->connect([=](file::Loader::Ptr loader)
     {
         auto sceneNode = sceneManager->assets()->symbol(inputFileName);
@@ -162,8 +174,14 @@ int main(int argc, char** argv)
 		mesh->addComponent(surface);
 		mesh->addComponent(Transform::create());
 
+        mesh->addComponent(clippingPlaneScript);
+
         mesh->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
         sceneNode->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
+
+        auto clippingPlane = player::component::ClippingPlane::create();
+        clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(80.f)));
+        mesh->addComponent(clippingPlane);
 
         auto nodeSet = scene::NodeSet::create(sceneNode)->descendants(true)->where([&](std::shared_ptr<scene::Node> n)
         {
@@ -174,7 +192,7 @@ int main(int argc, char** argv)
         {
             node->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
         }
-
+/*
 		auto transform = Transform::create();
 		transform->matrix(math::scale(math::vec3(30)) * transform->matrix());
 		transform->matrix(math::rotate((float)-M_PI_2, math::vec3(1.f, 0.f, 0.f)) * transform->matrix());
@@ -200,11 +218,11 @@ int main(int argc, char** argv)
 		clippingPlaneMesh->addComponent(transform);
 		clippingPlaneMesh->addComponent(clippingPlaneMeshSurface);
 
-        clippingPlaneMesh->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPING);
+        clippingPlaneMesh->layout(scene::BuiltinLayout::CLIPPING);
 
 		root->addChild(clippingPlaneMesh);
-		root->addChild(sceneNode);
-		//root->addChild(mesh);
+*/
+		root->addChild(mesh);
     });
 
 	auto yaw = float(M_PI) * 0.25f;
@@ -233,73 +251,81 @@ int main(int argc, char** argv)
 		}
 	});
 
+    bool clippingEnabled = false;
+
 	// handle keyboard signals
 	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 	{
-		if (clippingPlaneMesh->hasComponent<Transform>())
-		{
-			auto transform = clippingPlaneMesh->component<Transform>();
-			auto transformMatrix = transform->matrix();
+        auto transform = clippingPlaneScript->activeClippingPlaneNode()->component<Transform>();
+        auto transformMatrix = transform->matrix();
 
-			// Change position
-			if (k->keyIsDown(input::Keyboard::UP))
-			{
-				transformMatrix *= math::translate(math::vec3(0.f, 0.f, 0.01f));
-			}
-			else if (k->keyIsDown(input::Keyboard::DOWN))
-			{
-				transformMatrix *= math::translate(math::vec3(0.f, 0.f, -0.01f));
-			}
-			else if (k->keyIsDown(input::Keyboard::LEFT))
-			{
-				transformMatrix *= math::translate(math::vec3(0.f, -0.01f, 0.f));
-			}
-			else if (k->keyIsDown(input::Keyboard::RIGHT))
-			{
-				transformMatrix *= math::translate(math::vec3(0.f, 0.01f, 0.f));
-			}
+        // Change position
+        if (k->keyIsDown(input::Keyboard::UP))
+        {
+            transformMatrix *= math::translate(math::vec3(0.f, 0.f, 0.01f));
+        }
+        else if (k->keyIsDown(input::Keyboard::DOWN))
+        {
+            transformMatrix *= math::translate(math::vec3(0.f, 0.f, -0.01f));
+        }
+        else if (k->keyIsDown(input::Keyboard::LEFT))
+        {
+            transformMatrix *= math::translate(math::vec3(0.f, -0.01f, 0.f));
+        }
+        else if (k->keyIsDown(input::Keyboard::RIGHT))
+        {
+            transformMatrix *= math::translate(math::vec3(0.f, 0.01f, 0.f));
+        }
 
-			// Change rotation
-			else if (k->keyIsDown(input::Keyboard::PAGE_UP))
-			{
-				transformMatrix *= math::rotate(-0.1f, math::vec3(1.f, 0.f, 0.f));
-			}
-			else if (k->keyIsDown(input::Keyboard::PAGE_DOWN))
-			{
-				transformMatrix *= math::rotate(0.1f, math::vec3(1.f, 0.f, 0.f));
-			}
-			else if (k->keyIsDown(input::Keyboard::HOME))
-			{
-				transformMatrix *= math::rotate(-0.1f, math::vec3(0.f, 1.f, 0.f));
-			}
-			else if (k->keyIsDown(input::Keyboard::END))
-			{
-				transformMatrix *= math::rotate(0.1f, math::vec3(0.f, 1.f, 0.f));
-			}
-			else if (k->keyIsDown(input::Keyboard::INSERT))
-			{
-				transformMatrix *= math::rotate(-0.1f, math::vec3(0.f, 0.f, 1.f));
-			}
-			else if (k->keyIsDown(input::Keyboard::DEL))
-			{
-				transformMatrix *= math::rotate(0.1f, math::vec3(0.f, 0.f, 1.f));
-			}
+        // Change rotation
+        else if (k->keyIsDown(input::Keyboard::PAGE_UP))
+        {
+            transformMatrix *= math::rotate(-0.1f, math::vec3(1.f, 0.f, 0.f));
+        }
+        else if (k->keyIsDown(input::Keyboard::PAGE_DOWN))
+        {
+            transformMatrix *= math::rotate(0.1f, math::vec3(1.f, 0.f, 0.f));
+        }
+        else if (k->keyIsDown(input::Keyboard::HOME))
+        {
+            transformMatrix *= math::rotate(-0.1f, math::vec3(0.f, 1.f, 0.f));
+        }
+        else if (k->keyIsDown(input::Keyboard::END))
+        {
+            transformMatrix *= math::rotate(0.1f, math::vec3(0.f, 1.f, 0.f));
+        }
+        else if (k->keyIsDown(input::Keyboard::INSERT))
+        {
+            transformMatrix *= math::rotate(-0.1f, math::vec3(0.f, 0.f, 1.f));
+        }
+        else if (k->keyIsDown(input::Keyboard::DEL))
+        {
+            transformMatrix *= math::rotate(0.1f, math::vec3(0.f, 0.f, 1.f));
+        }
+        else if (k->keyIsDown(input::Keyboard::SPACE))
+        {
+            if (!clippingEnabled)
+                clippingPlaneScript->showClippingPlane(0);
+            else
+                clippingPlaneScript->hideClippingPlane();
+            clippingEnabled = !clippingEnabled;
+        }
 
-			transform->matrix(transformMatrix);
+        transform->matrix(transformMatrix);
+/*
+        auto surface = clippingPlaneMesh->component<Surface>();
+        auto vertexBuffer = surface->geometry()->vertexBuffer("normal");
+        auto normalAttribute = vertexBuffer->attribute("normal");
+        auto normalVector = math::vec3(
+            vertexBuffer->data()[normalAttribute.offset],
+            vertexBuffer->data()[normalAttribute.offset + 1],
+            vertexBuffer->data()[normalAttribute.offset + 2]
+        );
 
-			auto surface = clippingPlaneMesh->component<Surface>();
-			auto vertexBuffer = surface->geometry()->vertexBuffer("normal");
-			auto normalAttribute = vertexBuffer->attribute("normal");
-			auto normalVector = math::vec3(
-				vertexBuffer->data()[normalAttribute.offset],
-				vertexBuffer->data()[normalAttribute.offset + 1],
-				vertexBuffer->data()[normalAttribute.offset + 2]
-			);
-
-			normalVector = math::normalize(math::mat3(transformMatrix) * normalVector);
-            auto clippingPlane = computeClippingPlane(transformMatrix[3].xyz(), normalVector);
-			root->data().providers().front()->set("clippingPlane", clippingPlane);
-		}
+        normalVector = math::normalize(math::mat3(transformMatrix) * normalVector);
+        auto clippingPlane = computeClippingPlane(transformMatrix[3].xyz(), normalVector);
+        root->data().providers().front()->set("clippingPlane", clippingPlane);
+*/
 	});
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int w, unsigned int h)
