@@ -225,7 +225,7 @@ ClippingPlane::createDefaultPlaneEffect()
 {
     auto assetLibrary = _sceneManager->assets();
 
-    auto planeEffect = assetLibrary->effect("effect/Section/Stripes.effect");
+    auto planeEffect = assetLibrary->effect("effect/Stripes.effect");
 
     return planeEffect;
 }
@@ -241,7 +241,7 @@ ClippingPlane::createRenderers(NodePtr cameraNode)
     _depthRenderer = Renderer::create(
         0x3e3e3eff,
         nullptr,
-        assetLibrary->effect("effect/Section/CrossSectionDepth.effect"),
+        assetLibrary->effect("effect/CrossSectionDepth.effect"),
         "default",
         10042.f,
         "depth-renderer"
@@ -253,7 +253,7 @@ ClippingPlane::createRenderers(NodePtr cameraNode)
     _stencilRenderer = Renderer::create(
         0x0,
         nullptr,
-        assetLibrary->effect("effect/Section/CrossSectionStencil.effect"),
+        assetLibrary->effect("effect/CrossSectionStencil.effect"),
         "default",
         10000.f,
         "stencil-renderer"

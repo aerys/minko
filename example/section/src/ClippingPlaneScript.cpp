@@ -41,13 +41,17 @@ ClippingPlaneScript::ClippingPlaneScript() :
     AbstractScript(),
     _visibleClippingPlane(-1),
     _editionIsActive(false),
-    _activePlane(-1)
+    _planeTransforms({ math::mat4() }),
+    _activePlane(0)
 {
 }
 
 void
 ClippingPlaneScript::start(NodePtr target)
 {
+    // add a default plane transform
+    _planeTransforms.push_back(math::mat4());
+
     _root = target->root();
     _sceneManager = _root->component<SceneManager>();
     _canvas = _sceneManager->canvas();
@@ -92,7 +96,7 @@ ClippingPlaneScript::start(NodePtr target)
         if (!targetChildren->nodes().empty())
             _activeClippingPlaneNode = targetChildren->nodes().front();
 
-        _activeClippingPlaneNode->component<ClippingPlane>()->enable(false);
+        _activeClippingPlaneNode->component<ClippingPlane>()->enable(true);
     }
 }
 
@@ -138,7 +142,6 @@ ClippingPlaneScript::htmlOverlayMessageHandler(AbstractDOMPtr dom, std::string m
 void
 ClippingPlaneScript::update(NodePtr target)
 {
-    std::cout << "ClippingPlaneScript::update() called." << std::endl;
 }
 
 void

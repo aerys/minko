@@ -22,10 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #ifdef MINKO_PLUGIN_HTML_OVERLAY
 #include "minko/MinkoHtmlOverlay.hpp"
 #endif
-/*
-#include "player/Config.hpp"
-*/
-#include "PlayerOptions.hpp"
 
 namespace player
 {
@@ -64,8 +60,6 @@ namespace player
 
             typedef minko::Signal<NodePtr>::Slot                                        PickingClickSignalSlot;
 
-            typedef player::PlayerOptions::Ptr                                          PlayerOptionsPtr;
-
             struct SurfaceEntry
             {
                 std::string                 uuid;
@@ -89,8 +83,6 @@ namespace player
 
             minko::Signal<minko::input::Mouse::Ptr>::Slot                               _leftButtonClickSlot;
 
-            PlayerOptionsPtr                                                            _playerOptions;
-
             PropertyChangedSlot                                                          _cameraModelToWorldChangedSlot;
             NodePtr _cameraNode;
 
@@ -110,11 +102,9 @@ namespace player
             inline
             static
             Ptr
-            create(PlayerOptionsPtr playerOptions)
+            create()
             {
                 auto script = Ptr(new ClippingPlaneScript());
-
-                script->initialize(playerOptions);
 
                 return script;
             }
@@ -126,13 +116,6 @@ namespace player
             }
 
         protected:
-            inline
-            void
-            initialize(PlayerOptionsPtr playerOptions)
-            {
-                _playerOptions = playerOptions;
-            }
-
             inline
             float
             priority() override

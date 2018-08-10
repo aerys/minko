@@ -31,18 +31,6 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::render;
 
-math::vec4
-computeClippingPlane(math::vec3 position, math::vec3 normal)
-{
-	auto clippingPlane = math::vec4();
-	clippingPlane.x = normal.x;
-	clippingPlane.y = normal.y;
-	clippingPlane.z = normal.z;
-	clippingPlane.w = (-(math::dot(normal, position)));
-
-	return clippingPlane;
-}
-
 std::string MODEL_FILENAME = "lights.scene";
 
 int main(int argc, char** argv)
@@ -89,50 +77,18 @@ int main(int argc, char** argv)
 	});
 	
 	auto root = scene::Node::create("root")->addComponent(sceneManager);
-
-	//root->data().providers().front()->set("clippingPlane", math::vec4());
+    auto camera = scene::Node::create("camera");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
-	//auto clippingPlaneMesh = scene::Node::create("clippingPlane");
-
-    auto camera = scene::Node::create("camera");
-
 	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
 	{
-/*
-        auto depthBufferRenderer = Renderer::create(
-		    0x7f7f7fff, 
-		    nullptr, 
-		    sceneManager->assets()->effect("effect/CrossSectionDepth.effect"),
-		    "default",
-		    1042.f,
-		    "Depth buffer renderer"
-	    );
-
-        auto stencilBufferRenderer = Renderer::create(
-		    0x00000000, 
-		    nullptr, 
-		    sceneManager->assets()->effect("effect/CrossSectionStencil.effect"),
-		    "default",
-		    1000.f,
-		    "Stencil buffer renderer"
-	    );
-    
-        depthBufferRenderer->layoutMask(scene::BuiltinLayout::CLIPPING);
-        stencilBufferRenderer->layoutMask(scene::BuiltinLayout::CLIPPED);
-        // We want to keep depth buffer data
-        stencilBufferRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::STENCIL);
-*/
-
 	    auto mainRenderer = Renderer::create(0x7f7f7fff);
         mainRenderer->layoutMask(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPING);
         // We want to keep stencil buffer data
-        mainRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH );
+        mainRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH);
 
 	    camera
-            //->addComponent(depthBufferRenderer)
-            //->addComponent(stencilBufferRenderer)
 		    ->addComponent(mainRenderer)
 		    ->addComponent(
 		        Transform::create(
@@ -155,7 +111,7 @@ int main(int argc, char** argv)
         defaultLoader->load();
 	});
 
-    auto clippingPlaneScript = player::component::ClippingPlaneScript::create(nullptr);
+    auto clippingPlaneScript = player::component::ClippingPlaneScript::create();
 
      auto _ = defaultLoader->complete()->connect([=](file::Loader::Ptr loader)
     {
@@ -192,37 +148,10 @@ int main(int argc, char** argv)
         {
             node->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
         }
-/*
-		auto transform = Transform::create();
-		transform->matrix(math::scale(math::vec3(30)) * transform->matrix());
-		transform->matrix(math::rotate((float)-M_PI_2, math::vec3(1.f, 0.f, 0.f)) * transform->matrix());
-		
-		auto clippingPlaneMeshMaterial = material::BasicMaterial::create();
-		clippingPlaneMeshMaterial->data()->set("diffuseColor", math::vec4(1.0f, 1.0f, 0.f, 1.f));
-        clippingPlaneMeshMaterial->data()->set("triangleCulling", minko::render::TriangleCulling::NONE);
-
-        clippingPlaneMeshMaterial->data()
-            ->set("diffuseColor", math::vec4(1.0f, 0.f, 0.f, 1.f))
-            ->set("stencilFunction", CompareMode::NOT_EQUAL)
-            ->set("stencilReference", 0)
-            ->set("stencilMask", uint(1));
-
-		auto clippingPlaneMeshSurface = Surface::create(
-			geometry::QuadGeometry::create(sceneManager->assets()->context()),
-			clippingPlaneMeshMaterial,
-			sceneManager->assets()->effect("effect/Basic.effect")
-		);
 
         surface->material()->data()->set("triangleCulling", minko::render::TriangleCulling::NONE);
 
-		clippingPlaneMesh->addComponent(transform);
-		clippingPlaneMesh->addComponent(clippingPlaneMeshSurface);
-
-        clippingPlaneMesh->layout(scene::BuiltinLayout::CLIPPING);
-
-		root->addChild(clippingPlaneMesh);
-*/
-		root->addChild(mesh);
+        root->addChild(mesh);
     });
 
 	auto yaw = float(M_PI) * 0.25f;
@@ -312,20 +241,6 @@ int main(int argc, char** argv)
         }
 
         transform->matrix(transformMatrix);
-/*
-        auto surface = clippingPlaneMesh->component<Surface>();
-        auto vertexBuffer = surface->geometry()->vertexBuffer("normal");
-        auto normalAttribute = vertexBuffer->attribute("normal");
-        auto normalVector = math::vec3(
-            vertexBuffer->data()[normalAttribute.offset],
-            vertexBuffer->data()[normalAttribute.offset + 1],
-            vertexBuffer->data()[normalAttribute.offset + 2]
-        );
-
-        normalVector = math::normalize(math::mat3(transformMatrix) * normalVector);
-        auto clippingPlane = computeClippingPlane(transformMatrix[3].xyz(), normalVector);
-        root->data().providers().front()->set("clippingPlane", clippingPlane);
-*/
 	});
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int w, unsigned int h)
