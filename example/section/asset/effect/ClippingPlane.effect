@@ -8,26 +8,23 @@
 		"aBoneIdsA"				: "geometry[${geometryUuid}].boneIdsA",
 		"aBoneIdsB"				: "geometry[${geometryUuid}].boneIdsB",		
 		"aBoneWeightsA"			: "geometry[${geometryUuid}].boneWeightsA",
-		"aBoneWeightsB"			: "geometry[${geometryUuid}].boneWeightsB"
+		"aBoneWeightsB"			: "geometry[${geometryUuid}].boneWeightsB",
+        "aPopProtected"         : "geometry[${geometryUuid}].popProtected"
     },
 	
 	"uniforms"	: {
-		"uNormalMap"			: "material[${materialId}].normalMap",
+		"uNormalMap"			: "material[${materialUuid}].normalMap",
 		"uModelToWorldMatrix"	: "modelToWorldMatrix",
 		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 		"uCameraPosition"		: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
-		"uBoneMatrices[0]"	    : "geometry[${geometryId}].boneMatrices",
-		"uNumBones"				: "geometry[${geometryId}].numBones",
-		"fogColor"				: "material[${materialId}].fogColor",
-		"fogDensity"			: "material[${materialId}].fogDensity",
-		"fogStart"				: "material[${materialId}].fogStart",
-		"fogEnd"				: "material[${materialId}].fogEnd",
-        "uPopLod"               : "geometry[${geometryUuid}].popLod",
-        "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
+		"uBoneMatrices[0]"	    : "geometry[${geometryUuid}].boneMatrices",
+		"uNumBones"				: "geometry[${geometryUuid}].numBones",
+        "uPopLod"               : "surface[${surfaceUuid}].popLod",
+        "uPopBlendingLod"       : "surface[${surfaceUuid}].popBlendingLod",
         "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
         "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
         "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound",
-        "uClippingPlane"        : { "binding" : { "property" : "clippingPlane", "source" : "root" } }
+        "uClippingPlane"		: { "binding" : { "property" : "clippingPlane", "source" : "renderer" } }
 	},
     
     "macros" : {
@@ -37,12 +34,31 @@
 		"FOG_LIN"               : "material[${materialUuid}].fogLinear",
 		"FOG_EXP"               : "material[${materialUuid}].fogExponential",
 		"FOG_EXP2"              : "material[${materialUuid}].fogExponential2",
-        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
-        "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled"
+        "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
+        "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
+        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
     },
 	
 	"states" : {
-        "triangleCulling"       : "none"
+        "blendingMode"          : { "binding" : "material[${materialUuid}].blendingMode", "default" : ["one", "zero"] },
+        "colorMask"             : { "binding" : "material[${materialUuid}].colorMask", "default" : true },
+        "depthMask"             : { "binding" : "material[${materialUuid}].depthMask", "default" : [true, "less_equal"] },
+        "depthFunction"         : { "binding" : "material[${materialUuid}].depthFunction", "default" : "always" },
+        "triangleCulling"       : { "binding" : "material[${materialUuid}].triangleCulling", "default" : "back" },
+        "stencilFunction"       : { "binding" : "material[${materialUuid}].stencilFunction", "default" : "always" },
+        "stencilReference"      : { "binding" : "material[${materialUuid}].stencilReference", "default" : 0 },
+        "stencilMask"           : { "binding" : "material[${materialUuid}].stencilMask", "default" : 255 },
+        "stencilFailOperation"  : { "binding" : "material[${materialUuid}].stencilFailOperation", "default" : "keep" },
+        "stencilZFailOperation" : { "binding" : "material[${materialUuid}].stencilZFailOperation", "default" : "keep" },
+        "stencilZPassOperation" : { "binding" : "material[${materialUuid}].stencilZPassOperation", "default" : "keep" },
+        "scissorTest"			: false,
+        "scissorBox"          	: { "binding" : "material[${materialUuid}].scissorBox", "default" : [0, 0, -1, -1] },
+        "priority"              : { "binding" : "material[${materialUuid}].priority", "default" : "opaque" },
+        "zSorted"				: false
+    },
+	
+	"states" : {
+        "triangleCulling" : "back"
     },
     
     "defaultTechnique"  : "default",

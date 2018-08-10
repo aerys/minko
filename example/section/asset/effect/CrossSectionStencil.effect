@@ -3,17 +3,26 @@
     "name"  	: "cross-section-stencil",
     	
     "attributes" : {
-        "aPosition"             : "geometry[${geometryUuid}].position"
+        "aPosition"             : "geometry[${geometryUuid}].position",
+        "aPopProtected"         : "geometry[${geometryUuid}].popProtected"
     },
 	
 	"uniforms"	: {
 		"uModelToWorldMatrix"	: "modelToWorldMatrix",
 		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-        "uCameraPosition"       : { "binding" : { "property" : "eyePosition", "source" : "renderer" } }
+        "uCameraPosition"       : { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
+        "uPopLod"               : "surface[${surfaceUuid}].popLod",
+        "uPopBlendingLod"       : "surface[${surfaceUuid}].popBlendingLod",
+        "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
+        "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
+        "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
 	},
     
     "macros" : {
-		"MODEL_TO_WORLD"		: "modelToWorldMatrix"
+		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
+        "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
+        "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
+        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
     },
     
     "defaultTechnique"  : "default",
@@ -33,8 +42,12 @@
             "states" : {
                 "colorMask" : false,
                 "depthMask" : false,
+                "stencilReference" : "1",
+                "stencilMask" : "255",
+                "depthFunction" : "less",
                 "stencilZPassOperation" : "incr",
-                "triangleCulling" : "back"
+                "triangleCulling" : "back",
+                "priority" : 1
             },
 
             "vertexShader" : "
@@ -46,14 +59,38 @@
                     #endif
                 #endif
 
+                #pragma include \"Pop.function.glsl\"
+
+                attribute vec3 aPosition;
+                attribute vec3 aNormal;
+                attribute float aPopProtected;
+
                 uniform mat4 uModelToWorldMatrix;
                 uniform mat4 uWorldToScreenMatrix;
 
-                attribute vec3 aPosition;
+                uniform     float   uPopLod;
+                uniform     float   uPopBlendingLod;
+                uniform     float   uPopFullPrecisionLod;
+                uniform     vec3    uPopMinBound;
+                uniform     vec3    uPopMaxBound;
 
                 void main(void)
                 {
                     vec4 pos = vec4(aPosition, 1.0);
+
+                    #ifdef POP_LOD_ENABLED
+                        float popProtected = 0.0;
+
+                        #ifdef VERTEX_POP_PROTECTED
+                            popProtected = aPopProtected;
+                        #endif // VERTEX_POP_PROTECTED
+
+                        #ifdef POP_BLENDING_ENABLED
+                            pos = pop_blend(pos, vec3(0.0), uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
+                        #else
+                            pos = pop_quantize(pos, vec3(0.0), uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
+                        #endif // POP_BLENDING_ENABLED
+                    #endif // POP_LOD_ENABLED
 
                     #ifdef MODEL_TO_WORLD
                         pos = uModelToWorldMatrix * pos;
@@ -74,8 +111,12 @@
             "states" : {
                 "colorMask" : false,
                 "depthMask" : false,
+                "depthFunction" : "less",
+                "stencilReference" : "1",
+                "stencilMask" : "255",
                 "stencilZPassOperation" : "decr",
-                "triangleCulling" : "front"
+                "triangleCulling" : "front",
+                "priority" : 0
             },
             
             "vertexShader" : "
@@ -87,16 +128,38 @@
                     #endif
                 #endif
 
+                #pragma include \"Pop.function.glsl\"
+
+                attribute vec3 aPosition;
+                attribute vec3 aNormal;
+                attribute float aPopProtected;
+
                 uniform mat4 uModelToWorldMatrix;
                 uniform mat4 uWorldToScreenMatrix;
 
-                attribute vec3 aPosition;
-
-                varying float clipDist;
+                uniform     float   uPopLod;
+                uniform     float   uPopBlendingLod;
+                uniform     float   uPopFullPrecisionLod;
+                uniform     vec3    uPopMinBound;
+                uniform     vec3    uPopMaxBound;
 
                 void main(void)
                 {
                     vec4 pos = vec4(aPosition, 1.0);
+
+                    #ifdef POP_LOD_ENABLED
+                        float popProtected = 0.0;
+
+                        #ifdef VERTEX_POP_PROTECTED
+                            popProtected = aPopProtected;
+                        #endif // VERTEX_POP_PROTECTED
+
+                        #ifdef POP_BLENDING_ENABLED
+                            pos = pop_blend(pos, vec3(0.0), uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
+                        #else
+                            pos = pop_quantize(pos, vec3(0.0), uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
+                        #endif // POP_BLENDING_ENABLED
+                    #endif // POP_LOD_ENABLED
 
                     #ifdef MODEL_TO_WORLD
                         pos = uModelToWorldMatrix * pos;

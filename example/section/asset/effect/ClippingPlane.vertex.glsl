@@ -13,6 +13,7 @@
 
 attribute vec3 aPosition;
 attribute vec3 aNormal;
+attribute float aPopProtected;
 
 #ifdef SKINNING_NUM_BONES
 attribute vec4 aBoneWeightsA;
@@ -29,9 +30,9 @@ uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
 uniform		vec4	uClippingPlane;
 
-varying float clipDist;
 varying vec3 vertexPosition;
 varying vec3 vertexNormal;
+varying float clipDist;
 
 void main(void)
 {
@@ -42,10 +43,16 @@ void main(void)
 	#endif // SKINNING_NUM_BONES
 	
 	#ifdef POP_LOD_ENABLED
+		float popProtected = 0.0;
+
+		#ifdef VERTEX_POP_PROTECTED
+			popProtected = aPopProtected;
+		#endif // VERTEX_POP_PROTECTED
+
 		#ifdef POP_BLENDING_ENABLED
-			pos = pop_blend(pos, aNormal, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+			pos = pop_blend(pos, aNormal, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
 		#else
-			pos = pop_quantify(pos, aNormal, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+			pos = pop_quantize(pos, aNormal, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
 		#endif // POP_BLENDING_ENABLED
 	#endif // POP_LOD_ENABLED
 
