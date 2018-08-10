@@ -128,7 +128,7 @@ main(int argc, char** argv)
         root->children()[0]->component<Camera>()->projectionMatrix(math::perspective(.785f, float(w) / float(h), 0.1f, 1000.f));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr c, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr c, float time, float deltaTime, bool shouldRender)
     {
         yaw += cameraRotationYSpeed;
         cameraRotationYSpeed *= 0.9f;
@@ -149,7 +149,7 @@ main(int argc, char** argv)
             lookAt,
             math::vec3(0.f, 1.f, 0.f)
             )));
-        sceneManager->nextFrame(time, deltaTime);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
 
         std::cout << "FPS: " << canvas->framerate() << std::endl;
     });
