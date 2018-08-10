@@ -28,11 +28,15 @@ uniform 	float 	uPopBlendingLod;
 uniform 	float 	uPopFullPrecisionLod;
 uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
+#ifdef CLIPPING_PLANE
 uniform		vec4	uClippingPlane;
+#endif
 
 varying vec3 vertexPosition;
 varying vec3 vertexNormal;
+#ifdef CLIPPING_PLANE
 varying float clipDist;
+#endif
 
 void main(void)
 {
@@ -75,8 +79,10 @@ void main(void)
 	
 	gl_Position = uWorldToScreenMatrix * pos;
 
+#ifdef CLIPPING_PLANE
 	// Compute the distance between the vertex and the clip plane
 	clipDist = dot(pos.xyz, uClippingPlane.xyz) - uClippingPlane.w;
+#endif
 }
 
 #endif // VERTEX_SHADER

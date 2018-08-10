@@ -11,17 +11,20 @@
 #pragma include "Fog.function.glsl"
 
 uniform vec3 uCameraPosition;
+#ifdef CLIPPING_PLANE
 uniform vec4 uClippingPlane;
-
 varying float clipDist;
+#endif
 
 varying vec3 vertexPosition;
 varying vec3 vertexNormal;
 
 void main(void)
 {
+#ifdef CLIPPING_PLANE
 	if (clipDist + 0.00001 < -uClippingPlane.w * 2.0)
 		discard;
+#endif
 
 	vec3 eyeVector = normalize(vertexPosition - uCameraPosition);
 	
