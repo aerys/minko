@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSerializer.hpp"
 
 #include "ClippingPlane.hpp"
+#include "ClippingPlaneLayout.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -76,7 +77,7 @@ int main(int argc, char** argv)
 	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
 	{
 	    auto mainRenderer = Renderer::create(0x7f7f7fff);
-        mainRenderer->layoutMask(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPING);
+        mainRenderer->layoutMask(scene::BuiltinLayout::DEFAULT | ClippingPlaneLayout::CLIPPING);
         // We want to keep stencil buffer data
         mainRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH);
 
@@ -115,7 +116,7 @@ int main(int argc, char** argv)
 		mesh->addComponent(surface);
 		mesh->addComponent(Transform::create());
 
-        mesh->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
+        mesh->layout(scene::BuiltinLayout::DEFAULT | ClippingPlaneLayout::CLIPPED);
 
         surface->material()->data()->set("triangleCulling", minko::render::TriangleCulling::NONE);
 

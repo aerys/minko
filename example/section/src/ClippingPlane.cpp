@@ -40,6 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Camera.hpp"
 
 #include "ClippingPlane.hpp"
+#include "ClippingPlaneLayout.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -99,7 +100,7 @@ ClippingPlane::initialize()
 
     _planeNode = Node::create("plane");
 
-    _planeNode->layout(BuiltinLayout::CLIPPING);
+    _planeNode->layout(ClippingPlaneLayout::CLIPPING);
 
     if (_planeGeometry == nullptr)
         _planeGeometry = createDefaultPlaneGeometry();
@@ -161,7 +162,7 @@ ClippingPlane::initialize()
 void
 ClippingPlane::enable(bool enabled)
 {
-    _planeNode->layout(enabled ? BuiltinLayout::CLIPPING : 0u);
+    _planeNode->layout(enabled ? ClippingPlaneLayout::CLIPPING : 0u);
 
     _depthRenderer->enabled(enabled);
     _stencilRenderer->enabled(enabled);
@@ -247,7 +248,7 @@ ClippingPlane::createRenderers(NodePtr cameraNode)
         "depth-renderer"
     );
 
-    _depthRenderer->layoutMask(BuiltinLayout::CLIPPING);
+    _depthRenderer->layoutMask(ClippingPlaneLayout::CLIPPING);
     _depthRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH | ClearFlags::STENCIL);
 
     _stencilRenderer = Renderer::create(
@@ -259,7 +260,7 @@ ClippingPlane::createRenderers(NodePtr cameraNode)
         "stencil-renderer"
     );
 
-    _stencilRenderer->layoutMask(BuiltinLayout::CLIPPED);
+    _stencilRenderer->layoutMask(ClippingPlaneLayout::CLIPPED);
     _stencilRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::STENCIL);
 
     cameraNode
