@@ -2,24 +2,24 @@ function (enable_serializer target)
     set (SERIALIZER_PATH "${MINKO_HOME}/plugin/serializer")
 
     list (APPEND
-        ${PROJECT_NAME}_PLUGINS_SERIALIZER
+        SERIALIZER_PLUGINS
         jpeg
         png
         ttf
     )
 
-    foreach (NEEDED_PLUGIN ${${PROJECT_NAME}_PLUGINS_SERIALIZER})
+    foreach (NEEDED_PLUGIN ${SERIALIZER_PLUGINS})
         call_plugin (enable_${NEEDED_PLUGIN} ${NEEDED_PLUGIN} ${target})
     endforeach ()
 
     plugin_link ("serializer" ${target})
     
     file (GLOB
-        ${PROJECT_NAME}_INCLUDE_SERIALIZER
+        SERIALIZER_INCLUDE
         "${SERIALIZER_PATH}/include"
         "${SERIALIZER_PATH}/lib/msgpack-c/include"
     )
-    target_include_directories(${target} PRIVATE ${${PROJECT_NAME}_INCLUDE_SERIALIZER})
+    target_include_directories(${target} PRIVATE ${SERIALIZER_INCLUDE})
     target_compile_options (${target} PUBLIC -DMINKO_PLUGIN_SERIALIZER)
 
     if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
