@@ -68,8 +68,8 @@ int main(int argc, char** argv)
 	{
 		std::cout << "File loading error: " << error.what() << std::endl;
 	});
-	
-	auto root = scene::Node::create("root")->addComponent(sceneManager);
+
+    auto root = scene::Node::create("root")->addComponent(sceneManager);
     auto camera = scene::Node::create("camera");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -207,10 +207,17 @@ int main(int argc, char** argv)
 
         if (k->keyIsDown(input::Keyboard::SPACE))
         {
-            clippingPlanes.push_back(ClippingPlane::create());
-            auto clippingPlane = clippingPlanes.back();
-            clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(80.f)));
-            mesh->addComponent(clippingPlane);
+            const auto deltaRotation = math::rotate(math::radians(90.f), math::vec3(0.f, 1.f, 0.f));
+            auto rotation = math::mat4();
+
+            for (auto i = 0; i < 2; ++i)
+            {
+                clippingPlanes.push_back(ClippingPlane::create());
+                auto clippingPlane = clippingPlanes.back();
+                clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(80.f)) * rotation);
+                mesh->addComponent(clippingPlane);
+                rotation *= deltaRotation;
+            }
         }
 	});
 

@@ -1,17 +1,17 @@
 // clipping plane effect
 {
     "name"  	: "clipping-plane",
-    	
+
     "attributes" : {
         "aPosition"             : "geometry[${geometryUuid}].position",
         "aNormal"               : "geometry[${geometryUuid}].normal",
 		"aBoneIdsA"				: "geometry[${geometryUuid}].boneIdsA",
-		"aBoneIdsB"				: "geometry[${geometryUuid}].boneIdsB",		
+		"aBoneIdsB"				: "geometry[${geometryUuid}].boneIdsB",
 		"aBoneWeightsA"			: "geometry[${geometryUuid}].boneWeightsA",
 		"aBoneWeightsB"			: "geometry[${geometryUuid}].boneWeightsB",
         "aPopProtected"         : "geometry[${geometryUuid}].popProtected"
     },
-	
+
 	"uniforms"	: {
 		"uNormalMap"			: "material[${materialUuid}].normalMap",
 		"uModelToWorldMatrix"	: "modelToWorldMatrix",
@@ -24,9 +24,10 @@
         "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
         "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
         "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound",
-        "uClippingPlane"		: { "binding" : { "property" : "clippingPlane", "source" : "renderer" } }
+        "uClippingPlane0"		: { "binding" : { "property" : "clippingPlane0", "source" : "renderer" } },
+        "uClippingPlane1"		: { "binding" : { "property" : "clippingPlane1", "source" : "renderer" } }
 	},
-    
+
     "macros" : {
 		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
 		"SKINNING_NUM_BONES"	: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
@@ -37,9 +38,10 @@
         "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
         "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
         "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected",
-        "CLIPPING_PLANE"		: { "binding" : { "property" : "clippingPlane", "source" : "renderer" } }
+        "CLIPPING_PLANE_0"		: { "binding" : { "property" : "clippingPlane0", "source" : "renderer" } },
+        "CLIPPING_PLANE_1"		: { "binding" : { "property" : "clippingPlane1", "source" : "renderer" } }
     },
-	
+
 	"states" : {
         "blendingMode"          : { "binding" : "material[${materialUuid}].blendingMode", "default" : ["one", "zero"] },
         "colorMask"             : { "binding" : "material[${materialUuid}].colorMask", "default" : true },
@@ -57,11 +59,11 @@
         "priority"              : { "binding" : "material[${materialUuid}].priority", "default" : "opaque" },
         "zSorted"				: false
     },
-	
+
 	"states" : {
         "triangleCulling" : "back"
     },
-    
+
     "defaultTechnique"  : "default",
 
 	"techniques" : [

@@ -28,14 +28,20 @@ uniform 	float 	uPopBlendingLod;
 uniform 	float 	uPopFullPrecisionLod;
 uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
-#ifdef CLIPPING_PLANE
-uniform		vec4	uClippingPlane;
+#ifdef CLIPPING_PLANE_0
+uniform		vec4	uClippingPlane0;
+#endif
+#ifdef CLIPPING_PLANE_1
+uniform		vec4	uClippingPlane1;
 #endif
 
 varying vec3 vertexPosition;
 varying vec3 vertexNormal;
-#ifdef CLIPPING_PLANE
-varying float clipDist;
+#ifdef CLIPPING_PLANE_0
+varying float clipDist0;
+#endif
+#ifdef CLIPPING_PLANE_1
+varying float clipDist1;
 #endif
 
 void main(void)
@@ -45,7 +51,7 @@ void main(void)
 	#ifdef SKINNING_NUM_BONES
 		pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);
 	#endif // SKINNING_NUM_BONES
-	
+
 	#ifdef POP_LOD_ENABLED
 		float popProtected = 0.0;
 
@@ -63,25 +69,29 @@ void main(void)
 	#ifdef MODEL_TO_WORLD
 		pos = uModelToWorldMatrix * pos;
 	#endif
-	
+
 	vertexPosition = pos.xyz;
-	vertexNormal = aNormal;		
+	vertexNormal = aNormal;
 
 	#ifdef SKINNING_NUM_BONES
 		vertexNormal = skinning_moveVertex(vec4(aNormal, 0.0), aBoneWeightsA, aBoneWeightsB).xyz;
 	#endif // SKINNING_NUM_BONES
-	
+
 	#ifdef MODEL_TO_WORLD
 		vertexNormal = mat3(uModelToWorldMatrix) * vertexNormal;
 	#endif // MODEL_TO_WORLD
 
 	vertexNormal = normalize(vertexNormal);
-	
+
 	gl_Position = uWorldToScreenMatrix * pos;
 
-#ifdef CLIPPING_PLANE
+#ifdef CLIPPING_PLANE_0
 	// Compute the distance between the vertex and the clip plane
-	clipDist = dot(pos.xyz, uClippingPlane.xyz) - uClippingPlane.w;
+	clipDist0 = dot(pos.xyz, uClippingPlane0.xyz) - uClippingPlane0.w;
+#endif
+#ifdef CLIPPING_PLANE_1
+	// Compute the distance between the vertex and the clip plane
+	clipDist1 = dot(pos.xyz, uClippingPlane1.xyz) - uClippingPlane1.w;
 #endif
 }
 

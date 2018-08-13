@@ -53,8 +53,13 @@ using namespace minko::scene;
 using namespace player;
 using namespace player::component;
 
+int ClippingPlane::_nextPlaneId = 0;
+Renderer::Ptr ClippingPlane::_depthRenderer = nullptr;
+Renderer::Ptr ClippingPlane::_stencilRenderer = nullptr;
+
 ClippingPlane::ClippingPlane() :
-    AbstractComponent()
+    AbstractComponent(),
+    _planeId(_nextPlaneId++)
 {
 }
 
@@ -98,7 +103,7 @@ ClippingPlane::initialize()
 
     _originNode = Node::create("origin")->addComponent(Transform::create());
 
-    _planeNode = Node::create("plane");
+    _planeNode = Node::create(stringifiedPlaneId());
 
     _planeNode->layout(ClippingPlaneLayout::CLIPPING);
 
@@ -153,7 +158,10 @@ ClippingPlane::initialize()
             cameraNode = cameraNodes->nodes().front();
     }
 
-    createRenderers(cameraNode);
+    if (!_depthRenderer)
+        createRenderers(cameraNode);
+
+    cameraNode->data().addProvider(_provider);
 
     _originNode->addChild(_planeNode);
     target->root()->addChild(_originNode);
@@ -196,7 +204,7 @@ ClippingPlane::updatePlane(const math::vec3& position, const math::vec3& normal)
 void
 ClippingPlane::setPlaneData(const minko::math::vec4& plane)
 {
-    _provider->set("clippingPlane", plane);
+    _provider->set(stringifiedPlaneId(), plane);
 }
 
 Geometry::Ptr
@@ -237,8 +245,6 @@ ClippingPlane::createRenderers(NodePtr cameraNode)
     auto assetLibrary = _sceneManager->assets();
     auto mainRenderer = cameraNode->component<Renderer>();
 
-    mainRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH);
-
     _depthRenderer = Renderer::create(
         0x3e3e3eff,
         nullptr,
@@ -266,6 +272,4 @@ ClippingPlane::createRenderers(NodePtr cameraNode)
     cameraNode
         ->addComponent(_depthRenderer)
         ->addComponent(_stencilRenderer);
-
-    cameraNode->data().addProvider(_provider);
 }

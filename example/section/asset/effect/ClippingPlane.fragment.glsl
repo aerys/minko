@@ -11,9 +11,13 @@
 #pragma include "Fog.function.glsl"
 
 uniform vec3 uCameraPosition;
-#ifdef CLIPPING_PLANE
-uniform vec4 uClippingPlane;
-varying float clipDist;
+#ifdef CLIPPING_PLANE_0
+uniform vec4 uClippingPlane0;
+varying float clipDist0;
+#endif
+#ifdef CLIPPING_PLANE_1
+uniform vec4 uClippingPlane1;
+varying float clipDist1;
 #endif
 
 varying vec3 vertexPosition;
@@ -21,17 +25,21 @@ varying vec3 vertexNormal;
 
 void main(void)
 {
-#ifdef CLIPPING_PLANE
-	if (clipDist + 0.00001 < -uClippingPlane.w * 2.0)
+#ifdef CLIPPING_PLANE_0
+	if (clipDist0 + 0.00001 < -uClippingPlane0.w * 2.0)
+		discard;
+#endif
+#ifdef CLIPPING_PLANE_1
+	if (clipDist1 + 0.00001 < -uClippingPlane1.w * 2.0)
 		discard;
 #endif
 
 	vec3 eyeVector = normalize(vertexPosition - uCameraPosition);
-	
+
 	float lambert = clamp(-dot(normalize(vertexNormal), normalize(eyeVector)), 0.0, 1.0);
-	
+
 	vec4 diffuse = vec4(lambert, lambert, lambert, 1.0) * 0.8 + 0.2;
-	
+
 	#ifdef FOG_ENABLED
 		diffuse = fog_sampleFog(diffuse, gl_FragCoord);
 	#endif // FOG_ENABLED

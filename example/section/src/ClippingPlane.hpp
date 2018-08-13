@@ -58,13 +58,15 @@ namespace player
 
             NodeSignalSlot      _addedSlot;
 
+            int                 _planeId;
             NodePtr             _originNode;
             NodePtr             _planeNode;
 
             minko::math::mat4   _basePlaneTransformMatrix;
 
-            RendererPtr         _depthRenderer;
-            RendererPtr         _stencilRenderer;
+            static int                 _nextPlaneId;
+            static RendererPtr         _depthRenderer;
+            static RendererPtr         _stencilRenderer;
 
             GeometryPtr         _planeGeometry;
             MaterialPtr         _planeMaterial;
@@ -126,6 +128,12 @@ namespace player
             addedHandler(NodePtr node,
                          NodePtr target,
                          NodePtr added);
+
+            std::string
+            stringifiedPlaneId()
+            {
+                return "clippingPlane" + std::to_string(_planeId);
+            }
 
             GeometryPtr
             createDefaultPlaneGeometry();
