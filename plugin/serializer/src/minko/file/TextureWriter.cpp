@@ -153,7 +153,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
         {
             auto length = blobStream.str().size() - offset;
 
-            formatHeaderData.push_back(msgpack::type::make_tuple<int, int, int>(
+            formatHeaderData.push_back(msgpack::type::tuple<int, int, int>(
                 static_cast<int>(textureFormat),
                 offset,
                 length)
