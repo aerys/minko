@@ -13,6 +13,27 @@
         "FOG_EXP2"          : "material[${materialUuid}].fogExponential2",
         "FOG_TECHNIQUE"     : { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" }
     },
+
+    "states" : {
+        "blendingMode"          : { "binding" : "material[${materialUuid}].blendingMode", "default" : ["one", "zero"] },
+        "colorMask"             : { "binding" : "material[${materialUuid}].colorMask", "default" : true },
+        "depthMask"             : { "binding" : "material[${materialUuid}].depthMask", "default" : [true, "less_equal"] },
+        "depthFunction"         : { "binding" : "material[${materialUuid}].depthFunction", "default" : "always" },
+        "triangleCulling"       : { "binding" : "material[${materialUuid}].triangleCulling", "default" : "back" },
+        "stencilFunction"       : { "binding" : "material[${materialUuid}].stencilFunction", "default" : "always" },
+        "stencilReference"      : { "binding" : "material[${materialUuid}].stencilReference", "default" : 0 },
+        "stencilMask"           : { "binding" : "material[${materialUuid}].stencilMask", "default" : 1 },
+        "stencilFailOperation"  : { "binding" : "material[${materialUuid}].stencilFailOperation", "default" : "keep" },
+        "stencilZFailOperation" : { "binding" : "material[${materialUuid}].stencilZFailOperation", "default" : "keep" },
+        "stencilZPassOperation" : { "binding" : "material[${materialUuid}].stencilZPassOperation", "default" : "keep" },
+        "scissorTest"           : { "binding" : "material[${materialUuid}].scissorTest", "default" : false },
+        "scissorBox"            : { "binding" : "material[${materialUuid}].scissorBox", "default" : [0, 0, -1, -1] },
+        "priority"              : { "binding" : "material[${materialUuid}].priority", "default" : "opaque" },
+        "zSorted"               : { "binding" : "material[${materialUuid}].zSorted", "default" : false }
+    },
+
+    "defaultTechnique"  : "opaque",
+
     "techniques" : [
         {
             "name" : "default",

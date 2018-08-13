@@ -1,0 +1,99 @@
+// cross-section effect
+{
+    "name"  	: "cross-section-depth",
+    	
+    "attributes" : {
+        "aPosition"             : "geometry[${geometryUuid}].position",
+         "aNormal"              : "geometry[${geometryUuid}].normal"
+    },
+	
+	"uniforms"	: {
+		"uModelToWorldMatrix"	: "modelToWorldMatrix",
+		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+        "uCameraPosition"       : { "binding" : { "property" : "eyePosition", "source" : "renderer" } }
+	},
+    
+    "macros" : {
+		"MODEL_TO_WORLD"		: "modelToWorldMatrix"
+    },
+    
+    "defaultTechnique"  : "default",
+
+	"techniques" : [
+        {
+            "name" : "default",
+            "passes" : [
+                "render-depth"
+            ]
+    	}
+    ],
+    "passes" : [
+        {
+            "name" : "render-depth",
+            "states" : {
+                "colorMask" : false,
+                "depthMask" : true,
+                "triangleCulling" : "none"
+            },
+
+            "vertexShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+                uniform mat4 uModelToWorldMatrix;
+                uniform mat4 uWorldToScreenMatrix;
+
+                attribute vec3 aPosition;
+                attribute vec3 aNormal;
+
+                varying vec3 vertexPosition;
+                varying vec3 vertexNormal;
+
+                void main(void)
+                {
+                    vec4 pos = vec4(aPosition, 1.0);
+
+                    #ifdef MODEL_TO_WORLD
+                        pos = uModelToWorldMatrix * pos;
+                    #endif
+
+                    vertexPosition = pos.xyz;
+                    vertexNormal = aNormal; 
+
+                    gl_Position = uWorldToScreenMatrix * pos;
+                }
+            ",
+            "fragmentShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+                uniform vec3 uCameraPosition;
+
+                varying vec3 vertexPosition;
+                varying vec3 vertexNormal;
+
+                void main(void)
+                {
+                    vec3 eyeVector = normalize(vertexPosition - uCameraPosition);
+                        
+                    float lambert = clamp(-dot(normalize(vertexNormal), normalize(eyeVector)), 0.0, 1.0);
+                        
+                    vec4 diffuse = vec4(lambert, lambert, lambert, 1.0) * 0.8 + 0.2;
+
+                    gl_FragColor = diffuse;
+                }
+            "
+        }
+    ]
+    
+}

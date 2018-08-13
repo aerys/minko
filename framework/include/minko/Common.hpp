@@ -135,6 +135,17 @@ namespace minko
 		};
 
         enum class TextureFormat;
+
+        enum ClearFlags
+        {
+            NONE = 0x00000000,
+            DEFAULT = 0x00000001,
+            // Same values of glew.h defines
+            DEPTH = 0x00000100,
+            STENCIL = 0x00000400,
+            COLOR = 0x00004000
+        };
+
 		class AbstractTexture;
 		class Texture;
         class RectangleTexture;

@@ -77,13 +77,14 @@ namespace minko
 
             virtual
             void
-            clear(float red             = 0.f,
-                  float green            = 0.f,
+            clear(uint clearFlags       = ClearFlags::COLOR | ClearFlags::DEPTH | ClearFlags::STENCIL,
+                  float red             = 0.f,
+                  float green           = 0.f,
                   float blue            = 0.f,
-                  float alpha            = 0.f,
-                  float depth            = 1.f,
-                  unsigned int stencil    = 0,
-                  unsigned int mask        = 0xffffffff) = 0;
+                  float alpha           = 0.f,
+                  float depth           = 1.f,
+                  unsigned int stencil  = 0,
+                  unsigned int mask     = 0xffffffff) = 0;
 
             virtual
             void

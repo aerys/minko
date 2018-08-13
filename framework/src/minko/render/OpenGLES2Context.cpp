@@ -343,7 +343,8 @@ OpenGLES2Context::configureViewport(const uint x,
 }
 
 void
-OpenGLES2Context::clear(float 	red,
+OpenGLES2Context::clear(uint    clearFlags,
+                        float 	red,
 						float 	green,
 						float 	blue,
 						float 	alpha,
@@ -358,7 +359,8 @@ OpenGLES2Context::clear(float 	red,
 	// The initial values are all 0.
 	//
 	// glClearColor specify clear values for the color buffers
-	glClearColor(red, green, blue, alpha);
+    if ((clearFlags & ClearFlags::COLOR) == ClearFlags::COLOR)
+	    glClearColor(red, green, blue, alpha);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearDepth.xml
 	//
@@ -367,11 +369,14 @@ OpenGLES2Context::clear(float 	red,
 	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
 	//
 	// glClearDepth specify the clear value for the depth buffer
+    if ((clearFlags & ClearFlags::DEPTH) == ClearFlags::DEPTH)
+    {
 #ifdef GL_ES_VERSION_2_0
-	glClearDepthf(depth);
+        glClearDepthf(depth);
 #else
-	glClearDepth(depth);
+        glClearDepth(depth);
 #endif
+    }
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearStencil.xml
 	//
@@ -379,7 +384,7 @@ OpenGLES2Context::clear(float 	red,
 	// Specifies the index used when the stencil buffer is cleared. The initial value is 0.
 	//
 	// glClearStencil specify the clear value for the stencil buffer
-	if (_stencilBits)
+	if (_stencilBits && (clearFlags & ClearFlags::STENCIL) == ClearFlags::STENCIL)
 		glClearStencil(stencil);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClear.xml
@@ -390,9 +395,10 @@ OpenGLES2Context::clear(float 	red,
 	// GL_DEPTH_BUFFER_BIT, and GL_STENCIL_BUFFER_BIT.
 	//
 	// glClear clear buffers to preset values
-	mask = (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT) & mask;
-	if (mask & GL_DEPTH_BUFFER_BIT)
+	mask = clearFlags & mask;
+	if ((mask & GL_DEPTH_BUFFER_BIT) == GL_DEPTH_BUFFER_BIT)
 		glDepthMask(_currentDepthMask = true);
+
 	glClear(mask);
 }
 
@@ -1826,6 +1832,8 @@ OpenGLES2Context::createRTTBuffers(TextureType	type,
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 5, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, texture, 0);
 	}
 
+	// FIXME: create & attach depth stencil texture under OGLES2
+    // see https://www.khronos.org/registry/gles/extensions/OES/OES_packed_depth_stencil.txt
 
 	uint renderBuffer = -1;
 
@@ -1837,12 +1845,23 @@ OpenGLES2Context::createRTTBuffers(TextureType	type,
 #ifdef GL_ES_VERSION_2_0
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
 #else
+# ifndef MINKO_NO_STENCIL
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+# else
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+# endif
 #endif
-	// FIXME: create & attach stencil buffer
-
+	
 	// attach to the FBO for depth
+#ifdef GL_ES_VERSION_2_0
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+#else
+# ifndef MINKO_NO_STENCIL
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+# else
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+# endif
+#endif
 
 	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
