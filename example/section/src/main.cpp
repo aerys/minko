@@ -32,19 +32,8 @@ using namespace minko::render;
 
 using namespace player::component;
 
-std::string MODEL_FILENAME = "lights.scene";
-
 int main(int argc, char** argv)
 {
-    auto inputFileName = std::string(MODEL_FILENAME);
-
-    for (auto i = 1; i < argc; ++i)
-    {
-        const auto arg = std::string(argv[i]);
-        if (arg == "-i")
-            inputFileName = std::string(argv[++i]);
-    }
-
     auto canvas = Canvas::create("Minko Example - Section", 1280, 720, Canvas::Flags::STENCIL);
 #ifdef DEBUG
     canvas->context()->errorsEnabled(true);
@@ -110,18 +99,12 @@ int main(int argc, char** argv)
 
         defaultLoader->options()->effect(sceneManager->assets()->effect("effect/ClippingPlane.effect"));
         defaultLoader->options()->disposeTextureAfterLoading(true);
-        defaultLoader->queue(inputFileName);
         defaultLoader->load();
 	});
 
     auto mesh = scene::Node::Ptr();
     auto _ = defaultLoader->complete()->connect([=, &mesh](file::Loader::Ptr loader)
     {
-        auto sceneNode = sceneManager->assets()->symbol(inputFileName);
-        
-        if (!sceneNode->hasComponent<Transform>())
-            sceneNode->addComponent(Transform::create());
-
         auto surface = Surface::create(
 			sceneManager->assets()->geometry("cube"),
 			material::BasicMaterial::create(),
@@ -133,17 +116,6 @@ int main(int argc, char** argv)
 		mesh->addComponent(Transform::create());
 
         mesh->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
-        sceneNode->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
-
-        auto nodeSet = scene::NodeSet::create(sceneNode)->descendants(true)->where([&](std::shared_ptr<scene::Node> n)
-        {
-            return n->hasComponent<Surface>();
-        });
-
-        for (auto node : nodeSet->nodes())
-        {
-            node->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::CLIPPED);
-        }
 
         surface->material()->data()->set("triangleCulling", minko::render::TriangleCulling::NONE);
 
