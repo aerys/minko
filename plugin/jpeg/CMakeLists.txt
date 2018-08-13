@@ -18,6 +18,6 @@ file (GLOB
     "lib/jpeg-compressor/src"
 )
 
-minko_add_library (${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SRC})
+minko_add_library (${PROJECT_NAME} "STATIC" "${${PROJECT_NAME}_SRC}")
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE})

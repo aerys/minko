@@ -20,7 +20,7 @@ file (GLOB_RECURSE
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/include/*.hpp"
 )
 
-message ("OMG: ${PROJECT_NAME}")
+# message ("OMG: ${PROJECT_NAME}")
 
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
@@ -38,7 +38,7 @@ foreach (${PROJECT_NAME}_PLUGIN ${${PROJECT_NAME}_PLUGINS})
 endforeach ()
 
 if (WIN32)
-    target_compile_options (${PROJECT_NAME} PUBLIC
+    target_compile_options (${PROJECT_NAME} PRIVATE
         -D_LIB
 		-D_CRT_SECURE_NO_WARNINGS
 		-D_CRT_SECURE_NO_DEPRECATE
@@ -56,7 +56,7 @@ if (WIN32)
 endif ()
 
 if (UNIX AND NOT IOS AND NOT EMSCRIPTEN)
-    target_compile_options (${PROJECT_NAME} PUBLIC
+    target_compile_options (${PROJECT_NAME} PRIVATE
         -D__STDC_FORMAT_MACROS
         "-Wno-deprecated-declarations"
     )
@@ -107,13 +107,13 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
     endif ()
 
     if (UNIX AND NOT APPLE AND NOT EMSCRIPTEN AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-        target_compile_options (${PROJECT_NAME} PUBLIC
+        target_compile_options (${PROJECT_NAME} PRIVATE
             -D_DEBUG
         )
     endif ()
 
     if (ANDROID OR IOS OR EMSCRIPTEN)
-        target_compile_options (${PROJECT_NAME} PUBLIC
+        target_compile_options (${PROJECT_NAME} PRIVATE
             -DMINKO_NO_PVRTEXTOOL
             -DMINKO_NO_QCOMPRESS
             -DMINKO_NO_CRNLIB
@@ -121,14 +121,14 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
     endif ()
     
     if (APPLE AND IOS)
-        target_compile_options (${PROJECT_NAME} PUBLIC
+        target_compile_options (${PROJECT_NAME} PRIVATE
             -DMINKO_NO_QCOMPRESS
             -DMINKO_NO_CRNLIB
         )
     endif ()
 
     if (BITNESS EQUAL 32)
-        target_compile_options (${PROJECT_NAME} PUBLIC
+        target_compile_options (${PROJECT_NAME} PRIVATE
             "MINKO_NO_QCOMPRESS"
         )
     endif ()
@@ -149,7 +149,7 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
         target_include_directories (${PROJECT_NAME} PUBLIC ${OPT_INCLUDE_2})
     endif()
 else ()
-    target_compile_options (${PROJECT_NAME} PUBLIC
+    target_compile_options (${PROJECT_NAME} PRIVATE
         -DMINKO_NO_PVRTEXTOOL
         -DMINKO_NO_QCOMPRESS
         -DMINKO_NO_CRNLIB

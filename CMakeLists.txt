@@ -12,6 +12,13 @@ if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")
 endif ()
 
+if (APPLE AND NOT IOS)
+   set (CMAKE_OSX_DEPLOYMENT_TARGET "")
+   set (CMAKE_OSX_SYSROOT /)
+   set (CMAKE_OSX_DEPLOYMENT_TARGET:STRING=10.7)
+   set (CMAKE_OSX_SYSROOT:STRING=macosx10.11)
+endif ()
+
 add_subdirectory("framework")
 
 get_property (FRAMEWORK_INCLUDES TARGET minko-framework PROPERTY INCLUDE_DIRECTORIES)
@@ -21,14 +28,16 @@ option (WITH_PLUGINS "list off plugins to build" ON)
 list (APPEND PLUGINS
     sdl
     png
+    zlib
     jpeg
     ttf
     serializer
-    fx
+    # fx (trash plugin)
+    assimp
 )
 
-unset(CMAKE_OSX_DEPLOYMENT_TARGET CACHE)
 if (IOS)
+    unset(CMAKE_OSX_DEPLOYMENT_TARGET CACHE)
     set (CMAKE_OSX_SYSROOT iphoneos)
     set (CMAKE_OSX_ARCHITECTURES "armv7")
     set (CMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_REQUIRED "NO")
@@ -60,4 +69,5 @@ if (NOT WITH_PLUGINS MATCHES OFF)
 endif ()
 
 add_subdirectory("example/cube")
-add_subdirectory("example/hologram")
+# add_subdirectory("example/hologram") (trash example)
+add_subdirectory("example/serializer")
