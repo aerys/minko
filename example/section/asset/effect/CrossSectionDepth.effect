@@ -10,8 +10,7 @@
 	"uniforms"	: {
 		"uModelToWorldMatrix"	: "modelToWorldMatrix",
 		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-        "uCameraPosition"       : { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
-        "uDiffuseColor"         : "material[${materialUuid}].diffuseColor"
+        "uCameraPosition"       : { "binding" : { "property" : "eyePosition", "source" : "renderer" } }
 	},
 
     "macros" : {
@@ -24,17 +23,85 @@
         {
             "name" : "default",
             "passes" : [
-                "render-depth"
+                "render-depth-1",
+                "render-depth-2"
             ]
     	}
     ],
     "passes" : [
         {
-            "name" : "render-depth",
+            "name" : "render-depth-1",
             "states" : {
-                "colorMask" : true,
+                "colorMask" : false,
                 "depthMask" : true,
-                "triangleCulling" : "none"
+                "triangleCulling" : "front"
+            },
+
+            "vertexShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+                uniform mat4 uModelToWorldMatrix;
+                uniform mat4 uWorldToScreenMatrix;
+
+                attribute vec3 aPosition;
+                attribute vec3 aNormal;
+
+                varying vec3 vertexPosition;
+                varying vec3 vertexNormal;
+
+                void main(void)
+                {
+                    vec4 pos = vec4(aPosition, 1.0);
+
+                    #ifdef MODEL_TO_WORLD
+                        pos = uModelToWorldMatrix * pos;
+                    #endif
+
+                    vertexPosition = pos.xyz;
+                    vertexNormal = aNormal;
+
+                    gl_Position = uWorldToScreenMatrix * pos;
+                }
+            ",
+            "fragmentShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+                uniform vec3 uCameraPosition;
+
+                varying vec3 vertexPosition;
+                varying vec3 vertexNormal;
+
+                void main(void)
+                {
+                    vec3 eyeVector = normalize(vertexPosition - uCameraPosition);
+
+                    float lambert = clamp(-dot(normalize(vertexNormal), normalize(eyeVector)), 0.0, 1.0);
+
+                    vec4 diffuse = vec4(lambert, lambert, lambert, 1.0) * 0.8 + 0.2;
+
+                    gl_FragColor = diffuse;
+                }
+            "
+        },
+        {
+            "name" : "render-depth-2",
+            "states" : {
+                "colorMask" : false,
+                "depthMask" : true,
+                "triangleCulling" : "front",
+                "depthFunction" : "greater"
             },
 
             "vertexShader" : "
@@ -87,8 +154,6 @@
 
                 void main(void)
                 {
-                    gl_FragColor = uDiffuseColor;
-                    return;
                     vec3 eyeVector = normalize(vertexPosition - uCameraPosition);
 
                     float lambert = clamp(-dot(normalize(vertexNormal), normalize(eyeVector)), 0.0, 1.0);

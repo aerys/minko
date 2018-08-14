@@ -227,7 +227,7 @@ ClippingPlane::createDefaultPlaneMaterial()
 
 	planeMaterial
         //->diffuseColor(math::vec4(0.f, 0.71f, 1.f, 1.f))
-        ->diffuseColor(colors[_planeId % colors.size()])
+        ->diffuseColor(colors[_planeId])
         ->triangleCulling(TriangleCulling::NONE)
         ->stencilFunction(CompareMode::EQUAL)
         ->stencilReference(1);
@@ -276,6 +276,6 @@ ClippingPlane::createRenderers(NodePtr cameraNode)
     _stencilRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::STENCIL);
 
     cameraNode
-        ->addComponent(_depthRenderer);
-        //->addComponent(_stencilRenderer);
+        ->addComponent(_depthRenderer)
+        ->addComponent(_stencilRenderer);
 }

@@ -35,7 +35,7 @@ using namespace player::component;
 
 int main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Section", 1280, 720, Canvas::Flags::STENCIL);
+    auto canvas = Canvas::create("Minko Example - Section", 1268, 720, Canvas::Flags::STENCIL);
 #ifdef DEBUG
     canvas->context()->errorsEnabled(true);
 #endif
@@ -80,7 +80,7 @@ int main(int argc, char** argv)
         mainRenderer->layoutMask(scene::BuiltinLayout::DEFAULT | ClippingPlaneLayout::CLIPPING);
         // We want to keep stencil buffer data
         mainRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH);
-		mainRenderer->enabled(false);
+		// mainRenderer->enabled(false);
 
 	    camera
 		    ->addComponent(mainRenderer)
@@ -208,14 +208,14 @@ int main(int argc, char** argv)
 
         if (k->keyIsDown(input::Keyboard::SPACE))
         {
-            const auto deltaRotation = math::rotate(math::radians(90.f), math::vec3(0.f, 1.f, 0.f));
+            const auto deltaRotation = math::rotate(math::radians(-90.f), math::vec3(0.f, 1.f, 0.f));
             auto rotation = math::mat4();
 
             for (auto i = 0; i < 2; ++i)
             {
                 clippingPlanes.push_back(ClippingPlane::create());
                 auto clippingPlane = clippingPlanes.back();
-                clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(5.f)) * rotation);
+                clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(1000000.f)) * rotation);
                 mesh->addComponent(clippingPlane);
                 rotation *= deltaRotation;
             }
