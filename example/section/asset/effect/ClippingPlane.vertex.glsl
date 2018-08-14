@@ -34,6 +34,9 @@ uniform		vec4	uClippingPlane0;
 #ifdef CLIPPING_PLANE_1
 uniform		vec4	uClippingPlane1;
 #endif
+#ifdef CLIPPING_PLANE_2
+uniform		vec4	uClippingPlane2;
+#endif
 
 varying vec3 vertexPosition;
 varying vec3 vertexNormal;
@@ -42,6 +45,9 @@ varying float clipDist0;
 #endif
 #ifdef CLIPPING_PLANE_1
 varying float clipDist1;
+#endif
+#ifdef CLIPPING_PLANE_2
+varying float clipDist2;
 #endif
 
 void main(void)
@@ -92,6 +98,10 @@ void main(void)
 #ifdef CLIPPING_PLANE_1
 	// Compute the distance between the vertex and the clip plane
 	clipDist1 = dot(pos.xyz, uClippingPlane1.xyz) - uClippingPlane1.w;
+#endif
+#ifdef CLIPPING_PLANE_2
+	// Compute the distance between the vertex and the clip plane
+	clipDist2 = dot(pos.xyz, uClippingPlane2.xyz) - uClippingPlane2.w;
 #endif
 }
 

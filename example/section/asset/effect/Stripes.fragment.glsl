@@ -43,15 +43,23 @@ varying float clipDist0;
 uniform vec4 uClippingPlane1;
 varying float clipDist1;
 #endif
+#ifdef CLIPPING_PLANE_2
+uniform vec4 uClippingPlane2;
+varying float clipDist2;
+#endif
 
 void main(void)
 {
 #ifdef CLIPPING_PLANE_0
-	if (uClippingPlaneId == 1.0 && clipDist0 - 0.00001 < -uClippingPlane0.w * 2.0)
+	if (uClippingPlaneId != 0.0 && clipDist0 - 0.00001 < -uClippingPlane0.w * 2.0)
 		discard;
 #endif
 #ifdef CLIPPING_PLANE_1
-	if (uClippingPlaneId == 0.0 && clipDist1 - 0.00001 < -uClippingPlane1.w * 2.0)
+	if (uClippingPlaneId != 1.0 && clipDist1 - 0.00001 < -uClippingPlane1.w * 2.0)
+		discard;
+#endif
+#ifdef CLIPPING_PLANE_2
+	if (uClippingPlaneId != 2.0 && clipDist2 - 0.00001 < -uClippingPlane2.w * 2.0)
 		discard;
 #endif
 

@@ -19,6 +19,10 @@ varying float clipDist0;
 uniform vec4 uClippingPlane1;
 varying float clipDist1;
 #endif
+#ifdef CLIPPING_PLANE_2
+uniform vec4 uClippingPlane2;
+varying float clipDist2;
+#endif
 
 varying vec3 vertexPosition;
 varying vec3 vertexNormal;
@@ -31,6 +35,10 @@ void main(void)
 #endif
 #ifdef CLIPPING_PLANE_1
 	if (clipDist1 + 0.00001 < -uClippingPlane1.w * 2.0)
+		discard;
+#endif
+#ifdef CLIPPING_PLANE_2
+	if (clipDist2 + 0.00001 < -uClippingPlane2.w * 2.0)
 		discard;
 #endif
 

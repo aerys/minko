@@ -25,7 +25,8 @@
         "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
         "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound",
         "uClippingPlane0"		: { "binding" : { "property" : "clippingPlane0", "source" : "renderer" } },
-        "uClippingPlane1"		: { "binding" : { "property" : "clippingPlane1", "source" : "renderer" } }
+        "uClippingPlane1"		: { "binding" : { "property" : "clippingPlane1", "source" : "renderer" } },
+        "uClippingPlane2"		: { "binding" : { "property" : "clippingPlane2", "source" : "renderer" } }
 	},
 
     "macros" : {
@@ -39,7 +40,8 @@
         "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
         "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected",
         "CLIPPING_PLANE_0"		: { "binding" : { "property" : "clippingPlane0", "source" : "renderer" } },
-        "CLIPPING_PLANE_1"		: { "binding" : { "property" : "clippingPlane1", "source" : "renderer" } }
+        "CLIPPING_PLANE_1"		: { "binding" : { "property" : "clippingPlane1", "source" : "renderer" } },
+        "CLIPPING_PLANE_2"		: { "binding" : { "property" : "clippingPlane2", "source" : "renderer" } }
     },
 
 	"states" : {
