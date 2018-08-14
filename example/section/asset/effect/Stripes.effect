@@ -40,6 +40,9 @@
         "uClippingPlane0"		: { "binding" : { "property" : "clippingPlane0", "source" : "renderer" } },
         "uClippingPlane1"		: { "binding" : { "property" : "clippingPlane1", "source" : "renderer" } },
         "uClippingPlane2"		: { "binding" : { "property" : "clippingPlane2", "source" : "renderer" } },
+        "uClippingPlane3"		: { "binding" : { "property" : "clippingPlane3", "source" : "renderer" } },
+        "uClippingPlane4"		: { "binding" : { "property" : "clippingPlane4", "source" : "renderer" } },
+        "uClippingPlane5"		: { "binding" : { "property" : "clippingPlane5", "source" : "renderer" } },
         "uClippingPlaneId"       : "surface[${surfaceUuid}].clippingPlaneId"
     },
 
@@ -65,7 +68,10 @@
         "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected",
         "CLIPPING_PLANE_0"		: { "binding" : { "property" : "clippingPlane0", "source" : "renderer" } },
         "CLIPPING_PLANE_1"		: { "binding" : { "property" : "clippingPlane1", "source" : "renderer" } },
-        "CLIPPING_PLANE_2"		: { "binding" : { "property" : "clippingPlane2", "source" : "renderer" } }
+        "CLIPPING_PLANE_2"		: { "binding" : { "property" : "clippingPlane2", "source" : "renderer" } },
+        "CLIPPING_PLANE_3"		: { "binding" : { "property" : "clippingPlane3", "source" : "renderer" } },
+        "CLIPPING_PLANE_4"		: { "binding" : { "property" : "clippingPlane4", "source" : "renderer" } },
+        "CLIPPING_PLANE_5"		: { "binding" : { "property" : "clippingPlane5", "source" : "renderer" } }
     },
 
     "states" : {

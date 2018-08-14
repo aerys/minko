@@ -32,13 +32,22 @@ uniform float uPopFullPrecisionLod;
 uniform vec3 uPopMinBound;
 uniform vec3 uPopMaxBound;
 #ifdef CLIPPING_PLANE_0
-uniform		vec4	uClippingPlane0;
+uniform vec4 uClippingPlane0;
 #endif
 #ifdef CLIPPING_PLANE_1
-uniform		vec4	uClippingPlane1;
+uniform vec4 uClippingPlane1;
 #endif
 #ifdef CLIPPING_PLANE_2
-uniform		vec4	uClippingPlane2;
+uniform vec4 uClippingPlane2;
+#endif
+#ifdef CLIPPING_PLANE_3
+uniform vec4 uClippingPlane3;
+#endif
+#ifdef CLIPPING_PLANE_4
+uniform vec4 uClippingPlane4;
+#endif
+#ifdef CLIPPING_PLANE_5
+uniform vec4 uClippingPlane5;
 #endif
 
 varying vec2 vVertexUV;
@@ -53,6 +62,15 @@ varying float clipDist1;
 #endif
 #ifdef CLIPPING_PLANE_2
 varying float clipDist2;
+#endif
+#ifdef CLIPPING_PLANE_3
+varying float clipDist3;
+#endif
+#ifdef CLIPPING_PLANE_4
+varying float clipDist4;
+#endif
+#ifdef CLIPPING_PLANE_5
+varying float clipDist5;
 #endif
 
 void main(void)
@@ -118,6 +136,18 @@ void main(void)
 #ifdef CLIPPING_PLANE_2
 	// Compute the distance between the vertex and the clip plane
 	clipDist2 = dot(pos.xyz, uClippingPlane2.xyz) - uClippingPlane2.w;
+#endif
+#ifdef CLIPPING_PLANE_3
+	// Compute the distance between the vertex and the clip plane
+	clipDist3 = dot(pos.xyz, uClippingPlane3.xyz) - uClippingPlane3.w;
+#endif
+#ifdef CLIPPING_PLANE_4
+	// Compute the distance between the vertex and the clip plane
+	clipDist4 = dot(pos.xyz, uClippingPlane4.xyz) - uClippingPlane4.w;
+#endif
+#ifdef CLIPPING_PLANE_5
+	// Compute the distance between the vertex and the clip plane
+	clipDist5 = dot(pos.xyz, uClippingPlane5.xyz) - uClippingPlane5.w;
 #endif
 }
 
