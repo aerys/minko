@@ -4,28 +4,25 @@
 #ifndef JPEG_ENCODER_H
 #define JPEG_ENCODER_H
 
-namespace jpge
-{
-  typedef unsigned char  uint8;
-  typedef signed short   int16;
-  typedef signed int     int32;
-  typedef unsigned short uint16;
-  typedef unsigned int   uint32;
-  typedef unsigned int   uint;
-  
-  // JPEG chroma subsampling factors. Y_ONLY (grayscale images) and H2V2 (color images) are the most common.
-  enum subsampling_t { Y_ONLY = 0, H1V1 = 1, H2V1 = 2, H2V2 = 3 };
+namespace jpge {
+typedef unsigned char  uint8;
+typedef signed short   int16;
+typedef signed int     int32;
+typedef unsigned short uint16;
+typedef unsigned int   uint32;
+typedef unsigned int   uint;
 
-  // JPEG compression parameters structure.
-  struct params
-  {
+// JPEG chroma subsampling factors. Y_ONLY (grayscale images) and H2V2 (color images) are the most common.
+enum subsampling_t { Y_ONLY = 0, H1V1 = 1, H2V1 = 2, H2V2 = 3 };
+
+// JPEG compression parameters structure.
+struct params {
     inline params() : m_quality(85), m_subsampling(H2V2), m_no_chroma_discrim_flag(false), m_two_pass_flag(false) { }
 
-    inline bool check() const
-    {
-      if ((m_quality < 1) || (m_quality > 100)) return false;
-      if ((uint)m_subsampling > (uint)H2V2) return false;
-      return true;
+    inline bool check() const {
+        if ((m_quality < 1) || (m_quality > 100)) return false;
+        if ((uint)m_subsampling > (uint)H2V2) return false;
+        return true;
     }
 
     // Quality: 1-100, higher is better. Typical values are around 50-95.
@@ -43,31 +40,31 @@ namespace jpge
     bool m_no_chroma_discrim_flag;
 
     bool m_two_pass_flag;
-  };
-  
-  // Writes JPEG image to a file. 
-  // num_channels must be 1 (Y) or 3 (RGB), image pitch must be width*num_channels.
-  bool compress_image_to_jpeg_file(const char *pFilename, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params = params());
+};
 
-  // Writes JPEG image to memory buffer. 
-  // On entry, buf_size is the size of the output buffer pointed at by pBuf, which should be at least ~1024 bytes. 
-  // If return value is true, buf_size will be set to the size of the compressed data.
-  bool compress_image_to_jpeg_file_in_memory(void *pBuf, int &buf_size, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params = params());
-    
-  // Output stream abstract class - used by the jpeg_encoder class to write to the output stream. 
-  // put_buf() is generally called with len==JPGE_OUT_BUF_SIZE bytes, but for headers it'll be called with smaller amounts.
-  class output_stream
-  {
-  public:
+// Writes JPEG image to a file.
+// num_channels must be 1 (Y) or 3 (RGB), image pitch must be width*num_channels.
+bool compress_image_to_jpeg_file(const char *pFilename, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params = params());
+
+// Writes JPEG image to memory buffer.
+// On entry, buf_size is the size of the output buffer pointed at by pBuf, which should be at least ~1024 bytes.
+// If return value is true, buf_size will be set to the size of the compressed data.
+bool compress_image_to_jpeg_file_in_memory(void *pBuf, int &buf_size, int width, int height, int num_channels, const uint8 *pImage_data, const params &comp_params = params());
+
+// Output stream abstract class - used by the jpeg_encoder class to write to the output stream.
+// put_buf() is generally called with len==JPGE_OUT_BUF_SIZE bytes, but for headers it'll be called with smaller amounts.
+class output_stream {
+public:
     virtual ~output_stream() { };
-    virtual bool put_buf(const void* Pbuf, int len) = 0;
-    template<class T> inline bool put_obj(const T& obj) { return put_buf(&obj, sizeof(T)); }
-  };
-    
-  // Lower level jpeg_encoder class - useful if more control is needed than the above helper functions.
-  class jpeg_encoder
-  {
-  public:
+    virtual bool put_buf(const void *Pbuf, int len) = 0;
+    template<class T> inline bool put_obj(const T &obj) {
+        return put_buf(&obj, sizeof(T));
+    }
+};
+
+// Lower level jpeg_encoder class - useful if more control is needed than the above helper functions.
+class jpeg_encoder {
+public:
     jpeg_encoder();
     ~jpeg_encoder();
 
@@ -78,27 +75,33 @@ namespace jpge
     // channels - May be 1, or 3. 1 indicates grayscale, 3 indicates RGB source data.
     // Returns false on out of memory or if a stream write fails.
     bool init(output_stream *pStream, int width, int height, int src_channels, const params &comp_params = params());
-    
-    const params &get_params() const { return m_params; }
-    
+
+    const params &get_params() const {
+        return m_params;
+    }
+
     // Deinitializes the compressor, freeing any allocated memory. May be called at any time.
     void deinit();
 
-    uint get_total_passes() const { return m_params.m_two_pass_flag ? 2 : 1; }
-    inline uint get_cur_pass() { return m_pass_num; }
+    uint get_total_passes() const {
+        return m_params.m_two_pass_flag ? 2 : 1;
+    }
+    inline uint get_cur_pass() {
+        return m_pass_num;
+    }
 
     // Call this method with each source scanline.
     // width * src_channels bytes per scanline is expected (RGB or Y format).
     // You must call with NULL after all scanlines are processed to finish compression.
     // Returns false on out of memory or if a stream write fails.
-    bool process_scanline(const void* pScanline);
-        
-  private:
+    bool process_scanline(const void *pScanline);
+
+private:
     jpeg_encoder(const jpeg_encoder &);
     jpeg_encoder &operator =(const jpeg_encoder &);
 
     typedef int32 sample_array_t;
-        
+
     output_stream *m_pStream;
     params m_params;
     uint8 m_num_components;
@@ -127,7 +130,7 @@ namespace jpge
     uint m_bits_in;
     uint8 m_pass_num;
     bool m_all_stream_writes_succeeded;
-        
+
     void optimize_huffman_table(int table_num, int table_len);
     void emit_byte(uint8 i);
     void emit_word(uint i);
@@ -159,10 +162,10 @@ namespace jpge
     bool terminate_pass_one();
     bool terminate_pass_two();
     bool process_end_of_image();
-    void load_mcu(const void* src);
+    void load_mcu(const void *src);
     void clear();
     void init();
-  };
+};
 
 } // namespace jpge
 
