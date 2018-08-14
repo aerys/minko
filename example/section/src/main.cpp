@@ -80,6 +80,7 @@ int main(int argc, char** argv)
         mainRenderer->layoutMask(scene::BuiltinLayout::DEFAULT | ClippingPlaneLayout::CLIPPING);
         // We want to keep stencil buffer data
         mainRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH);
+		mainRenderer->enabled(false);
 
 	    camera
 		    ->addComponent(mainRenderer)
@@ -87,8 +88,8 @@ int main(int argc, char** argv)
 		        Transform::create(
 				    math::inverse(
 					    math::lookAt(
-						    math::vec3(0.f, 0.f, 10.f), 
-						    math::zero<math::vec3>(), 
+						    math::vec3(0.f, 0.f, 10.f),
+						    math::zero<math::vec3>(),
 						    math::vec3(0.f, 1.f, 0.f)
 					    )
 				    )
@@ -214,7 +215,7 @@ int main(int argc, char** argv)
             {
                 clippingPlanes.push_back(ClippingPlane::create());
                 auto clippingPlane = clippingPlanes.back();
-                clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(80.f)) * rotation);
+                clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(5.f)) * rotation);
                 mesh->addComponent(clippingPlane);
                 rotation *= deltaRotation;
             }

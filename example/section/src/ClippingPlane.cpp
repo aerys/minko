@@ -220,8 +220,14 @@ ClippingPlane::createDefaultPlaneMaterial()
 {
     auto planeMaterial = BasicMaterial::create();
 
+    static const auto colors = std::vector<math::vec4>{
+        math::vec4(1.f, 0.f, 0.f, 1.f),
+        math::vec4(0.f, 1.f, 0.f, 1.f)
+    };
+
 	planeMaterial
-        ->diffuseColor(math::vec4(0.f, 0.71f, 1.f, 1.f))
+        //->diffuseColor(math::vec4(0.f, 0.71f, 1.f, 1.f))
+        ->diffuseColor(colors[_planeId % colors.size()])
         ->triangleCulling(TriangleCulling::NONE)
         ->stencilFunction(CompareMode::EQUAL)
         ->stencilReference(1);
@@ -270,6 +276,6 @@ ClippingPlane::createRenderers(NodePtr cameraNode)
     _stencilRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::STENCIL);
 
     cameraNode
-        ->addComponent(_depthRenderer)
-        ->addComponent(_stencilRenderer);
+        ->addComponent(_depthRenderer);
+        //->addComponent(_stencilRenderer);
 }
