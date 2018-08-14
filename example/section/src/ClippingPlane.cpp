@@ -125,6 +125,7 @@ ClippingPlane::initialize()
     _planeNode
         ->addComponent(Transform::create(_basePlaneTransformMatrix))
         ->addComponent(planeSurface);
+    planeSurface->data()->set("clippingPlaneId", (float) _planeId);
 
     _planeNodeModelToWorldChangedSlot = _planeNode->data().propertyChanged("modelToWorldMatrix").connect(
         [this](Store&                           store,

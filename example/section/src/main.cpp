@@ -215,7 +215,7 @@ int main(int argc, char** argv)
             {
                 clippingPlanes.push_back(ClippingPlane::create());
                 auto clippingPlane = clippingPlanes.back();
-                clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(1000000.f)) * rotation);
+                clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(5.f)) * rotation);
                 mesh->addComponent(clippingPlane);
                 rotation *= deltaRotation;
             }

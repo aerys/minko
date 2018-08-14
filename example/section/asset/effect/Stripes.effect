@@ -36,7 +36,10 @@
         "uPopBlendingLod"       : "surface[${surfaceUuid}].popBlendingLod",
         "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
         "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
-        "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
+        "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound",
+        "uClippingPlane0"		: { "binding" : { "property" : "clippingPlane0", "source" : "renderer" } },
+        "uClippingPlane1"		: { "binding" : { "property" : "clippingPlane1", "source" : "renderer" } },
+        "uClippingPlaneId"       : "surface[${surfaceUuid}].clippingPlaneId"
     },
 
     "macros" : {
@@ -58,7 +61,9 @@
         "FOG_TECHNIQUE"			: { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" },
         "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
         "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
-        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
+        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected",
+        "CLIPPING_PLANE_0"		: { "binding" : { "property" : "clippingPlane0", "source" : "renderer" } },
+        "CLIPPING_PLANE_1"		: { "binding" : { "property" : "clippingPlane1", "source" : "renderer" } }
     },
 
     "states" : {
