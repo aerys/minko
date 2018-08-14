@@ -1,12 +1,12 @@
 // cross-section effect
 {
     "name"  	: "cross-section-stencil",
-    	
+
     "attributes" : {
         "aPosition"             : "geometry[${geometryUuid}].position",
         "aPopProtected"         : "geometry[${geometryUuid}].popProtected"
     },
-	
+
 	"uniforms"	: {
 		"uModelToWorldMatrix"	: "modelToWorldMatrix",
 		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
@@ -17,14 +17,14 @@
         "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
         "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
 	},
-    
+
     "macros" : {
 		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
         "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
         "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
         "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
     },
-    
+
     "defaultTechnique"  : "default",
 
 	"techniques" : [
@@ -118,7 +118,7 @@
                 "triangleCulling" : "front",
                 "priority" : 0
             },
-            
+
             "vertexShader" : "
                 #ifdef GL_ES
                     #ifdef GL_FRAGMENT_PRECISION_HIGH
@@ -176,5 +176,5 @@
             "
         }
     ]
-    
+
 }

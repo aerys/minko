@@ -35,7 +35,7 @@ using namespace player::component;
 
 int main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Section", 1280, 720, Canvas::Flags::STENCIL);
+    auto canvas = Canvas::create("Minko Example - Section", 1268, 720, Canvas::Flags::STENCIL);
 #ifdef DEBUG
     canvas->context()->errorsEnabled(true);
 #endif
@@ -68,8 +68,8 @@ int main(int argc, char** argv)
 	{
 		std::cout << "File loading error: " << error.what() << std::endl;
 	});
-	
-	auto root = scene::Node::create("root")->addComponent(sceneManager);
+
+    auto root = scene::Node::create("root")->addComponent(sceneManager);
     auto camera = scene::Node::create("camera");
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
@@ -80,6 +80,7 @@ int main(int argc, char** argv)
         mainRenderer->layoutMask(scene::BuiltinLayout::DEFAULT | ClippingPlaneLayout::CLIPPING);
         // We want to keep stencil buffer data
         mainRenderer->clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH);
+		// mainRenderer->enabled(false);
 
 	    camera
 		    ->addComponent(mainRenderer)
@@ -87,8 +88,8 @@ int main(int argc, char** argv)
 		        Transform::create(
 				    math::inverse(
 					    math::lookAt(
-						    math::vec3(0.f, 0.f, 10.f), 
-						    math::zero<math::vec3>(), 
+						    math::vec3(0.f, 0.f, 10.f),
+						    math::zero<math::vec3>(),
 						    math::vec3(0.f, 1.f, 0.f)
 					    )
 				    )
@@ -209,7 +210,7 @@ int main(int argc, char** argv)
         {
             clippingPlanes.push_back(ClippingPlane::create());
             auto clippingPlane = clippingPlanes.back();
-            clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(80.f)));
+            clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(5.f)));
             mesh->addComponent(clippingPlane);
         }
 	});
