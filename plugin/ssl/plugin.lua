@@ -9,7 +9,7 @@ minko.plugin["ssl"].enable = function()
         minko.plugin.path("ssl") .. "/lib/openssl/include"
     }
 
-    configuration { "not html5" }
+    configuration { "not html5", "not windows32", "not windows64" }
         minko.plugin.links { "ssl" }
 
     configuration { "linux" }
