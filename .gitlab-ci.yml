@@ -84,6 +84,53 @@ build:linux_offscreen:
     - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay --with-texture-compressor
     - make -j$(nproc) config=linux64_release
 
+build:windows64:
+  <<: *build_with_artifacts_template
+  stage: build
+  tags:
+    - windows
+  script:
+    - set MINKO_HOME=%cd%
+    - bash plugin\serializer\script\download_dependencies.sh .
+    - cd script
+    - call solution_vs2015_full.bat --no-example --no-tutorial --with-texture-compressor --no-test
+    - cd ..
+    - msbuild minko.sln /property:Configuration=Release /property:Platform=windows64 /m:4
+
+build:windows64_offscreen:
+  <<: *build_with_artifacts_template
+  stage: build
+  tags:
+    - windows
+  script:
+    - set MINKO_HOME=%cd%
+    - bash plugin\serializer\script\download_dependencies.sh .
+    - cd script
+    - call solution_vs2015_full.bat --no-example --no-tutorial --with-texture-compressor --with-offscreen --no-test
+    - cd ..
+    - msbuild minko.sln /property:Configuration=Release /property:Platform=windows64 /m:4
+
+test:windows64_offscreen:
+  stage: test
+  tags:
+    - windows
+  dependencies:
+    - build:windows64_offscreen
+  artifacts:
+    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
+    when: on_failure
+    expire_in: 1 hr
+    paths:
+      - test
+  script:
+    - set MINKO_HOME=%cd%
+    - cd script
+    - call solution_vs2015_full.bat --no-example --no-tutorial --with-texture-compressor --with-offscreen
+    - cd ..
+    - msbuild minko.sln /target:minko-test /property:Configuration=Release /property:Platform=windows64 /m:4 /p:BuildProjectReferences=false
+    - cd .\test\bin\windows64\release
+    - minko-test.exe
+
 test:linux_offscreen:
   stage: test
   image: registry.aerys.in/aerys/smartshape-docker/linux64:2223
@@ -92,6 +139,7 @@ test:linux_offscreen:
   artifacts:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
     when: on_failure
+    expire_in: 1 hr
     paths:
       - test
   script:
@@ -132,6 +180,22 @@ archive:linux:
     ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
     - build:linux
+
+archive:windows64:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-windows64-${CI_COMMIT_REF_SLUG}.tar.bz2
+  dependencies:
+    - build:windows64
+
+archive:windows64_offscreen:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-windows64_offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
+  dependencies:
+    - build:windows64_offscreen
 
 trigger:
   stage: trigger

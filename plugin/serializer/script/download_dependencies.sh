@@ -8,7 +8,7 @@ mkdir -p plugin/serializer/lib
 pushd plugin/serializer/lib
 test -d PVRTexTool || {
   ARCHIVE=smartshape-converter-lib
-  wget --quiet http://static.aerys.in/smartshape/converter/lib.tgz -O ./${ARCHIVE}.tgz
+  curl -s http://static.aerys.in/smartshape/converter/lib.tgz --output ./${ARCHIVE}.tgz
   tar xzf ${ARCHIVE}.tgz
   rm -rf ./${ARCHIVE}.tgz
 }
