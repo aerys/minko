@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/component/AbstractScript.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/Camera.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/SceneManager.hpp"
@@ -65,7 +65,7 @@ namespace minko
             std::shared_ptr<render::Texture>        _renderTarget;
             NodePtr                                 _virtualCamera;
             NodePtr                                 _activeCamera;
-            PerspectiveCamera::Ptr                  _perspectiveCamera;
+            Camera::Ptr                             _camera;
             Transform::Ptr                          _cameraTransform;
             Transform::Ptr                          _virtualCameraTransform;
             Renderer::Ptr                           _reflectionRenderer;
