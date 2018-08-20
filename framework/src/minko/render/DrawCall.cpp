@@ -747,6 +747,8 @@ DrawCall::render(AbstractContext::Ptr   context,
 
             if (hasOwnTarget)
                 context->clear(
+                    // FIXME: the DrawCall should keep track of the clear flags
+                    ClearFlags::DEPTH | ClearFlags::STENCIL | ClearFlags::COLOR,
                     ((clearColor >> 24) & 0xff) / 255.f,
                     ((clearColor >> 16) & 0xff) / 255.f,
                     ((clearColor >> 8) & 0xff) / 255.f,
@@ -822,7 +824,7 @@ DrawCall::render(AbstractContext::Ptr   context,
     else
         for (const auto& a : _attributes)
             context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
-    
+
     context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);
     context->setDepthTest(*_depthMask, *_depthFunc);
