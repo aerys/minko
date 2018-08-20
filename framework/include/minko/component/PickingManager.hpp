@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/component/AbstractPicking.hpp"
 #include "minko/data/Provider.hpp"
 
 namespace minko
@@ -32,15 +33,7 @@ namespace minko
 			public AbstractComponent
 		{
 		public:
-#ifdef MINKO_USE_SPARSE_HASH_MAP
-            template <typename... H>
-            using map = google::sparse_hash_map<H...>;
-#else
-            template <class K, typename... V>
-            using map = std::unordered_map<K, V...>;
-#endif
-
-			typedef std::shared_ptr<PickingManager>					Ptr;
+			typedef std::shared_ptr<PickingManager>				Ptr;
 			typedef std::shared_ptr<Renderer>					RendererPtr;
 			typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
 			typedef std::shared_ptr<scene::Node>				NodePtr;
@@ -55,23 +48,19 @@ namespace minko
 			typedef std::shared_ptr<AbstractCanvas>				AbstractCanvasPtr;
 
 		private:
+            struct PickingEntry {
+                AbstractPicking::Ptr                           picking;
+                Signal<AbstractPicking::Ptr, SurfacePtr>::Slot slot;
+                bool                                           answered;
+            };
+
 			SceneManagerPtr						        _sceneManager;
 			MousePtr							        _mouse;
             TouchPtr                                    _touch;
 			NodePtr								        _camera;
 			ContextPtr					        		_context;
 
-            std::vector<AbstractPicking::Ptr>           _pickings;
-
-			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot			_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
-			Signal<RendererPtr>::Slot					_renderingBeginSlot;
-			Signal<RendererPtr>::Slot					_renderingEndSlot;
-			Signal<RendererPtr>::Slot					_depthRenderingBeginSlot;
-			Signal<RendererPtr>::Slot					_depthRenderingEndSlot;
-            Signal<SceneManagerPtr, float, float>::Slot _frameBeginSlot;
+            Signal<SceneManagerPtr, float, float>::Slot _frameEndSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentRemovedSlot;
 
@@ -93,12 +82,13 @@ namespace minko
             Signal<NodePtr>::Ptr                        _doubleTap;
             Signal<NodePtr>::Ptr                        _longHold;
 
-			unsigned char								_lastColor[4];
-			SurfacePtr									_lastPickedSurface;
-            unsigned char                               _lastDepth[4];
+            std::vector<PickingEntry>                   _pickings;
+            SurfacePtr									_pickedSurfaceBeforeNewPick;
+            SurfacePtr									_lastPickedSurface;
             float                                       _lastDepthValue;
             unsigned char                               _lastMergingMask;
             uint                                        _lastPickedSurfaceId;
+            uint                                        _lastPickingPriority;
 
 			Signal<MousePtr, int, int>::Slot			_mouseMoveSlot;
 			Signal<MousePtr>::Slot						_mouseRightDownSlot;
@@ -114,8 +104,6 @@ namespace minko
             Signal<TouchPtr, float, float>::Slot        _touchTapSlot;
             Signal<TouchPtr, float, float>::Slot        _touchDoubleTapSlot;
             Signal<TouchPtr, float, float>::Slot        _touchLongHoldSlot;
-
-            Signal<Ptr, SurfacePtr, uint, const minko::math::vec4&>::Ptr _pickingColorSet;
 
 			bool										_executeMoveHandler;
 			bool										_executeRightClickHandler;
@@ -137,22 +125,17 @@ namespace minko
 
 			bool										_addPickingLayout;
             bool                                        _emulateMouseWithTouch;
-
-            bool                                        _enabled;
-            bool                                        _renderDepth;
-
+            bool                                        _running;
             bool                                        _debug;
 
-            bool                                        _multiselecting;
-            minko::math::vec2                           _multiselectionStartPosition;
 		public:
 			inline static
 			Ptr
-            create(NodePtr camera, bool addPickingLayoutToNodes = true, bool emulateMouseWithTouch = true, EffectPtr pickingEffect = nullptr, EffectPtr pickingDepthEffect = nullptr)
+            create(bool emulateMouseWithTouch = true)
 			{
                 Ptr picking = std::shared_ptr<PickingManager>(new PickingManager());
 
-                picking->initialize(camera, addPickingLayoutToNodes, emulateMouseWithTouch, pickingEffect, pickingDepthEffect);
+                picking->initialize(emulateMouseWithTouch);
 
 				return picking;
 			}
@@ -162,13 +145,6 @@ namespace minko
 
             Ptr
             depthLayout(scene::Layout value);
-
-            inline
-            Signal<Ptr, SurfacePtr, uint, const minko::math::vec4&>::Ptr
-            pickingColorSet()
-            {
-                return _pickingColorSet;
-            }
 
 			inline
 			Signal<NodePtr>::Ptr
@@ -297,20 +273,6 @@ namespace minko
             }
 
             inline
-            bool
-            renderDepth() const
-            {
-                return _renderDepth;
-            }
-
-            inline
-            void
-            renderDepth(bool value)
-            {
-                _renderDepth = value;
-            }
-
-            inline
             float
             pickedDepth() const
             {
@@ -324,7 +286,7 @@ namespace minko
 			    return _lastMergingMask;
 			}
 
-            map<NodePtr, std::set<unsigned char>>
+            AbstractPicking::map<NodePtr, std::set<unsigned char>>
             pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true);
 
             inline
@@ -333,9 +295,6 @@ namespace minko
             {
                 _debug = v;
             }
-
-            std::pair<uint, minko::math::vec4>
-            createPickingId(SurfacePtr surface);
 
         protected:
 			void
@@ -346,11 +305,7 @@ namespace minko
 
 		private:
             void
-            initialize(NodePtr      camera,
-                       bool         addPickingLayout,
-                       bool         emulateMouseWithTouch,
-                       EffectPtr    pickingEffect = nullptr,
-                       EffectPtr    pickingDepthEffect = nullptr);
+            initialize(bool         emulateMouseWithTouch);
 
 			void
             bindSignals();
@@ -358,41 +313,14 @@ namespace minko
             void
             unbindSignals();
 
-            void
-			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
-
-			void
-			removedHandler(NodePtr node, NodePtr target, NodePtr parent);
-
 			void
 			componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);
 
 			void
 			componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
-			void
-			addSurfacesForNode(NodePtr node);
-
-			void
-			removeSurfacesForNode(NodePtr node);
-
-			void
-			addSurface(SurfacePtr surface);
-
-			void
-			removeSurface(SurfacePtr surface, NodePtr node);
-
-			void
-			renderingBegin(RendererPtr renderer);
-
-			void
-			renderingEnd(RendererPtr renderer);
-
-			void
-			depthRenderingBegin(RendererPtr renderer);
-
-			void
-			depthRenderingEnd(RendererPtr renderer);
+            void
+            pickingCompleteHandler(AbstractPicking::Ptr picking, SurfacePtr surface);
 
             PickingManager();
 
@@ -442,28 +370,13 @@ namespace minko
 			updateDescendants(NodePtr target);
 
             void
-            enabled(bool enabled);
+            frameEndHandler(SceneManagerPtr, float, float);
 
             void
-            frameBeginHandler(SceneManagerPtr, float, float);
+            dispatchEvents();
 
             void
-            renderDepth(RendererPtr renderer, SurfacePtr pickedSurface);
-
-            void
-            dispatchEvents(SurfacePtr pickedSurface, float depth);
-
-            void
-            updatePickingProjection();
-
-            void
-            updatePickingOrigin();
-
-            void
-            renderPickingFrame();
-
-            void
-            pickingLayoutChanged(scene::Layout previousValue, scene::Layout value);
+            performPicking();
 		};
 	}
 }

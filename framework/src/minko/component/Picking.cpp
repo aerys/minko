@@ -41,6 +41,7 @@ using namespace minko;
 using namespace minko::component;
 
 Picking::Picking() :
+    AbstractPicking(),
     _renderTarget(),
     _renderer(),
     _sceneManager(),
@@ -57,29 +58,9 @@ Picking::Picking() :
     _depthLayout(scene::BuiltinLayout::PICKING_DEPTH),
     _pickingEffect(nullptr),
     _pickingDepthEffect(nullptr),
-    _pickingColorSet(Signal<Ptr, SurfacePtr, uint, const minko::math::vec4&>::create()),
-    _mouseMove(Signal<NodePtr>::create()),
-    _mouseLeftClick(Signal<NodePtr>::create()),
-    _mouseRightClick(Signal<NodePtr>::create()),
-    _mouseLeftDown(Signal<NodePtr>::create()),
-    _mouseRightDown(Signal<NodePtr>::create()),
-    _mouseLeftUp(Signal<NodePtr>::create()),
-    _mouseRightUp(Signal<NodePtr>::create()),
-    _mouseOut(Signal<NodePtr>::create()),
-    _mouseOver(Signal<NodePtr>::create()),
-    _mouseWheel(Signal<NodePtr>::create()),
-    _touchDown(Signal<NodePtr>::create()),
-    _touchMove(Signal<NodePtr>::create()),
-    _touchUp(Signal<NodePtr>::create()),
-    _tap(Signal<NodePtr>::create()),
-    _doubleTap(Signal<NodePtr>::create()),
-    _longHold(Signal<NodePtr>::create()),
-    _lastDepthValue(0.f),
-    _lastMergingMask(0),
     _addPickingLayout(true),
-    _emulateMouseWithTouch(true),
     _frameBeginSlot(nullptr),
-    _enabled(false),
+    _running(false),
     _renderDepth(true),
     _debug(false),
     _multiselecting(false),
@@ -121,13 +102,11 @@ Picking::depthLayout(scene::Layout value)
 void
 Picking::initialize(NodePtr             camera,
                     bool                addPickingLayout,
-                    bool                emulateMouseWithTouch,
                     EffectPtr           pickingEffect,
                     EffectPtr           pickingDepthEffect)
 {
     _camera = camera;
     _addPickingLayout = addPickingLayout;
-    _emulateMouseWithTouch = emulateMouseWithTouch;
     _pickingEffect = pickingEffect;
     _pickingDepthEffect = pickingDepthEffect;
 
@@ -136,133 +115,8 @@ Picking::initialize(NodePtr             camera,
 }
 
 void
-Picking::bindSignals()
-{
-    _mouseMoveSlot = _mouse->move()->connect(std::bind(
-        &Picking::mouseMoveHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
-
-    _mouseLeftDownSlot = _mouse->leftButtonDown()->connect(std::bind(
-        &Picking::mouseLeftDownHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1
-    ));
-
-    _mouseRightDownSlot = _mouse->rightButtonDown()->connect(std::bind(
-        &Picking::mouseRightDownHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1
-    ));
-
-    _mouseLeftClickSlot = _mouse->leftButtonClick()->connect(std::bind(
-        &Picking::mouseLeftClickHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1
-    ));
-
-    _mouseRightClickSlot = _mouse->rightButtonClick()->connect(std::bind(
-        &Picking::mouseRightClickHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1));
-
-    _mouseLeftUpSlot = _mouse->leftButtonUp()->connect(std::bind(
-        &Picking::mouseLeftUpHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1));
-
-    _mouseRightUpSlot = _mouse->rightButtonUp()->connect(std::bind(
-        &Picking::mouseRightUpHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1));
-
-    _mouseWheelSlot = _mouse->wheel()->connect(std::bind(
-        &Picking::mouseWheelHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3));
-
-    _touchDownSlot = _touch->touchDown()->connect(std::bind(
-        &Picking::touchDownHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3,
-        std::placeholders::_4));
-
-    _touchUpSlot = _touch->touchUp()->connect(std::bind(
-        &Picking::touchUpHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3,
-        std::placeholders::_4));
-
-    _touchMoveSlot = _touch->touchMove()->connect(std::bind(
-        &Picking::touchMoveHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3,
-        std::placeholders::_4));
-
-    _touchTapSlot = _touch->tap()->connect(std::bind(
-        &Picking::touchTapHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3));
-
-    _touchDoubleTapSlot = _touch->doubleTap()->connect(std::bind(
-        &Picking::touchDoubleTapHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3));
-
-    _touchLongHoldSlot = _touch->longHold()->connect(std::bind(
-        &Picking::touchLongHoldHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3));
-
-    _executeMoveHandler = false;
-    _executeRightClickHandler = false;
-    _executeLeftClickHandler = false;
-    _executeRightDownHandler = false;
-    _executeLeftDownHandler = false;
-    _executeRightUpHandler = false;
-    _executeLeftUpHandler = false;
-    _executeTouchDownHandler = false;
-    _executeTouchUpHandler = false;
-    _executeTouchMoveHandler = false;
-    _executeTapHandler = false;
-    _executeDoubleTapHandler = false;
-    _executeLongHoldHandler = false;
-}
-
-void
 Picking::unbindSignals()
 {
-    _mouseMoveSlot = nullptr;
-    _mouseLeftDownSlot = nullptr;
-    _mouseRightDownSlot = nullptr;
-    _mouseLeftClickSlot = nullptr;
-    _mouseRightClickSlot = nullptr;
-    _mouseLeftUpSlot = nullptr;
-    _mouseRightUpSlot = nullptr;
-    _touchDownSlot = nullptr;
-    _touchUpSlot = nullptr;
-    _touchMoveSlot = nullptr;
-    _touchTapSlot = nullptr;
-    _touchDoubleTapSlot = nullptr;
-    _touchLongHoldSlot = nullptr;
-
     _frameBeginSlot = nullptr;
     _renderingBeginSlot = nullptr;
     _renderingEndSlot = nullptr;
@@ -281,11 +135,7 @@ Picking::targetAdded(NodePtr target)
     _sceneManager = target->root()->component<SceneManager>();
     auto canvas = _sceneManager->canvas();
 
-    _mouse = canvas->mouse();
-    _touch = canvas->touch();
     _context = canvas->context();
-
-    bindSignals();
 
     if (_pickingEffect == nullptr)
         _pickingEffect = _sceneManager->assets()->effect("effect/Picking.effect");
@@ -373,7 +223,7 @@ Picking::targetRemoved(NodePtr target)
     _renderer = nullptr;
     _depthRenderer = nullptr;
     _sceneManager = nullptr;
-    _enabled = false;
+    _running = false;
 
     removedHandler(target->root(), target, target->parent());
 }
@@ -478,7 +328,6 @@ Picking::addSurface(SurfacePtr surface)
             surface->target()->layout(target()->layout() | _layout);
 
         surface->layoutMask(surface->layoutMask() & ~_depthLayout);
-        _pickingColorSet->execute(std::static_pointer_cast<Picking>(shared_from_this()), surface, pickingId.first, pickingId.second);
     }
 }
 
@@ -507,6 +356,14 @@ Picking::removedHandler(NodePtr target, NodePtr child, NodePtr parent)
     removeSurfacesForNode(child);
 
     updateDescendants(target);
+}
+
+void
+Picking::enabled(bool enabled)
+{
+    if (_running && !enabled)
+        running(enabled);
+    _enabled = enabled;
 }
 
 void
@@ -553,12 +410,11 @@ Picking::updateDescendants(NodePtr target)
 }
 
 void
-Picking::enabled(bool enabled)
+Picking::running(bool running)
 {
-    if (enabled && !_frameBeginSlot)
+    if (running && !_frameBeginSlot)
     {
-        _enabled = true;
-
+        _running = true;
         _frameBeginSlot = _sceneManager->frameBegin()->connect(std::bind(
             &Picking::frameBeginHandler,
             std::static_pointer_cast<Picking>(shared_from_this()),
@@ -567,12 +423,12 @@ Picking::enabled(bool enabled)
             std::placeholders::_3
         ), 1000.0f);
     }
-    else if (!enabled && _frameBeginSlot != nullptr)
+    else if (!running && _frameBeginSlot != nullptr)
     {
         _frameBeginSlot = nullptr;
     }
 
-    _enabled = enabled;
+    _running = running;
 }
 
 void
@@ -584,7 +440,7 @@ Picking::frameBeginHandler(SceneManagerPtr, float, float)
 void
 Picking::renderingBegin(RendererPtr renderer)
 {
-    if (!_enabled)
+    if (!_running)
         return;
 
     updatePickingProjection();
@@ -606,7 +462,7 @@ Picking::renderPickingFrame()
 void
 Picking::renderingEnd(RendererPtr renderer)
 {
-    if (!_enabled)
+    if (!_running)
         return;
 
     _context->readPixels(0, 0, 1, 1, &_lastColor[0]);
@@ -623,18 +479,18 @@ Picking::renderingEnd(RendererPtr renderer)
         if (_renderDepth)
             renderDepth(_depthRenderer, pickedSurface);
         else
-            dispatchEvents(pickedSurface, _lastDepthValue);
+            dispatchEvents(pickedSurface);
     }
     else
     {
-        dispatchEvents(nullptr, _lastDepthValue);
+        dispatchEvents(nullptr);
     }
 }
 
 void
 Picking::renderDepth(RendererPtr renderer, SurfacePtr pickedSurface)
 {
-    if (!_enabled)
+    if (!_running)
         return;
 
     auto pickedSurfaceTarget = pickedSurface->target();
@@ -667,7 +523,7 @@ unpack(const math::vec3& depth)
 void
 Picking::depthRenderingBegin(RendererPtr renderer)
 {
-    if (!_enabled)
+    if (!_running)
         return;
 
     updatePickingOrigin();
@@ -676,7 +532,7 @@ Picking::depthRenderingBegin(RendererPtr renderer)
 void
 Picking::depthRenderingEnd(RendererPtr renderer)
 {
-    if (!_enabled)
+    if (!_running)
         return;
 
     uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
@@ -695,10 +551,9 @@ Picking::depthRenderingEnd(RendererPtr renderer)
         const auto normalizedDepth = unpack(math::vec3(_lastDepth[0], _lastDepth[1], _lastDepth[2]) / 255.f) * (zFar - zNear);
 
         _lastDepthValue = normalizedDepth;
-
         _lastMergingMask = _lastDepth[3];
 
-        dispatchEvents(pickedSurface, _lastDepthValue);
+        dispatchEvents(pickedSurface);
     }
 }
 
@@ -741,267 +596,20 @@ Picking::updatePickingOrigin()
 }
 
 void
-Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
+Picking::dispatchEvents(SurfacePtr pickedSurface)
 {
-    if (_lastPickedSurface != pickedSurface)
-    {
-        if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
-            _mouseOut->execute(_lastPickedSurface->target());
-
-        _lastPickedSurface = pickedSurface;
-
-        if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
-            _mouseOver->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeMoveHandler && _lastPickedSurface)
-    {
-        _mouseMove->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeRightDownHandler && _lastPickedSurface)
-    {
-        _mouseRightDown->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeLeftDownHandler && _lastPickedSurface)
-    {
-        _mouseLeftDown->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeRightClickHandler && _lastPickedSurface)
-    {
-        _mouseRightClick->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeLeftClickHandler && _lastPickedSurface)
-    {
-        _mouseLeftClick->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeRightUpHandler && _lastPickedSurface)
-    {
-        _mouseRightUp->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeLeftUpHandler && _lastPickedSurface)
-    {
-        _mouseLeftUp->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeMouseWheel && _lastPickedSurface)
-    {
-        _mouseWheel->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeTouchDownHandler && _lastPickedSurface)
-    {
-        _touchDown->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeTouchUpHandler && _lastPickedSurface)
-    {
-        _touchUp->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeTouchMoveHandler && _lastPickedSurface)
-    {
-        _touchMove->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeTapHandler && _lastPickedSurface)
-    {
-        _tap->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeDoubleTapHandler && _lastPickedSurface)
-    {
-        _doubleTap->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeLongHoldHandler && _lastPickedSurface)
-    {
-        _longHold->execute(_lastPickedSurface->target());
-    }
-
-    if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
-        enabled(false);
-
-    _executeMoveHandler = false;
-    _executeRightDownHandler = false;
-    _executeLeftDownHandler = false;
-    _executeRightClickHandler = false;
-    _executeLeftClickHandler = false;
-    _executeRightUpHandler = false;
-    _executeLeftUpHandler = false;
+    _pickingComplete->execute(std::static_pointer_cast<AbstractPicking>(shared_from_this()), pickedSurface);
+    running(false);
 }
 
 void
-Picking::mouseMoveHandler(MousePtr mouse, int dx, int dy)
+Picking::pick(const minko::math::vec2& point)
 {
-    if (_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0 || _mouseMove->numCallbacks() > 0)
-    {
-        _executeMoveHandler = true;
-        enabled(true);
-    }
+    _singleSelectionPosition = point;
+    running(true);
 }
 
-void
-Picking::mouseRightUpHandler(MousePtr mouse)
-{
-    if (_mouseRightUp->numCallbacks() > 0)
-    {
-        _executeRightUpHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::mouseLeftUpHandler(MousePtr mouse)
-{
-    if (_mouseLeftUp->numCallbacks() > 0)
-    {
-        _executeLeftUpHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::mouseRightClickHandler(MousePtr mouse)
-{
-    if (_mouseRightClick->numCallbacks() > 0)
-    {
-        _executeRightClickHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::mouseLeftClickHandler(MousePtr mouse)
-{
-    if (_mouseLeftClick->numCallbacks() > 0)
-    {
-        _executeLeftClickHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::mouseRightDownHandler(MousePtr mouse)
-{
-    if (_mouseRightDown->numCallbacks() > 0)
-    {
-        _executeRightDownHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::mouseLeftDownHandler(MousePtr mouse)
-{
-    if (_mouseLeftDown->numCallbacks() > 0)
-    {
-        _executeLeftDownHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::mouseWheelHandler(MousePtr mouse, int x, int y)
-{
-    if (_mouseWheel->numCallbacks() > 0)
-    {
-        _executeMouseWheel = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::touchDownHandler(TouchPtr touch, int identifier, float x, float y)
-{
-    if (_touchDown->numCallbacks() > 0)
-    {
-        _executeTouchDownHandler = true;
-        enabled(true);
-    }
-    if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseLeftDown->numCallbacks() > 0)
-    {
-        _executeLeftDownHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::touchUpHandler(TouchPtr touch, int identifier, float x, float y)
-{
-    if (_touchUp->numCallbacks() > 0)
-    {
-        _executeTouchUpHandler = true;
-        enabled(true);
-    }
-    if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseLeftUp->numCallbacks() > 0)
-    {
-        _executeLeftUpHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::touchMoveHandler(TouchPtr touch, int identifier, float x, float y)
-{
-    if (_touchMove->numCallbacks() > 0)
-    {
-        _executeTouchMoveHandler = true;
-        enabled(true);
-    }
-    if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseMove->numCallbacks() > 0)
-    {
-        _executeMoveHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::touchTapHandler(TouchPtr touch, float x, float y)
-{
-    if (_tap->numCallbacks() > 0)
-    {
-        _executeTapHandler = true;
-        enabled(true);
-    }
-    if (_emulateMouseWithTouch && _mouseLeftClick->numCallbacks() > 0)
-    {
-        _executeLeftClickHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::touchDoubleTapHandler(TouchPtr touch, float x, float y)
-{
-    if (_doubleTap->numCallbacks() > 0)
-    {
-        _executeDoubleTapHandler = true;
-        enabled(true);
-    }
-}
-
-void
-Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
-{
-    if (_doubleTap->numCallbacks() > 0)
-    {
-        _executeDoubleTapHandler = true;
-        enabled(true);
-    }
-    if (_emulateMouseWithTouch && _mouseRightClick->numCallbacks() > 0)
-    {
-        _executeRightClickHandler = true;
-        enabled(true);
-    }
-}
-
-Picking::map<scene::Node::Ptr, std::set<unsigned char>>
+AbstractPicking::map<scene::Node::Ptr, std::set<unsigned char>>
 Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
 {
     auto pickedNodes = Picking::map<scene::Node::Ptr, std::set<unsigned char>>();
@@ -1044,13 +652,15 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
 
     // Retrieve all surface ids in the selection area
     auto maxSurfaceId = 0;
+
     if (!_pickingIdToSurface.empty())
         maxSurfaceId = _pickingIdToSurface.rbegin()->first;
 
     uint lastPickedSurfaceId = 0;
     unsigned char lastAlphaValue = 0;
     auto elementsToRemove = map<scene::Node::Ptr, std::set<unsigned char>>();
-    for (auto i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
+
+    for (unsigned int i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
     {
         auto currentPixel = &selectAreaPixelBuffer[i];
         uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
@@ -1115,7 +725,6 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     }
 
     _multiselecting = false;
-
     return pickedNodes;
 }
 

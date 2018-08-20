@@ -17,6 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+
+#if 0
 #include "minko/component/Picking.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/scene/Node.hpp"
@@ -106,133 +108,8 @@ Picking::initialize(NodePtr             camera,
 
 /*
 void
-Picking::bindSignals()
-{
-    _mouseMoveSlot = _mouse->move()->connect(std::bind(
-        &Picking::mouseMoveHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
-
-    _mouseLeftDownSlot = _mouse->leftButtonDown()->connect(std::bind(
-        &Picking::mouseLeftDownHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1
-    ));
-
-    _mouseRightDownSlot = _mouse->rightButtonDown()->connect(std::bind(
-        &Picking::mouseRightDownHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1
-    ));
-
-    _mouseLeftClickSlot = _mouse->leftButtonClick()->connect(std::bind(
-        &Picking::mouseLeftClickHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1
-    ));
-
-    _mouseRightClickSlot = _mouse->rightButtonClick()->connect(std::bind(
-        &Picking::mouseRightClickHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1));
-
-    _mouseLeftUpSlot = _mouse->leftButtonUp()->connect(std::bind(
-        &Picking::mouseLeftUpHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1));
-
-    _mouseRightUpSlot = _mouse->rightButtonUp()->connect(std::bind(
-        &Picking::mouseRightUpHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1));
-
-    _mouseWheelSlot = _mouse->wheel()->connect(std::bind(
-        &Picking::mouseWheelHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3));
-
-    _touchDownSlot = _touch->touchDown()->connect(std::bind(
-        &Picking::touchDownHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3,
-        std::placeholders::_4));
-
-    _touchUpSlot = _touch->touchUp()->connect(std::bind(
-        &Picking::touchUpHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3,
-        std::placeholders::_4));
-
-    _touchMoveSlot = _touch->touchMove()->connect(std::bind(
-        &Picking::touchMoveHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3,
-        std::placeholders::_4));
-
-    _touchTapSlot = _touch->tap()->connect(std::bind(
-        &Picking::touchTapHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3));
-
-    _touchDoubleTapSlot = _touch->doubleTap()->connect(std::bind(
-        &Picking::touchDoubleTapHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3));
-
-    _touchLongHoldSlot = _touch->longHold()->connect(std::bind(
-        &Picking::touchLongHoldHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3));
-
-    _executeMoveHandler = false;
-    _executeRightClickHandler = false;
-    _executeLeftClickHandler = false;
-    _executeRightDownHandler = false;
-    _executeLeftDownHandler = false;
-    _executeRightUpHandler = false;
-    _executeLeftUpHandler = false;
-    _executeTouchDownHandler = false;
-    _executeTouchUpHandler = false;
-    _executeTouchMoveHandler = false;
-    _executeTapHandler = false;
-    _executeDoubleTapHandler = false;
-    _executeLongHoldHandler = false;
-}
-
-void
 Picking::unbindSignals()
 {
-    _mouseMoveSlot = nullptr;
-    _mouseLeftDownSlot = nullptr;
-    _mouseRightDownSlot = nullptr;
-    _mouseLeftClickSlot = nullptr;
-    _mouseRightClickSlot = nullptr;
-    _mouseLeftUpSlot = nullptr;
-    _mouseRightUpSlot = nullptr;
-    _touchDownSlot = nullptr;
-    _touchUpSlot = nullptr;
-    _touchMoveSlot = nullptr;
-    _touchTapSlot = nullptr;
-    _touchDoubleTapSlot = nullptr;
-    _touchLongHoldSlot = nullptr;
-
     _frameBeginSlot = nullptr;
     _renderingBeginSlot = nullptr;
     _renderingEndSlot = nullptr;
@@ -243,7 +120,8 @@ Picking::unbindSignals()
 
     _addedSlot = nullptr;
     _removedSlot = nullptr;
-}*/
+}
+*/
 
 void
 Picking::targetAdded(NodePtr target)
@@ -1124,3 +1002,4 @@ Picking::createPickingId(SurfacePtr surface)
 
     return std::make_pair(_pickingId, color);
 }
+#endif

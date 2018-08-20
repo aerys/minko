@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/component/Picking.hpp"
+#include "minko/component/PickingManager.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -40,13 +40,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-Picking::Picking() :
+PickingManager::PickingManager() :
     _sceneManager(),
     _mouse(),
     _touch(),
     _camera(),
     _context(),
-    _pickingColorSet(Signal<Ptr, SurfacePtr, uint, const minko::math::vec4&>::create()),
     _mouseMove(Signal<NodePtr>::create()),
     _mouseLeftClick(Signal<NodePtr>::create()),
     _mouseRightClick(Signal<NodePtr>::create()),
@@ -67,124 +66,110 @@ Picking::Picking() :
     _lastMergingMask(0),
     _addPickingLayout(true),
     _emulateMouseWithTouch(true),
-    _frameBeginSlot(nullptr),
-    _enabled(false),
-    _renderDepth(true),
-    _debug(false),
-    _multiselecting(false),
-    _multiselectionStartPosition()
+    _frameEndSlot(nullptr),
+    _running(false),
+    _debug(false)
 {
 }
 
 void
-Picking::initialize(NodePtr             camera,
-                    bool                addPickingLayout,
-                    bool                emulateMouseWithTouch,
-                    EffectPtr           pickingEffect,
-                    EffectPtr           pickingDepthEffect)
+PickingManager::initialize(bool emulateMouseWithTouch)
 {
-    _camera = camera;
-    _addPickingLayout = addPickingLayout;
     _emulateMouseWithTouch = emulateMouseWithTouch;
-    _pickingEffect = pickingEffect;
-    _pickingDepthEffect = pickingDepthEffect;
-
-    _pickingProvider->set("pickingProjection", _pickingProjection);
-    _pickingProvider->set("pickingOrigin", math::vec3());
 }
 
 void
-Picking::bindSignals()
+PickingManager::bindSignals()
 {
     _mouseMoveSlot = _mouse->move()->connect(std::bind(
-        &Picking::mouseMoveHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::mouseMoveHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
     ));
 
     _mouseLeftDownSlot = _mouse->leftButtonDown()->connect(std::bind(
-        &Picking::mouseLeftDownHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::mouseLeftDownHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1
     ));
 
     _mouseRightDownSlot = _mouse->rightButtonDown()->connect(std::bind(
-        &Picking::mouseRightDownHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::mouseRightDownHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1
     ));
 
     _mouseLeftClickSlot = _mouse->leftButtonClick()->connect(std::bind(
-        &Picking::mouseLeftClickHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::mouseLeftClickHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1
     ));
 
     _mouseRightClickSlot = _mouse->rightButtonClick()->connect(std::bind(
-        &Picking::mouseRightClickHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::mouseRightClickHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1));
 
     _mouseLeftUpSlot = _mouse->leftButtonUp()->connect(std::bind(
-        &Picking::mouseLeftUpHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::mouseLeftUpHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1));
 
     _mouseRightUpSlot = _mouse->rightButtonUp()->connect(std::bind(
-        &Picking::mouseRightUpHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::mouseRightUpHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1));
 
     _mouseWheelSlot = _mouse->wheel()->connect(std::bind(
-        &Picking::mouseWheelHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::mouseWheelHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3));
 
     _touchDownSlot = _touch->touchDown()->connect(std::bind(
-        &Picking::touchDownHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::touchDownHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3,
         std::placeholders::_4));
 
     _touchUpSlot = _touch->touchUp()->connect(std::bind(
-        &Picking::touchUpHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::touchUpHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3,
         std::placeholders::_4));
 
     _touchMoveSlot = _touch->touchMove()->connect(std::bind(
-        &Picking::touchMoveHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::touchMoveHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3,
         std::placeholders::_4));
 
     _touchTapSlot = _touch->tap()->connect(std::bind(
-        &Picking::touchTapHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::touchTapHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3));
 
     _touchDoubleTapSlot = _touch->doubleTap()->connect(std::bind(
-        &Picking::touchDoubleTapHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::touchDoubleTapHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3));
 
     _touchLongHoldSlot = _touch->longHold()->connect(std::bind(
-        &Picking::touchLongHoldHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+        &PickingManager::touchLongHoldHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3));
@@ -205,7 +190,7 @@ Picking::bindSignals()
 }
 
 void
-Picking::unbindSignals()
+PickingManager::unbindSignals()
 {
     _mouseMoveSlot = nullptr;
     _mouseLeftDownSlot = nullptr;
@@ -221,20 +206,13 @@ Picking::unbindSignals()
     _touchDoubleTapSlot = nullptr;
     _touchLongHoldSlot = nullptr;
 
-    _frameBeginSlot = nullptr;
-    _renderingBeginSlot = nullptr;
-    _renderingEndSlot = nullptr;
-    _depthRenderingBeginSlot = nullptr;
-    _depthRenderingEndSlot = nullptr;
+    _frameEndSlot = nullptr;
     _componentAddedSlot = nullptr;
     _componentRemovedSlot = nullptr;
-
-    _addedSlot = nullptr;
-    _removedSlot = nullptr;
 }
 
 void
-Picking::targetAdded(NodePtr target)
+PickingManager::targetAdded(NodePtr target)
 {
     _sceneManager = target->root()->component<SceneManager>();
     auto canvas = _sceneManager->canvas();
@@ -243,99 +221,149 @@ Picking::targetAdded(NodePtr target)
     _touch = canvas->touch();
     _context = canvas->context();
 
+    // FIXME: find all picking scripts.
+
     bindSignals();
 
     auto priority = _debug ? -1000.0f : 1000.0f;
 
-    _addedSlot = target->added().connect(std::bind(
-        &Picking::addedHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+
+    _frameEndSlot = _sceneManager->frameEnd()->connect(std::bind(
+        &PickingManager::frameEndHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
     ));
 
-    _removedSlot = target->removed().connect(std::bind(
-        &Picking::removedHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
+
+    _componentAddedSlot = target->componentAdded().connect(std::bind(
+        &PickingManager::componentAddedHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
     ));
 
-    if (target->parent() != nullptr || target->hasComponent<SceneManager>())
-        addedHandler(target, target, target->parent());
-
-    addSurfacesForNode(target);
+    _componentRemovedSlot = target->componentRemoved().connect(std::bind(
+        &PickingManager::componentRemovedHandler,
+        std::static_pointer_cast<PickingManager>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
+    ));
 }
 
 void
-Picking::targetRemoved(NodePtr target)
+PickingManager::targetRemoved(NodePtr target)
 {
     unbindSignals();
 
     _sceneManager = nullptr;
-    _enabled = false;
-
-    removedHandler(target->root(), target, target->parent());
+    _running = false;
+    _pickings.clear();
 }
 
 void
-Picking::enabled(bool enabled)
+PickingManager::performPicking()
 {
-    if (enabled && !_frameBeginSlot)
+    _running = true;
+    _lastPickingPriority = 0;
+
+    math::vec2 mousePos(_mouse->x(), _mouse->y());
+
+    for (auto& entry : _pickings)
     {
-        _enabled = true;
-
-        _frameBeginSlot = _sceneManager->frameBegin()->connect(std::bind(
-            &Picking::frameBeginHandler,
-            std::static_pointer_cast<Picking>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3
-        ), 1000.0f);
+        entry.answered = false;
+        entry.picking->pick(mousePos);
     }
-    else if (!enabled && _frameBeginSlot != nullptr)
+}
+
+void
+PickingManager::frameEndHandler(SceneManagerPtr, float, float)
+{
+    if (_running)
     {
-        _frameBeginSlot = nullptr;
+        // Check if all the picking scripts have answered.
+        for (const auto& entry : _pickings)
+        {
+            if (entry.picking->enabled() && !entry.answered)
+                return;
+        }
+
+        // If they all answered, dispatch event.
+        dispatchEvents();
+
+        _running = false;
+
+
+        if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
+            performPicking(); // FIXME: we need to say we want to re-iterate the picking. Do this on the end frame?
     }
-
-    _enabled = enabled;
 }
 
 void
-Picking::frameBeginHandler(SceneManagerPtr, float, float)
+PickingManager::componentAddedHandler(NodePtr								target,
+                                      NodePtr								node,
+                                      std::shared_ptr<AbstractComponent>	component)
 {
-    // renderPickingFrame();
+    auto picking = std::dynamic_pointer_cast<AbstractPicking>(component);
+
+    if (picking)
+    {
+        PickingEntry entry;
+        entry.picking = picking;
+        entry.answered = true;
+        entry.slot = picking->pickingComplete()->connect([this](AbstractPicking::Ptr picking, SurfacePtr surface) {
+            pickingCompleteHandler(picking, surface);
+        });
+
+        _pickings.push_back(entry);
+    }
 }
 
 void
-Picking::renderingEnd(RendererPtr renderer)
+PickingManager::componentRemovedHandler(NodePtr							target,
+                                        NodePtr							node,
+                                        std::shared_ptr<AbstractComponent>	component)
 {
-    if (!_enabled)
+    auto picking = std::dynamic_pointer_cast<AbstractPicking>(component);
+
+    if (picking)
+    {
+        auto toRemove = std::find_if(_pickings.begin(), _pickings.end(), [=](const PickingEntry& entry) { return entry.picking == picking; });
+        _pickings.erase(toRemove);
+    }
+}
+
+void
+PickingManager::pickingCompleteHandler(AbstractPicking::Ptr picking, SurfacePtr surface)
+{
+    if (!_running)
         return;
 
-    // Dispatch events.
-    /*
+    auto entry = std::find_if(_pickings.begin(), _pickings.end(), [=](const PickingEntry& entry) { return entry.picking == picking; });
+    entry->answered = true;
+
+    if (picking->priority() >= _lastPickingPriority)
     {
-        dispatchEvents(pickedSurface, _lastDepthValue);
+		_lastPickedSurface = surface;
+        _lastDepthValue = picking->pickedDepth();
+        _lastMergingMask = picking->pickedMergingMask();
+        _lastPickedSurfaceId = picking->pickedSurfaceId();
+        _lastPickingPriority = picking->priority();
     }
-    else
-    {
-        dispatchEvents(nullptr, _lastDepthValue);
-    }
-    */
 }
 
 void
-Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
+PickingManager::dispatchEvents()
 {
-    if (_lastPickedSurface != pickedSurface)
+    if (_lastPickedSurface != _pickedSurfaceBeforeNewPick)
     {
         if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
-            _mouseOut->execute(_lastPickedSurface->target());
+            _mouseOut->execute(_pickedSurfaceBeforeNewPick->target());
 
-        _lastPickedSurface = pickedSurface;
+        _pickedSurfaceBeforeNewPick = _lastPickedSurface;
 
         if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
             _mouseOver->execute(_lastPickedSurface->target());
@@ -411,9 +439,6 @@ Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
         _longHold->execute(_lastPickedSurface->target());
     }
 
-    if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
-        enabled(false);
-
     _executeMoveHandler = false;
     _executeRightDownHandler = false;
     _executeLeftDownHandler = false;
@@ -424,172 +449,181 @@ Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
 }
 
 void
-Picking::mouseMoveHandler(MousePtr mouse, int dx, int dy)
+PickingManager::mouseMoveHandler(MousePtr mouse, int dx, int dy)
 {
     if (_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0 || _mouseMove->numCallbacks() > 0)
     {
         _executeMoveHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::mouseRightUpHandler(MousePtr mouse)
+PickingManager::mouseRightUpHandler(MousePtr mouse)
 {
     if (_mouseRightUp->numCallbacks() > 0)
     {
         _executeRightUpHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::mouseLeftUpHandler(MousePtr mouse)
+PickingManager::mouseLeftUpHandler(MousePtr mouse)
 {
     if (_mouseLeftUp->numCallbacks() > 0)
     {
         _executeLeftUpHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::mouseRightClickHandler(MousePtr mouse)
+PickingManager::mouseRightClickHandler(MousePtr mouse)
 {
     if (_mouseRightClick->numCallbacks() > 0)
     {
         _executeRightClickHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::mouseLeftClickHandler(MousePtr mouse)
+PickingManager::mouseLeftClickHandler(MousePtr mouse)
 {
     if (_mouseLeftClick->numCallbacks() > 0)
     {
         _executeLeftClickHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::mouseRightDownHandler(MousePtr mouse)
+PickingManager::mouseRightDownHandler(MousePtr mouse)
 {
     if (_mouseRightDown->numCallbacks() > 0)
     {
         _executeRightDownHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::mouseLeftDownHandler(MousePtr mouse)
+PickingManager::mouseLeftDownHandler(MousePtr mouse)
 {
     if (_mouseLeftDown->numCallbacks() > 0)
     {
         _executeLeftDownHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::mouseWheelHandler(MousePtr mouse, int x, int y)
+PickingManager::mouseWheelHandler(MousePtr mouse, int x, int y)
 {
     if (_mouseWheel->numCallbacks() > 0)
     {
         _executeMouseWheel = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::touchDownHandler(TouchPtr touch, int identifier, float x, float y)
+PickingManager::touchDownHandler(TouchPtr touch, int identifier, float x, float y)
 {
     if (_touchDown->numCallbacks() > 0)
     {
         _executeTouchDownHandler = true;
-        enabled(true);
+        performPicking();
     }
     if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseLeftDown->numCallbacks() > 0)
     {
         _executeLeftDownHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::touchUpHandler(TouchPtr touch, int identifier, float x, float y)
+PickingManager::touchUpHandler(TouchPtr touch, int identifier, float x, float y)
 {
     if (_touchUp->numCallbacks() > 0)
     {
         _executeTouchUpHandler = true;
-        enabled(true);
+        performPicking();
     }
     if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseLeftUp->numCallbacks() > 0)
     {
         _executeLeftUpHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::touchMoveHandler(TouchPtr touch, int identifier, float x, float y)
+PickingManager::touchMoveHandler(TouchPtr touch, int identifier, float x, float y)
 {
     if (_touchMove->numCallbacks() > 0)
     {
         _executeTouchMoveHandler = true;
-        enabled(true);
+        performPicking();
     }
     if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseMove->numCallbacks() > 0)
     {
         _executeMoveHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::touchTapHandler(TouchPtr touch, float x, float y)
+PickingManager::touchTapHandler(TouchPtr touch, float x, float y)
 {
     if (_tap->numCallbacks() > 0)
     {
         _executeTapHandler = true;
-        enabled(true);
+        performPicking();
     }
     if (_emulateMouseWithTouch && _mouseLeftClick->numCallbacks() > 0)
     {
         _executeLeftClickHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::touchDoubleTapHandler(TouchPtr touch, float x, float y)
+PickingManager::touchDoubleTapHandler(TouchPtr touch, float x, float y)
 {
     if (_doubleTap->numCallbacks() > 0)
     {
         _executeDoubleTapHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
 void
-Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
+PickingManager::touchLongHoldHandler(TouchPtr touch, float x, float y)
 {
     if (_doubleTap->numCallbacks() > 0)
     {
         _executeDoubleTapHandler = true;
-        enabled(true);
+        performPicking();
     }
     if (_emulateMouseWithTouch && _mouseRightClick->numCallbacks() > 0)
     {
         _executeRightClickHandler = true;
-        enabled(true);
+        performPicking();
     }
 }
 
-Picking::map<scene::Node::Ptr, std::set<unsigned char>>
-Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
+AbstractPicking::map<scene::Node::Ptr, std::set<unsigned char>>
+PickingManager::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
 {
-    // FIXME
+    AbstractPicking::map<scene::Node::Ptr, std::set<unsigned char>> result;
+    uint highestPriority = 0;
+
+    for (const auto& entry : _pickings)
+    {
+        if (entry.picking->enabled() && entry.picking->priority() >= highestPriority)
+            result = entry.picking->pickArea(bottomLeft, topRight, fullyInside);
+    }
+
+    return result;
 }
