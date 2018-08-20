@@ -32,14 +32,6 @@ namespace minko
 			public AbstractPicking
 		{
 		public:
-#ifdef MINKO_USE_SPARSE_HASH_MAP
-            template <typename... H>
-            using map = google::sparse_hash_map<H...>;
-#else
-            template <class K, typename... V>
-            using map = std::unordered_map<K, V...>;
-#endif
-
 			typedef std::shared_ptr<Picking>					Ptr;
 			typedef std::shared_ptr<Renderer>					RendererPtr;
 			typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
@@ -48,8 +40,6 @@ namespace minko
             typedef std::shared_ptr<render::Texture>			TexturePtr;
 			typedef std::shared_ptr<render::AbstractContext>	ContextPtr;
 			typedef std::shared_ptr<SceneManager>				SceneManagerPtr;
-			typedef std::shared_ptr<input::Mouse>				MousePtr;
-            typedef std::shared_ptr<input::Touch>               TouchPtr;
 			typedef std::shared_ptr<Surface>					SurfacePtr;
 			typedef std::shared_ptr<data::Provider>	            ProviderPtr;
 			typedef std::shared_ptr<AbstractCanvas>				AbstractCanvasPtr;
@@ -58,8 +48,6 @@ namespace minko
 			TexturePtr							        _renderTarget;
 			RendererPtr							        _renderer;
 			SceneManagerPtr						        _sceneManager;
-			MousePtr							        _mouse;
-            TouchPtr                                    _touch;
 			NodePtr								        _camera;
 			math::mat4							        _pickingProjection;
 			std::map<SurfacePtr, std::vector<uint>>     _surfaceToPickingIds;
@@ -107,12 +95,13 @@ namespace minko
             bool                                        _multiselecting;
             minko::math::vec2                           _multiselectionStartPosition;
             minko::math::vec2                           _singleSelectionPosition;
+            minko::math::vec2                           _singleSelectionNormalizedPosition;
 		public:
 			inline static
 			Ptr
-            create(NodePtr camera, bool addPickingLayoutToNodes = true, EffectPtr pickingEffect = nullptr, EffectPtr pickingDepthEffect = nullptr)
+            create(NodePtr camera, bool addPickingLayoutToNodes = true, EffectPtr pickingEffect = nullptr, EffectPtr pickingDepthEffect = nullptr, int priority = 0)
 			{
-                Ptr picking = std::shared_ptr<Picking>(new Picking());
+                Ptr picking = std::shared_ptr<Picking>(new Picking(priority));
 
                 picking->initialize(camera, addPickingLayoutToNodes, pickingEffect, pickingDepthEffect);
 
@@ -129,7 +118,7 @@ namespace minko
             pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true) override;
 
             void
-            pick(const minko::math::vec2& point) override;
+            pick(const minko::math::vec2& point, const minko::math::vec2& normalizedPoint) override;
 
             inline
             void
@@ -207,7 +196,7 @@ namespace minko
 			void
 			depthRenderingEnd(RendererPtr renderer);
 
-            Picking();
+            Picking(int priority);
 
             void
             dispatchEvents(SurfacePtr pickedSurfaces);

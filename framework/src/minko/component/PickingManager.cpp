@@ -277,14 +277,16 @@ void
 PickingManager::performPicking()
 {
     _running = true;
-    _lastPickingPriority = 0;
+    _lastPickingPriority = -std::numeric_limits<int>::max();
+    _lastPickedSurface = nullptr;
 
     math::vec2 mousePos(_mouse->x(), _mouse->y());
+    math::vec2 mouseNormalizedPos(_mouse->normalizedX(), _mouse->normalizedY());
 
     for (auto& entry : _pickings)
     {
         entry.answered = false;
-        entry.picking->pick(mousePos);
+        entry.picking->pick(mousePos, mouseNormalizedPos);
     }
 }
 
@@ -306,7 +308,7 @@ PickingManager::frameEndHandler(SceneManagerPtr, float, float)
         _running = false;
 
 
-        if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
+        if (_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0)
             performPicking(); // FIXME: we need to say we want to re-iterate the picking. Do this on the end frame?
     }
 }
@@ -360,7 +362,7 @@ PickingManager::pickingCompleteHandler(AbstractPicking::Ptr picking, SurfacePtr 
     auto entry = std::find_if(_pickings.begin(), _pickings.end(), [=](const PickingEntry& entry) { return entry.picking == picking; });
     entry->answered = true;
 
-    if (picking->priority() >= _lastPickingPriority)
+    if (surface && picking->priority() >= _lastPickingPriority)
     {
 		_lastPickedSurface = surface;
         _lastDepthValue = picking->pickedDepth();

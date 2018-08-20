@@ -57,6 +57,7 @@ namespace minko
 		protected:
             Signal<Ptr, SurfacePtr>::Ptr _pickingComplete;
 
+            int           _priority;
 			SurfacePtr    _lastPickedSurface;
             float         _lastDepthValue;
             unsigned char _lastMergingMask;
@@ -102,7 +103,7 @@ namespace minko
             int
             priority() const
             {
-                return 0;
+                return _priority;
             }
 
             virtual
@@ -111,7 +112,7 @@ namespace minko
 
             virtual
             void
-            pick(const minko::math::vec2& point) = 0;
+            pick(const minko::math::vec2& point, const minko::math::vec2& normalizedPoint) = 0;
 
             virtual
             bool
@@ -121,11 +122,12 @@ namespace minko
             void
             enabled(bool enabled) = 0;
 
-            AbstractPicking()
+            AbstractPicking(int priority)
                 : _lastPickedSurface(nullptr),
                   _lastDepthValue(0.0),
                   _lastMergingMask(0),
                   _lastPickedSurfaceId(0),
+                  _priority(priority),
                   _pickingComplete(Signal<Ptr, SurfacePtr>::create())
             { }
 		};

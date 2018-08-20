@@ -25,8 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Camera.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/AbstractContext.hpp"
-#include "minko/input/Mouse.hpp"
-#include "minko/input/Touch.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/AbstractCanvas.hpp"
@@ -40,13 +38,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-Picking::Picking() :
-    AbstractPicking(),
+Picking::Picking(int priority) :
+    AbstractPicking(priority),
     _renderTarget(),
     _renderer(),
     _sceneManager(),
-    _mouse(),
-    _touch(),
     _camera(),
     _pickingProjection(),
     _surfaceToPickingIds(),
@@ -560,8 +556,8 @@ Picking::depthRenderingEnd(RendererPtr renderer)
 void
 Picking::updatePickingProjection()
 {
-    auto mouseX = static_cast<float>(_mouse->x());
-    auto mouseY = static_cast<float>(_mouse->y());
+    auto mouseX = _singleSelectionPosition.x;
+    auto mouseY = _singleSelectionPosition.y;
 
     if (_multiselecting && _multiselectionStartPosition != math::vec2(0))
     {
@@ -587,8 +583,8 @@ Picking::updatePickingOrigin()
 {
     auto perspectiveCamera	= _camera->component<component::Camera>();
 
-    const auto normalizedMouseX = _mouse->normalizedX();
-    const auto normalizedMouseY = _mouse->normalizedY();
+    const auto normalizedMouseX = _singleSelectionNormalizedPosition.x;
+    const auto normalizedMouseY = _singleSelectionNormalizedPosition.y;
 
     auto pickingRay = perspectiveCamera->unproject(normalizedMouseX, normalizedMouseY);
 
@@ -598,14 +594,15 @@ Picking::updatePickingOrigin()
 void
 Picking::dispatchEvents(SurfacePtr pickedSurface)
 {
-    _pickingComplete->execute(std::static_pointer_cast<AbstractPicking>(shared_from_this()), pickedSurface);
+    _pickingComplete->execute(std::dynamic_pointer_cast<AbstractPicking>(shared_from_this()), pickedSurface);
     running(false);
 }
 
 void
-Picking::pick(const minko::math::vec2& point)
+Picking::pick(const minko::math::vec2& point, const minko::math::vec2& normalizedPoint)
 {
     _singleSelectionPosition = point;
+    _singleSelectionNormalizedPosition = normalizedPoint;
     running(true);
 }
 
