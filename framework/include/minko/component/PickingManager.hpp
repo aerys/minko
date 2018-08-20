@@ -88,7 +88,7 @@ namespace minko
             float                                       _lastDepthValue;
             unsigned char                               _lastMergingMask;
             uint                                        _lastPickedSurfaceId;
-            uint                                        _lastPickingPriority;
+            int                                         _lastPickingPriority;
 
 			Signal<MousePtr, int, int>::Slot			_mouseMoveSlot;
 			Signal<MousePtr>::Slot						_mouseRightDownSlot;
@@ -305,13 +305,16 @@ namespace minko
 
 		private:
             void
-            initialize(bool         emulateMouseWithTouch);
+            initialize(bool emulateMouseWithTouch);
 
 			void
             bindSignals();
 
             void
             unbindSignals();
+
+            void
+            addPicking(std::shared_ptr<AbstractComponent> component);
 
 			void
 			componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr	ctrl);

@@ -221,8 +221,6 @@ PickingManager::targetAdded(NodePtr target)
     _touch = canvas->touch();
     _context = canvas->context();
 
-    // FIXME: find all picking scripts.
-
     bindSignals();
 
     auto priority = _debug ? -1000.0f : 1000.0f;
@@ -252,6 +250,17 @@ PickingManager::targetAdded(NodePtr target)
         std::placeholders::_2,
         std::placeholders::_3
     ));
+
+    auto nodesWithPicking = scene::NodeSet::create(target)
+        ->descendants(true)
+        ->where([](scene::Node::Ptr node)
+    {
+        return node->hasComponent<AbstractPicking>();
+    });
+
+    for (auto node : nodesWithPicking->nodes())
+        for (auto picking : node->components<AbstractPicking>())
+            addPicking(picking);
 }
 
 void
@@ -303,9 +312,7 @@ PickingManager::frameEndHandler(SceneManagerPtr, float, float)
 }
 
 void
-PickingManager::componentAddedHandler(NodePtr								target,
-                                      NodePtr								node,
-                                      std::shared_ptr<AbstractComponent>	component)
+PickingManager::addPicking(std::shared_ptr<AbstractComponent> component)
 {
     auto picking = std::dynamic_pointer_cast<AbstractPicking>(component);
 
@@ -320,6 +327,14 @@ PickingManager::componentAddedHandler(NodePtr								target,
 
         _pickings.push_back(entry);
     }
+}
+
+void
+PickingManager::componentAddedHandler(NodePtr								target,
+                                      NodePtr								node,
+                                      std::shared_ptr<AbstractComponent>	component)
+{
+    addPicking(component);
 }
 
 void
@@ -617,7 +632,7 @@ AbstractPicking::map<scene::Node::Ptr, std::set<unsigned char>>
 PickingManager::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
 {
     AbstractPicking::map<scene::Node::Ptr, std::set<unsigned char>> result;
-    uint highestPriority = 0;
+    int highestPriority = 0;
 
     for (const auto& entry : _pickings)
     {
