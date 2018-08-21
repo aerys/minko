@@ -136,6 +136,17 @@ PFNGLISVERTEXARRAYOESPROC glIsVertexArray;
 # define glDeleteVertexArrays glDeleteVertexArraysAPPLE
 #endif
 
+#if MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+// https://git.aerys.in/aerys/smartshape-engine/issues/88
+// https://github.com/kripken/emscripten/issues/4832#issuecomment-270678946
+# ifndef GL_DEPTH_STENCIL_ATTACHMENT
+#  define GL_DEPTH_STENCIL_ATTACHMENT 0x821A
+# endif
+# ifndef GL_DEPTH_STENCIL
+#  define GL_DEPTH_STENCIL 0x84F9
+# endif
+#endif
+
 using namespace minko;
 using namespace minko::render;
 
@@ -1832,35 +1843,18 @@ OpenGLES2Context::createRTTBuffers(TextureType	type,
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 5, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, texture, 0);
 	}
 
-	// FIXME: create & attach depth stencil texture under OGLES2
-    // see https://www.khronos.org/registry/gles/extensions/OES/OES_packed_depth_stencil.txt
-
 	uint renderBuffer = -1;
-
 	// gen renderbuffer
 	glGenRenderbuffers(1, &renderBuffer);
 	// bind renderbuffer
 	glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
-	// init as a depth buffer
+
 #ifdef GL_ES_VERSION_2_0
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
-#else
-# ifndef MINKO_NO_STENCIL
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-# else
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-# endif
-#endif
-	
-	// attach to the FBO for depth
-#ifdef GL_ES_VERSION_2_0
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
-#else
-# ifndef MINKO_NO_STENCIL
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, width, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
-# else
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
-# endif
+#else
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
 #endif
 
 	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
