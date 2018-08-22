@@ -18,11 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Minko.hpp"
-#include "minko/MinkoASSIMP.hpp"
-#include "minko/MinkoJPEG.hpp"
-#include "minko/MinkoPNG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoSerializer.hpp"
 
 #include "ClippingPlane.hpp"
 #include "ClippingPlaneLayout.hpp"
@@ -47,13 +43,7 @@ int main(int argc, char** argv)
 
     defaultLoader->options()
 		->resizeSmoothly(true)
-        ->generateMipmaps(true)
-        ->registerParser<file::PNGParser>("png")
-        ->registerParser<file::JPEGParser>("jpg")
-        ->registerParser<file::OBJParser>("obj")
-        ->registerParser<file::ColladaParser>("dae")
-        ->registerParser<file::FBXParser>("FBX")
-        ->registerParser<file::SceneParser>("scene");
+        ->generateMipmaps(true);
 
 	canvas->context()->errorsEnabled(true);
 
@@ -105,7 +95,7 @@ int main(int argc, char** argv)
 	});
 
     auto mesh = scene::Node::Ptr();
-    auto _ = defaultLoader->complete()->connect([=, &mesh](file::Loader::Ptr loader)
+    auto _ = defaultLoader->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto surface = Surface::create(
 			sceneManager->assets()->geometry("cube"),
@@ -122,6 +112,11 @@ int main(int argc, char** argv)
         surface->material()->data()->set("triangleCulling", minko::render::TriangleCulling::NONE);
 
         root->addChild(mesh);
+
+		clippingPlanes.push_back(ClippingPlane::create());
+		auto clippingPlane = clippingPlanes.back();
+		clippingPlane->basePlaneTransformMatrix(math::scale(math::vec3(5.f)));
+		mesh->addComponent(clippingPlane);
     });
 
 	auto yaw = float(M_PI) * 0.25f;
