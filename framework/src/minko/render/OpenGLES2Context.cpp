@@ -1850,8 +1850,17 @@ OpenGLES2Context::createRTTBuffers(TextureType	type,
 	glBindRenderbuffer(GL_RENDERBUFFER, renderBuffer);
 
 #ifdef GL_ES_VERSION_2_0
+# ifdef GL_DEPTH_STENCIL
+	// The GL_DEPTH_STENCIL internal format is natively supported (under WebGL, for instance)
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_STENCIL, width, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+# elif defined GL_DEPTH24_STENCIL8_OES
+	// The interleaved depth and stencil buffers require are supported via an extension
+	// https://www.khronos.org/registry/OpenGL/extensions/OES/OES_packed_depth_stencil.txt
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+# endif
 #else
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
