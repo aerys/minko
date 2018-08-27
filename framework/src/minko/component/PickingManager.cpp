@@ -375,87 +375,89 @@ PickingManager::pickingCompleteHandler(AbstractPicking::Ptr picking, SurfacePtr 
 void
 PickingManager::dispatchEvents()
 {
+    auto pickedNode = _lastPickedSurface ? _lastPickedSurface->target() : nullptr;
+
     if (_lastPickedSurface != _pickedSurfaceBeforeNewPick)
     {
-        if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
-            _mouseOut->execute(_pickedSurfaceBeforeNewPick->target());
+        if (_mouseOut->numCallbacks() > 0)
+            _mouseOut->execute(_pickedSurfaceBeforeNewPick ? _pickedSurfaceBeforeNewPick->target() : nullptr);
 
-        _pickedSurfaceBeforeNewPick = _lastPickedSurface;
-
-        if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
-            _mouseOver->execute(_lastPickedSurface->target());
+        if (_mouseOver->numCallbacks() > 0)
+            _mouseOver->execute(pickedNode);
     }
 
-    if (_executeMoveHandler && _lastPickedSurface)
+    if (_executeMoveHandler)
     {
-        _mouseMove->execute(_lastPickedSurface->target());
+        _mouseMove->execute(pickedNode);
     }
 
-    if (_executeRightDownHandler && _lastPickedSurface)
+    if (_executeRightDownHandler)
     {
-        _mouseRightDown->execute(_lastPickedSurface->target());
+        _mouseRightDown->execute(pickedNode);
     }
 
-    if (_executeLeftDownHandler && _lastPickedSurface)
+    if (_executeLeftDownHandler)
     {
-        _mouseLeftDown->execute(_lastPickedSurface->target());
+        _mouseLeftDown->execute(pickedNode);
     }
 
-    if (_executeRightClickHandler && _lastPickedSurface)
+    if (_executeRightClickHandler)
     {
-        _mouseRightClick->execute(_lastPickedSurface->target());
+        _mouseRightClick->execute(pickedNode);
     }
 
-    if (_executeLeftClickHandler && _lastPickedSurface)
+    if (_executeLeftClickHandler)
     {
-        _mouseLeftClick->execute(_lastPickedSurface->target());
+        _mouseLeftClick->execute(pickedNode);
     }
 
-    if (_executeRightUpHandler && _lastPickedSurface)
+    if (_executeRightUpHandler)
     {
-        _mouseRightUp->execute(_lastPickedSurface->target());
+        _mouseRightUp->execute(pickedNode);
     }
 
-    if (_executeLeftUpHandler && _lastPickedSurface)
+    if (_executeLeftUpHandler)
     {
-        _mouseLeftUp->execute(_lastPickedSurface->target());
+        _mouseLeftUp->execute(pickedNode);
     }
 
-    if (_executeMouseWheel && _lastPickedSurface)
+    if (_executeMouseWheel)
     {
-        _mouseWheel->execute(_lastPickedSurface->target());
+        _mouseWheel->execute(pickedNode);
     }
 
-    if (_executeTouchDownHandler && _lastPickedSurface)
+    if (_executeTouchDownHandler)
     {
-        _touchDown->execute(_lastPickedSurface->target());
+        _touchDown->execute(pickedNode);
     }
 
-    if (_executeTouchUpHandler && _lastPickedSurface)
+    if (_executeTouchUpHandler)
     {
-        _touchUp->execute(_lastPickedSurface->target());
+        _touchUp->execute(pickedNode);
     }
 
-    if (_executeTouchMoveHandler && _lastPickedSurface)
+    if (_executeTouchMoveHandler)
     {
-        _touchMove->execute(_lastPickedSurface->target());
+        _touchMove->execute(pickedNode);
     }
 
-    if (_executeTapHandler && _lastPickedSurface)
+    if (_executeTapHandler)
     {
-        _tap->execute(_lastPickedSurface->target());
+        _tap->execute(pickedNode);
     }
 
-    if (_executeDoubleTapHandler && _lastPickedSurface)
+    if (_executeDoubleTapHandler)
     {
-        _doubleTap->execute(_lastPickedSurface->target());
+        _doubleTap->execute(pickedNode);
     }
 
-    if (_executeLongHoldHandler && _lastPickedSurface)
+    if (_executeLongHoldHandler)
     {
-        _longHold->execute(_lastPickedSurface->target());
+        _longHold->execute(pickedNode);
     }
 
+
+    _pickedSurfaceBeforeNewPick = _lastPickedSurface;
     _executeMoveHandler = false;
     _executeRightDownHandler = false;
     _executeLeftDownHandler = false;
