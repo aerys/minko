@@ -636,12 +636,20 @@ AbstractPicking::map<scene::Node::Ptr, std::set<unsigned char>>
 PickingManager::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
 {
     AbstractPicking::map<scene::Node::Ptr, std::set<unsigned char>> result;
-    int highestPriority = 0;
+    int highestPriority = -std::numeric_limits<int>::max();
 
     for (const auto& entry : _pickings)
     {
-        if (entry.picking->enabled() && entry.picking->priority() >= highestPriority)
-            result = entry.picking->pickArea(bottomLeft, topRight, fullyInside);
+        if (entry.picking->enabled() && (entry.picking->priority() >= highestPriority || result.size() == 0))
+        {
+            auto newResult = entry.picking->pickArea(bottomLeft, topRight, fullyInside);
+
+            if (newResult.size() != 0)
+            {
+                result = newResult;
+                highestPriority = entry.picking->priority();
+            }
+        }
     }
 
     return result;
