@@ -81,53 +81,62 @@ PickingManager::initialize(bool emulateMouseWithTouch)
 void
 PickingManager::bindSignals()
 {
-    _mouseMoveSlot = _mouse->move()->connect(std::bind(
-        &PickingManager::mouseMoveHandler,
-        std::static_pointer_cast<PickingManager>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
+    bool bindMouseEvents = true;
 
-    _mouseLeftDownSlot = _mouse->leftButtonDown()->connect(std::bind(
-        &PickingManager::mouseLeftDownHandler,
-        std::static_pointer_cast<PickingManager>(shared_from_this()),
-        std::placeholders::_1
-    ));
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    bindMouseEvents = !_emulateMouseWithTouch;
+#endif
 
-    _mouseRightDownSlot = _mouse->rightButtonDown()->connect(std::bind(
-        &PickingManager::mouseRightDownHandler,
-        std::static_pointer_cast<PickingManager>(shared_from_this()),
-        std::placeholders::_1
-    ));
+    if (bindMouseEvents)
+    {
+        _mouseMoveSlot = _mouse->move()->connect(std::bind(
+            &PickingManager::mouseMoveHandler,
+            std::static_pointer_cast<PickingManager>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3
+        ));
 
-    _mouseLeftClickSlot = _mouse->leftButtonClick()->connect(std::bind(
-        &PickingManager::mouseLeftClickHandler,
-        std::static_pointer_cast<PickingManager>(shared_from_this()),
-        std::placeholders::_1
-    ));
+        _mouseLeftDownSlot = _mouse->leftButtonDown()->connect(std::bind(
+            &PickingManager::mouseLeftDownHandler,
+            std::static_pointer_cast<PickingManager>(shared_from_this()),
+            std::placeholders::_1
+        ));
 
-    _mouseRightClickSlot = _mouse->rightButtonClick()->connect(std::bind(
-        &PickingManager::mouseRightClickHandler,
-        std::static_pointer_cast<PickingManager>(shared_from_this()),
-        std::placeholders::_1));
+        _mouseRightDownSlot = _mouse->rightButtonDown()->connect(std::bind(
+            &PickingManager::mouseRightDownHandler,
+            std::static_pointer_cast<PickingManager>(shared_from_this()),
+            std::placeholders::_1
+        ));
 
-    _mouseLeftUpSlot = _mouse->leftButtonUp()->connect(std::bind(
-        &PickingManager::mouseLeftUpHandler,
-        std::static_pointer_cast<PickingManager>(shared_from_this()),
-        std::placeholders::_1));
+        _mouseLeftClickSlot = _mouse->leftButtonClick()->connect(std::bind(
+            &PickingManager::mouseLeftClickHandler,
+            std::static_pointer_cast<PickingManager>(shared_from_this()),
+            std::placeholders::_1
+        ));
 
-    _mouseRightUpSlot = _mouse->rightButtonUp()->connect(std::bind(
-        &PickingManager::mouseRightUpHandler,
-        std::static_pointer_cast<PickingManager>(shared_from_this()),
-        std::placeholders::_1));
+        _mouseRightClickSlot = _mouse->rightButtonClick()->connect(std::bind(
+            &PickingManager::mouseRightClickHandler,
+            std::static_pointer_cast<PickingManager>(shared_from_this()),
+            std::placeholders::_1));
 
-    _mouseWheelSlot = _mouse->wheel()->connect(std::bind(
-        &PickingManager::mouseWheelHandler,
-        std::static_pointer_cast<PickingManager>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3));
+        _mouseLeftUpSlot = _mouse->leftButtonUp()->connect(std::bind(
+            &PickingManager::mouseLeftUpHandler,
+            std::static_pointer_cast<PickingManager>(shared_from_this()),
+            std::placeholders::_1));
+
+        _mouseRightUpSlot = _mouse->rightButtonUp()->connect(std::bind(
+            &PickingManager::mouseRightUpHandler,
+            std::static_pointer_cast<PickingManager>(shared_from_this()),
+            std::placeholders::_1));
+
+        _mouseWheelSlot = _mouse->wheel()->connect(std::bind(
+            &PickingManager::mouseWheelHandler,
+            std::static_pointer_cast<PickingManager>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3));
+    }
 
     _touchDownSlot = _touch->touchDown()->connect(std::bind(
         &PickingManager::touchDownHandler,
@@ -465,6 +474,12 @@ PickingManager::dispatchEvents()
     _executeLeftClickHandler = false;
     _executeRightUpHandler = false;
     _executeLeftUpHandler = false;
+    _executeTouchDownHandler = false;
+    _executeTouchUpHandler = false;
+    _executeTouchMoveHandler = false;
+    _executeTapHandler = false;
+    _executeDoubleTapHandler = false;
+    _executeLongHoldHandler = false;
 }
 
 void
@@ -636,7 +651,7 @@ AbstractPicking::map<scene::Node::Ptr, std::set<unsigned char>>
 PickingManager::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside)
 {
     AbstractPicking::map<scene::Node::Ptr, std::set<unsigned char>> result;
-    int highestPriority = -std::numeric_limits<int>::max();
+    int highestPriority = std::numeric_limits<int>::min();
 
     for (const auto& entry : _pickings)
     {
