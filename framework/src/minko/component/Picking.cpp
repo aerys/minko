@@ -56,6 +56,7 @@ Picking::Picking(int priority) :
     _pickingDepthEffect(nullptr),
     _addPickingLayout(true),
     _frameBeginSlot(nullptr),
+    _enabled(true),
     _running(false),
     _renderDepth(true),
     _debug(false),
