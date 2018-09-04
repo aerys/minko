@@ -105,14 +105,14 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int w, unsigned int h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
     auto yaw = -4.03f;
     auto pitch = 2.05f;
     auto minPitch = 0.f + 1e-5;
     auto maxPitch = float(M_PI) - 1e-5;
-    auto lookAt = Vector3::create(0.f, 0.f, 0.f);
+    auto lookAt = math::vec3(0.f, 0.f, 0.f);
     auto distance = 15.f;
 
     // handle mouse signals
@@ -139,7 +139,7 @@ main(int argc, char** argv)
         mouseMove = nullptr;
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
         yaw += cameraRotationYSpeed;
         cameraRotationYSpeed *= 0.9f;
@@ -154,14 +154,14 @@ main(int argc, char** argv)
 
         camera->component<Transform>()->matrix()->lookAt(
             lookAt,
-            Vector3::create(
+            math::vec3(
                 lookAt->x() + distance * std::cos(yaw) * std::sin(pitch),
                 lookAt->y() + distance * std::cos(pitch),
                 lookAt->z() + distance * std::sin(yaw) * std::sin(pitch)
             )
         );
 
-        sceneManager->nextFrame(time, deltaTime, ppTarget);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
         ppScene->component<Renderer>()->render(context);
     });
 

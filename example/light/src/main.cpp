@@ -264,7 +264,7 @@ main(int argc, char** argv)
         mouseMove = nullptr;
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
         yaw += cameraRotationYSpeed;
         cameraRotationYSpeed *= 0.9f;
@@ -291,7 +291,7 @@ main(int argc, char** argv)
             lights->component<Transform>()->matrix() * math::rotate(.005f, math::vec3(0.f, 1.f, 0.f))
         );
 
-        sceneManager->nextFrame(time, deltaTime);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
     });
 
     assets->loader()->load();

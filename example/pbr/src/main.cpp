@@ -172,7 +172,7 @@ int main(int argc, char** argv)
             mouseMove = nullptr;
         });
 
-        auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+        auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
         {
             yaw += cameraRotationYSpeed;
             cameraRotationYSpeed *= 0.9f;
@@ -200,7 +200,7 @@ int main(int argc, char** argv)
                 camera->component<Camera>()->projectionMatrix()
             );
 
-            sceneManager->nextFrame(time, deltaTime);
+            sceneManager->nextFrame(time, deltaTime, shouldRender);
         });
 
     	canvas->run();

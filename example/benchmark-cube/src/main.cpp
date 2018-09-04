@@ -73,7 +73,7 @@ int main(int argc, char** argv)
         ready = true;
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
         camera->component<Transform>()->matrix(
             math::rotate(0.01f, math::vec3(0.f, 1.f, 0.f))
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
                 << ", num draw calls = " << camera->component<Renderer>()->numDrawCalls()
                 << ", framerate = " << canvas->framerate() << std::endl;
 
-        sceneManager->nextFrame(time, deltaTime);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
