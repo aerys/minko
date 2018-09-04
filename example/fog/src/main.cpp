@@ -165,7 +165,7 @@ main(int argc, char** argv)
             camera->component<Camera>()->projectionMatrix(math::perspective(0.785f, float(w) / float(h), .1f, 20.f));
         });
 
-        auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float dt)
+        auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float dt, bool shouldRender)
         {
             cameraMove = cameraMove * CAMERA_SPEED * (dt / 1000.0f);
             camera->component<Transform>()->matrix(
@@ -177,7 +177,7 @@ main(int argc, char** argv)
 
             );
 
-            sceneManager->nextFrame(time, dt);
+            sceneManager->nextFrame(time, dt, shouldRender);
         });
 
         canvas->run();

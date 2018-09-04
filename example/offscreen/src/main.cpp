@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     {
         auto root   = scene::Node::create("root");
         auto camera = scene::Node::create("camera");
-
+        
         root->addComponent(sceneManager);
 
         root->addComponent(AmbientLight::create());
@@ -42,8 +42,8 @@ int main(int argc, char** argv)
         // setup camera
         camera->addComponent(Renderer::create(0x7F7F7FFF));
         camera->addComponent(Transform::create());
-        camera->component<Transform>()->matrix()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
-        camera->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+        camera->component<Transform>()->matrix(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0, 1, 0)));
+        camera->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
         root->addChild(camera);
 
         // setup mesh
@@ -51,8 +51,8 @@ int main(int argc, char** argv)
         mesh->addComponent(Surface::create(
             assets->geometry("cube"),
             material::Material::create()
-                ->set("material.diffuseColor", Vector4::create(0.f, 0.f, 1.f, 1.f))
-                ->set("material.diffuseMap", assets->texture("texture/box.png")),
+                ->set({ { "material.diffuseColor", math::vec4(0.f, 0.f, 1.f, 1.f) } })
+                ->set({ { "material.diffuseMap", assets->texture("texture/box.png") } }),
             assets->effect("effect/Basic.effect")
         ));
         root->addChild(mesh);
@@ -63,10 +63,13 @@ int main(int argc, char** argv)
     PNGWriter::Ptr writer = PNGWriter::create();
     std::shared_ptr<std::vector<unsigned char>> buffer(new std::vector<unsigned char>(canvas->width() * canvas->height() * 4));
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
-        mesh->component<Transform>()->matrix()->prependRotationY(.01f);
-
+        //mesh->component<Transform>()->matrix()->prependRotationY(.01f);
+        mesh->component<Transform>()->matrix(
+		    mesh->component<Transform>()->matrix() * math::rotate(0.01f, math::vec3(0, 1, 0))
+        );
+        
         static int lastTime = 0;
 
         if (time - lastTime > 1000)
@@ -76,9 +79,10 @@ int main(int argc, char** argv)
             canvas->context()->readPixels(&*buffer->begin());
             writer->write("C:\\Users\\TEST\\screenshot.png", *buffer, canvas->width(), canvas->height());
             canvas->quit();
+            //std::static_pointer_cast<Canvas>(canvas)->quit(); this should be the fix!
         }
 
-        sceneManager->nextFrame(time, deltaTime);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
     });
 
     canvas->run();

@@ -105,14 +105,14 @@ main(int argc, char** argv)
         camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
         mesh->component<Transform>()->matrix(
             math::rotate(0.001f * deltaTime, math::vec3(0.f, 1.f, 0.f)) *
             mesh->component<Transform>()->matrix()
         );
 
-        sceneManager->nextFrame(time, deltaTime);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
     });
 
     sceneManager->assets()->loader()->load();

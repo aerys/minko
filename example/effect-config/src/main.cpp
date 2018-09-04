@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
+//using namespace minko::math;
 using namespace minko::render;
 
 int
@@ -56,9 +56,13 @@ main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+            math::inverse(
+		            math::lookAt(
+		                math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0, 1, 0)
+		            )
+		        )
         ))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
 
     root->addChild(camera);
 
@@ -67,24 +71,36 @@ main(int argc, char** argv)
 
     auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
-        mesh->addComponent(Surface::create(
+        /* mesh->addComponent(Surface::create(
             sceneManager->assets()->geometry("cube"),
             material::Material::create()->set("diffuseColor", Vector4::one()),
             sceneManager->assets()->effect("effect/PlatformTexture.effect")
+        )); */
+        
+        //this might be wrong
+        auto meshMaterial = material::BasicMaterial::create();
+        meshMaterial->diffuseColor(0xff0000ff);
+        
+        mesh->addComponent(Surface::create(
+            sceneManager->assets()->geometry("cubeGeometry"),
+            meshMaterial,
+            sceneManager->assets()->effect("effect/PlatformTexture.effect")
         ));
-
+        
         root->addChild(mesh);
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        root->children()[0]->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        root->children()[0]->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
-        mesh->component<Transform>()->matrix()->appendRotationY(.01f);
-        sceneManager->nextFrame(time, deltaTime);
+        mesh->component<Transform>()->matrix(
+            mesh->component<Transform>()->matrix() * math::rotate(0.01f, math::vec3(0, 1, 0))
+        );
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
     });
 
     sceneManager->assets()->loader()->load();

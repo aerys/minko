@@ -297,9 +297,9 @@ main(int argc, char** argv)
         }
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
-        sceneManager->nextFrame(time, deltaTime);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
     });
 
     fxLoader->load();

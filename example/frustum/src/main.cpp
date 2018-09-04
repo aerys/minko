@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
+//using namespace minko::math;
 
 scene::Node::Ptr camera = nullptr;
 
@@ -54,12 +54,12 @@ main(int argc, char** argv)
     // camera init
     camera = scene::Node::create("camera")
         ->addComponent(Renderer::create())
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
         ->addComponent(Culling::create(math::Frustum::create(), "camera.worldToScreenMatrix"))
         ->addComponent(Transform::create(
             Matrix4x4::create()->lookAt(
-                Vector3::create(0.f, 0.f),
-                Vector3::create(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f)
+                math::vec3(0.f, 0.f, 0.f),
+                math::vec3(rand() % 200 - 100.f, rand() % 200 - 100.f, rand() % 200 - 100.f)
             )
         ));
 
@@ -67,13 +67,13 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
         camera->component<Transform>()->matrix()->lock()->appendRotationY(0.02f)->appendRotationZ(-0.014f)->unlock();
-        sceneManager->nextFrame(time, deltaTime);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
         std::cout << "Num drawCalls : " << camera->component<Renderer>()->numDrawCalls() << std::endl;
     });
 

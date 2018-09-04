@@ -57,9 +57,13 @@ main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+            math::inverse(
+                math::lookAt(
+                    math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0, 1, 0)
+                )
+            )
         ))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
 
     root->addChild(camera);
 
@@ -86,14 +90,16 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
-        mesh->component<Transform>()->matrix()->appendRotationY(.02f);
+        mesh->component<Transform>()->matrix(
+            mesh->component<Transform>()->matrix() * math::rotate(0.02f, math::vec3(0, 1, 0))
+        );
 
-        sceneManager->nextFrame(time, deltaTime);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
     });
 
     sceneManager->assets()->loader()->load();

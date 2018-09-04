@@ -44,7 +44,7 @@ main(int argc, char** argv)
         ->addComponent(Transform::create(math::inverse(math::lookAt(
             math::vec3(), math::vec3(3.f, 3.f, 3.f), math::vec3(0.f, 1.f, 0.f)
         ))))
-        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+        ->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
 
     auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
         // ->queue("effect/Basic.effect")
@@ -203,7 +203,7 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+        camera->component<Camera>()->projectionMatrix(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f));
     });
 
     float yaw = 0.3f;
@@ -241,7 +241,7 @@ main(int argc, char** argv)
         mouseMove = nullptr;
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
         distance += zoomSpeed;
         zoomSpeed *= 0.9f;
@@ -269,7 +269,7 @@ main(int argc, char** argv)
             math::vec3(0.f, 1.f, 0.f)
         )));
 
-        sceneManager->nextFrame(time, deltaTime);
+        sceneManager->nextFrame(time, deltaTime, shouldRender);
     });
 
     fxLoader->load();

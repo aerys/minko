@@ -129,7 +129,7 @@ main(int argc, char** argv)
         camera->component<Camera>()->projectionMatrix(math::perspective(.785f, aspectRatio, 0.1f, 1000.f));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr ac, float t, float dt)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr ac, float t, float dt, bool shouldRender)
     {
         auto canvas = std::dynamic_pointer_cast<Canvas>(ac);
         auto joysticksList = canvas->joysticks();
@@ -216,7 +216,7 @@ main(int argc, char** argv)
                 joystickToCube[joy]->component<Transform>()->matrix(joystickToCube[joy]->component<Transform>()->matrix() * math::rotate(0.1f, math::vec3(0.f, 0.f, 1.f)));
         }
 
-        sceneManager->nextFrame(t, dt);
+        sceneManager->nextFrame(t, dt, shouldRender);
     });
 
     sceneManager->assets()->loader()->load();
