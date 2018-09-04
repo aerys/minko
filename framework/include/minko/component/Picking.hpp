@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
-#include "minko/component/AbstractComponent.hpp"
+#include "minko/component/AbstractPicking.hpp"
 #include "minko/data/Provider.hpp"
 
 namespace minko
@@ -29,17 +29,9 @@ namespace minko
 	namespace component
 	{
 		class Picking :
-			public AbstractComponent
+			public AbstractPicking
 		{
 		public:
-#ifdef MINKO_USE_SPARSE_HASH_MAP
-            template <typename... H>
-            using map = google::sparse_hash_map<H...>;
-#else
-            template <class K, typename... V>
-            using map = std::unordered_map<K, V...>;
-#endif
-
 			typedef std::shared_ptr<Picking>					Ptr;
 			typedef std::shared_ptr<Renderer>					RendererPtr;
 			typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
@@ -48,8 +40,6 @@ namespace minko
             typedef std::shared_ptr<render::Texture>			TexturePtr;
 			typedef std::shared_ptr<render::AbstractContext>	ContextPtr;
 			typedef std::shared_ptr<SceneManager>				SceneManagerPtr;
-			typedef std::shared_ptr<input::Mouse>				MousePtr;
-            typedef std::shared_ptr<input::Touch>               TouchPtr;
 			typedef std::shared_ptr<Surface>					SurfacePtr;
 			typedef std::shared_ptr<data::Provider>	            ProviderPtr;
 			typedef std::shared_ptr<AbstractCanvas>				AbstractCanvasPtr;
@@ -58,8 +48,6 @@ namespace minko
 			TexturePtr							        _renderTarget;
 			RendererPtr							        _renderer;
 			SceneManagerPtr						        _sceneManager;
-			MousePtr							        _mouse;
-            TouchPtr                                    _touch;
 			NodePtr								        _camera;
 			math::mat4							        _pickingProjection;
 			std::map<SurfacePtr, std::vector<uint>>     _surfaceToPickingIds;
@@ -90,84 +78,32 @@ namespace minko
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentRemovedSlot;
 
-			Signal<NodePtr>::Ptr						_mouseOver;
-			Signal<NodePtr>::Ptr						_mouseRightDown;
-			Signal<NodePtr>::Ptr						_mouseLeftDown;
-			Signal<NodePtr>::Ptr						_mouseRightUp;
-			Signal<NodePtr>::Ptr						_mouseLeftUp;
-			Signal<NodePtr>::Ptr						_mouseRightClick;
-			Signal<NodePtr>::Ptr						_mouseLeftClick;
-			Signal<NodePtr>::Ptr						_mouseOut;
-			Signal<NodePtr>::Ptr						_mouseMove;
-            Signal<NodePtr>::Ptr                        _mouseWheel;
-
-            Signal<NodePtr>::Ptr                        _touchDown;
-            Signal<NodePtr>::Ptr                        _touchUp;
-            Signal<NodePtr>::Ptr                        _touchMove;
-            Signal<NodePtr>::Ptr                        _tap;
-            Signal<NodePtr>::Ptr                        _doubleTap;
-            Signal<NodePtr>::Ptr                        _longHold;
-
-			unsigned char								_lastColor[4];
-			SurfacePtr									_lastPickedSurface;
-            unsigned char                               _lastDepth[4];
-            float                                       _lastDepthValue;
-            unsigned char                               _lastMergingMask;
-            uint                                        _lastPickedSurfaceId;
-
-			Signal<MousePtr, int, int>::Slot			_mouseMoveSlot;
-			Signal<MousePtr>::Slot						_mouseRightDownSlot;
-			Signal<MousePtr>::Slot						_mouseLeftDownSlot;
-            Signal<MousePtr>::Slot                      _mouseRightUpSlot;
-            Signal<MousePtr>::Slot                      _mouseLeftUpSlot;
-			Signal<MousePtr>::Slot						_mouseRightClickSlot;
-			Signal<MousePtr>::Slot						_mouseLeftClickSlot;
-            Signal<MousePtr, int, int>::Slot            _mouseWheelSlot;
-            Signal<TouchPtr, int, float, float>::Slot   _touchDownSlot;
-            Signal<TouchPtr, int, float, float>::Slot   _touchUpSlot;
-            Signal<TouchPtr, int, float, float>::Slot   _touchMoveSlot;
-            Signal<TouchPtr, float, float>::Slot        _touchTapSlot;
-            Signal<TouchPtr, float, float>::Slot        _touchDoubleTapSlot;
-            Signal<TouchPtr, float, float>::Slot        _touchLongHoldSlot;
-
-            Signal<Ptr, SurfacePtr, uint, const minko::math::vec4&>::Ptr _pickingColorSet;
-
-			bool										_executeMoveHandler;
-			bool										_executeRightClickHandler;
-			bool										_executeLeftClickHandler;
-			bool										_executeRightDownHandler;
-			bool										_executeLeftDownHandler;
-            bool                                        _executeRightUpHandler;
-            bool                                        _executeLeftUpHandler;
-            bool                                        _executeMouseWheel;
-            bool                                        _executeTouchDownHandler;
-            bool                                        _executeTouchUpHandler;
-            bool                                        _executeTouchMoveHandler;
-            bool                                        _executeTapHandler;
-            bool                                        _executeDoubleTapHandler;
-            bool                                        _executeLongHoldHandler;
-
             int                                         _wheelX;
             int                                         _wheelY;
 
 			bool										_addPickingLayout;
-            bool                                        _emulateMouseWithTouch;
 
+            bool                                        _running;
             bool                                        _enabled;
             bool                                        _renderDepth;
+
+            unsigned char								_lastColor[4];
+            unsigned char                               _lastDepth[4];
 
             bool                                        _debug;
 
             bool                                        _multiselecting;
             minko::math::vec2                           _multiselectionStartPosition;
+            minko::math::vec2                           _singleSelectionPosition;
+            minko::math::vec2                           _singleSelectionNormalizedPosition;
 		public:
 			inline static
 			Ptr
-            create(NodePtr camera, bool addPickingLayoutToNodes = true, bool emulateMouseWithTouch = true, EffectPtr pickingEffect = nullptr, EffectPtr pickingDepthEffect = nullptr)
+            create(NodePtr camera, bool addPickingLayoutToNodes = true, EffectPtr pickingEffect = nullptr, EffectPtr pickingDepthEffect = nullptr, int priority = 0)
 			{
-                Ptr picking = std::shared_ptr<Picking>(new Picking());
+                Ptr picking = std::shared_ptr<Picking>(new Picking(priority));
 
-                picking->initialize(camera, addPickingLayoutToNodes, emulateMouseWithTouch, pickingEffect, pickingDepthEffect);
+                picking->initialize(camera, addPickingLayoutToNodes, pickingEffect, pickingDepthEffect);
 
 				return picking;
 			}
@@ -178,169 +114,11 @@ namespace minko
             Ptr
             depthLayout(scene::Layout value);
 
-            inline
-            Signal<Ptr, SurfacePtr, uint, const minko::math::vec4&>::Ptr
-            pickingColorSet()
-            {
-                return _pickingColorSet;
-            }
+            AbstractPicking::map<NodePtr, std::set<unsigned char>>
+            pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true) override;
 
-			inline
-			Signal<NodePtr>::Ptr
-			mouseOver()
-			{
-				return _mouseOver;
-			}
-
-			inline
-			Signal<NodePtr>::Ptr
-			mouseRightDown()
-			{
-				return _mouseRightDown;
-			}
-
-			inline
-			Signal<NodePtr>::Ptr
-			mouseRightUp()
-			{
-				return _mouseRightUp;
-			}
-
-			inline
-			Signal<NodePtr>::Ptr
-			mouseDown()
-			{
-				return _mouseLeftDown;
-			}
-
-			inline
-			Signal<NodePtr>::Ptr
-			mouseUp()
-			{
-				return _mouseLeftUp;
-			}
-
-			inline
-			Signal<NodePtr>::Ptr
-			mouseRightClick()
-			{
-				return _mouseRightClick;
-			}
-
-			inline
-			Signal<NodePtr>::Ptr
-			mouseClick()
-			{
-				return _mouseLeftClick;
-			}
-
-			inline
-			Signal<NodePtr>::Ptr
-			mouseOut()
-			{
-				return _mouseOut;
-			}
-
-			inline
-			Signal<NodePtr>::Ptr
-			mouseMove()
-			{
-				return _mouseMove;
-			}
-
-            inline
-            Signal<NodePtr>::Ptr
-            mouseWheel()
-            {
-                return _mouseWheel;
-            }
-
-			inline
-            Signal<NodePtr>::Ptr
-            touchDown()
-            {
-                return _touchDown;
-            }
-
-            inline
-            Signal<NodePtr>::Ptr
-            touchMove()
-            {
-                return _touchMove;
-            }
-
-            inline
-            Signal<NodePtr>::Ptr
-            touchUp()
-            {
-                return _touchUp;
-            }
-
-            inline
-            Signal<NodePtr>::Ptr
-            touchTap()
-            {
-                return _tap;
-            }
-
-            inline
-            Signal<NodePtr>::Ptr
-            touchDoubleTap()
-            {
-                return _doubleTap;
-            }
-
-            inline
-            Signal<NodePtr>::Ptr
-            touchLongHold()
-            {
-                return _longHold;
-            }
-
-            inline
-			SurfacePtr
-			pickedSurface()
-			{
-				return _lastPickedSurface;
-			}
-
-            inline
-            uint
-            pickedSurfaceId()
-            {
-                return _lastPickedSurfaceId;
-            }
-
-            inline
-            bool
-            renderDepth() const
-            {
-                return _renderDepth;
-            }
-
-            inline
             void
-            renderDepth(bool value)
-            {
-                _renderDepth = value;
-            }
-
-            inline
-            float
-            pickedDepth() const
-            {
-                return _lastDepthValue;
-            }
-
-            inline
-            unsigned char
-            pickedMergingMask() const
-			{
-			    return _lastMergingMask;
-			}
-
-            map<NodePtr, std::set<unsigned char>>
-            pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true);
+            pick(const minko::math::vec2& point, const minko::math::vec2& normalizedPoint) override;
 
             inline
             void
@@ -349,8 +127,17 @@ namespace minko
                 _debug = v;
             }
 
-            std::pair<uint, minko::math::vec4>
-            createPickingId(SurfacePtr surface);
+
+            virtual
+            bool
+            enabled() const override
+            {
+                return _enabled;
+            }
+
+            virtual
+            void
+            enabled(bool enabled) override;
 
         protected:
 			void
@@ -360,10 +147,10 @@ namespace minko
 			targetRemoved(NodePtr target);
 
 		private:
+
             void
             initialize(NodePtr      camera,
                        bool         addPickingLayout,
-                       bool         emulateMouseWithTouch,
                        EffectPtr    pickingEffect = nullptr,
                        EffectPtr    pickingDepthEffect = nullptr);
 
@@ -409,64 +196,22 @@ namespace minko
 			void
 			depthRenderingEnd(RendererPtr renderer);
 
-            Picking();
-
-			void
-			mouseMoveHandler(MousePtr mouse, int dx, int dy);
-
-			void
-			mouseRightDownHandler(MousePtr mouse);
-
-			void
-			mouseLeftDownHandler(MousePtr mouse);
-
-			void
-			mouseRightClickHandler(MousePtr mouse);
-
-			void
-			mouseLeftClickHandler(MousePtr mouse);
-
-			void
-            mouseRightUpHandler(MousePtr mouse);
+            Picking(int priority);
 
             void
-            mouseLeftUpHandler(MousePtr mouse);
-
-            void
-            mouseWheelHandler(MousePtr mouse, int, int);
-
-            void
-            touchDownHandler(TouchPtr touch, int identifier, float x, float y);
-
-            void
-            touchUpHandler(TouchPtr touch, int identifier, float x, float y);
-
-            void
-            touchMoveHandler(TouchPtr touch, int identifier, float x, float y);
-
-            void
-            touchTapHandler(TouchPtr touch, float x, float y);
-
-            void
-            touchDoubleTapHandler(TouchPtr touch, float x, float y);
-
-            void
-            touchLongHoldHandler(TouchPtr touch, float x, float y);
+            dispatchEvents(SurfacePtr pickedSurfaces);
 
             void
 			updateDescendants(NodePtr target);
 
             void
-            enabled(bool enabled);
+            running(bool running);
 
             void
             frameBeginHandler(SceneManagerPtr, float, float);
 
             void
             renderDepth(RendererPtr renderer, SurfacePtr pickedSurface);
-
-            void
-            dispatchEvents(SurfacePtr pickedSurface, float depth);
 
             void
             updatePickingProjection();
@@ -479,6 +224,9 @@ namespace minko
 
             void
             pickingLayoutChanged(scene::Layout previousValue, scene::Layout value);
+
+            std::pair<uint, math::vec4>
+            createPickingId(SurfacePtr surface);
 		};
 	}
 }
