@@ -4,17 +4,17 @@ set (PROJECT_NAME "minko-plugin-fx")
 
 file (GLOB
     ${PROJECT_NAME}_SRC
-    "src/minko/material/WaterMaterial.cpp"
-    "include/minko/material/WaterMaterial.hpp"
-    "include/minko/MinkoFX.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/minko/material/WaterMaterial.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/minko/material/WaterMaterial.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include/minko/MinkoFX.hpp"
 )
 
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
-    "src"
-    "include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-minko_add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SRC})
+minko_add_library(${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE})
+target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})

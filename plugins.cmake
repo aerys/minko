@@ -1,18 +1,18 @@
-function (plugin_link plugin_name target)
-# add specifications see : module/minko/minko.plugin.lua
-    #foreach(name IN_LISTS names)
-        target_link_libraries(${target} minko-plugin-${plugin_name})
-    #endforeach()
+function (minko_plugin_link plugin_name target)
+    string (FIND ${target} "minko-example" TEST_EXAMPLE)
+    string (FIND ${target} "minko-plugin" TEST_PLUGIN)
+    if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1)
+        if (NOT EMSCRIPTEN)
+            find_library (
+                ${plugin_name}_LIB
+                NAMES minko-plugin-${plugin_name} 
+                HINTS "${MINKO_HOME}/build/plugin/${plugin_name}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+            )
+            target_link_libraries (${target} ${${plugin_name}_LIB})
+        else ()
+            target_link_libraries (${target} "${MINKO_HOME}/build/plugin/${plugin_name}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-plugin-${plugin_name}.a")
+        endif ()
+    else ()
+        target_link_libraries (${target} minko-plugin-${plugin_name})
+    endif ()
 endfunction ()
-
-function(call_plugin _id plugin project_name)
-    if (NOT COMMAND ${_id})
-        message(FATAL_ERROR "The \"${plugin}\" is not build for project \"${project_name}\".")
-    else()
-        set(_helper "${CMAKE_BINARY_DIR}/helpers/macro_helper_${_id}.cmake")
-        if (NOT EXISTS "${_helper}")
-            file(WRITE "${_helper}" "${_id}(\$\{PROJECT_NAME\})\n")
-        endif()
-        include("${_helper}")
-    endif()
-endfunction()

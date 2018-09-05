@@ -1,15 +1,21 @@
-function (enable_assimp target)
-
-set (ASSIMP_PATH "${MINKO_HOME}/plugin/assimp")
-list (APPEND
-    ${PROJECT_NAME}_PLUGINS_ASSIMP
-    zlib
-)
-
-foreach (${PROJECT_NAME}_PLUGIN ${${PROJECT_NAME}_PLUGINS_ASSIMP})
-    call_plugin (enable_${${PROJECT_NAME}_PLUGIN} ${${PROJECT_NAME}_PLUGIN} ${target})
-endforeach ()
-plugin_link ("assimp" ${target})
-target_include_directories(${target} PUBLIC "${ASSIMP_PATH}/include")
-target_compile_options(${target} PUBLIC -DMINKO_PLUGIN_ASSIMP)
+function (minko_enable_plugin_assimp target)
+    set (ASSIMP_PATH "${MINKO_HOME}/plugin/assimp")
+    minko_enable_plugin_zlib (${target})
+    minko_plugin_link ("assimp" ${target})
+    string (FIND ${target} "minko-example" TEST_EXAMPLE)
+    string (FIND ${target} "minko-plugin" TEST_PLUGIN)
+    if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1)
+        if (NOT EMSCRIPTEN)
+            find_library (
+                LIBASSIMP_LIB
+                NAMES libassimp 
+                HINTS "${MINKO_HOME}/build/plugin/assimp/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+            )
+            target_link_libraries (${target} ${LIBASSIMP_LIB})
+        else ()
+            target_link_libraries (${target} "${MINKO_HOME}/build/plugin/assimp/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/liblibassimp.a")
+        endif ()
+    endif ()
+    target_include_directories(${target} PRIVATE "${ASSIMP_PATH}/include")
+    target_compile_options(${target} PRIVATE -DMINKO_PLUGIN_ASSIMP)
 endfunction ()

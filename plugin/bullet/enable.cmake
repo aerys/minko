@@ -1,0 +1,7 @@
+function (minko_enable_plugin_bullet target)
+    set (BULLET_PATH "${MINKO_HOME}/plugin/bullet")
+    minko_plugin_link ("bullet" ${target})
+    target_include_directories (${target} PRIVATE "${BULLET_PATH}/include")
+    target_compile_options (${target} PRIVATE -DMINKO_PLUGIN_BULLET)
+    minko_enable_plugin_serializer (${target})
+endfunction ()

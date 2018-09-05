@@ -1,3 +1,5 @@
+This is completely outdated: http://magpcss.org/ceforum/viewtopic.php?f=6&t=14992
+
 Please go to cefbuilds.com and download CEF:
 - branch 1750
 - Linux 64

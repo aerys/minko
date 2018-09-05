@@ -15,11 +15,11 @@ file (GLOB
 
 minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")
 
-target_include_directories (${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE})
+target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
 # not too sure how to manage 'configuration { "vs*" }'
 if (WIN32)
-    target_compile_options (${PROJECT_NAME} PUBLIC
+    target_compile_options (${PROJECT_NAME} PRIVATE
         -D_CRT_SECURE_NO_WARNINGS
         "/wd4996"
     )

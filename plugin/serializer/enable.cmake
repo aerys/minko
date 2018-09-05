@@ -1,18 +1,11 @@
-function (enable_serializer target)
+function (minko_enable_plugin_serializer target)
     set (SERIALIZER_PATH "${MINKO_HOME}/plugin/serializer")
+    
+    minko_enable_plugin_jpeg (${target})
+    minko_enable_plugin_png (${target})
+    minko_enable_plugin_ttf (${target})
 
-    list (APPEND
-        SERIALIZER_PLUGINS
-        jpeg
-        png
-        ttf
-    )
-
-    foreach (NEEDED_PLUGIN ${SERIALIZER_PLUGINS})
-        call_plugin (enable_${NEEDED_PLUGIN} ${NEEDED_PLUGIN} ${target})
-    endforeach ()
-
-    plugin_link ("serializer" ${target})
+    minko_plugin_link ("serializer" ${target})
     
     file (GLOB
         SERIALIZER_INCLUDE
@@ -20,14 +13,14 @@ function (enable_serializer target)
         "${SERIALIZER_PATH}/lib/msgpack-c/include"
     )
     target_include_directories(${target} PRIVATE ${SERIALIZER_INCLUDE})
-    target_compile_options (${target} PUBLIC -DMINKO_PLUGIN_SERIALIZER)
+    target_compile_options (${target} PRIVATE -DMINKO_PLUGIN_SERIALIZER)
 
-    if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
+    if (WITH_TEXTURE_COMPRESSOR STREQUAL "on" OR WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
         if (WIN32 AND BITNESS EQUAL 32)
             find_library (RET_PATH
                 NAMES
                 "PVRTexLib"
-				"QCompressLib"
+                "QCompressLib"
                 "TextureConverter"
                 HINTS
                 "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic"
@@ -49,12 +42,12 @@ function (enable_serializer target)
             file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic/*.dll ${OUTPUT_PATH})
         endif ()
 
-        if (UNIX AND NOT APPLE AND NOT EMSCRIPTEN AND BITNESS EQUAL 32)
+        if (LINUX AND BITNESS EQUAL 32)
             find_library (RET_PATH
                 NAMES
                 "PVRTexLib"
-				"TextureConverter"
-				"QCompressLib"
+                "TextureConverter"
+                "QCompressLib"
                 HINTS
                 "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic"
                 "${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386"
@@ -64,7 +57,7 @@ function (enable_serializer target)
             file (COPY ${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386/*.so ${OUTPUT_PATH})
         endif ()
 
-        if (UNIX AND NOT APPLE AND NOT EMSCRIPTEN AND BITNESS EQUAL 64)
+        if (LINUX AND BITNESS EQUAL 64)
             find_library (RET_PATH
                 NAMES
                 "PVRTexLib"
@@ -75,7 +68,7 @@ function (enable_serializer target)
             file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic/*.so ${OUTPUT_PATH})
         endif ()
 
-        if (UNIX AND NOT APPLE AND NOT EMSCRIPTEN)
+        if (LINUX)
             set_target_properties (${target} PROPERTIES LINK_FLAGS "-Wl,-rpath=.")
         endif ()
 

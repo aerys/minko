@@ -39,7 +39,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
 endif ()
 
 if (APPLE)
-    add_definitions("-x objective-c++")
+    add_definitions(-x objective-c++)
 endif ()
 
 if (NOT ANDROID)
@@ -54,8 +54,19 @@ endif ()
 
 minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")
 
+if (WIN32 AND DLL STREQUAL "ON")
+    find_library(SDL2_LIB SDL2 HINTS "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
+    find_library(SDL2_MAIN_LIB SDL2main HINTS "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
+    find_library(SDL2_MIXER_LIB SDL2_mixer HINTS "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
+    target_link_libraries(${PROJECT_NAME}
+        ${SDL2_LIB}
+        ${SDL2_MAIN_LIB}
+        ${SDL2_MIXER_LIB}
+    )
+endif ()
+
 target_include_directories (${PROJECT_NAME}
-    PUBLIC
+    PRIVATE
     ${${PROJECT_NAME}_INCLUDE}
 )
 

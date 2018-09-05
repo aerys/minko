@@ -2,13 +2,6 @@ cmake_minimum_required(VERSION 3.5.1)
 
 set (PROJECT_NAME "minko-plugin-serializer")
 
-list (APPEND
-    ${PROJECT_NAME}_PLUGINS
-    jpeg
-    png
-    ttf
-)
-
 file (GLOB_RECURSE
     ${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
@@ -20,42 +13,40 @@ file (GLOB_RECURSE
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/include/*.hpp"
 )
 
-# message ("OMG: ${PROJECT_NAME}")
-
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/src"
-	"${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/include"
-	"${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/src"
 )
 
 minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")
-target_include_directories (${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE})
+target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
-foreach (${PROJECT_NAME}_PLUGIN ${${PROJECT_NAME}_PLUGINS})
-    call_plugin (enable_${${PROJECT_NAME}_PLUGIN} ${${PROJECT_NAME}_PLUGIN} ${PROJECT_NAME})
-endforeach ()
+minko_enable_plugin_jpeg (${PROJECT_NAME})
+minko_enable_plugin_png (${PROJECT_NAME})
+minko_enable_plugin_ttf (${PROJECT_NAME})
 
 if (WIN32)
     target_compile_options (${PROJECT_NAME} PRIVATE
         -D_LIB
-		-D_CRT_SECURE_NO_WARNINGS
-		-D_CRT_SECURE_NO_DEPRECATE
-		-D__STDC_VERSION__=199901L
-		-D__STDC__
-		-DWIN32
+        -D_CRT_SECURE_NO_WARNINGS
+        -D_CRT_SECURE_NO_DEPRECATE
+        -D__STDC_VERSION__=199901L
+        -D__STDC__
+        -DWIN32
         -D_WINDLL_IMPORT
         "/wd4028"
-		"/wd4244"
-		"/wd4267"
-		"/wd4996"
-		"/wd4273"
-		"/wd4503"
+        "/wd4244"
+        "/wd4267"
+        "/wd4996"
+        "/wd4273"
+        "/wd4503"
     )
 endif ()
 
-if (UNIX AND NOT IOS AND NOT EMSCRIPTEN)
+if (LINUX)
     target_compile_options (${PROJECT_NAME} PRIVATE
         -D__STDC_FORMAT_MACROS
         "-Wno-deprecated-declarations"
@@ -74,9 +65,9 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
     file (GLOB
         TEXTURE_COMP_INCLUDE
         "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib"
-		"{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/inc"
+        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/inc"
     )
-    target_include_directories (${PROJECT_NAME} PUBLIC ${TEXTURE_COMP_INCLUDE})
+    target_include_directories (${PROJECT_NAME} PRIVATE ${TEXTURE_COMP_INCLUDE})
 
     list (REMOVE_ITEM
         TEXTURE_COMP_SRC
@@ -89,12 +80,12 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
         "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_winhdr.h"
     )
 
-    target_compile_options (${PROJECT_NAME} PUBLIC
+    target_compile_options (${PROJECT_NAME} PRIVATE
         -DMINIZ_NO_TIME
         -DCRNLIB_NO_ETC1
     )
 
-    if (UNIX AND NOT APPLE AND NOT EMSCRIPTEN)
+    if (LINUX)
         list (REMOVE_ITEM
             TEXTURE_COMP_SRC
             "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_threading_win32.h"
@@ -106,7 +97,7 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
         )
     endif ()
 
-    if (UNIX AND NOT APPLE AND NOT EMSCRIPTEN AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    if (LINUX AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
         target_compile_options (${PROJECT_NAME} PRIVATE
             -D_DEBUG
         )
@@ -138,7 +129,7 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
             OPT_INCLUDE_1
             "{CMAKE_CURRENT_SOURCE_DIR}/lib/PVRTexTool/Include"
         )
-        target_include_directories (${PROJECT_NAME} PUBLIC ${OPT_INCLUDE_1})
+        target_include_directories (${PROJECT_NAME} PRIVATE ${OPT_INCLUDE_1})
     endif ()
 
     if (BITNESS EQUAL 32)
@@ -146,7 +137,7 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
             OPT_INCLUDE_2
             "lib/QCompress/Inc"
         )
-        target_include_directories (${PROJECT_NAME} PUBLIC ${OPT_INCLUDE_2})
+        target_include_directories (${PROJECT_NAME} PRIVATE ${OPT_INCLUDE_2})
     endif()
 else ()
     target_compile_options (${PROJECT_NAME} PRIVATE
@@ -156,9 +147,9 @@ else ()
     )
 endif ()
 
-target_include_directories (${PROJECT_NAME} PUBLIC ${${PROJECT_NAME}_INCLUDE})
+target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
 target_sources (${PROJECT_NAME}
-    PUBLIC
+    PRIVATE
     ${TEXTURE_COMP_SRC}
 )
