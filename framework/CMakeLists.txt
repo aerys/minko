@@ -71,9 +71,13 @@ list (APPEND
 
 minko_add_library (minko-framework STATIC "${COMMON_SOURCES}")
 
+if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+    minko_enable_plugin_offscreen (minko-framework)
+endif ()
+
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
     target_sources (minko-framework
-        PUBLIC
+        PRIVATE
         ${SPARSEHASH_SRC}
         ${SPARSEHASH_SRC_ADDITIONAL}
     )
@@ -85,7 +89,7 @@ target_include_directories (minko-framework
     "src"
     "lib/jsoncpp/src"
     "lib/glm"
-    "lib/sparsehash/src"
+    #"lib/sparsehash/src"
 )
 
 if (WIN32)
@@ -107,7 +111,7 @@ if (ANDROID)
         "${CMAKE_CURRENT_SOURCE_DIR}/lib/android"
     )
     target_sources (minko-framework
-        PUBLIC
+        PRIVATE
         ${ANDROID_SRC}
 )
 endif()
@@ -145,12 +149,12 @@ if (WITH_GLSL_OPTIMIZER)
     )
     
     target_sources (minko-framework
-        PUBLIC
+        PRIVATE
         ${GLSL_OPTIMIZER_SRC}
     )
 
     target_include_directories (minko-framework
-        PUBLIC
+        PRIVATE
         ${GLSL_INCLUDE}
     )
 

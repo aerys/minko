@@ -1,6 +1,6 @@
-function (enable_sdl target)
-    plugin_link("sdl" ${target})
-    target_compile_options(${target} PUBLIC "-DMINKO_PLUGIN_SDL")
+function (minko_enable_plugin_sdl target)
+    minko_plugin_link("sdl" ${target})
+    target_compile_options(${target} PRIVATE "-DMINKO_PLUGIN_SDL")
     set(SDL_PATH "${MINKO_HOME}/plugin/sdl")
     list (APPEND
         SDL_INCLUDE 
@@ -14,11 +14,10 @@ function (enable_sdl target)
         )
     endif ()
     target_include_directories(${target}
-        PUBLIC
+        PRIVATE
         ${SDL_INCLUDE}
     )
     if (WIN32)
-        message("${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
         find_library(SDL2_LIB SDL2 HINTS "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
         find_library(SDL2_MAIN_LIB SDL2main HINTS "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
         find_library(SDL2_MIXER_LIB SDL2_mixer HINTS "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}")
@@ -31,10 +30,19 @@ function (enable_sdl target)
             WINDOWS_DLL
             "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}/*.dll"
         )
-        foreach (DLL ${WINDOWS_DLL})
-            configure_file("${DLL}" "${OUTPUT_PATH}" COPYONLY)
-        endforeach ()
-    elseif (UNIX AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND NOT ANDROID)
+        if (DLL STREQUAL "ON")
+            string(FIND ${target} "minko-plugin" TEST_PLUGIN)
+            if (TEST_PLUGIN STREQUAL -1)
+                foreach (DLL ${WINDOWS_DLL})
+                    configure_file("${DLL}" "${OUTPUT_PATH}" COPYONLY)
+                endforeach ()
+            endif ()
+        else ()
+            foreach (DLL ${WINDOWS_DLL})
+                configure_file("${DLL}" "${OUTPUT_PATH}" COPYONLY)
+            endforeach ()
+        endif ()
+    elseif (LINUX)
         target_link_libraries(${target}
             "SDL2"
         )
@@ -61,7 +69,7 @@ function (enable_sdl target)
             "${SDL_PATH}/lib/sdl/lib/android/libSDL2_mixer.a"
             "${SDL_PATH}/lib/sdl/lib/android/libSDL2.a"
         )
-        target_include_directories(${target} PUBLIC
+        target_include_directories(${target} PRIVATE
             "${SDL_PATH}/lib/sdl/src/core/android"
         )
     endif ()

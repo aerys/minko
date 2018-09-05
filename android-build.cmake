@@ -1,5 +1,4 @@
 function (build_android target target_name)
-
     # set (APP_NAME "Minko Example Cube")
     # set (PACKAGE "com.minko.example.cube")
     # set (ARTIFACT_NAME "minko-example-cube")
@@ -25,7 +24,8 @@ function (build_android target target_name)
     set (ARTIFACT_PATH "${OUTPUT_PATH}/bin/${ARTIFACT_NAME}-${BUILD}.apk")
 
     # prepare resources
-    add_custom_command (TARGET ${target}
+    add_custom_command (
+        TARGET ${target}
         POST_BUILD
         COMMAND cp -r ${MINKO_HOME}/template/android/* ${OUTPUT_PATH}
         COMMAND mkdir -p "${OUTPUT_PATH}/src/${FORMATED_PACKAGE}"
@@ -35,18 +35,28 @@ function (build_android target target_name)
         COMMAND sed -i 's/{{VERSION_CODE}}/${VERSION}/' ${OUTPUT_PATH}/AndroidManifest.xml 
         COMMAND mkdir -p ${OUTPUT_PATH}/libs/armeabi-v7a/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/armeabi-v7a/ && mv ${OUTPUT_PATH}/libs/armeabi-v7a/${target_name} ${OUTPUT_PATH}/libs/armeabi-v7a/libmain.so
         COMMAND rm -rf ${OUTPUT_PATH}/assets
-        COMMAND mv ${OUTPUT_PATH}/asset ${OUTPUT_PATH}/assets
-        COMMAND chmod u+rwx -R ${OUTPUT_PATH}/assets
+        WORKING_DIRECTORY ${OUTPUT_PATH}
+    )
+    if (EXISTS "${OUTPUT_PATH}/asset")
+        add_custom_command (
+            TARGET ${target}
+            COMMAND mv ${OUTPUT_PATH}/asset ${OUTPUT_PATH}/assets
+            COMMAND chmod u+rwx -R ${OUTPUT_PATH}/assets
+            WORKING_DIRECTORY ${OUTPUT_PATH}
+    )
+    endif ()
+    add_custom_command (
+        TARGET ${target}
         COMMAND ant "${BUILD}"
         WORKING_DIRECTORY ${OUTPUT_PATH}
     )
     
-
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "release")
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}-unsigned.apk")
         
         # sign the apk (only when making a release)
-        add_custom_command (TARGET ${target}
+        add_custom_command (
+            TARGET ${target}
             POST_BUILD
             COMMAND jarsigner -tsa "http://timestamp.digicert.com" -keystore ${ANDROID_KEYSTORE_PATH} -storepass ${ANDROID_KEYSTORE_PASSWORD} -verbose -sigalg SHA1withRSA -digestalg SHA1 ${UNSIGNED_APK_PATH} ${ANDROID_KEYSTORE_ALIAS}
             COMMAND jarsigner -verify -verbose -certs ${UNSIGNED_APK_PATH}
@@ -55,10 +65,10 @@ function (build_android target target_name)
         )
     else ()
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}.apk")
-        add_custom_command (TARGET ${target}
+        add_custom_command (
+            TARGET ${target}
             POST_BUILD
             COMMAND mv ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
         )
     endif ()
-
 endfunction()
