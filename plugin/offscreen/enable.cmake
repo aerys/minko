@@ -1,7 +1,7 @@
 function (minko_enable_plugin_offscreen target)
     set (OFFSREEN_PATH "${MINKO_HOME}/plugin/offscreen")
 
-    target_compile_options (${PROJECT_NAME} PRIVATE "-DMINKO_PLUGIN_OFFSCREEN")
+    target_compile_options (${target} PRIVATE "-DMINKO_PLUGIN_OFFSCREEN")
     minko_plugin_link ("offscreen" ${target})
     find_library (OMESA_LIB NAMES "OSMesa")
     target_link_libraries(${target} ${OMESA_LIB})
@@ -27,10 +27,7 @@ function (minko_enable_plugin_offscreen target)
         list(REMOVE_ITEM INCLUDE_LIST "${MINKO_HOME}/framework/lib/glew/include")
         set_property (TARGET ${target} PROPERTY INCLUDE_DIRECTORIES ${INCLUDE_LIST})
         
-        file (GLOB
-            FILES
-            "${OFFSCREEN_PATH}/lib/osmesa/windows/lib/x86/*.dll"
-        )
+        file (GLOB FILES "${OFFSCREEN_PATH}/lib/osmesa/windows/lib/x86/*.dll")
         file (COPY ${FILES} DESTINATION ${OUTPUT_PATH})
     endif ()
 
@@ -40,10 +37,7 @@ function (minko_enable_plugin_offscreen target)
         list(REMOVE_ITEM INCLUDE_LIST "${MINKO_HOME}/framework/lib/glew/include")
         set_property (TARGET ${target} PROPERTY INCLUDE_DIRECTORIES ${INCLUDE_LIST})
 
-        file (GLOB
-            FILES
-            "${OFFSCREEN_PATH}/lib/osmesa/windows/lib/x64/*.dll"
-        )
+        file (GLOB FILES "${OFFSCREEN_PATH}/lib/osmesa/windows/lib/x64/*.dll")
         file (COPY ${FILES} DESTINATION ${OUTPUT_PATH})
     endif ()
 endfunction ()
