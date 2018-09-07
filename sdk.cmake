@@ -31,3 +31,7 @@ list (
 foreach(PLUGIN ${PLUGINS})
     include("${MINKO_HOME}/plugin/${PLUGIN}/enable.cmake")
 endforeach()
+
+if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+    include ("${MINKO_HOME}/plugin/offscreen/enable.cmake")
+endif ()
