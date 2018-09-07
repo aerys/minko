@@ -130,6 +130,11 @@ endfunction ()
 
 function (minko_add_executable target_name sources)
     add_executable (${target_name} ${sources})
+    
+    if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+        minko_enable_plugin_offscreen (${target_name})
+    endif ()
+
     minko_configure_target_flags (${target_name})
     set (OUTPUT_PATH ${OUTPUT_PATH} PARENT_SCOPE)
     set (BITNESS ${BITNESS} PARENT_SCOPE)

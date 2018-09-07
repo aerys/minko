@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.5.1)
 
 set(MINKO_HOME ${CMAKE_CURRENT_SOURCE_DIR})
 
+if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+    include ("${MINKO_HOME}/plugin/offscreen/enable.cmake")
+endif ()
+
 include ("plugins.cmake")
 include ("package.cmake")
 include ("minko.cmake")
@@ -20,7 +24,7 @@ if (APPLE AND NOT IOS)
    set (CMAKE_OSX_SYSROOT:STRING=macosx10.11)
 endif ()
 
-add_subdirectory("framework")
+add_subdirectory ("framework")
 
 get_property (FRAMEWORK_INCLUDES TARGET minko-framework PROPERTY INCLUDE_DIRECTORIES)
 
@@ -75,12 +79,12 @@ list (
     #flares
     #frustum
     #html-overlay #(plugin html-overlay problem)
-    http #EMSCRIPTEN COMPIL ERROR #(don't find BaseStreamingTemplate.effect but he is in asset)
+    http #emscripten compil error #(don't find BaseStreamingTemplate.effect but he is in asset)
     jobs
     joystick
     #keyboard #(-lgl shoudl be at the the of the compil line)
     #leap-motion #(see plugin leap)
-    light # (display of light is behind ground)
+    light #(display of light is behind ground)
     #light-scattering #(html_overlay)
     line-geometry #work but dont see stars
     #multi-surfaces
@@ -90,7 +94,7 @@ list (
     #particles #(cause of lua)
     pbr #error execution (error: DrawCall.cpp:305 bindUniform(): Program "skybox-pass0": the uniform "uAspectRatio" is bound to the "aspectRatio" property but it's not defined and no default value was provided.)
     physics
-    picking
+    #picking #annotations refund
     #raycasting
     section #ems compil error
     sensors #segfault
