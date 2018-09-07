@@ -58,8 +58,12 @@ list (
     video-camera
     vr
     websocket
-    nodejs-worker
+    #nodejs-worker
 )
+
+if (WITH_NODEJS_WORKER STREQUAL "on" OR WITH_NODEJS_WORKER STREQUAL "ON")
+    list (APPEND PLUGINS nodejs-worker)
+endif ()
 
 list (
     APPEND

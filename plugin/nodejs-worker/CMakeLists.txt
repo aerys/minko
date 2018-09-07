@@ -29,12 +29,14 @@ if (WIN32)
     add_custom_command (
         TARGET ${PROJECT_NAME}
         PRE_BUILD
-        COMMAND bash script/build_nodejs.sh --use-prebuilt
+        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/script/build_nodejs.sh --use-prebuilt
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 else ()
     add_custom_command (
         TARGET ${PROJECT_NAME}
         PRE_BUILD
-        COMMAND bash script/build_nodejs.sh --use-prebuilt
+        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/script/build_nodejs.sh
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
 endif ()
