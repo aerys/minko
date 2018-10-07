@@ -22,6 +22,5 @@ target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 minko_enable_plugin_sdl (${PROJECT_NAME})
 
 if (EMSCRIPTEN)
-    minko_package_assets ("*.effect;*.glsl" "on")
-    minko_package_assets ("*.effect;*.glsl" "off")
+    minko_package_assets ("*.effect;*.glsl" "embed")
 endif ()
