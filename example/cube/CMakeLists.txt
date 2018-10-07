@@ -7,14 +7,14 @@ file (
     ${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
-    "asset/*"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/*"
 )
 
 file (
     GLOB
     ${PROJECT_NAME}_INCLUDE
-    "src"
-    "asset"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset"
 )
 
 if (NOT ANDROID)
