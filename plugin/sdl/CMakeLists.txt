@@ -23,7 +23,7 @@ file (GLOB
 
 #add requested offscreen
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+if (EMSCRIPTEN)
     list (REMOVE_ITEM
         ${PROJECT_NAME}_INCLUDE 
         "${CMAKE_CURRENT_SOURCE_DIR}/lib/sdl/include"

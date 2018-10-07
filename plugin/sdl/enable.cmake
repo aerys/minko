@@ -5,12 +5,16 @@ function (minko_enable_plugin_sdl target)
     list (APPEND
         SDL_INCLUDE 
         "${SDL_PATH}/include"
-        "${SDL_PATH}/src"
     )
-    if (NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    if (NOT EMSCRIPTEN)
         list (APPEND 
             SDL_INCLUDE
             "${SDL_PATH}/lib/sdl/include"
+        )
+    else ()
+        list (APPEND
+            SDL_INCLUDE
+            "SDL"
         )
     endif ()
     target_include_directories(${target}
@@ -73,7 +77,7 @@ function (minko_enable_plugin_sdl target)
             "${SDL_PATH}/lib/sdl/src/core/android"
         )
     endif ()
-    if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    if (EMSCRIPTEN)
         target_link_libraries(${target}
             "SDL"
         )
