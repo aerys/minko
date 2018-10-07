@@ -24,8 +24,9 @@ function (minko_enable_plugin_fx target)
         endforeach()
         list (
             APPEND
-            PACKAGES_DIRS
+            MINKO_PACKAGES_DIRS
             "${FX_PATH}/asset"
-            )
+        )
+        set (MINKO_PACKAGES_DIRS ${MINKO_PACKAGES_DIRS} PARENT_SCOPE)
     endif ()
 endfunction ()
