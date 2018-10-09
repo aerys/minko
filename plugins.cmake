@@ -3,7 +3,7 @@ function (minko_plugin_link plugin_name target)
     string (FIND ${target} "minko-plugin" TEST_PLUGIN)
     string (FIND ${target} "minko-framework" TEST_FRAMEWORK)
     if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1 AND TEST_FRAMEWORK EQUAL -1)
-        if (NOT EMSCRIPTEN)
+        if (NOT EMSCRIPTEN AND NOT ANDROID)
             find_library (
                 ${plugin_name}_LIB
                 NAMES minko-plugin-${plugin_name} 

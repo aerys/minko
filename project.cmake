@@ -4,6 +4,7 @@ function (minko_add_library target_name type sources)
     set (OUTPUT_PATH ${OUTPUT_PATH} PARENT_SCOPE)
     set (BITNESS ${BITNESS} PARENT_SCOPE)
     set (BUILD_TYPE ${BUILD_TYPE} PARENT_SCOPE)
+    set (SYSTEM_NAME ${SYSTEM_NAME} PARENT_SCOPE)
     set (COMPILATION_FLAGS ${COMPILATION_FLAGS} PARENT_SCOPE)
     set_target_properties(${target_name} PROPERTIES LINKER_LANGUAGE CXX)
     
@@ -38,12 +39,23 @@ function (minko_add_library target_name type sources)
     endif ()   
     target_include_directories (${target_name} PRIVATE "${FRAMEWORK_INCLUDES}")
     
-    if (NOT ${target_name} STREQUAL "minko-framework")
-        target_link_libraries(${target_name}
-            "minko-framework"
-        )
+    string (FIND ${target_name} "minko-example" TEST_EXAMPLE)
+    string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
+    if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1)
+        if (NOT EMSCRIPTEN AND NOT ANDROID)
+            find_library(
+                MINKO_FRAMEWORK_LIB 
+                NAMES minko-framework
+                HINTS "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+            )
+        else()
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+        endif ()
+    else ()
+        set (MINKO_FRAMEWORK_LIB "minko-framework")
     endif ()
     
+    target_link_libraries(${target_name} ${MINKO_FRAMEWORK_LIB})
     if (UNIX AND NOT APPLE AND NOT ANDROID)
         target_link_libraries (${target_name} "-lGL")
     endif ()
@@ -184,7 +196,7 @@ function (minko_add_executable target_name sources)
     string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
     
     if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1)
-        if (NOT EMSCRIPTEN)
+        if (NOT EMSCRIPTEN AND NOT ANDROID)
             find_library(
                 MINKO_FRAMEWORK_LIB 
                 NAMES minko-framework

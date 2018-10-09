@@ -26,6 +26,7 @@ list (
 	video-camera
 	vr
 	websocket
+	nodejs-worker
 )
 
 foreach(PLUGIN ${PLUGINS})

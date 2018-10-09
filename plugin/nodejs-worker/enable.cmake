@@ -15,12 +15,7 @@ function (minko_enable_plugin_nodejs_worker target)
     endif ()
     if (ANDROID)
         minko_plugin_link ("nodejs-worker" ${target})
-
-        find_library (
-            NODE_LIB 
-            NAMES node
-            PATHS "${NODEJS-WORKER_PATH}/lib/nodejs/android"
-        )
+        set (NODE_LIB "${NODEJS-WORKER_PATH}/lib/nodejs/android/libnode.so")
         file (
             COPY ${NODE_LIB}
             DESTINATION ${OUTPUT_PATH}
