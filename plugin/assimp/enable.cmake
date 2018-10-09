@@ -5,7 +5,7 @@ function (minko_enable_plugin_assimp target)
     string (FIND ${target} "minko-example" TEST_EXAMPLE)
     string (FIND ${target} "minko-plugin" TEST_PLUGIN)
     if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1)
-        if (NOT EMSCRIPTEN)
+        if (NOT EMSCRIPTEN AND NOT ANDROID)
             find_library (
                 LIBASSIMP_LIB
                 NAMES libassimp 
