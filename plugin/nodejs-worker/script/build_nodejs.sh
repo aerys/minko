@@ -15,7 +15,7 @@ do
     shift
 done
 
-NODE_VERSION="6.x"
+NODE_VERSION="8.x"
 
 [[ -r lib/node/out/Release/obj.target/libnode.a ]] && {
     exit 0
