@@ -122,9 +122,9 @@ function (minko_add_library target_name type sources)
         endif ()
     endif ()
     
-    string (FIND ${target_name} "minko-example" TEST_EXAMPLE)
+    string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
     
-    if (ANDROID AND NOT TEST_EXAMPLE EQUAL -1)
+    if (ANDROID AND TEST_PLUGIN EQUAL -1)
         foreach (ANDROID_PLUGIN_JAVA_SRC ${${PROJECT_NAME}_PLUGINS})
             add_custom_command (
                 TARGET ${target_name}
@@ -133,7 +133,7 @@ function (minko_add_library target_name type sources)
                 WORKING_DIRECTORY ${OUTPUT_PATH}
             )
         endforeach()
-        
+
         minko_package_assets ("*.glsl;*.effect" "embed")
         build_android (${target_name} "lib${target_name}.so")
     endif ()
@@ -407,7 +407,8 @@ endfunction ()
 # minko_add_executable function end
 
 function (minko_add_worker target_name sources)
-    minko_add_library (${target_name} "STATIC" ${sources})
+    message(${sources})
+    minko_add_library (${target_name} "STATIC" "${sources}")
 
     get_property (
         WORKER_LIBS 

@@ -3,6 +3,8 @@ include ("${MINKO_HOME}/package.cmake")
 include ("${MINKO_HOME}/minko.cmake")
 include ("${MINKO_HOME}/project.cmake")
 include ("${MINKO_HOME}/copy.cmake")
+include ("${MINKO_HOME}/android-build.cmake")
+
 
 list (
 	APPEND
