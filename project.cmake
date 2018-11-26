@@ -41,7 +41,10 @@ function (minko_add_library target_name type sources)
     
     string (FIND ${target_name} "minko-example" TEST_EXAMPLE)
     string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
-    if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1)
+    string (FIND ${target_name} "minko-framework" TEST_FRAMEWORK)
+    string (FIND ${target_name} "libassimp" TEST_LIBASSIMP)
+    
+    if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1 AND TEST_FRAMEWORK EQUAL -1 AND TEST_LIBASSIMP EQUAL -1)
         if (NOT EMSCRIPTEN AND NOT ANDROID)
             find_library(
                 MINKO_FRAMEWORK_LIB 
@@ -55,7 +58,10 @@ function (minko_add_library target_name type sources)
         set (MINKO_FRAMEWORK_LIB "minko-framework")
     endif ()
     
-    target_link_libraries(${target_name} ${MINKO_FRAMEWORK_LIB})
+    if (TEST_FRAMEWORK EQUAL -1)
+        target_link_libraries(${target_name} ${MINKO_FRAMEWORK_LIB})
+    endif ()
+    
     if (UNIX AND NOT APPLE AND NOT ANDROID)
         target_link_libraries (${target_name} "-lGL")
     endif ()
@@ -194,8 +200,10 @@ function (minko_add_executable target_name sources)
     target_include_directories (${target_name} PRIVATE "${FRAMEWORK_INCLUDES}")
     string (FIND ${target_name} "minko-example" TEST_EXAMPLE)
     string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
+    string (FIND ${target_name} "minko-framework" TEST_FRAMEWORK)
+    string (FIND ${target_name} "libassimp" TEST_LIBASSIMP)
     
-    if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1)
+    if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1 AND TEST_FRAMEWORK EQUAL -1 AND TEST_LIBASSIMP EQUAL -1)
         if (NOT EMSCRIPTEN AND NOT ANDROID)
             find_library(
                 MINKO_FRAMEWORK_LIB 
