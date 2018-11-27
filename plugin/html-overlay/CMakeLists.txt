@@ -182,10 +182,14 @@ if (ANDROID)
         GLOB_RECURSE
         SRC_ANDROID_LIST
         "${CMAKE_CURRENT_SOURCE_DIR}/include/android/*.hpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/include/android/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/android/*.cpp"
     )
-    file (GLOB INCLUDE_ANDROID_LIST "${MINKO_HOME}/framework/lib/jsoncpp/src")
+    file (
+        GLOB 
+        INCLUDE_ANDROID_LIST 
+        "${MINKO_HOME}/framework/lib/jsoncpp/src"
+        )
     target_include_directories (${PROJECT_NAME} PRIVATE ${INCLUDE_ANDROID_LIST})
-    target_sources (${PROJECT_NAME} PRIVATE ${SRC_ANDROID_LIST})
+    target_sources (${PROJECT_NAME} PRIVATE "${SRC_ANDROID_LIST}")
     target_compile_options (${PROJECT_NAME} PRIVATE "-DJSON_IS_AMALGAMATION")
 endif ()

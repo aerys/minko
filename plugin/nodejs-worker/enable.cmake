@@ -5,6 +5,7 @@ function (minko_enable_plugin_nodejs_worker target)
         PRIVATE
         "${NODEJS-WORKER_PATH}/include"
     )
+    message("${NODEJS-WORKER_PATH}/include")
     target_compile_definitions (
         ${target}
         PRIVATE
@@ -20,5 +21,6 @@ function (minko_enable_plugin_nodejs_worker target)
             COPY ${NODE_LIB}
             DESTINATION ${OUTPUT_PATH}
         )
+        target_link_libraries(${target} "${NODEJS-WORKER_PATH}/lib/nodejs/android/libnode.so")
     endif ()
 endfunction ()
