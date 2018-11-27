@@ -1,4 +1,5 @@
-function (minko_add_library target_name type sources)  
+function (minko_add_library target_name type sources)
+    minko_set_variables()
     add_library (${target_name} ${type} ${sources})
     minko_configure_target_flags (${target_name})
     set (OUTPUT_PATH ${OUTPUT_PATH} PARENT_SCOPE)
@@ -147,6 +148,24 @@ endfunction ()
 
 # minko_add_executable function start
 function (minko_add_executable target_name sources)
+    minko_set_variables()
+    string (FIND ${target_name} "minko-framework" TEST_FRAMEWORK)
+    string (FIND ${target_name} "libassimp" TEST_LIBASSIMP)
+
+    if (TEST_FRAMEWORK EQUAL -1 AND TEST_LIBASSIMP EQUAL -1)
+        if (NOT EMSCRIPTEN AND NOT ANDROID)
+            find_library(
+                MINKO_FRAMEWORK_LIB 
+                NAMES minko-framework
+                HINTS "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+            )
+        else()
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+        endif ()
+    endif ()
+
+    message(${MINKO_FRAMEWORK_LIB})
+    set(CMAKE_CXX_STANDARD_LIBRARIES ${MINKO_FRAMEWORK_LIB} PARENT_SCOPE)
     add_executable (${target_name} ${sources})
     minko_configure_target_flags (${target_name})
 
@@ -198,24 +217,6 @@ function (minko_add_executable target_name sources)
     
     minko_package_assets ("*.glsl;*.effect;*.png" "embed")
     target_include_directories (${target_name} PRIVATE "${FRAMEWORK_INCLUDES}")
-    string (FIND ${target_name} "minko-example" TEST_EXAMPLE)
-    string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
-    string (FIND ${target_name} "minko-framework" TEST_FRAMEWORK)
-    string (FIND ${target_name} "libassimp" TEST_LIBASSIMP)
-    
-    if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1 AND TEST_FRAMEWORK EQUAL -1 AND TEST_LIBASSIMP EQUAL -1)
-        if (NOT EMSCRIPTEN AND NOT ANDROID)
-            find_library(
-                MINKO_FRAMEWORK_LIB 
-                NAMES minko-framework
-                HINTS "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
-            )
-        else()
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
-        endif ()
-    else ()
-        set (MINKO_FRAMEWORK_LIB "minko-framework")
-    endif ()
     
     if (WIN32)
         find_library (GLEW32_LIB glew32 HINTS "${MINKO_HOME}/framework/lib/glew/lib/windows${BITNESS}")
