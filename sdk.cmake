@@ -28,13 +28,19 @@ list (
 	video-camera
 	vr
 	websocket
-	nodejs-worker
 )
 
-foreach(PLUGIN ${PLUGINS})
-    include("${MINKO_HOME}/plugin/${PLUGIN}/enable.cmake")
-endforeach()
+if (WITH_NODEJS_WORKER STREQUAL "on" OR WITH_NODEJS_WORKER STREQUAL "ON")
+	message ("NODEJS WORKER IS ON (SDK)")
+    list (APPEND PLUGINS nodejs-worker)
+endif ()
 
 if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
-    include ("${MINKO_HOME}/plugin/offscreen/enable.cmake")
+	message ("OFFSCREEN IS ON (SDK)")
+    list (APPEND PLUGINS offscreen)
 endif ()
+
+foreach(PLUGIN ${PLUGINS})
+	message ("SKD PLUGIN: ${PLUGIN}")
+    include("${MINKO_HOME}/plugin/${PLUGIN}/enable.cmake")
+endforeach()

@@ -26,9 +26,9 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic"
                 "${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32"
             )
-            target_link_libraries(${target} RET_PATH)
-            file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic/*.dll ${OUTPUT_PATH})
-            file (COPY ${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32/*.dll ${OUTPUT_PATH})
+            target_link_libraries(${target} ${RET_PATH})
+            file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic/*.dll DESTINATION ${OUTPUT_PATH})
+            file (COPY ${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32/*.dll DESTINATION ${OUTPUT_PATH})
         endif ()
 
         if (WIN32 AND BITNESS EQUAL 64)
@@ -38,8 +38,8 @@ function (minko_enable_plugin_serializer target)
                 HINTS
                 "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_64/Dynamic"
             )
-            target_link_libraries(${target} RET_PATH)
-            file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic/*.dll ${OUTPUT_PATH})
+            target_link_libraries(${target} ${RET_PATH})
+            file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_64/Dynamic/*.dll DESTINATION ${OUTPUT_PATH})
         endif ()
 
         if (LINUX AND BITNESS EQUAL 32)
@@ -52,9 +52,9 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic"
                 "${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386"
             )
-            target_link_libraries(${target} RET_PATH)
-            file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic/*.so ${OUTPUT_PATH})
-            file (COPY ${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386/*.so ${OUTPUT_PATH})
+            target_link_libraries(${target} ${RET_PATH})
+            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic/*.so" "${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386/*.so")
+            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
         endif ()
 
         if (LINUX AND BITNESS EQUAL 64)
@@ -62,10 +62,11 @@ function (minko_enable_plugin_serializer target)
                 NAMES
                 "PVRTexLib"
                 HINTS
-                "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic"
+                "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_64/Dynamic"
             )
-            target_link_libraries(${target} RET_PATH)
-            file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic/*.so ${OUTPUT_PATH})
+            target_link_libraries(${target} ${RET_PATH})
+            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_64/Dynamic/*.so" "${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386/*.so")
+            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
         endif ()
 
         if (LINUX)
@@ -78,12 +79,12 @@ function (minko_enable_plugin_serializer target)
                 "PVRTexLib"
                 "QCompressLib"
                 HINTS
-                "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic"
+                "${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic"
                 "${SERIALIZER_PATH}/lib/QCompress/Lib/osx/x86"
             )
-            target_link_libraries(${target} RET_PATH)
-            file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib ${OUTPUT_PATH})
-            file (COPY ${SERIALIZER_PATH}/lib/QCompress/Lib/osx/x86/*.dylib ${OUTPUT_PATH})
+            target_link_libraries(${target} ${RET_PATH})
+            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib" "${SERIALIZER_PATH}/lib/QCompress/Lib/osx/x86/*.dylib")
+            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
         endif ()
 
         if (APPLE AND NOT IOS AND BITNESS EQUAL 64)
@@ -91,10 +92,11 @@ function (minko_enable_plugin_serializer target)
                 NAMES
                 "PVRTexLib"
                 HINTS
-                "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic"
+                "${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic"
             )
-            target_link_libraries(${target} RET_PATH)
-            file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib ${OUTPUT_PATH})
+            target_link_libraries(${target} ${RET_PATH})
+            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib")
+            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
         endif ()
     endif ()
 

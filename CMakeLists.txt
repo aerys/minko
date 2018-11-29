@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.5.1)
 
 set(MINKO_HOME ${CMAKE_CURRENT_SOURCE_DIR})
 
-if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
-    include ("${MINKO_HOME}/plugin/offscreen/enable.cmake")
-endif ()
+# if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+#     include ("${MINKO_HOME}/plugin/offscreen/enable.cmake")
+# endif ()
 
 include ("plugins.cmake")
 include ("package.cmake")
@@ -49,7 +49,6 @@ list (
     http-loader
     html-overlay #apple compil error
     #leap (out dated plugin - math dependencies)
-    offscreen
     #lua (out dated plugin)
     #particles (out dated plugin - lua dependencies)
     bullet
@@ -62,7 +61,13 @@ list (
 )
 
 if (WITH_NODEJS_WORKER STREQUAL "on" OR WITH_NODEJS_WORKER STREQUAL "ON")
+    message ("NODEJS WORKER IS ON")
     list (APPEND PLUGINS nodejs-worker)
+endif ()
+
+if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+    message ("OFFSCREEN IS ON")
+    list (APPEND PLUGINS offscreen)
 endif ()
 
 list (
@@ -139,6 +144,7 @@ if (NOT WITH_PLUGINS MATCHES OFF)
     # Test if all plugins are activate
     elseif (WITH_PLUGINS MATCHES ON)
         foreach (PLUGIN ${PLUGINS})
+            message ("${PLUGIN}")
             add_subdirectory("plugin/${PLUGIN}")
             include("plugin/${PLUGIN}/enable.cmake")
         endforeach ()
