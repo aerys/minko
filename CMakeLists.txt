@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.5.1)
 
 set(MINKO_HOME ${CMAKE_CURRENT_SOURCE_DIR})
 
-# if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
-#     include ("${MINKO_HOME}/plugin/offscreen/enable.cmake")
-# endif ()
+if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+    include ("${MINKO_HOME}/plugin/offscreen/enable.cmake")
+endif ()
 
 include ("plugins.cmake")
 include ("package.cmake")

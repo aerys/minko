@@ -72,7 +72,6 @@ list (APPEND
 minko_add_library (minko-framework STATIC "${COMMON_SOURCES}")
 
 if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
-    include ("${MINKO_HOME}/plugin/offscreen/enable.cmake")
     minko_enable_plugin_offscreen (minko-framework)
 endif ()
 
