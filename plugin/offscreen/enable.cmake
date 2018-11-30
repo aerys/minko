@@ -8,21 +8,11 @@ function (minko_enable_plugin_offscreen target)
     
     # remove linked libs
     get_property (LLIBS_LIST TARGET ${target} PROPERTY LINK_LIBRARIES)
-    
-    message ("is there anything in here?")
-    foreach(ITEM ${LLIBS_LIST})
-        message ("offscreen linked lib: ${ITEM}")
-    endforeach()
-    
+
     list (REMOVE_ITEM LLIBS_LIST "-lGL")
-    list (REMOVE_ITEM LLIBS_LIST "OpenGL32")
-    list (REMOVE_ITEM LLIBS_LIST "glew32")
+    list (REMOVE_ITEM LLIBS_LIST "-lOpenGL32")
+    list (REMOVE_ITEM LLIBS_LIST "-lglew32")
     set_property (TARGET ${target} PROPERTY LINK_LIBRARIES ${LLIBS_LIST})
-    
-    message ("is there anything in here? 2nd check.")
-    foreach(ITEM ${LLIBS_LIST})
-        message ("offscreen linked lib: ${ITEM}")
-    endforeach()
 
     file (GLOB
         OFFSCREEN_INCLUDE

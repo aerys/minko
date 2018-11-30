@@ -61,12 +61,10 @@ list (
 )
 
 if (WITH_NODEJS_WORKER STREQUAL "on" OR WITH_NODEJS_WORKER STREQUAL "ON")
-    message ("NODEJS WORKER IS ON")
     list (APPEND PLUGINS nodejs-worker)
 endif ()
 
 if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
-    message ("OFFSCREEN IS ON")
     list (APPEND PLUGINS offscreen)
 endif ()
 
@@ -144,7 +142,6 @@ if (NOT WITH_PLUGINS MATCHES OFF)
     # Test if all plugins are activate
     elseif (WITH_PLUGINS MATCHES ON)
         foreach (PLUGIN ${PLUGINS})
-            message ("${PLUGIN}")
             add_subdirectory("plugin/${PLUGIN}")
             include("plugin/${PLUGIN}/enable.cmake")
         endforeach ()
