@@ -82,5 +82,8 @@ function (minko_enable_plugin_sdl target)
             "SDL"
         )
     endif ()
-    # add off screen
+    # add requested offscreen
+    if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+        minko_enable_plugin_offscreen (${target})
+    endif ()
 endfunction ()

@@ -21,7 +21,7 @@ file (GLOB
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
 )
 
-#add requested offscreen
+# add requested offscreen
 
 if (EMSCRIPTEN)
     list (REMOVE_ITEM
@@ -70,5 +70,8 @@ target_include_directories (${PROJECT_NAME}
     ${${PROJECT_NAME}_INCLUDE}
 )
 
-
-#add requested offscreen
+# add requested offscreen
+if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+    minko_enable_plugin_offscreen (${PROJECT_NAME})
+    target_compile_options (${PROJECT_NAME} PRIVATE "-DSDL_AUDIO_ENABLED=0")
+endif ()

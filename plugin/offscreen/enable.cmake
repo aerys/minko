@@ -1,5 +1,5 @@
 function (minko_enable_plugin_offscreen target)
-    set (OFFSREEN_PATH "${MINKO_HOME}/plugin/offscreen")
+    set (OFFSCREEN_PATH "${MINKO_HOME}/plugin/offscreen")
 
     target_compile_options (${target} PRIVATE "-DMINKO_PLUGIN_OFFSCREEN")
     minko_plugin_link ("offscreen" ${target})
@@ -8,15 +8,16 @@ function (minko_enable_plugin_offscreen target)
     
     # remove linked libs
     get_property (LLIBS_LIST TARGET ${target} PROPERTY LINK_LIBRARIES)
-    list (REMOVE_ITEM LLIBS_LIST "GL")
-    list (REMOVE_ITEM LLIBS_LIST "OpenGL32")
-    list (REMOVE_ITEM LLIBS_LIST "glew32")
+
+    list (REMOVE_ITEM LLIBS_LIST "-lGL")
+    list (REMOVE_ITEM LLIBS_LIST "-lOpenGL32")
+    list (REMOVE_ITEM LLIBS_LIST "-lglew32")
     set_property (TARGET ${target} PROPERTY LINK_LIBRARIES ${LLIBS_LIST})
-    
+
     file (GLOB
         OFFSCREEN_INCLUDE
-        "${OFFSREEN_PATH}/include"
-        "${OFFSREEN_PATH}/lib/osmesa/linux/include"
+        "${OFFSCREEN_PATH}/include"
+        "${OFFSCREEN_PATH}/lib/osmesa/linux/include"
     )
 
     target_include_directories(${target} PRIVATE ${OFFSCREEN_INCLUDE})

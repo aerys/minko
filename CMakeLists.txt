@@ -49,7 +49,6 @@ list (
     http-loader
     html-overlay #apple compil error
     #leap (out dated plugin - math dependencies)
-    offscreen
     #lua (out dated plugin)
     #particles (out dated plugin - lua dependencies)
     bullet
@@ -63,6 +62,10 @@ list (
 
 if (WITH_NODEJS_WORKER STREQUAL "on" OR WITH_NODEJS_WORKER STREQUAL "ON")
     list (APPEND PLUGINS nodejs-worker)
+endif ()
+
+if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+    list (APPEND PLUGINS offscreen)
 endif ()
 
 list (
