@@ -36,7 +36,7 @@ namespace minko
 		private:
 			std::vector<math::vec3>			_points;
 			std::array<math::vec4, 6> 		_planes;
-			
+
 			std::array<bool, 6> 			_blfResult;
 			std::array<bool, 6> 			_blbResult;
 			std::array<bool, 6> 			_brfResult;
@@ -65,6 +65,12 @@ namespace minko
 
 			ShapePosition
 			testBoundingBox(std::shared_ptr<math::Box> box);
+
+            const std::array<math::vec4, 6>&
+            planes() const
+            {
+                return _planes;
+            }
 
 		private:
 			Frustum() = default;
