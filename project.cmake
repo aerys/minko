@@ -149,22 +149,25 @@ endfunction ()
 # minko_add_executable function start
 function (minko_add_executable target_name sources)
     minko_set_variables()
-    string (FIND ${target_name} "minko-framework" TEST_FRAMEWORK)
-    string (FIND ${target_name} "libassimp" TEST_LIBASSIMP)
 
-    if (TEST_FRAMEWORK EQUAL -1 AND TEST_LIBASSIMP EQUAL -1)
+    if (TEST_EXAMPLE EQUAL -1)
         if (NOT EMSCRIPTEN AND NOT ANDROID)
-            find_library(
+            find_library (
                 MINKO_FRAMEWORK_LIB 
                 NAMES minko-framework
                 HINTS "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
             )
-        else()
+        else ()
             set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+        endif ()
+    else ()
+        if (LINUX OR ANDROID OR EMSCRIPTEN OR APPLE OR IOS)
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+        else ()
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/minko-framework.lib")
         endif ()
     endif ()
 
-    message(${MINKO_FRAMEWORK_LIB})
     set(CMAKE_CXX_STANDARD_LIBRARIES ${MINKO_FRAMEWORK_LIB} PARENT_SCOPE)
     add_executable (${target_name} ${sources})
     minko_configure_target_flags (${target_name})
