@@ -25,7 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Camera.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/geometry/QuadGeometry.hpp"
+#include "minko/material/Material.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/component/Transform.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/math/Ray.hpp"
@@ -126,6 +130,62 @@ Picking::unbindSignals()
     _removedSlot = nullptr;
 }
 
+static
+void
+initDebugQuad(scene::Node::Ptr target,
+              SceneManager::Ptr sceneManager,
+              render::Effect::Ptr pickingEffect,
+              Renderer::Ptr pickingRenderer,
+              scene::Node::Ptr& debugQuadNode,
+              Renderer::Ptr& debugRenderer)
+{
+    const auto& viewport = target->root()->data().get<math::vec4>("viewport");
+    const auto size = math::uvec2(viewport.z, viewport.w);
+    const auto renderTarget = minko::render::Texture::create(
+        sceneManager->assets()->context(),
+        size.x,
+        size.y,
+        false,
+        true,
+        true,
+        minko::render::TextureFormat::RGBA
+    );
+    renderTarget->upload();
+
+    const auto backgroundEffect = sceneManager->assets()->effect("effect/Background.effect");
+    debugRenderer = minko::component::Renderer::create(
+        0xFFFF00FF,
+        renderTarget,
+        pickingEffect,
+        "default",
+        -10000.f,
+        "pickingDebug"
+    );
+    debugRenderer->layoutMask(pickingRenderer->layoutMask());
+    debugRenderer->enabled(false);
+    target->addComponent(debugRenderer);
+
+    const auto debugQuadSurface = minko::component::Surface::create(
+        minko::geometry::QuadGeometry::create(sceneManager->assets()->context()),
+        minko::material::Material::create(),
+        backgroundEffect
+    );
+
+    debugQuadSurface->material()->data()->set({
+        { "diffuseMap", renderTarget->sampler() },
+        { "depthFunction", render::CompareMode::ALWAYS },
+        { "priority", render::Priority::LAST - 1.f },
+        { "invertV", true },
+        { "triangleCulling", render::TriangleCulling::NONE },
+        { "cameraRatio", viewport.z / viewport.w }
+    });
+
+    debugQuadNode = minko::scene::Node::create("debug")
+        ->addComponent(minko::component::Transform::create())
+        ->addComponent(debugQuadSurface);
+    target->root()->addChild(debugQuadNode);
+}
+
 void
 Picking::targetAdded(NodePtr target)
 {
@@ -137,11 +197,8 @@ Picking::targetAdded(NodePtr target)
     if (_pickingEffect == nullptr)
         _pickingEffect = _sceneManager->assets()->effect("effect/Picking.effect");
 
-    auto priority = _debug ? -1000.0f : 1000.0f;
+    auto priority = 1000.0f;
     auto pickingRendererColor = 0x000000FF;
-
-    if (_debug)
-        pickingRendererColor = 0xFFFF00FF;
 
     _renderer = Renderer::create(
         pickingRendererColor,
@@ -152,11 +209,8 @@ Picking::targetAdded(NodePtr target)
         "Picking Renderer"
     );
 
-    if (!_debug)
-    {
-        _renderer->scissorBox(0, 0, 1, 1);
-        _renderer->enabled(false);
-    }
+    _renderer->scissorBox(0, 0, 1, 1);
+    _renderer->enabled(false);
 
     _renderer->layoutMask(_layout);
 
@@ -174,6 +228,9 @@ Picking::targetAdded(NodePtr target)
     _depthRenderer->scissorBox(0, 0, 1, 1);
     _depthRenderer->layoutMask(_depthLayout);
     _depthRenderer->enabled(false);
+
+    if (_debug)
+        initDebugQuad(target, _sceneManager, _pickingEffect, _renderer, _debugQuad, _debugRenderer);
 
     updateDescendants(target);
 
@@ -446,12 +503,16 @@ Picking::renderingBegin(RendererPtr renderer)
 void
 Picking::renderPickingFrame()
 {
-    if (_debug)
-        return;
-
     _renderer->enabled(true);
     _renderer->render(_sceneManager->canvas()->context());
     _renderer->enabled(false);
+
+    if (_debug)
+    {
+        _debugRenderer->enabled(true);
+        _debugRenderer->render(_sceneManager->canvas()->context());
+        _debugRenderer->enabled(false);
+    }
 
     _sceneManager->forceRenderNextFrame();
 }
@@ -640,9 +701,6 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     // Make sure to reset the scissor box size
     _renderer->scissorBox(0, 0, 1, 1);
 
-    if (_debug)
-        return pickedNodes;
-
     // Read and store all pixels in the selection area
     auto pixelSize = 4;
     std::vector<unsigned char> selectAreaPixelBuffer(pixelSize * width * height);
@@ -748,7 +806,8 @@ Picking::pickingLayoutChanged(scene::Layout previousValue, scene::Layout value)
 std::pair<uint, math::vec4>
 Picking::createPickingId(SurfacePtr surface)
 {
-    _pickingId++;
+    _pickingId = _pickingId + (_debug ? 5000 : 1);
+
     _surfaceToPickingIds[surface].push_back(_pickingId);
     _pickingIdToSurface[_pickingId] = surface;
 

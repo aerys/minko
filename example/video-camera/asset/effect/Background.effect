@@ -15,8 +15,8 @@
 				},
 				"uViewport"   	: { "binding" : { "property" : "viewport", "source" : "root" } },
                 "cameraRatio"   : { "binding" : "material[${materialUuid}].cameraRatio", "default" : 1.33 }
-			},	
-            
+			},
+
             "macros" : {
                 "DIFFUSE_MAP"   : "material[${materialUuid}].diffuseMap"
             },
@@ -31,7 +31,7 @@
 				#ifdef GL_ES
 					precision mediump float;
 				#endif
-                
+
 				attribute vec3 aPosition;
 				attribute vec2 aUv;
 
@@ -45,7 +45,7 @@
 					vUv = aUv;
 
 					float screenRatio = uViewport.z / uViewport.w;
-                    
+
                     // Crop to fit
                     if (cameraRatio > screenRatio)
                     {
@@ -62,7 +62,7 @@
                         vUv = vec2(vUv.x, offsetV + (vUv.y * rV));
                     }
 
-					gl_Position = vec4(aPosition, 1) * vec4(1.0, 1.0, 1.0, 0.5);
+					gl_Position = vec4(aPosition, 1.0) * vec4(1.0, 1.0, 1.0, 0.5);
 				}
 			",
 			"fragmentShader" : "
@@ -72,7 +72,7 @@
 
 				varying vec2 vUv;
 				varying vec2 vNormalizedPos;
-                
+
 				uniform sampler2D uDiffuseMap;
 
 				uniform vec4 gradientInt;
@@ -81,7 +81,7 @@
 				void main()
 				{
 	                #if defined(DIFFUSE_MAP)
-					    gl_FragColor = texture2D(uDiffuseMap, vUv);			    
+					    gl_FragColor = texture2D(uDiffuseMap, vUv);
                     #else
                         gl_FragColor = vec4(0.133, 0.133, 0.133, 1.0);
                     #endif

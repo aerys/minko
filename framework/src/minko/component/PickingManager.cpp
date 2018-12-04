@@ -67,8 +67,7 @@ PickingManager::PickingManager() :
     _addPickingLayout(true),
     _emulateMouseWithTouch(true),
     _frameEndSlot(nullptr),
-    _running(false),
-    _debug(false)
+    _running(false)
 {
 }
 
@@ -231,9 +230,6 @@ PickingManager::targetAdded(NodePtr target)
     _context = canvas->context();
 
     bindSignals();
-
-    auto priority = _debug ? -1000.0f : 1000.0f;
-
 
     _frameEndSlot = _sceneManager->frameEnd()->connect(std::bind(
         &PickingManager::frameEndHandler,
