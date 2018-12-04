@@ -327,10 +327,11 @@ function (minko_add_executable target_name sources)
 
         # Step 2: call CMake build with WASM target enabled (create the child process)
         # The call is made after the ASM.js target build but before the ASM.js html project files generation
-        if (WASM STREQUAL "off" OR WASM STREQUAL "OFF" AND EMSCRIPTEN)
+        if (NOT WASM OR WASM STREQUAL "off" OR WASM STREQUAL "OFF" AND EMSCRIPTEN)
             add_custom_command (
                 TARGET ${target_name}
                 POST_BUILD
+                COMMAND cd ${MINKO_HOME} && mkdir -p build && cd build && cmake -DWASM=ON .. && make VERBOSE=1
                 COMMAND cd ${CMAKE_SOURCE_DIR} && mkdir -p build && cd build && cmake -DWASM=ON .. && make VERBOSE=1
             )
         endif ()
@@ -373,7 +374,7 @@ function (minko_add_executable target_name sources)
         # Step 5: clean output directories
         # The CMake variable 'WASM' is set to OFF only within the parent process
         # Therefore, the following code will only run when generation is over for both WASM and ASM.js targets
-        if (WASM STREQUAL "off" OR WASM STREQUAL "OFF" AND EMSCRIPTEN)
+        if (NOT WASM OR WASM STREQUAL "off" OR WASM STREQUAL "OFF" AND EMSCRIPTEN)
             # Copy files from the ASM.js output directory to the WASM output directory
             # Remove bytecode file, template file and target-specific html files
             add_custom_command (
@@ -414,6 +415,9 @@ function (minko_add_executable target_name sources)
     if (IOS)
         file (GLOB_RECURSE IOS_SRC "*.plist")
         target_sources(${target_name} PUBLIC ${IOS_SRC})
+    endif ()
+    if (WASM)
+        unset (WASM CACHE)
     endif ()
 endfunction ()
 # minko_add_executable function end

@@ -174,3 +174,7 @@ if (NOT WITH_EXAMPLES MATCHES OFF)
         add_subdirectory("example/${WITH_EXAMPLES}")
     endif ()
 endif ()
+
+if (WASM)
+    unset (WASM CACHE)
+endif ()
