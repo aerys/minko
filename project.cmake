@@ -168,7 +168,7 @@ function (minko_add_executable target_name sources)
         endif ()
     endif ()
 
-    set(CMAKE_CXX_STANDARD_LIBRARIES ${MINKO_FRAMEWORK_LIB} PARENT_SCOPE)
+    set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} ${MINKO_FRAMEWORK_LIB}" PARENT_SCOPE)
     add_executable (${target_name} ${sources})
     minko_configure_target_flags (${target_name})
 
@@ -390,7 +390,7 @@ function (minko_add_executable target_name sources)
             add_custom_command (
                 TARGET ${target_name}
                 POST_BUILD
-                COMMAND cmake -E remove_directory ${OUTPUT_PATH}
+                COMMAND cmake -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/bin/${SYSTEM_NAME}${BITNESS}
             )
         endif ()
 
