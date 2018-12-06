@@ -385,15 +385,12 @@ function (minko_add_executable target_name sources)
                 COMMAND rm -f ${OUTPUT_PATH}/../../wasm${BITNESS}/${BUILD_TYPE}/${PROJECT_NAME}-*.html
                 COMMAND rm -f ${OUTPUT_PATH}/../../wasm${BITNESS}/${BUILD_TYPE}/template.html
             )
-            # Change CMake output path for external projects
-            string (REPLACE "asmjs${BITNESS}/" "wasm${BITNESS}/" NEW_PATH ${OUTPUT_PATH})
-            set (OUTPUT_PATH ${NEW_PATH} PARENT_SCOPE)
-            set (OUTPUT_PATH ${NEW_PATH})
+
             # Remove ASM.js output directory
             add_custom_command (
                 TARGET ${target_name}
                 POST_BUILD
-                COMMAND cmake -E remove_directory ${OUTPUT_PATH}/../../asmjs${BITNESS}
+                COMMAND cmake -E remove_directory ${OUTPUT_PATH}
             )
         endif ()
 
@@ -416,7 +413,12 @@ function (minko_add_executable target_name sources)
         file (GLOB_RECURSE IOS_SRC "*.plist")
         target_sources(${target_name} PUBLIC ${IOS_SRC})
     endif ()
+
+    # We need to remove the WASM value in the cache to use the fallback again
+    # but we need to keep the value for CMakeLists of external apps so we set it locally.
     if (WASM)
+        set (WASM ON)
+        set (WASM ON PARENT_SCOPE)
         unset (WASM CACHE)
     endif ()
 endfunction ()
