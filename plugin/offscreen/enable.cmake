@@ -3,8 +3,8 @@ function (minko_enable_plugin_offscreen target)
 
     target_compile_options (${target} PRIVATE "-DMINKO_PLUGIN_OFFSCREEN")
     minko_plugin_link ("offscreen" ${target})
-    find_library (OMESA_LIB NAMES "OSMesa")
-    target_link_libraries(${target} ${OMESA_LIB})
+    find_library (OSMESA_LIB NAMES "OSMesa")
+    target_link_libraries(${target} ${OSMESA_LIB})
     
     # remove linked libs
     get_property (LLIBS_LIST TARGET ${target} PROPERTY LINK_LIBRARIES)
