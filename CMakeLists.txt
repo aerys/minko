@@ -30,6 +30,7 @@ get_property (FRAMEWORK_INCLUDES TARGET minko-framework PROPERTY INCLUDE_DIRECTO
 
 option (WITH_PLUGINS "list off plugins to build" ON)
 option (WITH_EXAMPLES "list off examples to build" ON)
+option (WITH_TESTS "used to enable the tests" OFF)
 
 list (
     APPEND
@@ -173,4 +174,9 @@ if (NOT WITH_EXAMPLES MATCHES OFF)
     else ()
         add_subdirectory("example/${WITH_EXAMPLES}")
     endif ()
+endif ()
+
+if (WITH_TESTS STREQUAL "on" OR WITH_TESTS STREQUAL "ON")
+    message ("-- TESTS ARE ENABLED!")
+    add_subdirectory ("test")
 endif ()

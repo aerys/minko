@@ -1,8 +1,9 @@
 function (minko_plugin_link plugin_name target)
-    string (FIND ${target} "minko-example" TEST_EXAMPLE)
-    string (FIND ${target} "minko-plugin" TEST_PLUGIN)
-    string (FIND ${target} "minko-framework" TEST_FRAMEWORK)
-    if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1 AND TEST_FRAMEWORK EQUAL -1)
+    string (FIND ${target} "minko-example" CHECK_EXAMPLE)
+    string (FIND ${target} "minko-plugin" CHECK_PLUGIN)
+    string (FIND ${target} "minko-framework" CHECK_FRAMEWORK)
+    string (FIND ${target} "minko-test" CHECK_TEST)
+    if (CHECK_EXAMPLE EQUAL -1 AND CHECK_PLUGIN EQUAL -1 AND CHECK_FRAMEWORK EQUAL -1 AND CHECK_TEST EQUAL -1)
         if (NOT EMSCRIPTEN AND NOT ANDROID)
             find_library (
                 ${plugin_name}_LIB
