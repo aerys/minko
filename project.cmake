@@ -1,5 +1,9 @@
 function (minko_add_library target_name type sources)
     minko_set_variables()
+    if (ANDROID)
+        set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+        set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} ${MINKO_FRAMEWORK_LIB}" PARENT_SCOPE)
+    endif ()
     add_library (${target_name} ${type} ${sources})
     minko_configure_target_flags (${target_name})
     set (OUTPUT_PATH ${OUTPUT_PATH} PARENT_SCOPE)
@@ -67,11 +71,6 @@ function (minko_add_library target_name type sources)
         target_link_libraries (${target_name} "-lGL")
     endif ()
     if (ANDROID)
-        add_custom_command (
-            TARGET ${target_name}
-            PRE_LINK
-            COMMAND ${MINKO_HOME}/script/cpjf.sh ${CMAKE_CURRENT_SOURCE_DIR}/src ${OUTPUT_PATH}/src/com/minko
-        )
         target_link_libraries (${target_name}
             "GLESv1_CM"
             "GLESv2"
@@ -130,17 +129,10 @@ function (minko_add_library target_name type sources)
     endif ()
     
     string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
+    string (FIND ${target_name} "minko-framework" TEST_FRAMEWORK)
+    string (FIND ${target_name} "libassimp" TEST_LIBASSIMP)
     
-    if (ANDROID AND TEST_PLUGIN EQUAL -1)
-        foreach (ANDROID_PLUGIN_JAVA_SRC ${${PROJECT_NAME}_PLUGINS})
-            add_custom_command (
-                TARGET ${target_name}
-                PRE_LINK
-                COMMAND ${MINKO_HOME}/script/cpjf.sh ${MINKO_HOME}/plugin/${ANDROID_PLUGIN_JAVA_SRC}/src src/minko/com
-                WORKING_DIRECTORY ${OUTPUT_PATH}
-            )
-        endforeach()
-
+    if (ANDROID AND TEST_PLUGIN EQUAL -1 AND TEST_FRAMEWORK EQUAL -1 AND TEST_LIBASSIMP EQUAL -1)
         minko_package_assets ("*.glsl;*.effect" "embed")
         build_android (${target_name} "lib${target_name}.so")
     endif ()

@@ -12,6 +12,7 @@ include ("minko.cmake")
 include ("project.cmake")
 include ("copy.cmake")
 include ("android-build.cmake")
+include ("cpjf.cmake")
 
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")
@@ -30,6 +31,7 @@ get_property (FRAMEWORK_INCLUDES TARGET minko-framework PROPERTY INCLUDE_DIRECTO
 
 option (WITH_PLUGINS "list off plugins to build" ON)
 option (WITH_EXAMPLES "list off examples to build" ON)
+option (WITH_TESTS "used to enable the tests" OFF)
 
 list (
     APPEND
@@ -177,4 +179,9 @@ endif ()
 
 if (WASM)
     unset (WASM CACHE)
+endif ()
+
+if (WITH_TESTS STREQUAL "on" OR WITH_TESTS STREQUAL "ON")
+    message ("-- TESTS ARE ENABLED!")
+    add_subdirectory ("test")
 endif ()
