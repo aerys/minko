@@ -5,7 +5,8 @@ function (minko_enable_plugin_vr target)
 
     file (GLOB VR_INCLUDE "${VR_PATH}/include")
     target_include_directories(${target} PRIVATE ${VR_INCLUDE})
-    minko_copy (${VR_PATH}/asset  ${OUTPUT_PATH} ${target})
+    
+    file (COPY ${VR_PATH}/asset DESTINATION ${OUTPUT_PATH}/asset)
     # minko.package.assetdirs { path.join(minko.plugin.path("vr"), "asset") }
 
     if (ANDROID OR IOS OR EMSCRIPTEN)
@@ -37,7 +38,6 @@ function (minko_enable_plugin_vr target)
 
     if (EMSCRIPTEN)
         package_assets (".js" "on")
-        # package_assets (".js" "off")
     endif ()
 endfunction ()
 

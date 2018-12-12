@@ -10,7 +10,7 @@ function (minko_enable_plugin_video_camera target)
     target_compile_options (${target} PRIVATE "-DMINKO_PLUGIN_VIDEO_CAMERA")
 
     if (EMSCIPTEN)
-        minko_copy (${VIDEO_CAMERA_PATH}/asset ${OUTPUT_PATH} ${target})
+        file (COPY ${VIDEO_CAMERA_PATH}/asset DESTINATION ${OUTPUT_PATH}/asset)
     endif ()
 
     if (IOS)

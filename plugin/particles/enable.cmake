@@ -9,5 +9,5 @@ function (minko_enable_plugin_particules target)
     file (GLOB PARTICULES_INCLUDE "${PARTICULES_PATH}/include")
     target_include_directories(${target} PRIVATE ${PARTICULES_INCLUDE})
 
-    minko_copy (${PARTICULES_PATH}/asset ${OUTPUT_PATH} ${target})
+    file (COPY ${PARTICULES_PATH}/asset DESTINATION ${OUTPUT_PATH}/asset)
 endfunction ()

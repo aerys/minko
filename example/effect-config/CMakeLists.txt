@@ -24,5 +24,5 @@ minko_enable_plugin_sdl (${PROJECT_NAME})
 minko_enable_plugin_jpeg (${PROJECT_NAME})
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    minko_copy (${CMAKE_CURRENT_SOURCE_DIR}/asset ${OUTPUT_PATH}/asset ${PROJECT_NAME})
+    file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/asset DESTINATION ${OUTPUT_PATH}/asset)
 endif ()
