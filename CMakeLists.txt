@@ -12,6 +12,7 @@ include ("minko.cmake")
 include ("project.cmake")
 include ("copy.cmake")
 include ("android-build.cmake")
+include ("cpjf.cmake")
 
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")

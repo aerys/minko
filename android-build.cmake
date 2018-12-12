@@ -23,11 +23,24 @@ function (build_android target target_name)
     string (TOLOWER ${CMAKE_BUILD_TYPE} BUILD)
     set (ARTIFACT_PATH "${OUTPUT_PATH}/bin/${ARTIFACT_NAME}-${BUILD}.apk")
 
-    # prepare resources
     add_custom_command (
         TARGET ${target}
         POST_BUILD
         COMMAND cp -r ${MINKO_HOME}/template/android/* ${OUTPUT_PATH}
+        WORKING_DIRECTORY ${OUTPUT_PATH}
+    )
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/android)
+        add_custom_command (
+            TARGET ${target}
+            POST_BUILD
+            COMMAND cp -r ${CMAKE_CURRENT_SOURCE_DIR}/android/* ${OUTPUT_PATH}
+            WORKING_DIRECTORY ${OUTPUT_PATH}
+        )
+    endif ()
+    
+    add_custom_command (
+        TARGET ${target}
+        POST_BUILD
         COMMAND mkdir -p "${OUTPUT_PATH}/src/${FORMATED_PACKAGE}"
         COMMAND mv "${OUTPUT_PATH}/src/*.java" "${OUTPUT_PATH}/src/${FORMATED_PACKAGE}"
         COMMAND sed -i 's/{{APP_NAME}}/${APP_NAME}/' ${OUTPUT_PATH}/res/values/strings.xml ${OUTPUT_PATH}/build.xml
@@ -37,6 +50,7 @@ function (build_android target target_name)
         COMMAND rm -rf ${OUTPUT_PATH}/assets
         WORKING_DIRECTORY ${OUTPUT_PATH}
     )
+
     if (EXISTS "${OUTPUT_PATH}/asset")
         add_custom_command (
             TARGET ${target}
