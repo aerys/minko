@@ -14,7 +14,7 @@ function (minko_enable_plugin_lua target)
     )
 
     minko_plugin_link ("lua" ${target})
-    minko_copy (${LUA_PATH}/asset ${OUTPUT_PATH} ${target})
+    file (COPY ${LUA_PATH}/asset DESTINATION ${OUTPUT_PATH}/asset)
 
     # function minko.plugin.lua:dist(pluginDistDir)
 endfunction ()
