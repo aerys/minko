@@ -4,6 +4,7 @@ include ("${MINKO_HOME}/minko.cmake")
 include ("${MINKO_HOME}/project.cmake")
 include ("${MINKO_HOME}/copy.cmake")
 include ("${MINKO_HOME}/android-build.cmake")
+include ("${MINKO_HOME}/cpjf.cmake")
 
 
 list (

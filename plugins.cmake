@@ -17,4 +17,8 @@ function (minko_plugin_link plugin_name target)
     else ()
         target_link_libraries (${target} minko-plugin-${plugin_name})
     endif ()
+
+    if (ANDROID)
+        cpjf ("${MINKO_HOME}/plugin/${plugin_name}/src" "${OUTPUT_PATH}" ${target})
+    endif ()
 endfunction ()
