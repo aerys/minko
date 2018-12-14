@@ -10,7 +10,6 @@ include ("plugins.cmake")
 include ("package.cmake")
 include ("minko.cmake")
 include ("project.cmake")
-include ("copy.cmake")
 include ("android-build.cmake")
 include ("cpjf.cmake")
 
