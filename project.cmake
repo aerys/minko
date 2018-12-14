@@ -227,7 +227,7 @@ function (minko_add_executable target_name sources)
             "${MINKO_HOME}/framework/lib/glew/lib/windows${BITNESS}/*.dll"
         )
         foreach (DLL ${WINDOWS_DLL})
-            configure_file ("${DLL}" "${OUTPUT_PATH}" COPYONLY)
+            file (COPY "${DLL}" DESTINATION "${OUTPUT_PATH}")
         endforeach ()
     endif ()
     
