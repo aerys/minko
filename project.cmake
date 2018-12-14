@@ -160,7 +160,7 @@ function (minko_add_executable target_name sources)
         endif ()
     endif ()
 
-    set(CMAKE_CXX_STANDARD_LIBRARIES ${MINKO_FRAMEWORK_LIB} PARENT_SCOPE)
+    set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} ${MINKO_FRAMEWORK_LIB}" PARENT_SCOPE)
     add_executable (${target_name} ${sources})
     minko_configure_target_flags (${target_name})
 
@@ -319,10 +319,11 @@ function (minko_add_executable target_name sources)
 
         # Step 2: call CMake build with WASM target enabled (create the child process)
         # The call is made after the ASM.js target build but before the ASM.js html project files generation
-        if (WASM STREQUAL "off" OR WASM STREQUAL "OFF" AND EMSCRIPTEN)
+        if (NOT WASM OR WASM STREQUAL "off" OR WASM STREQUAL "OFF" AND EMSCRIPTEN)
             add_custom_command (
                 TARGET ${target_name}
                 POST_BUILD
+                COMMAND cd ${MINKO_HOME} && mkdir -p build && cd build && cmake -DWASM=ON .. && make VERBOSE=1
                 COMMAND cd ${CMAKE_SOURCE_DIR} && mkdir -p build && cd build && cmake -DWASM=ON .. && make VERBOSE=1
             )
         endif ()
@@ -365,7 +366,7 @@ function (minko_add_executable target_name sources)
         # Step 5: clean output directories
         # The CMake variable 'WASM' is set to OFF only within the parent process
         # Therefore, the following code will only run when generation is over for both WASM and ASM.js targets
-        if (WASM STREQUAL "off" OR WASM STREQUAL "OFF" AND EMSCRIPTEN)
+        if (NOT WASM OR WASM STREQUAL "off" OR WASM STREQUAL "OFF" AND EMSCRIPTEN)
             # Copy files from the ASM.js output directory to the WASM output directory
             # Remove bytecode file, template file and target-specific html files
             add_custom_command (
@@ -376,15 +377,12 @@ function (minko_add_executable target_name sources)
                 COMMAND rm -f ${OUTPUT_PATH}/../../wasm${BITNESS}/${BUILD_TYPE}/${PROJECT_NAME}-*.html
                 COMMAND rm -f ${OUTPUT_PATH}/../../wasm${BITNESS}/${BUILD_TYPE}/template.html
             )
-            # Change CMake output path for external projects
-            string (REPLACE "asmjs${BITNESS}/" "wasm${BITNESS}/" NEW_PATH ${OUTPUT_PATH})
-            set (OUTPUT_PATH ${NEW_PATH} PARENT_SCOPE)
-            set (OUTPUT_PATH ${NEW_PATH})
+
             # Remove ASM.js output directory
             add_custom_command (
                 TARGET ${target_name}
                 POST_BUILD
-                COMMAND cmake -E remove_directory ${OUTPUT_PATH}/../../asmjs${BITNESS}
+                COMMAND cmake -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/bin/${SYSTEM_NAME}${BITNESS}
             )
         endif ()
 
@@ -406,6 +404,14 @@ function (minko_add_executable target_name sources)
     if (IOS)
         file (GLOB_RECURSE IOS_SRC "*.plist")
         target_sources(${target_name} PUBLIC ${IOS_SRC})
+    endif ()
+
+    # We need to remove the WASM value in the cache to use the fallback again
+    # but we need to keep the value for CMakeLists of external apps so we set it locally.
+    if (WASM)
+        set (WASM ON)
+        set (WASM ON PARENT_SCOPE)
+        unset (WASM CACHE)
     endif ()
 endfunction ()
 # minko_add_executable function end

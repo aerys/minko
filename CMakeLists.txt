@@ -181,6 +181,10 @@ if (NOT WITH_EXAMPLES MATCHES OFF)
     endif ()
 endif ()
 
+if (WASM)
+    unset (WASM CACHE)
+endif ()
+
 if (WITH_TESTS STREQUAL "on" OR WITH_TESTS STREQUAL "ON")
     message ("-- TESTS ARE ENABLED!")
     add_subdirectory ("test")
