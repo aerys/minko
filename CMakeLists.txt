@@ -59,16 +59,20 @@ list (
     video-camera
     vr
     websocket
-    nodejs-worker
-    offscreen
 )
 
 if (WITH_NODEJS_WORKER STREQUAL "on" OR WITH_NODEJS_WORKER STREQUAL "ON")
-    set (WITH_PLUGINS "nodejs-worker,${WITH_PLUGINS}")
+    if (NOT WITH_PLUGINS MATCHES OFF AND NOT WITH_PLUGINS MATCHES ON)
+        set (WITH_PLUGINS "nodejs-worker,${WITH_PLUGINS}")
+    endif ()
+    list (APPEND PLUGINS nodejs-worker)
 endif ()
 
 if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
-    set (WITH_PLUGINS "offscreen,${WITH_PLUGINS}")
+    if (NOT WITH_PLUGINS MATCHES OFF AND NOT WITH_PLUGINS MATCHES ON)
+        set (WITH_PLUGINS "offscreen,${WITH_PLUGINS}")
+    endif ()
+    list (APPEND PLUGINS offscreen)
 endif ()
 
 list (
