@@ -27,8 +27,8 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32"
             )
             target_link_libraries(${target} ${RET_PATH})
-            file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic/*.dll DESTINATION ${OUTPUT_PATH})
-            file (COPY ${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32/*.dll DESTINATION ${OUTPUT_PATH})
+            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic/*.dll" "${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32/*.dll")
+            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
         endif ()
 
         if (WIN32 AND BITNESS EQUAL 64)
@@ -39,7 +39,8 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_64/Dynamic"
             )
             target_link_libraries(${target} ${RET_PATH})
-            file (COPY ${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_64/Dynamic/*.dll DESTINATION ${OUTPUT_PATH})
+            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_64/Dynamic/*.dll")
+            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
         endif ()
 
         if (LINUX AND BITNESS EQUAL 32)
