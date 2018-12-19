@@ -1,14 +1,21 @@
 function (build_android target target_name)
-    # set (APP_NAME "Minko Example Cube")
-    # set (PACKAGE "com.minko.example.cube")
-    # set (ARTIFACT_NAME "minko-example-cube")
+    # CMake toolchain to create and sign apks from shared libraries.
+
+    # keystore warnings
+    if ($ENV{ANDROID_KEYSTORE_PATH})
+        message ("Warning: Missing environment variable ANDROID_KEYSTORE_PATH, generated APK will be unsigned.")
+    endif ()
+
+    if ($ENV{ANDROID_KEYSTORE_ALIAS})
+        message ("Warning: Missing environment variable ANDROID_KEYSTORE_ALIAS, generated APK will be unsigned.")
+    endif ()
+
+    if ($ENV{ANDROID_KEYSTORE_PASSWORD})
+        message ("Warning: Missing environment variable ANDROID_KEYSTORE_PASSWORD, generated APK will be unsigned.")
+    endif ()
 
     # define all the needed variables
-    set (ANDROID_HOME "/opt/android-sdk-linux")
     set (VERSION "0")
-    set (ANDROID_KEYSTORE_ALIAS "myalias")
-    set (ANDROID_KEYSTORE_PASSWORD "password")
-    set (ANDROID_KEYSTORE_PATH "/root/my-release-key.keystore")
     
     # use regex to get the names of the app, package and artifact
     string (REGEX REPLACE "lib(.*).so" "\\1" APP_CUT ${target_name})
@@ -68,15 +75,17 @@ function (build_android target target_name)
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "release")
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}-unsigned.apk")
         
-        # sign the apk (only when making a release)
-        add_custom_command (
-            TARGET ${target}
-            POST_BUILD
-            COMMAND jarsigner -tsa "http://timestamp.digicert.com" -keystore ${ANDROID_KEYSTORE_PATH} -storepass ${ANDROID_KEYSTORE_PASSWORD} -verbose -sigalg SHA1withRSA -digestalg SHA1 ${UNSIGNED_APK_PATH} ${ANDROID_KEYSTORE_ALIAS}
-            COMMAND jarsigner -verify -verbose -certs ${UNSIGNED_APK_PATH}
-            COMMAND zipalign -fv 4 ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
-            COMMAND rm -f ${UNSIGNED_APK_PATH}
-        )
+        # sign the apk (only on release mode)
+        if ($ENV{ANDROID_KEYSTORE_PATH} AND $ENV{ANDROID_KEYSTORE_ALIAS} AND $ENV{ANDROID_KEYSTORE_PASSWORD})
+            add_custom_command (
+                TARGET ${target}
+                POST_BUILD
+                COMMAND jarsigner -tsa "http://timestamp.digicert.com" -keystore $ENV{ANDROID_KEYSTORE_PATH} -storepass $ENV{ANDROID_KEYSTORE_PASSWORD} -verbose -sigalg SHA1withRSA -digestalg SHA1 ${UNSIGNED_APK_PATH} $ENV{ANDROID_KEYSTORE_ALIAS}
+                COMMAND jarsigner -verify -verbose -certs ${UNSIGNED_APK_PATH}
+                COMMAND zipalign -fv 4 ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
+                COMMAND rm -f ${UNSIGNED_APK_PATH}
+            )
+        endif ()
     else ()
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}.apk")
         add_custom_command (
