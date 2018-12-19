@@ -1,7 +1,7 @@
 function (minko_add_library target_name type sources)
     minko_set_variables()
     if (ANDROID)
-        set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+        set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
         set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} ${MINKO_FRAMEWORK_LIB}" PARENT_SCOPE)
     endif ()
     add_library (${target_name} ${type} ${sources})
@@ -12,7 +12,7 @@ function (minko_add_library target_name type sources)
     set (SYSTEM_NAME ${SYSTEM_NAME} PARENT_SCOPE)
     set (COMPILATION_FLAGS ${COMPILATION_FLAGS} PARENT_SCOPE)
     set_target_properties(${target_name} PROPERTIES LINKER_LANGUAGE CXX)
-    
+
     if (APPLE)
         target_compile_options(${target_name} PUBLIC -stdlib=libc++)
     endif ()
@@ -54,10 +54,10 @@ function (minko_add_library target_name type sources)
             find_library(
                 MINKO_FRAMEWORK_LIB 
                 NAMES minko-framework
-                HINTS "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+                HINTS "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
             )
         else()
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
         endif ()
     else ()
         set (MINKO_FRAMEWORK_LIB "minko-framework")
@@ -126,6 +126,13 @@ function (minko_add_library target_name type sources)
         else ()
             target_compile_options(${target_name} PRIVATE --llvm-opts 0 -O2 -g4)
         endif ()
+        if (NOT WASM)
+            add_custom_command (
+                TARGET ${target_name}
+                POST_BUILD
+                COMMAND cd ${MINKO_HOME}/../ && mkdir -p build && cd build && cmake -DWASM=ON -WITH_PLUGINS=${target_name} .. && make VERBOSE=1
+            )
+        endif ()
     endif ()
     
     string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
@@ -147,16 +154,16 @@ function (minko_add_executable target_name sources)
             find_library (
                 MINKO_FRAMEWORK_LIB 
                 NAMES minko-framework
-                HINTS "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+                HINTS "${MINKO_HOME}framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
             )
         else ()
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
         endif ()
     else ()
         if (LINUX OR ANDROID OR EMSCRIPTEN OR APPLE OR IOS)
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
         else ()
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/build/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/minko-framework.lib")
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/minko-framework.lib")
         endif ()
     endif ()
 
@@ -323,7 +330,6 @@ function (minko_add_executable target_name sources)
             add_custom_command (
                 TARGET ${target_name}
                 POST_BUILD
-                COMMAND cd ${MINKO_HOME} && mkdir -p build && cd build && cmake -DWASM=ON .. && make VERBOSE=1
                 COMMAND cd ${CMAKE_SOURCE_DIR} && mkdir -p build && cd build && cmake -DWASM=ON .. && make VERBOSE=1
             )
         endif ()
@@ -417,7 +423,6 @@ endfunction ()
 # minko_add_executable function end
 
 function (minko_add_worker target_name sources)
-    message(${sources})
     minko_add_library (${target_name} "STATIC" "${sources}")
 
     get_property (

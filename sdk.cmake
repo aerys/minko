@@ -7,27 +7,27 @@ include ("${MINKO_HOME}/cpjf.cmake")
 
 
 list (
-	APPEND
+    APPEND
     PLUGINS
-	zlib
-	assimp
-	debug
-	devil
-	bullet
-	fx
-	html-overlay
-	http-loader
-	http-worker
-	jpeg
-	png
-	sdl
-	ssl
-	sensors
-	serializer
+    zlib
+    assimp
+    debug
+    devil
+    bullet
+    fx
+    html-overlay
+    http-loader
+    http-worker
+    jpeg
+    png
+    sdl
+    ssl
+    sensors
+    serializer
     ttf
-	video-camera
-	vr
-	websocket
+    video-camera
+    vr
+    websocket
 )
 
 if (WITH_NODEJS_WORKER STREQUAL "on" OR WITH_NODEJS_WORKER STREQUAL "ON")

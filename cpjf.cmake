@@ -1,4 +1,4 @@
-function (cpjf src_dir dest_dir target)
+function (cpjf src_dir dest_dir)
     file (
         GLOB_RECURSE
         JAVA_FILES
