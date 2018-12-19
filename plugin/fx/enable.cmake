@@ -21,7 +21,7 @@ function (minko_enable_plugin_fx target)
         )
 
         foreach(FX_ASSET_FOLDER ${FX_ASSET_FOLDERS})        
-            file (COPY "${FX_PATH}/asset/effect/${FX_ASSET_FOLDER}" DESTINATION "${OUTPUT_PATH}/asset/effect/${FX_ASSET_FOLDER}")
+            file (COPY "${FX_PATH}/asset/effect/${FX_ASSET_FOLDER}" DESTINATION "${OUTPUT_PATH}/asset/effect/")
         endforeach()
         
         list (

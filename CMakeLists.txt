@@ -1,17 +1,38 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-set(MINKO_HOME ${CMAKE_CURRENT_SOURCE_DIR})
+set(MINKO_HOME ${CMAKE_CURRENT_SOURCE_DIR}/build)
 
 if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
-    include ("${MINKO_HOME}/plugin/offscreen/enable.cmake")
+    set (OFFSCREEN_PATH plugin/offscreen)
+    file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/${OFFSCREEN_PATH}/enable.cmake DESTINATION ${MINKO_HOME}/${OFFSCREEN_PATH})
+    file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/${OFFSCREEN_PATH}/include DESTINATION ${MINKO_HOME}/${OFFSCREEN_PATH})
+    file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/${OFFSCREEN_PATH}/lib DESTINATION ${MINKO_HOME}/${OFFSCREEN_PATH})
+    include ("${MINKO_HOME}/../plugin/offscreen/enable.cmake")
 endif ()
 
-include ("plugins.cmake")
-include ("package.cmake")
-include ("minko.cmake")
-include ("project.cmake")
-include ("android-build.cmake")
-include ("cpjf.cmake")
+
+file (
+    GLOB
+    MINKO_CMAKE_UTILS
+    "*.cmake"
+)
+
+list (
+    REMOVE_ITEM
+    MINKO_CMAKE_UTILS
+    "${CMAKE_CURRENT_SOURCE_DIR}/sdk.cmake"
+)
+
+file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/sdk.cmake" DESTINATION ${MINKO_HOME})
+file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/adapt-template.py" DESTINATION ${MINKO_HOME})
+file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/module" DESTINATION ${MINKO_HOME})
+file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/template" DESTINATION ${MINKO_HOME})
+file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/skeleton" DESTINATION ${MINKO_HOME})
+foreach (MINKO_CMAKE_UTIL ${MINKO_CMAKE_UTILS})
+    file (COPY ${MINKO_CMAKE_UTIL} DESTINATION ${MINKO_HOME})
+    include (${MINKO_CMAKE_UTIL})
+endforeach ()
+
 
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")
@@ -186,6 +207,5 @@ if (WASM)
 endif ()
 
 if (WITH_TESTS STREQUAL "on" OR WITH_TESTS STREQUAL "ON")
-    message ("-- TESTS ARE ENABLED!")
     add_subdirectory ("test")
 endif ()
