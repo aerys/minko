@@ -33,7 +33,7 @@ def main():
         else\n\
             document.write(\"<script type=\\\"text/javascript\\\" async src=\\\"" + project_name + "-asmjs.preload.js\\\"><\/script><script>(function() {var memoryInitializer = '" + project_name + "-asmjs.html.mem';if (typeof Module['locateFile'] === 'function') {memoryInitializer = Module['locateFile'](memoryInitializer);} else if (Module['memoryInitializerPrefixURL']) {memoryInitializer = Module['memoryInitializerPrefixURL'] + memoryInitializer;}var meminitXHR = Module['memoryInitializerRequest'] = new XMLHttpRequest();meminitXHR.open('GET', memoryInitializer, true);meminitXHR.responseType = 'arraybuffer';meminitXHR.send(null);})();var script = document.createElement('script');script.src = '" + project_name + "-asmjs.js';document.body.appendChild(script);<\\/script>\");\n\
     </script>"))
-    f.write(content.replace("{{{ PRELOAD }}}", " "))
+        f.write(content.replace("{{{ PRELOAD }}}", " "))
 
 if __name__ == '__main__':
     main()
