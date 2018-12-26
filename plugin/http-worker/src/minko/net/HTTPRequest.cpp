@@ -389,3 +389,32 @@ HTTPRequest::fileExists(const std::string& filename,
 
     return requestSucceeded;
 }
+
+std::string
+HTTPRequest::checkRedirection(const std::string url)
+{
+    CURL* curl = curl_easy_init();
+    std::string newUrl;
+
+    if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+        // Set the request type to HEAD.
+        curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+
+        CURLcode res = curl_easy_perform(curl);
+
+        if(res == CURLE_OK) {
+            char *url = NULL;
+
+            curl_easy_getinfo(curl, CURLINFO_REDIRECT_URL, &url);
+
+            if(url)
+                newUrl = url;
+        }
+
+        curl_easy_cleanup(curl);
+    }
+
+    return newUrl;
+}
