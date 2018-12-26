@@ -116,6 +116,10 @@ namespace minko
                        const std::unordered_map<std::string, std::string> *additionalHeaders = nullptr,
                        bool verifyPeer = true);
 
+            static
+            std::string
+            checkRedirection(const std::string url);
+
         private:
             std::string _url;
             std::vector<char> _output;
