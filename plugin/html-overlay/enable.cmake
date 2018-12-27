@@ -11,8 +11,10 @@ function (minko_enable_plugin_html_overlay target)
     file (GLOB OVERLAY_INCLUDE "${HTML_OVERLAY_PATH}/include")
     target_include_directories (${target} PRIVATE ${OVERLAY_INCLUDE})
 
+    # minko_copy (${HTML_OVERLAY_PATH}/asset ${OUTPUT_PATH} ${target})
+
     if (EMSCRIPTEN)
-        file (COPY ${HTML_OVERLAY_PATH}/asset DESTINATION ${OUTPUT_PATH})
+    minko_copy (${HTML_OVERLAY_PATH}/asset ${OUTPUT_PATH} ${target})
     endif ()
 
     if (APPLE)
@@ -20,31 +22,31 @@ function (minko_enable_plugin_html_overlay target)
     endif ()
 
     if (IOS)
-        file (COPY ${HTML_OVERLAY_PATH}/asset DESTINATION ${OUTPUT_PATH})
-        file (COPY ${HTML_OVERLAY_PATH}/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt DESTINATION ${OUTPUT_PATH})
+    minko_copy (${HTML_OVERLAY_PATH}/asset ${OUTPUT_PATH} ${target})
+        file (COPY ${HTML_OVERLAY_PATH}/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt ${OUTPUT_PATH})
     endif ()
 
-    if (ANDROID)
-        target_link_libraries (
-            ${target}
+    if (ANDOID)
+        set_target_properties (
+            ${target} PROPERTIES_LINK_FLAGS
             "-Wl,--undefined=Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized"
             "-Wl,--undefined=Java_minko_plugin_htmloverlay_MinkoWebViewClient_webViewPageLoaded"
             "-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage"
             "-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent"
         )
-        file (COPY ${HTML_OVERLAY_PATH}/asset DESTINATION ${OUTPUT_PATH})
+        minko_copy (${HTML_OVERLAY_PATH}/asset ${OUTPUT_PATH} ${target})
     endif ()
 
     if (APPLE AND NOT IOS)
         target_link_libraries(${target} "-framework WebKit")
-        file (COPY ${HTML_OVERLAY_PATH}/asset DESTINATION ${OUTPUT_PATH})
-        file (COPY ${HTML_OVERLAY_PATH}/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt DESTINATION ${OUTPUT_PATH})
+        minko_copy (${HTML_OVERLAY_PATH}/asset ${OUTPUT_PATH} ${target})
+        file (COPY ${HTML_OVERLAY_PATH}/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt ${OUTPUT_PATH})
     endif ()
 
     if (WIN32)
         find_library (RETURN_PATH NAMES "libcef")
         target_link_libraries(${target} RETURN_PATH)
-        file (COPY ${HTML_OVERLAY_PATH}/asset DESTINATION ${OUTPUT_PATH})
+        minko_copy (${HTML_OVERLAY_PATH}/asset ${OUTPUT_PATH} ${target})
         
         file (
             GLOB
@@ -53,8 +55,8 @@ function (minko_enable_plugin_html_overlay target)
             "${HTML_OVERLAY_PATH}/lib/win/dll/*.dll"
         )
         
-        file (COPY ${HTML_OVERLAY_PATH}/asset DESTINATION ${OUTPUT_PATH})
-        file (COPY ${WIN32_FILES} DESTINATION ${OUTPUT_PATH})
+        minko_copy (${HTML_OVERLAY_PATH}/asset ${OUTPUT_PATH} ${target})
+        file (COPY ${WIN32_FILES} ${OUTPUT_PATH})
     endif ()
 
     # libdirs { minko.plugin.path("html-overlay") .. "/lib/win/debug" }
@@ -64,7 +66,7 @@ function (minko_enable_plugin_html_overlay target)
         find_library (RETURN_PATH NAMES "cef")
         target_link_libraries (${target} RETURN_PATH)
 
-        file (COPY ${HTML_OVERLAY_PATH}/asset DESTINATION ${OUTPUT_PATH})
+        minko_copy (${HTML_OVERLAY_PATH}/asset ${OUTPUT_PATH} ${target})
         minko_copy (${HTML_OVERLAY_PATH}/lib/resource/locales ${OUTPUT_PATH} ${target})
         file (COPY ${HTML_OVERLAY_PATH}/lib/resource/cef.pak DESTINATION ${OUTPUT_PATH})
         file (COPY ${HTML_OVERLAY_PATH}/lib/resource/devtools_resources.pak DESTINATION ${OUTPUT_PATH})

@@ -7,10 +7,10 @@ function (minko_enable_plugin_offscreen target)
     # remove linked libs
     get_property (LLIBS_LIST TARGET ${target} PROPERTY LINK_LIBRARIES)
     list (REMOVE_ITEM LLIBS_LIST "-lGL")
-    list (REMOVE_ITEM LLIBS_LIST "GL")
     list (REMOVE_ITEM LLIBS_LIST "-lOpenGL32")
-    list (REMOVE_ITEM LLIBS_LIST "OpenGL32")
     list (REMOVE_ITEM LLIBS_LIST "-lglew32")
+    list (REMOVE_ITEM LLIBS_LIST "GL")
+    list (REMOVE_ITEM LLIBS_LIST "OpenGL32")
     list (REMOVE_ITEM LLIBS_LIST "glew32")
     set_property (TARGET ${target} PROPERTY LINK_LIBRARIES ${LLIBS_LIST})
 
@@ -31,6 +31,7 @@ function (minko_enable_plugin_offscreen target)
     target_include_directories(${target} PRIVATE ${OFFSCREEN_INCLUDE})
 
     if (WIN32 AND BITNESS EQUAL 32)
+        # libdirs { minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/x86" }
         get_property (INCLUDE_LIST TARGET ${target} PROPERTY INCLUDE_DIRECTORIES)
         list(REMOVE_ITEM INCLUDE_LIST "${MINKO_HOME}/framework/lib/glew/include")
         set_property (TARGET ${target} PROPERTY INCLUDE_DIRECTORIES ${INCLUDE_LIST})
@@ -45,6 +46,7 @@ function (minko_enable_plugin_offscreen target)
     endif ()
 
     if (WIN32 AND BITNESS EQUAL 64)
+        # libdirs { minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/x64" }
         get_property (INCLUDE_LIST TARGET ${target} PROPERTY INCLUDE_DIRECTORIES)
         list(REMOVE_ITEM INCLUDE_LIST "${MINKO_HOME}/framework/lib/glew/include")
         set_property (TARGET ${target} PROPERTY INCLUDE_DIRECTORIES ${INCLUDE_LIST})

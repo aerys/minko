@@ -46,6 +46,14 @@ namespace std
     }
 
     inline
+    unsigned long
+    stoul(const std::string& str, std::size_t* pos = 0, int base = 10)
+    {
+        // FIXME: Deal with pos != nullptr.
+        return strtoul(str.c_str(), 0, base);
+    }
+
+    inline
     float
     stof(const std::string& str, std::size_t* pos = 0)
     {
