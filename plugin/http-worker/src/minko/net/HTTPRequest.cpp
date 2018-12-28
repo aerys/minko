@@ -401,6 +401,10 @@ HTTPRequest::checkRedirection(const std::string url)
 
         // Set the request type to HEAD.
         curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+        // FIXME: we currently disable SSL verification because we don't have the
+        // bundled certificates.
+        // See that comment: https://git.aerys.in/aerys/smartshape-app/issues/640#note_94289
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         // Follow redirects.
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
