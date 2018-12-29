@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/dom/AbstractDOM.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "chromium/dom/ChromiumDOMElement.hpp"
 #include "ChromiumDOMV8Handler.hpp"
 #include "include/cef_render_process_handler.h"
 
@@ -55,6 +56,38 @@ namespace chromium
 
 		public:
 			~ChromiumDOM();
+
+			void
+			static
+			sendMessageWrapper(const std::string, ChromiumDOM*);
+
+			void
+			static
+			evalWrapper(const std::string*, ChromiumDOM*);
+
+			void
+			static
+			createElementWrapper(const std::string*, ChromiumDOMElement::Ptr*, ChromiumDOM*);
+
+			void
+			static
+			getElementByIdWrapper(const std::string*, ChromiumDOMElement::Ptr*, ChromiumDOM*);
+
+			void
+			static
+			getElementsByClassNameWrapper(const std::string*, std::vector<minko::dom::AbstractDOMElement::Ptr>*, ChromiumDOM*);
+
+			void
+			static
+			getElementsByTagNameWrapper(const std::string*, std::vector<minko::dom::AbstractDOMElement::Ptr>*, ChromiumDOM*);
+
+			void
+			static
+			fullUrlWrapper(std::string*, std::atomic<bool>*, ChromiumDOM* target);
+
+			void
+			static
+			isMainWrapper(bool*, std::atomic<bool>*, ChromiumDOM* target);
 
 			static
 			Ptr

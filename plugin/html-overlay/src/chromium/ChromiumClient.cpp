@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace chromium;
 
-ChromiumClient::ChromiumClient(ChromiumPimpl* impl) :
-	_impl(impl)
+ChromiumClient::ChromiumClient(ChromiumPimpl* impl)
+    : _impl(impl)
 {
 }
 
@@ -38,9 +38,21 @@ ChromiumClient::OnBeforeClose(CefRefPtr<CefBrowser> browser)
 {
 }
 
+bool
+ChromiumClient::RunContextMenu(
+    CefRefPtr<CefBrowser>                browser,
+    CefRefPtr<CefFrame>                  frame,
+    CefRefPtr<CefContextMenuParams>      params,
+    CefRefPtr<CefMenuModel>              model,
+    CefRefPtr<CefRunContextMenuCallback> callback)
+{
+    model->Clear();
+    return true;
+}
+
 CefRefPtr<CefRenderHandler>
 ChromiumClient::GetRenderHandler()
 {
-	return _impl->renderHandler.get();
+    return _impl->renderHandler.get();
 }
 #endif

@@ -72,7 +72,8 @@ endif ()
 if (MSVC)
     target_compile_options (
         ${PROJECT_NAME} PRIVATE
-        -D_CRT_SECURE_NO_WARNINGS
-        -D_CRT_SECURE_NO_DEPRECATE
+        "-D_CRT_SECURE_NO_WARNINGS"
+        "-D_CRT_SECURE_NO_DEPRECATE"
+        "-D_DISABLE_EXTENDED_ALIGNED_STORAGE"
     )
 endif ()

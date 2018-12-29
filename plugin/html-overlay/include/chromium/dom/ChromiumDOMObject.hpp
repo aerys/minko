@@ -22,8 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "include/cef_render_process_handler.h"
-#include "include/cef_runnable.h"
 #include "include/cef_task.h"
+#include "include/wrapper/cef_closure_task.h"
+#include "include/base/cef_bind.h"
 
 namespace minko
 {
@@ -39,6 +40,22 @@ namespace chromium
     {
         class ChromiumDOMObject
         {
+        private:
+
+            template <typename T>
+            static void getPropertyWrapper(const std::string* name, T* result, ChromiumDOMObject* target)
+            {
+                *result = target->getProperty<T>(*name);
+                target->_blocker.store(false);
+            }
+            
+            template <typename T>
+            static void setPropertyWrapper(const std::string* name, const std::string* value, ChromiumDOMObject* target)
+            {
+                target->setProperty<T>(*name, *value);
+                target->_blocker.store(false);
+            }
+        
         protected:
 
             CefRefPtr<CefV8Value>
@@ -62,14 +79,9 @@ namespace chromium
                     CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
                     _blocker.store(true);
 
-                    auto fn = [&]()
-                    {
-                        result = getProperty<T>(name);
-                        _blocker.store(false);
-                    };
-
-                    runner->PostTask(NewCefRunnableFunction(&fn));
-
+                    void (*FunctionPtr)(const std::string*, T*, ChromiumDOMObject*) = &getPropertyWrapper<T>;
+                    runner->PostTask(CefCreateClosureTask(base::Bind(FunctionPtr, &name, &result, this)));
+                    
                     while (_blocker.load());
                 }
 
@@ -92,13 +104,9 @@ namespace chromium
                     CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
                     _blocker.store(true);
 
-                    auto fn = [&]()
-                    {
-                        setProperty<T>(name, value);
-                        _blocker.store(false);
-                    };
-
-                    runner->PostTask(NewCefRunnableFunction(&fn));
+                    void (*FunctionPtr)(const std::string*, const std::string*, ChromiumDOMObject*) = &setPropertyWrapper<T>;
+                    runner->PostTask(CefCreateClosureTask(base::Bind(FunctionPtr, &name, &value, this)));
+                    
                     while (_blocker.load());
                 }
             }

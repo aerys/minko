@@ -26,25 +26,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace chromium
 {
-	class ChromiumPimpl;
+    class ChromiumPimpl;
 
-	class ChromiumClient : public CefClient
-	{
-	public:
-		ChromiumClient(ChromiumPimpl* impl);
-		~ChromiumClient();
+    class ChromiumClient : public CefClient, public CefContextMenuHandler
+    {
+    public:
+        ChromiumClient(ChromiumPimpl* impl);
+        ~ChromiumClient();
 
-		virtual
-		CefRefPtr<CefRenderHandler>
-		GetRenderHandler();
+        virtual CefRefPtr<CefRenderHandler>
+        GetRenderHandler();
 
-		virtual
-		void
-		OnBeforeClose(CefRefPtr<CefBrowser> browser);
-	private:
-		ChromiumPimpl* _impl;
+        virtual void
+        OnBeforeClose(CefRefPtr<CefBrowser> browser);
 
-		IMPLEMENT_REFCOUNTING(ChromiumClient);
-	};
-}
+        bool
+        RunContextMenu(
+            CefRefPtr<CefBrowser>                browser,
+            CefRefPtr<CefFrame>                  frame,
+            CefRefPtr<CefContextMenuParams>      params,
+            CefRefPtr<CefMenuModel>              model,
+            CefRefPtr<CefRunContextMenuCallback> callback) override;
+
+        CefRefPtr<CefContextMenuHandler>
+        GetContextMenuHandler() override
+        {
+            return this;
+        }
+
+    private:
+        ChromiumPimpl* _impl;
+
+        IMPLEMENT_REFCOUNTING(ChromiumClient);
+    };
+} // namespace chromium
 #endif

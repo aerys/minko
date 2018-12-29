@@ -51,8 +51,11 @@ namespace chromium
 		void
 		OnContextInitialized() OVERRIDE;
 
+		void
+    	OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line) override;
+
 		CefRefPtr<CefRenderProcessHandler>
-		GetRenderProcessHandler();
+		GetRenderProcessHandler() override;
 
 		void
 		enableInput(bool value)

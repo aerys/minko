@@ -98,10 +98,10 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 
 		CefSettings settings;
 
-		settings.single_process = 1;
-		settings.no_sandbox = 1;
+		settings.windowless_rendering_enabled = 1;
 		settings.command_line_args_disabled = 1;
-        settings.ignore_certificate_errors = secure ? 0 : 1;
+		// CefString(&settings.resources_dir_path) = "/resource";
+		// Use this if you wish to changes cef resources directory
 
 		int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
 
@@ -228,12 +228,7 @@ ChromiumDOMEngine::loadLocal(std::string filename)
 {
 	std::string path = "file://" + file::File::getBinaryDirectory() + "/";
 
-	//Fixme : find a more elegant way ?
-#if DEBUG
-	path += "../../../asset/";
-#else
 	path += "asset/";
-#endif
 
 	std::string url = path + filename;
 
