@@ -2,7 +2,7 @@
 // write_at.hpp
 // ~~~~~~~~~~~~
 //
-// Copyright (c) 2003-2015 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2018 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -18,9 +18,12 @@
 #include "asio/detail/config.hpp"
 #include <cstddef>
 #include "asio/async_result.hpp"
-#include "asio/basic_streambuf_fwd.hpp"
 #include "asio/detail/cstdint.hpp"
 #include "asio/error.hpp"
+
+#if !defined(ASIO_NO_EXTENSIONS)
+# include "asio/basic_streambuf_fwd.hpp"
+#endif // !defined(ASIO_NO_EXTENSIONS)
 
 #include "asio/detail/push_options.hpp"
 
@@ -29,7 +32,8 @@ namespace asio {
 /**
  * @defgroup write_at asio::write_at
  *
- * @brief Write a certain amount of data at a specified offset before returning.
+ * @brief The @c write_at function is a composed operation that writes a
+ * certain amount of data at a specified offset before returning.
  */
 /*@{*/
 
@@ -224,6 +228,7 @@ std::size_t write_at(SyncRandomAccessWriteDevice& d,
     uint64_t offset, const ConstBufferSequence& buffers,
     CompletionCondition completion_condition, asio::error_code& ec);
 
+#if !defined(ASIO_NO_EXTENSIONS)
 #if !defined(ASIO_NO_IOSTREAM)
 
 /// Write all of the supplied data at the specified offset before returning.
@@ -382,13 +387,15 @@ std::size_t write_at(SyncRandomAccessWriteDevice& d, uint64_t offset,
     asio::error_code& ec);
 
 #endif // !defined(ASIO_NO_IOSTREAM)
+#endif // !defined(ASIO_NO_EXTENSIONS)
 
 /*@}*/
 /**
  * @defgroup async_write_at asio::async_write_at
  *
- * @brief Start an asynchronous operation to write a certain amount of data at
- * the specified offset.
+ * @brief The @c async_write_at function is a composed asynchronous operation
+ * that writes a certain amount of data at the specified offset before
+ * completion.
  */
 /*@{*/
 
@@ -437,7 +444,7 @@ std::size_t write_at(SyncRandomAccessWriteDevice& d, uint64_t offset,
  * Regardless of whether the asynchronous operation completes immediately or
  * not, the handler will not be invoked from within this function. Invocation of
  * the handler will be performed in a manner equivalent to using
- * asio::io_service::post().
+ * asio::io_context::post().
  *
  * @par Example
  * To write a single data buffer use the @ref buffer function as follows:
@@ -515,7 +522,7 @@ async_write_at(AsyncRandomAccessWriteDevice& d, uint64_t offset,
  * Regardless of whether the asynchronous operation completes immediately or
  * not, the handler will not be invoked from within this function. Invocation of
  * the handler will be performed in a manner equivalent to using
- * asio::io_service::post().
+ * asio::io_context::post().
  *
  * @par Example
  * To write a single data buffer use the @ref buffer function as follows:
@@ -536,6 +543,7 @@ async_write_at(AsyncRandomAccessWriteDevice& d,
     CompletionCondition completion_condition,
     ASIO_MOVE_ARG(WriteHandler) handler);
 
+#if !defined(ASIO_NO_EXTENSIONS)
 #if !defined(ASIO_NO_IOSTREAM)
 
 /// Start an asynchronous operation to write all of the supplied data at the
@@ -581,7 +589,7 @@ async_write_at(AsyncRandomAccessWriteDevice& d,
  * Regardless of whether the asynchronous operation completes immediately or
  * not, the handler will not be invoked from within this function. Invocation of
  * the handler will be performed in a manner equivalent to using
- * asio::io_service::post().
+ * asio::io_context::post().
  */
 template <typename AsyncRandomAccessWriteDevice, typename Allocator,
     typename WriteHandler>
@@ -647,7 +655,7 @@ async_write_at(AsyncRandomAccessWriteDevice& d, uint64_t offset,
  * Regardless of whether the asynchronous operation completes immediately or
  * not, the handler will not be invoked from within this function. Invocation of
  * the handler will be performed in a manner equivalent to using
- * asio::io_service::post().
+ * asio::io_context::post().
  */
 template <typename AsyncRandomAccessWriteDevice, typename Allocator,
     typename CompletionCondition, typename WriteHandler>
@@ -658,6 +666,7 @@ async_write_at(AsyncRandomAccessWriteDevice& d, uint64_t offset,
     ASIO_MOVE_ARG(WriteHandler) handler);
 
 #endif // !defined(ASIO_NO_IOSTREAM)
+#endif // !defined(ASIO_NO_EXTENSIONS)
 
 /*@}*/
 

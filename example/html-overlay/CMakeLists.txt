@@ -17,12 +17,12 @@ else ()
     minko_add_library(${PROJECT_NAME} "SHARED" "${${PROJECT_NAME}_SRC}")
 endif ()
 
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/asset DESTINATION ${OUTPUT_PATH})
+
 target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
 minko_enable_plugin_sdl (${PROJECT_NAME})
 minko_enable_plugin_html_overlay (${PROJECT_NAME})
-
-file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/asset DESTINATION ${OUTPUT_PATH}/asset)
 
 if (EMSCRIPTEN)
     minko_package_assets ("*.effect;*.glsl" "embed")

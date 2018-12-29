@@ -51,7 +51,51 @@ namespace chromium
 			
 		public:
 
-			static
+            static
+            void
+            createWrapper(CefRefPtr<CefV8Value>*, CefRefPtr<CefV8Context>*, std::atomic<bool>*, ChromiumDOMElement::Ptr*);
+
+            static
+            void
+            appendChildWrapper(AbstractDOMElement::Ptr*, ChromiumDOMElement* target);
+
+            static
+            void
+            removeChildWrapper(AbstractDOMElement::Ptr*, ChromiumDOMElement* target);
+
+            static
+            void
+            insertBeforeWrapper(AbstractDOMElement::Ptr*, AbstractDOMElement::Ptr*, ChromiumDOMElement*);
+
+            static
+            void
+            cloneNodeWrapper(AbstractDOMElement::Ptr*, bool*, ChromiumDOMElement*);
+
+            static
+            void
+            getAttributeWrapper(const std::string*, std::string*, ChromiumDOMElement*);
+
+            static
+            void
+            setAttributeWrapper(const std::string*, const std::string*, ChromiumDOMElement* target);
+
+            static
+            void
+            getElementsByTagNameWrapper(const std::string*, std::vector<AbstractDOMElement::Ptr>*, ChromiumDOMElement* target);
+
+            static
+            void
+            styleResultWrapper(const std::string*, std::string*, ChromiumDOMElement* target);
+
+            static
+            void
+            styleValueWrapper(const std::string*, const std::string*, ChromiumDOMElement* target);
+
+            void
+            static
+            addEventListenerWrapper(std::string*, ChromiumDOMElement* target);
+
+            static
 			Ptr
 			create(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 

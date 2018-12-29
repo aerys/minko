@@ -10,6 +10,10 @@ if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
     include ("${MINKO_HOME}/../plugin/offscreen/enable.cmake")
 endif ()
 
+set(CMAKE_CXX_FLAGS_DEBUG "_UNSET" CACHE STRING "")
+if(${CMAKE_CXX_FLAGS_DEBUG} STREQUAL "_UNSET")
+    set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -O0" CACHE STRING "" FORCE)
+endif()
 
 file (
     GLOB
@@ -69,10 +73,10 @@ list (
     debug
     http-worker
     http-loader
-    html-overlay #apple compil error
-    #leap (out dated plugin - math dependencies)
-    #lua (out dated plugin)
-    #particles (out dated plugin - lua dependencies)
+    html-overlay
+    #leap (outdated plugin - math dependencies)
+    #lua (outdated plugin)
+    #particles (outdated plugin - lua dependencies)
     bullet
     angle
     sensors
@@ -109,37 +113,37 @@ list (
     #clone #(error lookAt segfault if did like in the serializer)
     #hologram
     devil
-    #effect-config #(error surface when resolve vector 4 texture don't provide 'default')
+    #effect-config
     #flares
     #frustum
-    #html-overlay #(plugin html-overlay problem)
-    http #emscripten compil error #(don't find BaseStreamingTemplate.effect but he is in asset)
+    html-overlay
+    http #emscripten compil error #(can't find BaseStreamingTemplate.effect)
     jobs
     joystick
-    #keyboard #(-lgl shoudl be at the the of the compil line)
+    #keyboard #(-lgl flag should be at the the end of the linkage line)
     #leap-motion #(see plugin leap)
-    light #(display of light is behind ground)
+    light #(light display is under the ground)
     #light-scattering #(html_overlay)
-    line-geometry #work but dont see stars
+    line-geometry #can't see the stars
     #multi-surfaces
-    #nodejs #(we should make it too ?)
-    #oculus #(oculus plugin don't exist anymore)
-    #offscreen #(canvas->quit() n'existe plus)
-    #particles #(cause of lua)
+    #nodejs
+    #oculus #(oculus plugin does not exist anymore)
+    #offscreen #(canvas->quit() has been removed)
+    #particles #(lua consequence)
     pbr #error execution (error: DrawCall.cpp:305 bindUniform(): Program "skybox-pass0": the uniform "uAspectRatio" is bound to the "aspectRatio" property but it's not defined and no default value was provided.)
     physics
     #picking #annotations refund
     #raycasting
-    section #ems compil error
+    section #emscripten compilation error
     sensors #segfault
     shadow-mapping
     sky-box
     sprite-batch
     stencil
-    #ttf #ems and apple compil error
+    #ttf #emscripten and apple compilation error
     video-camera
-    #visibility #(cpp errors with visility)
-    #vr #(symbol missing in vr lib)
+    #visibility
+    #vr #(symbol missing in vr library)
     #water #undefined symbol
 )
 

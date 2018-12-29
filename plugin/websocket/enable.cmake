@@ -24,4 +24,10 @@ function (minko_enable_plugin_websocket target)
     file (GLOB WEBSOCKET_INCLUDE "${WEBSOCKET_PATH}/include")
     target_include_directories(${target} PRIVATE ${WEBSOCKET_INCLUDE})
     target_compile_options (${target} PRIVATE "-DMINKO_PLUGIN_WEBSOCKET")
+
+    if (LINUX OR ANDROID OR APPLE)
+        target_compile_options (${PROJECT_NAME} PRIVATE
+            "-DSSL_R_SHORT_READ=SSL_R_UNEXPECTED_RECORD"
+        )
+    endif ()
 endfunction ()

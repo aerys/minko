@@ -29,10 +29,6 @@ minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")
 target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 target_compile_options (${PROJECT_NAME} PRIVATE -DCURL_STATICLIB)
 
-if (UNIX AND NOT APPLE AND NOT ANDROID)
-    target_link_libraries (${PROJECT_NAME} "curl")
-endif ()
-
 if (DLL)
     target_link_libraries (${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/lib/curl/windows${BITNESS}/${BUILD_TYPE}/libcurl.lib")
 endif ()

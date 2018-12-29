@@ -79,6 +79,8 @@ main(int argc, char** argv)
         ->addComponent(sceneManager)
         ->addComponent(overlay);
 
+    enableRenderToTexture = 0; // enableRenderToTexture is not implemented
+
     if (enableRenderToTexture)
     {
         // Create the shared texture to render the WebView into it
