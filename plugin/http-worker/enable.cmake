@@ -9,16 +9,14 @@ function (minko_enable_plugin_http_worker target)
     endif ()
 
     if (WIN32)
-        target_link_libraries(${target} "${HTTP-WORKER_PATH}/lib/curl/lib/windows${BITNESS}/${BUILD_TYPE}/libcurl.lib")
+        if (BITNESS EQUAL 32)
+            target_link_libraries(${target} "${HTTP-WORKER_PATH}/lib/curl/lib/windows${BITNESS}/libcurl.lib")
+            file (COPY "${HTTP-WORKER_PATH}/lib/curl/lib/windows${BITNESS}/libcurl.dll" DESTINATION ${OUTPUT_PATH})
+        else ()
+            target_link_libraries(${target} "${HTTP-WORKER_PATH}/lib/curl/lib/windows${BITNESS}/libcurl-x64.lib")
+            file (COPY "${HTTP-WORKER_PATH}/lib/curl/lib/windows${BITNESS}/libcurl-x64.dll" DESTINATION ${OUTPUT_PATH})
+        endif ()
         
-        file (
-            GLOB
-            HTTP-WORKER_DLL
-            "${HTTP-WORKER_PATH}/lib/curl/lib/windows${BITNESS}/${BUILD_TYPE}/*.dll"
-        )
-        foreach(HTTP-WORKER_A_DLL ${HTTP-WORKER_DLL})
-            file (COPY ${HTTP-WORKER_A_DLL} DESTINATION ${OUTPUT_PATH})
-        endforeach()
     endif ()
 
     if (LINUX)
