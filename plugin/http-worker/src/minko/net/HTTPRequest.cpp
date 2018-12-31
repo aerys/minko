@@ -391,7 +391,7 @@ HTTPRequest::fileExists(const std::string& filename,
 }
 
 std::string
-HTTPRequest::checkRedirection(const std::string url)
+HTTPRequest::getURLAfterRedirection(const std::string url)
 {
     CURL* curl = curl_easy_init();
     std::string newUrl;
