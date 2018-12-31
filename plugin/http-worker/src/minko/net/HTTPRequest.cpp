@@ -396,24 +396,38 @@ HTTPRequest::checkRedirection(const std::string url)
     CURL* curl = curl_easy_init();
     std::string newUrl;
 
-    if(curl) {
+    if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
         // Set the request type to HEAD.
         curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+        // FIXME: we currently disable SSL verification because we don't have the
+        // bundled certificates.
+        // See that comment: https://git.aerys.in/aerys/smartshape-app/issues/640#note_94289
+        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        // Follow redirects.
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
         CURLcode res = curl_easy_perform(curl);
 
         if(res == CURLE_OK) {
+            long int redirectCount = 0;
             char *url = NULL;
 
-            curl_easy_getinfo(curl, CURLINFO_REDIRECT_URL, &url);
+            curl_easy_getinfo(curl, CURLINFO_REDIRECT_COUNT, &redirectCount);
 
-            if(url)
-                newUrl = url;
+            if (redirectCount > 0)
+            {
+                curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &url);
+
+                if(url)
+                    newUrl = url;
+            }
         }
 
         curl_easy_cleanup(curl);
+    } else {
+        LOG_ERROR("Failed to initialize curl.");
     }
 
     return newUrl;

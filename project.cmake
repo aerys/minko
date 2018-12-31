@@ -44,8 +44,8 @@ function (minko_add_library target_name type sources)
     endif ()   
     target_include_directories (${target_name} PRIVATE "${FRAMEWORK_INCLUDES}")
     
-    string (FIND ${target_name} "minko-example-" TEST_EXAMPLE)
-    string (FIND ${target_name} "minko-plugin-" TEST_PLUGIN)
+    string (FIND ${target_name} "minko-example" TEST_EXAMPLE)
+    string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
     string (FIND ${target_name} "minko-framework" TEST_FRAMEWORK)
     string (FIND ${target_name} "libassimp" TEST_LIBASSIMP)
     
@@ -121,23 +121,17 @@ function (minko_add_library target_name type sources)
     endif ()
 
     if (EMSCRIPTEN)
-        if (NOT TEST_FRAMEWORK EQUAL -1)
-            set (ALL_TARGETS "${target_name}" CACHE INTERNAL "ALL_TARGETS")
-        endif ()
-        if (NOT TEST_PLUGIN EQUAL -1)
-            set (ALL_TARGETS "${ALL_TARGETS};${target_name}" CACHE INTERNAL "ALL_TARGETS")
-        endif ()
-        if (TEST_FRAMEWORK EQUAL -1 AND NOT WASM AND "${target_name}" STREQUAL "${LAST_PLUGIN}")
-            add_custom_target( FallBackASMJS ALL
-                COMMAND cd ${MINKO_HOME}/../ && mkdir -p build && cd build && cmake -DWASM=ON -DWITH_PLUGINS=${WITH_PLUGINS} .. && make -j$(nproc)
-            )
-            message (${ALL_TARGETS})
-            add_dependencies(FallBackASMJS ${ALL_TARGETS})
-        endif()
         if (CMAKE_BUILD_TYPE STREQUAL "Release")
             target_compile_options(${target_name} PRIVATE -O3 --llvm-lto 1)
         else ()
             target_compile_options(${target_name} PRIVATE --llvm-opts 0 -O2 -g4)
+        endif ()
+        if (NOT WASM)
+            add_custom_command (
+                TARGET ${target_name}
+                POST_BUILD
+                COMMAND cd ${MINKO_HOME}/../ && mkdir -p build && cd build && cmake -DWASM=ON -WITH_PLUGINS=${target_name} .. && make VERBOSE=1
+            )
         endif ()
     endif ()
     

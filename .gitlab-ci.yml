@@ -9,31 +9,29 @@ stages:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
     expire_in: 1 hr
     paths:
-      - build/module
-      - build/framework/bin
-      - build/framework/asset
-      - build/framework/lib
-      - build/framework/include
-      - build/plugin/*/bin
-      - build/plugin/*/asset
-      - build/plugin/*/lib
-      - build/plugin/*/include
-      - build/plugin/*/enable.cmake
-      - build/plugin/html-overlay/src/android/tasks/*.java
-      - build/plugin/html-overlay/src/android/webview/*.java
-      - build/plugin/sensors/src/android/*.java
-      - build/plugin/nodejs-worker/src/minko/file/*.java
-      - build/plugin/video-camera/src/minko/video/*.java
-      - build/skeleton
-      - build/template
-      - build/android-build.cmake
-      - build/cpjf.cmake
-      - build/project.cmake
-      - build/minko.cmake
-      - build/plugins.cmake
-      - build/package.cmake
-      - build/sdk.cmake
-      - build/adapt-template.py
+      - bin
+      - script
+      - module
+      - framework/include
+      - framework/bin
+      - framework/premake5.lua
+      - framework/asset
+      - framework/lib
+      - plugin/*/include
+      - plugin/*/bin
+      - plugin/*/lib
+      - plugin/*/asset
+      - plugin/*/premake5.lua
+      - plugin/*/plugin.lua
+      - plugin/html-overlay/src/android/tasks/*.java
+      - plugin/html-overlay/src/android/webview/*.java
+      - plugin/sensors/src/android/*.java
+      - plugin/nodejs-worker/src/minko/file/*.java
+      - plugin/video-camera/src/minko/video/*.java
+      - skeleton
+      - template
+      - premake5.lua
+      - sdk.lua
       - LICENSE.md
       - README.md
 
@@ -58,37 +56,33 @@ build:html5:
   stage: build
   image: registry.aerys.in/aerys/smartshape-docker/html5:2896
   script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/sdk/cmake/Modules/Platform/Emscripten.cmake ..
-    - make -j$(nproc)
+    - ./script/solution_gmake_min.sh
+    - make -j$(nproc) config=html5_release
 
 build:android:
   <<: *build_with_artifacts_template
   stage: build
-  image: registry.aerys.in/aerys/smartshape-docker/android:5702
+  image: registry.aerys.in/aerys/smartshape-docker/android:2226 
   script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_NODEJS_WORKER=ON -DCMAKE_TOOLCHAIN_FILE=/opt/android-ndk-linux/build/cmake/android.toolchain.cmake ..
-    - make
+    - ./script/solution_gmake_min.sh --with-nodejs-worker
+    - make config=android_release
 
 build:linux:
   <<: *build_with_artifacts_template
   stage: build
-  image: registry.aerys.in/aerys/smartshape-docker/linux64:7994
+  image: registry.aerys.in/aerys/smartshape-docker/linux64:2223
   script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
-    - make -j$(nproc)
+    - ./script/solution_gmake_min.sh
+    - make -j$(nproc) config=linux64_release
 
 build:linux_offscreen:
   <<: *build_with_artifacts_template
   stage: build
-  image: registry.aerys.in/aerys/smartshape-docker/linux64:7994
+  image: registry.aerys.in/aerys/smartshape-docker/linux64:2223
   script:
     - ./plugin/serializer/script/download_dependencies.sh .
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
-    - make -j$(nproc)
+    - ./script/solution_gmake_min.sh --with-offscreen --without-html-overlay --with-texture-compressor
+    - make -j$(nproc) config=linux64_release
 
 build:windows64:
   <<: *build_with_artifacts_template
@@ -98,10 +92,10 @@ build:windows64:
   script:
     - set MINKO_HOME=%cd%
     - bash plugin\serializer\script\download_dependencies.sh .
-    - if not exist build mkdir build
-    - cd build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
-    - msbuild Project.sln /property:Configuration=Release /property:Platform=x64 /m:4
+    - cd script
+    - call solution_vs2015_full.bat --no-example --no-tutorial --with-texture-compressor --no-test
+    - cd ..
+    - msbuild minko.sln /property:Configuration=Release /property:Platform=windows64 /m:4
 
 build:windows64_offscreen:
   <<: *build_with_artifacts_template
@@ -111,10 +105,10 @@ build:windows64_offscreen:
   script:
     - set MINKO_HOME=%cd%
     - bash plugin\serializer\script\download_dependencies.sh .
-    - if not exist build mkdir build
-    - cd build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
-    - msbuild Project.sln /property:Configuration=Release /property:Platform=x64 /m:4
+    - cd script
+    - call solution_vs2015_full.bat --no-example --no-tutorial --with-texture-compressor --with-offscreen --no-test
+    - cd ..
+    - msbuild minko.sln /property:Configuration=Release /property:Platform=windows64 /m:4
 
 test:windows64_offscreen:
   stage: test
@@ -130,16 +124,16 @@ test:windows64_offscreen:
       - test
   script:
     - set MINKO_HOME=%cd%
-    - if not exist build mkdir build
-    - cd build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=jpeg,png,ttf,sdl,ssl,serializer,websocket,http-worker,http-loader -DWITH_TESTS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
-    - msbuild Project.sln /target:minko-test /property:Configuration=Release /property:Platform=x64 /m:4 /p:BuildProjectReferences=false
+    - cd script
+    - call solution_vs2015_full.bat --no-example --no-tutorial --with-texture-compressor --with-offscreen
+    - cd ..
+    - msbuild minko.sln /target:minko-test /property:Configuration=Release /property:Platform=windows64 /m:4 /p:BuildProjectReferences=false
     - cd .\test\bin\windows64\release
     - minko-test.exe
 
 test:linux_offscreen:
   stage: test
-  image: registry.aerys.in/aerys/smartshape-docker/linux64:7994
+  image: registry.aerys.in/aerys/smartshape-docker/linux64:2223
   dependencies:
     - build:linux_offscreen
   artifacts:
@@ -149,9 +143,8 @@ test:linux_offscreen:
     paths:
       - test
   script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=jpeg,png,ttf,sdl,ssl,serializer,websocket,http-worker,http-loader -DWITH_TESTS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
-    - make -j$(nproc)
+    - ./script/solution_gmake_full.sh --no-example --no-tutorial --with-offscreen --without-html-overlay --with-texture-compressor
+    - make -j$(nproc) config=linux64_release -C test
     - pushd ./test/bin/linux64/release
     - ./minko-test
     - popd
