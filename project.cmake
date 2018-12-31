@@ -66,7 +66,7 @@ function (minko_add_library target_name type sources)
     if (TEST_FRAMEWORK EQUAL -1)
         target_link_libraries(${target_name} ${MINKO_FRAMEWORK_LIB})
     endif ()
-    
+
     if (UNIX AND NOT APPLE AND NOT ANDROID)
         target_link_libraries (${target_name} "-lGL")
     endif ()
@@ -167,6 +167,7 @@ function (minko_add_executable target_name sources)
         endif ()
     endif ()
 
+    # DO NOT overwrite CMAKE_CXX_STANDARD_LIBRARIES
     set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} ${MINKO_FRAMEWORK_LIB}" PARENT_SCOPE)
     add_executable (${target_name} ${sources})
     minko_configure_target_flags (${target_name})
@@ -232,6 +233,11 @@ function (minko_add_executable target_name sources)
             GLOB
             WINDOWS_DLL
             "${MINKO_HOME}/framework/lib/glew/lib/windows${BITNESS}/*.dll"
+        )
+        target_include_directories (
+            ${target_name}
+            PUBLIC
+            "${MINKO_HOME}/framework/lib/glew/include"
         )
         foreach (DLL ${WINDOWS_DLL})
             file (COPY "${DLL}" DESTINATION "${OUTPUT_PATH}")

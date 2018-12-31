@@ -73,3 +73,9 @@ if (WIN32)
         "-D_WIN32_WINNT=0x0501"
     )
 endif ()
+
+if (LINUX OR ANDROID OR APPLE)
+    target_compile_options (${PROJECT_NAME} PRIVATE
+        "-DSSL_R_SHORT_READ=SSL_R_UNEXPECTED_RECORD"
+    )
+endif ()

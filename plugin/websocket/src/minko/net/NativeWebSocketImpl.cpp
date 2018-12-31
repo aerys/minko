@@ -65,8 +65,11 @@ NativeWebSocketImpl::tlsConnect(const std::string &uri, const std::string& cooki
         case minko::net::TLSVersion::TLS_1_2:
             asioContextMethod = asio::ssl::context::tlsv12;
             break;
+        case minko::net::TLSVersion::TLS_1_3:
+            asioContextMethod = asio::ssl::context::tlsv13;
+            break;
         default:
-            asioContextMethod = asio::ssl::context::tlsv12;
+            asioContextMethod = asio::ssl::context::tlsv13;
             break;
         }
 

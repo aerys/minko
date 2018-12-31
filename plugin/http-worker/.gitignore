@@ -1,2 +1,5 @@
 bin
 obj
+!lib/curl/lib/*/*.a
+!lib/curl/lib/*/*.dll
+!lib/curl/lib/*/*.lib

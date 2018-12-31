@@ -19,13 +19,42 @@ endforeach()
 
 set (PROJECT_NAME "minko-plugin-html-overlay")
 
+minko_add_library (${PROJECT_NAME} STATIC "")
+
+# Include CEF toolchain
+include(${MINKO_HOME}/DownloadCEF.cmake)
+
+# Determine the platform.
+set (CEF_PLATFORM "${SYSTEM_NAME}${BITNESS}")
+if (APPLE AND NOT IOS)
+    set (CEF_PLATFORM "macosx64")
+endif ()
+
+# Specify the CEF distribution version (in both CMakeLists.txt and enable.cmake).
+set (CEF_VERSION "3.3538.1852.gcb937fc")
+set (THIRD_PARTY_PATH "${MINKO_HOME}/third_party/cef/cef_binary_${CEF_VERSION}_${CEF_PLATFORM}")
+
+# Download and extract the CEF binary distribution.
+set (CEF_OUTPUT_PATH "${MINKO_HOME}/third_party/cef")
+if (LINUX OR WIN32 OR APPLE AND NOT IOS)
+    DownloadCEF("${CEF_PLATFORM}" "${CEF_VERSION}" "${CEF_OUTPUT_PATH}")
+endif ()
+
+if (LINUX)
+    add_custom_command (
+        PRE_BUILD
+        TARGET ${PROJECT_NAME}
+        COMMAND strip ${THIRD_PARTY_PATH}/Release/libcef.so
+    )
+endif ()
+
 file (
     GLOB_RECURSE
     ${PROJECT_NAME}_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3/include/*.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3/include/*.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3/include/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3/include/*.c"
+    "${THIRD_PARTY_PATH}/include/*.hpp"
+    "${THIRD_PARTY_PATH}/include/*.h"
+    "${THIRD_PARTY_PATH}/include/*.cpp"
+    "${THIRD_PARTY_PATH}/include/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/minko/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/minko/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/minko/*.hpp"
@@ -42,16 +71,22 @@ foreach (OBJ ${${PROJECT_NAME}_EXCLUDES})
     list (REMOVE_ITEM ${PROJECT_NAME}_SRC ${OBJ})
 endforeach ()
 
-file (GLOB ${PROJECT_NAME}_INCLUDE "${CMAKE_CURRENT_SOURCE_DIR}/include")
-
-minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")
+file (
+    GLOB
+    ${PROJECT_NAME}_INCLUDE
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
+target_sources (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_SRC})
 target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
 minko_enable_plugin_http_loader (${PROJECT_NAME})
 minko_enable_plugin_sdl (${PROJECT_NAME})
 
 if (WIN32 OR LINUX)
-    file (GLOB INCLUDE_MAIN_LIST "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3")
+    file (GLOB
+        INCLUDE_MAIN_LIST
+        "${THIRD_PARTY_PATH}"
+    )
 
     file (
         GLOB_RECURSE
@@ -59,12 +94,12 @@ if (WIN32 OR LINUX)
         "${CMAKE_CURRENT_SOURCE_DIR}/include/chromium/*.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/chromium/*.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/chromium/*.hpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3/libcef_dll/*.hpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3/libcef_dll/*.hh"
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3/libcef_dll/*.h"
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3/libcef_dll/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3/libcef_dll/*.cc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3/libcef_dll/*.c"
+        "${THIRD_PARTY_PATH}/libcef_dll/*.hpp"
+        "${THIRD_PARTY_PATH}/libcef_dll/*.hh"
+        "${THIRD_PARTY_PATH}/libcef_dll/*.h"
+        "${THIRD_PARTY_PATH}/libcef_dll/*.cpp"
+        "${THIRD_PARTY_PATH}/libcef_dll/*.cc"
+        "${THIRD_PARTY_PATH}/libcef_dll/*.c"
     )
 
     target_compile_options (
@@ -72,7 +107,10 @@ if (WIN32 OR LINUX)
         "-DCHROMIUM"
         "-DV8_DEPRECATION_WARNINGS"
         "-DCHROMIUM_BUILD"
-        "-DUSING_CEF_SHARED"
+        
+        "-DWRAPPING_CEF_SHARED"
+        "-DBUILDING_CEF_SHARED"
+        
         "-DUSE_DEFAULT_RENDER_THEME=0"
         "-DUSE_LIBJPEG_TURBO=1"
         "-DENABLE_REMOTING=0"
@@ -140,7 +178,7 @@ if (LINUX)
         "-DGTK_DISABLE_SINGLE_INCLUDES=1"
         "-DUSE_XI2_MT=2"
     )
-    file (GLOB INCLUDE_LIST "${CMAKE_CURRENT_SOURCE_DIR}/lib/cef3")
+    file (GLOB INCLUDE_LIST "${THIRD_PARTY_PATH}")
     target_include_directories (${PROJECT_NAME} PRIVATE ${INCLUDE_LIST})
 endif ()
 
