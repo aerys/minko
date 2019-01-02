@@ -36,16 +36,13 @@ stages:
       - build/adapt-template.py
       - LICENSE.md
       - README.md
-  only:
-    - branches
-    - tags
 
 .archive_template: &archive_template
   stage: archive
   image: registry.aerys.in/aerys/smartshape-docker/archive:2221
-  only:
-    - merge_requests
-    - /^version\/.*$/
+  except:
+    - master
+    - tags
   script:
     - cd "${CI_PROJECT_DIR}"
     - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
@@ -135,9 +132,6 @@ test:windows64_offscreen:
     - msbuild Project.sln /target:minko-test /property:Configuration=Release /property:Platform=x64 /m:4 /p:BuildProjectReferences=false
     - cd .\test\bin\windows64\release
     - minko-test.exe
-  only:
-    - branches
-    - tags
 
 test:linux_offscreen:
   stage: test
@@ -157,9 +151,6 @@ test:linux_offscreen:
     - pushd ./test/bin/linux64/release
     - ./minko-test
     - popd
-  only:
-    - branches
-    - tags
 
 archive:linux_offscreen:
   <<: *archive_template
