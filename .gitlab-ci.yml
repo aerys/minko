@@ -36,6 +36,10 @@ stages:
       - build/adapt-template.py
       - LICENSE.md
       - README.md
+  only:
+    - merge_requests
+    - branches
+    - tags
 
 .archive_template: &archive_template
   stage: archive
@@ -132,6 +136,10 @@ test:windows64_offscreen:
     - msbuild Project.sln /target:minko-test /property:Configuration=Release /property:Platform=x64 /m:4 /p:BuildProjectReferences=false
     - cd .\test\bin\windows64\release
     - minko-test.exe
+  only:
+    - merge_requests
+    - branches
+    - tags
 
 test:linux_offscreen:
   stage: test
@@ -151,6 +159,10 @@ test:linux_offscreen:
     - pushd ./test/bin/linux64/release
     - ./minko-test
     - popd
+  only:
+    - merge_requests
+    - branches
+    - tags
 
 archive:linux_offscreen:
   <<: *archive_template
