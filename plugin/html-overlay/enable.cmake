@@ -38,7 +38,7 @@ function (minko_enable_plugin_html_overlay target)
     file (GLOB OVERLAY_INCLUDE "${HTML_OVERLAY_PATH}/include")
     target_include_directories (${target} PRIVATE ${OVERLAY_INCLUDE})
 
-    file (COPY ${HTML_OVERLAY_PATH}/asset/ DESTINATION ${OUTPUT_PATH})
+    file (COPY ${HTML_OVERLAY_PATH}/asset DESTINATION ${OUTPUT_PATH})
 
     if (APPLE)
         target_compile_options (${target} PRIVATE -x objective-c++)
