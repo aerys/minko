@@ -48,8 +48,6 @@ function (minko_configure_target_flags target)
         set (COMPILATION_FLAGS -MMD)
     endif ()
     
-    set (COMPILATION_FLAGS ${COMPILATION_FLAGS} -MP -DJSON_IS_AMALGAMATION)
-    
     if (EMSCRIPTEN)
         set (COMPILATION_FLAGS ${COMPILATION_FLAGS} -MMD -DEMSCRIPTEN)
     endif()
