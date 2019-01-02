@@ -41,11 +41,8 @@ stages:
   stage: archive
   image: registry.aerys.in/aerys/smartshape-docker/archive:2221
   only:
-    - master
-    - dev
-    - /^client\/.*$/
-    - /^feature\/.*$/
-    - /^fix\/.*$/
+    - merge_requests
+    - /^version\/.*$/
     - tags
   script:
     - cd "${CI_PROJECT_DIR}"
