@@ -9,6 +9,8 @@ stages:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
     expire_in: 1 hr
     paths:
+      # FIXME: Remove this line when CEF is correctly handled
+      - build/DownloadCEF.cmake
       - build/module
       - build/framework/bin
       - build/framework/asset
