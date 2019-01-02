@@ -76,7 +76,7 @@ function (build_android target target_name)
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}-unsigned.apk")
         
         # sign the apk (only on release mode)
-        if ($ENV{ANDROID_KEYSTORE_PATH} AND $ENV{ANDROID_KEYSTORE_ALIAS} AND $ENV{ANDROID_KEYSTORE_PASSWORD})
+        if (DEFINED ENV{ANDROID_KEYSTORE_PATH} AND DEFINED ENV{ANDROID_KEYSTORE_ALIAS} AND DEFINED ENV{ANDROID_KEYSTORE_PASSWORD})
             add_custom_command (
                 TARGET ${target}
                 POST_BUILD
@@ -85,6 +85,8 @@ function (build_android target target_name)
                 COMMAND zipalign -fv 4 ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
                 COMMAND rm -f ${UNSIGNED_APK_PATH}
             )
+        else ()
+            message(WARNING "The ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_ALIAS or ANDROID_KEYSTORE_PASSWORD environment variable is not set: APK will not be signed.")
         endif ()
     else ()
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}.apk")
