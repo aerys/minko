@@ -37,7 +37,6 @@ stages:
       - LICENSE.md
       - README.md
   only:
-    - merge_requests
     - branches
     - tags
 
@@ -137,7 +136,6 @@ test:windows64_offscreen:
     - cd .\test\bin\windows64\release
     - minko-test.exe
   only:
-    - merge_requests
     - branches
     - tags
 
@@ -160,7 +158,6 @@ test:linux_offscreen:
     - ./minko-test
     - popd
   only:
-    - merge_requests
     - branches
     - tags
 
