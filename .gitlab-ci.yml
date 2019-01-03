@@ -7,7 +7,7 @@ stages:
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
-    expire_in: 1 hr
+    expire_in: 6 hr
     paths:
       - bin
       - script
