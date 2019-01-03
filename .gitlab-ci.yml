@@ -38,18 +38,14 @@ stages:
 .archive_template: &archive_template
   stage: archive
   image: registry.aerys.in/aerys/smartshape-docker/archive:2221
-  only:
+  except:
     - master
-    - dev
-    - /^client\/.*$/
-    - /^feature\/.*$/
-    - /^fix\/.*$/
     - tags
   script:
     - cd "${CI_PROJECT_DIR}"
     - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
     - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
-    - b2 upload_file --noProgress --info CI_COMMIT_SHA=${CI_COMMIT_SHA} "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE_NAME}" "${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}/${ARCHIVE_NAME}"
+    - b2 upload_file --noProgress --info CI_PIPELINE_ID=${CI_PIPELINE_ID} --info CI_COMMIT_SHA=${CI_COMMIT_SHA} "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE_NAME}" "${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}/${ARCHIVE_NAME}"
 
 build:html5:
   <<: *build_with_artifacts_template
