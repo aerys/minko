@@ -22,18 +22,6 @@ endif ()
 
 set (PROJECT_NAME "minko-plugin-nodejs-worker")
 
-if (WIN32)
-    execute_process(
-        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/script/build_nodejs.sh --use-prebuilt
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-else ()
-    execute_process(
-        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/script/build_nodejs.sh --use-prebuilt
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-endif ()
-
 file (GLOB_RECURSE
     ${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
@@ -43,9 +31,7 @@ file (GLOB_RECURSE
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/node/deps/uv/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/node/deps/v8/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/node/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/nodejs/include"
 )
 
 minko_add_worker (${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")

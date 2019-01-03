@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/async/NodeJSWorker.hpp"
 #include "minko/log/Logger.hpp"
 
-#include "node.h"
+#include "node/node.h"
 
 #include <unistd.h>
 

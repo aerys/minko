@@ -76,7 +76,7 @@ function (build_android target target_name)
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}-unsigned.apk")
         
         # sign the apk (only on release mode)
-        if ($ENV{ANDROID_KEYSTORE_PATH} AND $ENV{ANDROID_KEYSTORE_ALIAS} AND $ENV{ANDROID_KEYSTORE_PASSWORD})
+        if (DEFINED ENV{ANDROID_KEYSTORE_PATH} AND DEFINED ENV{ANDROID_KEYSTORE_ALIAS} AND DEFINED ENV{ANDROID_KEYSTORE_PASSWORD})
             add_custom_command (
                 TARGET ${target}
                 POST_BUILD
@@ -85,6 +85,8 @@ function (build_android target target_name)
                 COMMAND zipalign -fv 4 ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
                 COMMAND rm -f ${UNSIGNED_APK_PATH}
             )
+        else ()
+            message(WARNING "The ANDROID_KEYSTORE_PATH, ANDROID_KEYSTORE_ALIAS or ANDROID_KEYSTORE_PASSWORD environment variable is not set: APK will not be signed.")
         endif ()
     else ()
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}.apk")
@@ -93,5 +95,35 @@ function (build_android target target_name)
             POST_BUILD
             COMMAND mv ${UNSIGNED_APK_PATH} ${ARTIFACT_PATH}
         )
+    endif ()
+
+    if (NOT ${ANDROID_STL} MATCHES "_shared")
+        return()
+    endif ()
+
+    function(configure_shared_stl lib_path so_base)
+        configure_file(
+            "${ANDROID_NDK}/sources/cxx-stl/${lib_path}/libs/${ANDROID_ABI}/lib${so_base}.so" 
+            "${OUTPUT_PATH}/libs/${ANDROID_ABI}/lib${so_base}.so" 
+            COPYONLY
+        )
+    endfunction()
+
+    if ("${ANDROID_STL}" STREQUAL "libstdc++")
+        # The default minimal system C++ runtime library.
+    elseif ("${ANDROID_STL}" STREQUAL "gabi++_shared")
+        # The GAbi++ runtime (shared).
+        message(FATAL_ERROR "gabi++_shared was not configured by ndk-stl package")
+    elseif ("${ANDROID_STL}" STREQUAL "stlport_shared")
+        # The STLport runtime (shared).
+        configure_shared_stl("stlport" "stlport_shared")
+    elseif ("${ANDROID_STL}" STREQUAL "gnustl_shared")
+        # The GNU STL (shared).
+        configure_shared_stl("gnu-libstdc++/4.9" "gnustl_shared")
+    elseif ("${ANDROID_STL}" STREQUAL "c++_shared")
+        # The LLVM libc++ runtime (static).
+        configure_shared_stl("llvm-libc++" "c++_shared")
+    else ()
+        message(FATAL_ERROR "STL configuration ANDROID_STL=${ANDROID_STL} is not supported")
     endif ()
 endfunction()

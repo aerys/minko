@@ -38,5 +38,5 @@ example/*/bin
 test/*/bin
 doc/ref/html
 node_modules
-build
 third_party
+build*

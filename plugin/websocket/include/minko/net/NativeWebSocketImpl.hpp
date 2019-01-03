@@ -37,8 +37,7 @@ namespace minko
             UNKNOWN,
             TLS_1_0,
             TLS_1_1,
-            TLS_1_2,
-            TLS_1_3
+            TLS_1_2
         };
 
         class NativeWebSocketImpl : public WebSocketImpl
