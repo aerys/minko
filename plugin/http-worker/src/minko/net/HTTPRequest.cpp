@@ -391,7 +391,7 @@ HTTPRequest::fileExists(const std::string& filename,
 }
 
 std::string
-HTTPRequest::getURLAfterRedirection(const std::string url)
+HTTPRequest::getURLAfterRedirection(const std::string url, bool insecure)
 {
     CURL* curl = curl_easy_init();
     std::string newUrl;
@@ -401,6 +401,11 @@ HTTPRequest::getURLAfterRedirection(const std::string url)
 
         // Set the request type to HEAD.
         curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+        if (insecure)
+        {
+            // Skip SSL certificate verification
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        }
         // Follow redirects.
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 

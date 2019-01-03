@@ -118,7 +118,7 @@ namespace minko
 
             static
             std::string
-            getURLAfterRedirection(const std::string url);
+            getURLAfterRedirection(const std::string url, bool insecure = false);
 
         private:
             std::string _url;
