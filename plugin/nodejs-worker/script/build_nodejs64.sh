@@ -34,15 +34,16 @@ sed -i "s/, '-pie'//g" lib/node/common.gypi
 sed -i "s/-fPIE/-fPIC/g" lib/node/common.gypi
 # Add missing -lpthread when the host is linux.
 # Not doing this leads to linker errors.
-sed -i "s/-lrt/-lrt -lpthread/g" lib/node/common.gypi
+sed -i "s/-lrt/-lrt -lpthread/g" lib/node/deps/v8/gypfiles/v8.gyp
 
 ### First, generate a 64-bits standalone toolchain:
-TOOLCHAIN_PATH="${CWD}/toolchain" # Change this to the path where you want the toolchain to be created.
+TOOLCHAIN_PATH="${PWD}/my_toolchain" # Change this to the path where you want the toolchain to be created.
+rm -rf $TOOLCHAIN_PATH
 ${ANDROID_NDK_HOME}/build/tools/make_standalone_toolchain.py --arch arm64 --api 28 --install-dir ${TOOLCHAIN_PATH}
 
 export GYP_DEFINES="host_os=linux"
-target_compiler="${TOOLCHAIN_PATH}/toolchain/bin/clang"
-target_compilerpp="${TOOLCHAIN_PATH}/toolchain/bin/clang++"
+target_compiler="${TOOLCHAIN_PATH}/bin/clang"
+target_compilerpp="${TOOLCHAIN_PATH}/bin/clang++"
 
 pushd lib/node
 export CC=${target_compiler}
@@ -64,3 +65,5 @@ export CXX_host="clang++"
 popd
 
 make -j8 -C lib/node
+
+# This will generate a ./lib/node/out/Release/lib.target/libnode.so.64 file.

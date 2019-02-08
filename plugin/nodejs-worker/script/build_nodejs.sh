@@ -34,7 +34,7 @@ sed -i "s/, '-pie'//g" lib/node/common.gypi
 sed -i "s/-fPIE/-fPIC/g" lib/node/common.gypi
 # Add missing -lpthread when the host is linux.
 # Not doing this leads to linker errors.
-sed -i "s/-lrt/-lrt -lpthread/g" lib/node/common.gypi
+sed -i "s/-lrt/-lrt -lpthread/g" lib/node/deps/v8/gypfiles/v8.gyp
 
 #
 #
@@ -45,15 +45,15 @@ sed -i "s/-lrt/-lrt -lpthread/g" lib/node/common.gypi
 # The problem here is that the OpenSSL configuration file
 # does not deal with the case where OS=android. Therefore it
 # will fallback to the linux-x86_64 version.
-sed -i "s/'target_arch==\"arm\" and OS==\"linux\"'/'target_arch==\"arm\"'/g'" ./lib/node/deps/openssl/openssl_no_asm.gypi
-sed -i "s/'target_arch==\"arm\" and OS==\"linux\"'/'target_arch==\"arm\"'/g'" ./lib/node/deps/openssl/openssl_cl_no_asm.gypi
+sed -i 's/and OS=="linux"//g' ./lib/node/deps/openssl/openssl_no_asm.gypi
+sed -i 's/and OS=="linux"//g' ./lib/node/deps/openssl/openssl-cl_no_asm.gypi
 
 #
 #
 # Generate a 64-bits standalone toolchain:
-#
-TOOLCHAIN_PATH="${CWD}/toolchain" # Change this to the path where you want the toolchain to be created.
-${ANDROID_NDK_HOME}/build/tools/make_standalone_toolchain.py --arch arm64 --api 28 --install-dir ${TOOLCHAIN_PATH}
+TOOLCHAIN_PATH="${PWD}/my_toolchain" # Change this to the path where you want the toolchain to be created.
+rm -rf $TOOLCHAIN_PATH
+${ANDROID_NDK_HOME}/build/tools/make_standalone_toolchain.py --arch arm --api 28 --install-dir ${TOOLCHAIN_PATH}
 
 
 # Patch the toolchain (!)
@@ -72,8 +72,8 @@ ex -s -c '69i|#undef sa_handler;' -c x ${signal_types}
 # Now we are ready to configure and compile node.
 #
 export GYP_DEFINES="host_os=linux"
-target_compiler="${TOOLCHAIN_PATH}/toolchain/bin/clang"
-target_compilerpp="${TOOLCHAIN_PATH}/toolchain/bin/clang++"
+target_compiler="${TOOLCHAIN_PATH}/bin/clang"
+target_compilerpp="${TOOLCHAIN_PATH}/bin/clang++"
 
 pushd lib/node
 export CC=${target_compiler}
@@ -98,6 +98,5 @@ popd
 
 make -j8 -C lib/node
 
-
-
-
+# This will generate a ./lib/node/out/Release/lib.target/libnode.so.64 file.
+cp ./lib/node/out/Release/lib.target/libnode.so.64 lib/nodejs/lib/android/libnode.so
