@@ -9,11 +9,11 @@ function (minko_enable_plugin_assimp target)
             find_library (
                 LIBASSIMP_LIB
                 NAMES libassimp 
-                HINTS "${MINKO_HOME}/plugin/assimp/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+                HINTS "${MINKO_HOME}/plugin/assimp/bin/"
             )
             target_link_libraries (${target} ${LIBASSIMP_LIB})
         else ()
-            target_link_libraries (${target} "${MINKO_HOME}/plugin/assimp/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/liblibassimp.a")
+            target_link_libraries (${target} "${MINKO_HOME}/plugin/assimp/bin/libassimp.a")
         endif ()
     endif ()
     target_include_directories(${target} PRIVATE "${ASSIMP_PATH}/include")

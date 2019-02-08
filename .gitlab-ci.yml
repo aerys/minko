@@ -57,7 +57,7 @@ build:html5:
   image: registry.aerys.in/aerys/smartshape-docker/html5:2896
   script:
     - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/sdk/cmake/Modules/Platform/Emscripten.cmake ..
+    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_WASM=ON -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/sdk/cmake/Modules/Platform/Emscripten.cmake ..
     - make -j$(nproc)
 
 build:android:

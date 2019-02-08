@@ -76,14 +76,14 @@ file (
     "lib/assimp/contrib/unzip"    
 )
 
-minko_add_library ("libassimp" STATIC "${ASSIMP_LIB_SRC}")
-target_include_directories ("libassimp" PUBLIC ${ASSIMP_LIB_INCLUDE})
-target_link_libraries ("libassimp" "minko-plugin-zlib")
-target_include_directories ("libassimp" PUBLIC "${MINKO_HOME}/plugin/zlib/lib/zlib")
-target_compile_options ("libassimp" PUBLIC -DMINKO_PLUGIN_ZLIB)
-target_link_libraries (${PROJECT_NAME} "libassimp")
+minko_add_library ("assimp" STATIC "${ASSIMP_LIB_SRC}")
+target_include_directories ("assimp" PUBLIC ${ASSIMP_LIB_INCLUDE})
+target_link_libraries ("assimp" "minko-plugin-zlib")
+target_include_directories ("assimp" PUBLIC "${MINKO_HOME}/plugin/zlib/lib/zlib")
+target_compile_options ("assimp" PUBLIC -DMINKO_PLUGIN_ZLIB)
+target_link_libraries (${PROJECT_NAME} "assimp")
 target_compile_options (
-    "libassimp" PRIVATE 
+    "assimp" PRIVATE 
     -DASSIMP_BUILD_NO_OWN_ZLIB
     -DASSIMP_BUILD_NO_EXPORT
     -DASSIMP_BUILD_BOOST_WORKAROUND
@@ -109,7 +109,7 @@ if (MSVC)
         -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
     )
     target_compile_options (
-        libassimp PRIVATE
+        assimp PRIVATE
         -D_CRT_SECURE_NO_WARNINGS
         -D_SCL_SECURE_NO_WARNINGS
         -DAI_LMW_MAX_WEIGHTS=4
@@ -128,7 +128,7 @@ else ()
         -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
     )
     target_compile_options (
-        libassimp PRIVATE 
+        assimp PRIVATE 
         -DAI_LMW_MAX_WEIGHTS=4
         # OpenGL ES 2 max vertex count
         -DAI_SLM_DEFAULT_MAX_VERTICES=128000

@@ -11,5 +11,6 @@ function (minko_enable_plugin_debug target)
     target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE_DEBUG})
     target_compile_options (${PROJECT_NAME} PRIVATE -DMINKO_PLUGIN_DEBUG)
     
-    file (COPY ${DEBUG_PATH}/asset DESTINATION ${OUTPUT_PATH}/asset)
+    # FIXME: we have no way to know whether the final app will chose to embed those assets or not
+    file (COPY ${DEBUG_PATH}/asset DESTINATION ${OUTPUT_PATH}/embed)
 endfunction ()

@@ -1,7 +1,7 @@
 function (minko_add_library target_name type sources)
     minko_set_variables()
     if (ANDROID)
-        set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+        set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/libminko-framework.a")
         set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} ${MINKO_FRAMEWORK_LIB}" PARENT_SCOPE)
     endif ()
     add_library (${target_name} ${type} ${sources})
@@ -54,10 +54,10 @@ function (minko_add_library target_name type sources)
             find_library(
                 MINKO_FRAMEWORK_LIB 
                 NAMES minko-framework
-                HINTS "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+                HINTS "${MINKO_HOME}/framework/bin"
             )
         else()
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/libminko-framework.a")
         endif ()
     else ()
         set (MINKO_FRAMEWORK_LIB "minko-framework")
@@ -86,7 +86,13 @@ function (minko_add_library target_name type sources)
             PROPERTIES LINK_FLAGS 
             "-Wl -shared -pthread -Wl,--no-undefined -Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
         )
-        target_compile_options (${target_name} PUBLIC "-Wno-narrowing" "-Wno-tautological-compare" "-DEVL_EGLEXT_PROTOTYPES")
+        target_compile_options (
+            ${target_name}
+            PUBLIC
+            "-Wno-narrowing"
+            "-Wno-tautological-compare"
+            "-DEVL_EGLEXT_PROTOTYPES"
+        )
     endif ()
     
     if (WIN32)
@@ -124,14 +130,8 @@ function (minko_add_library target_name type sources)
         if (CMAKE_BUILD_TYPE STREQUAL "Release")
             target_compile_options(${target_name} PRIVATE -O3 --llvm-lto 1)
         else ()
-            target_compile_options(${target_name} PRIVATE --llvm-opts 0 -O2 -g4)
-        endif ()
-        if (NOT WASM)
-            add_custom_command (
-                TARGET ${target_name}
-                POST_BUILD
-                COMMAND cd ${MINKO_HOME}/../ && mkdir -p build && cd build && cmake -DWASM=ON -WITH_PLUGINS=${target_name} .. && make VERBOSE=1
-            )
+            target_compile_options(${target_name} PRIVATE --llvm-opts 0 -g4)
+            set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -g4")
         endif ()
     endif ()
     
@@ -154,16 +154,16 @@ function (minko_add_executable target_name sources)
             find_library (
                 MINKO_FRAMEWORK_LIB 
                 NAMES minko-framework
-                HINTS "${MINKO_HOME}framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+                HINTS "${MINKO_HOME}framework/bin"
             )
         else ()
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/libminko-framework.a")
         endif ()
     else ()
         if (LINUX OR ANDROID OR EMSCRIPTEN OR APPLE OR IOS)
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-framework.a")
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/libminko-framework.a")
         else ()
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/minko-framework.lib")
+            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/minko-framework.lib")
         endif ()
     endif ()
 
@@ -288,6 +288,8 @@ function (minko_add_executable target_name sources)
         set_target_properties (${target_name} PROPERTIES XCODE_PRODUCT_TYPE com.apple.product-type.application)
         configure_file (${MINKO_HOME}/skeleton/Info.plist ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist COPYONLY)
         configure_file (${MINKO_HOME}/skeleton/Default-568h@2x.png ${CMAKE_CURRENT_SOURCE_DIR}/Default-568h@2x.png COPYONLY)
+        file (GLOB_RECURSE IOS_SRC "*.plist")
+        target_sources(${target_name} PUBLIC ${IOS_SRC})
     endif ()
     
     if (APPLE)
@@ -295,135 +297,81 @@ function (minko_add_executable target_name sources)
     endif ()
     
     if (EMSCRIPTEN)
-        if (WASM)
-            set (WASM_NBR 1)
-            set (WEB_TARGET wasm)
+        if (WITH_WASM)
+            set (WASM_OPTS  -s WASM=1 -s ALLOW_MEMORY_GROWTH=1)
+            set (ASMJS_OPTS "")
         else ()
-            set (WASM_NBR 0)
-            set (WEB_TARGET asmjs)
+            set (WASM_OPTS  -s WASM=0)
+            set (ASMJS_OPTS -s OUTLINING_LIMIT=20000 -s ALLOW_MEMORY_GROWTH=0 --closure 1)
         endif ()
-        set (WEB_TARGET ${WEB_TARGET} PARENT_SCOPE)
-        
-        set_target_properties (
-            ${target_name}
-            PROPERTIES LINK_FLAGS
-            "-Wl --no-as-needed -s FORCE_FILESYSTEM=1 -o ${OUTPUT_PATH}/${PROJECT_NAME}.bc -s WASM=${WASM_NBR}"
-        )
-        set_target_properties (${target_name} PROPERTIES SUFFIX ".bc")
         
         if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/template.html)
             set (SHELL_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/template.html)
         else ()
             set (SHELL_FILE_PATH ${MINKO_HOME}/skeleton/template.html)
         endif ()
+
+        # Emscripten build is done in two steps:
+        # 1. build the bytecode (*.bc)
+        # 2. convert the bytecode to JavaScript (*.js)
+        set_target_properties (${target_name} PROPERTIES SUFFIX ".bc")
         
-        configure_file (${SHELL_FILE_PATH} ${OUTPUT_PATH}/template.html COPYONLY)
-        set (${SHELL_FILE_PATH} ${OUTPUT_PATH}/template.html)
-
-        # Step 1: Generate project-name.hmtl
-        # Fill the template.html {{{ SCRIPT }}} field
-        # Rename template.html
-        add_custom_command (
-            TARGET ${target_name}
-            PRE_LINK
-            COMMAND python ${MINKO_HOME}/adapt-template.py ${PROJECT_NAME} ${OUTPUT_PATH}/template.html
-            COMMAND cp ${OUTPUT_PATH}/template.html ${OUTPUT_PATH}/${PROJECT_NAME}.html
-        )
-
-        # Step 2: call CMake build with WASM target enabled (create the child process)
-        # The call is made after the ASM.js target build but before the ASM.js html project files generation
-        if (NOT WASM OR WASM STREQUAL "off" OR WASM STREQUAL "OFF" AND EMSCRIPTEN)
-            add_custom_command (
-                TARGET ${target_name}
-                POST_BUILD
-                COMMAND cd ${CMAKE_SOURCE_DIR} && mkdir -p build && cd build && cmake -DWASM=ON .. && make VERBOSE=1
-            )
-        endif ()
-
-        # Step 3: generate the project files from the bytecode file for the WASM target
-        # Note that Step 3 is within the child process, therefore it will generate the WASM project files
-        # Step 4: generate the project files from the bytecode file for the ASM.js target
-        # Note that Step 4 is within the parent process
-        # At this point the target is back to ASM.js, therefore it will generate the ASM.js project files
         if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set_target_properties (
-                ${target_name}
-                PROPERTIES LINK_FLAGS
-                "--llvm-lto 0"
-            )
-            # Files generation begin
+            set_target_properties(${target_name} PROPERTIES LINK_FLAGS "--llvm-lto 0 -g4 -Wl --no-as-needed")
+            target_compile_options(${target_name} PRIVATE "-g4")
             add_custom_command (
                 TARGET ${target_name}
                 POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/em++ ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}-${WEB_TARGET}.html --js-library ${MINKO_HOME}/module/emscripten/library.js -s DISABLE_EXCEPTION_CATCHING=0 -s ALLOW_MEMORY_GROWTH=${WASM_NBR} -s DEMANGLE_SUPPORT=1 -s NO_EXIT_RUNTIME=1 --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -s FORCE_FILESYSTEM=1 -s WASM=${WASM_NBR} --shell-file \"${SHELL_FILE_PATH}\"
-                COMMAND python ${MINKO_HOME}/module/emscripten/empkg.py ${OUTPUT_PATH}/${PROJECT_NAME}-${WEB_TARGET}.data
-            )
-            # Files generation end
-        else ()
-            set_target_properties (
-                ${target_name}
-                PROPERTIES LINK_FLAGS
-                "--llvm-lto 1"
-            )
-            # Files generation begin
-            add_custom_command (
-                TARGET ${target_name}
-                POST_BUILD
-                COMMAND $ENV{EMSCRIPTEN}/em++ ${OUTPUT_PATH}/${PROJECT_NAME}.bc -o ${OUTPUT_PATH}/${PROJECT_NAME}-${WEB_TARGET}.html -O3 --closure 1 --js-library ${MINKO_HOME}/module/emscripten/library.js -s DISABLE_EXCEPTION_CATCHING=1 -s ALLOW_MEMORY_GROWTH=${WASM_NBR} -s NO_EXIT_RUNTIME=1 --memory-init-file 1 -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\" -s FORCE_FILESYSTEM=1 -s WASM=${WASM_NBR} -s OUTLINING_LIMIT=20000 --shell-file \"${SHELL_FILE_PATH}\"
-                COMMAND python ${MINKO_HOME}/module/emscripten/empkg.py ${OUTPUT_PATH}/${PROJECT_NAME}-${WEB_TARGET}.data
-            )
-            # Files generation end
-        endif ()
-
-        # Step 5: clean output directories
-        # The CMake variable 'WASM' is set to OFF only within the parent process
-        # Therefore, the following code will only run when generation is over for both WASM and ASM.js targets
-        if (NOT WASM OR WASM STREQUAL "off" OR WASM STREQUAL "OFF" AND EMSCRIPTEN)
-            # Copy files from the ASM.js output directory to the WASM output directory
-            # Remove bytecode file, template file and target-specific html files
-            add_custom_command (
-                TARGET ${target_name}
-                POST_BUILD
-                COMMAND cp ${OUTPUT_PATH}/${PROJECT_NAME}-${WEB_TARGET}.* ${OUTPUT_PATH}/../../wasm${BITNESS}/${BUILD_TYPE}
-                COMMAND rm -f ${OUTPUT_PATH}/../../wasm${BITNESS}/${BUILD_TYPE}/${PROJECT_NAME}.bc
-                COMMAND rm -f ${OUTPUT_PATH}/../../wasm${BITNESS}/${BUILD_TYPE}/${PROJECT_NAME}-*.html
-                COMMAND rm -f ${OUTPUT_PATH}/../../wasm${BITNESS}/${BUILD_TYPE}/template.html
-            )
-
-            # Remove ASM.js output directory
-            add_custom_command (
-                TARGET ${target_name}
-                POST_BUILD
-                COMMAND cmake -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/bin/${SYSTEM_NAME}${BITNESS}
-            )
-        endif ()
-
-        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/template.html")
-            target_compile_options (
-                ${target_name}
-                PUBLIC
-                 "--shell-file \"${CMAKE_CURRENT_SOURCE_DIR}/template.html\""
+                # Compile the Emscripten (*.bc) bytecoe to JavaScript (*.js)
+                COMMAND $ENV{EMSCRIPTEN}/em++
+                    ${OUTPUT_PATH}/${PROJECT_NAME}.bc
+                    -o ${OUTPUT_PATH}/${PROJECT_NAME}.html
+                    -g4
+                    --js-library ${MINKO_HOME}/module/emscripten/library.js
+                    --memory-init-file 1
+                    --shell-file \"${SHELL_FILE_PATH}\"
+                    -s DISABLE_EXCEPTION_CATCHING=0
+                    -s DEMANGLE_SUPPORT=1
+                    -s NO_EXIT_RUNTIME=1
+                    -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\"
+                    -s EXPORTED_RUNTIME_METHODS="[\'FS_createPath\',\'FS_createDataFile\',\'addRunDependency\',\'removeRunDependency\',\'getMemory\',\'cwrap\']"
+                    -s FORCE_FILESYSTEM=1
+                    -s ERROR_ON_UNDEFINED_SYMBOLS=0
+                    ${WASM_OPTS}
+                    ${ASMJS_OPTS}
+                # Generate the *.data + *-preload.js for the embedded assets
+                COMMAND python
+                    ${MINKO_HOME}/module/emscripten/empkg.py
+                    ${OUTPUT_PATH}/${PROJECT_NAME}.data
             )
         else ()
-            target_compile_options (
-                ${target_name}
-                PUBLIC
-                "--shell-file \"${MINKO_HOME}/skeleton/template.html\""
+            set_target_properties(${target_name} PROPERTIES LINK_FLAGS "--llvm-lto 1 -Wl --no-as-needed")
+            add_custom_command (
+                TARGET ${target_name}
+                POST_BUILD
+                # Compile the Emscripten (*.bc) bytecoe to JavaScript (*.js)
+                COMMAND $ENV{EMSCRIPTEN}/em++
+                    ${OUTPUT_PATH}/${PROJECT_NAME}.bc
+                    -o ${OUTPUT_PATH}/${PROJECT_NAME}.html
+                    -O3
+                    --js-library ${MINKO_HOME}/module/emscripten/library.js
+                    --shell-file \"${SHELL_FILE_PATH}\"
+                    --memory-init-file 1
+                    -s DISABLE_EXCEPTION_CATCHING=1
+                    -s NO_EXIT_RUNTIME=1
+                    -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\"
+                    -s EXPORTED_RUNTIME_METHODS="[\'FS_createPath\',\'FS_createDataFile\',\'addRunDependency\',\'removeRunDependency\',\'getMemory\',\'cwrap\']"
+                    -s FORCE_FILESYSTEM=1
+                    -s ERROR_ON_UNDEFINED_SYMBOLS=0
+                    ${WASM_OPTS}
+                    ${ASMJS_OPTS}
+                    
+                # Generate the *.data + *-preload.js for the embedded assets
+                COMMAND python
+                    ${MINKO_HOME}/module/emscripten/empkg.py
+                    ${OUTPUT_PATH}/${PROJECT_NAME}.data
             )
         endif ()
-    endif ()
-    
-    if (IOS)
-        file (GLOB_RECURSE IOS_SRC "*.plist")
-        target_sources(${target_name} PUBLIC ${IOS_SRC})
-    endif ()
-
-    # We need to remove the WASM value in the cache to use the fallback again
-    # but we need to keep the value for CMakeLists of external apps so we set it locally.
-    if (WASM)
-        set (WASM ON)
-        set (WASM ON PARENT_SCOPE)
-        unset (WASM CACHE)
     endif ()
 endfunction ()
 # minko_add_executable function end
@@ -446,7 +394,14 @@ function (minko_add_worker target_name sources)
         add_custom_command (
             TARGET ${target_name}
             POST_BUILD
-            COMMAND $ENV{EMSCRIPTEN}/emcc ${OUTPUT_PATH}/${PROJECT_NAME} -o ${OUTPUT_PATH}/${PROJECT_NAME}.js -O3 --closure 1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 -s EXPORTED_FUNCTIONS="[\'minkoWorkerEntryPoint\']"
-        )       
+            COMMAND $ENV{EMSCRIPTEN}/emcc
+                ${OUTPUT_PATH}/${PROJECT_NAME}
+                -o ${OUTPUT_PATH}/${PROJECT_NAME}.js
+                -O3
+                --closure 1
+                -s DISABLE_EXCEPTION_CATCHING=0
+                -s TOTAL_MEMORY=268435456
+                -s EXPORTED_FUNCTIONS="[\'minkoWorkerEntryPoint\']"
+        )
     endif ()
 endfunction ()
