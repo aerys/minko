@@ -76,7 +76,7 @@ build:linux_offscreen:
   script:
     - ./plugin/serializer/script/download_dependencies.sh .
     - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
+    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON -DWITH_TESTS=ON ..
     - make -j$(nproc)
 
 build:windows64:
@@ -102,7 +102,7 @@ build:windows64_offscreen:
     - bash plugin\serializer\script\download_dependencies.sh .
     - if not exist build mkdir build
     - cd build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
+    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON -DWITH_TESTS=ON ..
     - msbuild Project.sln /property:Configuration=Release /property:Platform=x64 /m:4
 
 test:windows64_offscreen:
