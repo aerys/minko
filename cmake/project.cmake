@@ -44,12 +44,12 @@ function (minko_add_library target_name type sources)
     endif ()   
     target_include_directories (${target_name} PRIVATE "${FRAMEWORK_INCLUDES}")
     
-    string (FIND ${target_name} "minko-example" TEST_EXAMPLE)
-    string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
-    string (FIND ${target_name} "minko-framework" TEST_FRAMEWORK)
-    string (FIND ${target_name} "libassimp" TEST_LIBASSIMP)
+    string (FIND ${target_name} "minko-example" TARGET_IS_EXAMPLE)
+    string (FIND ${target_name} "minko-plugin" TARGET_IS_PLUGIN)
+    string (FIND ${target_name} "minko-framework" TARGET_IS_FRAMEWORK)
+    string (FIND ${target_name} "libassimp" TARGET_IS_LIBASSIMP)
     
-    if (TEST_EXAMPLE EQUAL -1 AND TEST_PLUGIN EQUAL -1 AND TEST_FRAMEWORK EQUAL -1 AND TEST_LIBASSIMP EQUAL -1)
+    if (TARGET_IS_EXAMPLE EQUAL -1 AND TARGET_IS_PLUGIN EQUAL -1 AND TARGET_IS_FRAMEWORK EQUAL -1 AND TARGET_IS_LIBASSIMP EQUAL -1)
         if (NOT EMSCRIPTEN AND NOT ANDROID)
             find_library(
                 MINKO_FRAMEWORK_LIB 
@@ -63,7 +63,7 @@ function (minko_add_library target_name type sources)
         set (MINKO_FRAMEWORK_LIB "minko-framework")
     endif ()
     
-    if (TEST_FRAMEWORK EQUAL -1)
+    if (TARGET_IS_FRAMEWORK EQUAL -1)
         target_link_libraries(${target_name} ${MINKO_FRAMEWORK_LIB})
     endif ()
 
@@ -135,11 +135,11 @@ function (minko_add_library target_name type sources)
         endif ()
     endif ()
     
-    string (FIND ${target_name} "minko-plugin" TEST_PLUGIN)
-    string (FIND ${target_name} "minko-framework" TEST_FRAMEWORK)
-    string (FIND ${target_name} "libassimp" TEST_LIBASSIMP)
+    string (FIND ${target_name} "minko-plugin" TARGET_IS_PLUGIN)
+    string (FIND ${target_name} "minko-framework" TARGET_IS_FRAMEWORK)
+    string (FIND ${target_name} "assimp" TARGET_IS_LIBASSIMP)
     
-    if (ANDROID AND TEST_PLUGIN EQUAL -1 AND TEST_FRAMEWORK EQUAL -1 AND TEST_LIBASSIMP EQUAL -1)
+    if (ANDROID AND TARGET_IS_PLUGIN EQUAL -1 AND TARGET_IS_FRAMEWORK EQUAL -1 AND TARGET_IS_LIBASSIMP EQUAL -1)
         minko_package_assets ("*.glsl;*.effect" "embed")
         build_android (${target_name} "lib${target_name}.so")
     endif ()
@@ -149,7 +149,7 @@ endfunction ()
 function (minko_add_executable target_name sources)
     minko_set_variables()
 
-    if (TEST_EXAMPLE EQUAL -1)
+    if (TARGET_IS_EXAMPLE EQUAL -1)
         if (NOT EMSCRIPTEN AND NOT ANDROID)
             find_library (
                 MINKO_FRAMEWORK_LIB 
@@ -302,7 +302,7 @@ function (minko_add_executable target_name sources)
             set (ASMJS_OPTS "")
         else ()
             set (WASM_OPTS  -s WASM=0)
-            set (ASMJS_OPTS -s OUTLINING_LIMIT=20000 -s ALLOW_MEMORY_GROWTH=0 --closure 1)
+            set (ASMJS_OPTS -s OUTLINING_LIMIT=20000 -s ALLOW_MEMORY_GROWTH=0)
         endif ()
         
         if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/template.html)
@@ -322,12 +322,12 @@ function (minko_add_executable target_name sources)
             add_custom_command (
                 TARGET ${target_name}
                 POST_BUILD
-                # Compile the Emscripten (*.bc) bytecoe to JavaScript (*.js)
+                # Compile the Emscripten (*.bc) bytecode to JavaScript (*.js)
                 COMMAND $ENV{EMSCRIPTEN}/em++
                     ${OUTPUT_PATH}/${PROJECT_NAME}.bc
                     -o ${OUTPUT_PATH}/${PROJECT_NAME}.html
                     -g4
-                    --js-library ${MINKO_HOME}/module/emscripten/library.js
+                    --js-library ${MINKO_HOME}/cmake/library.js
                     --memory-init-file 1
                     --shell-file \"${SHELL_FILE_PATH}\"
                     -s DISABLE_EXCEPTION_CATCHING=0
@@ -341,7 +341,7 @@ function (minko_add_executable target_name sources)
                     ${ASMJS_OPTS}
                 # Generate the *.data + *-preload.js for the embedded assets
                 COMMAND python
-                    ${MINKO_HOME}/module/emscripten/empkg.py
+                    ${MINKO_HOME}/cmake/empkg.py
                     ${OUTPUT_PATH}/${PROJECT_NAME}.data
             )
         else ()
@@ -349,12 +349,12 @@ function (minko_add_executable target_name sources)
             add_custom_command (
                 TARGET ${target_name}
                 POST_BUILD
-                # Compile the Emscripten (*.bc) bytecoe to JavaScript (*.js)
+                # Compile the Emscripten (*.bc) bytecode to JavaScript (*.js)
                 COMMAND $ENV{EMSCRIPTEN}/em++
                     ${OUTPUT_PATH}/${PROJECT_NAME}.bc
                     -o ${OUTPUT_PATH}/${PROJECT_NAME}.html
                     -O3
-                    --js-library ${MINKO_HOME}/module/emscripten/library.js
+                    --js-library ${MINKO_HOME}/cmake/library.js
                     --shell-file \"${SHELL_FILE_PATH}\"
                     --memory-init-file 1
                     -s DISABLE_EXCEPTION_CATCHING=1
@@ -368,7 +368,7 @@ function (minko_add_executable target_name sources)
                     
                 # Generate the *.data + *-preload.js for the embedded assets
                 COMMAND python
-                    ${MINKO_HOME}/module/emscripten/empkg.py
+                    ${MINKO_HOME}/cmake/empkg.py
                     ${OUTPUT_PATH}/${PROJECT_NAME}.data
             )
         endif ()

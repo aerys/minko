@@ -1,8 +1,8 @@
-include ("${MINKO_HOME}/plugins.cmake")
-include ("${MINKO_HOME}/package.cmake")
-include ("${MINKO_HOME}/minko.cmake")
-include ("${MINKO_HOME}/project.cmake")
-include ("${MINKO_HOME}/android-build.cmake")
+include ("${MINKO_HOME}/cmake/plugins.cmake")
+include ("${MINKO_HOME}/cmake/package.cmake")
+include ("${MINKO_HOME}/cmake/minko.cmake")
+include ("${MINKO_HOME}/cmake/project.cmake")
+include ("${MINKO_HOME}/cmake/android-build.cmake")
 
 list (
     APPEND

@@ -33,7 +33,7 @@ function (build_android target target_name)
     add_custom_command (
         TARGET ${target}
         POST_BUILD
-        COMMAND cp -r ${MINKO_HOME}/template/android/* ${OUTPUT_PATH}
+        COMMAND cp -r ${MINKO_HOME}/skeleton/android/* ${OUTPUT_PATH}
         WORKING_DIRECTORY ${OUTPUT_PATH}
     )
     if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/android)

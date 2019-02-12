@@ -66,7 +66,7 @@ namespace minko
             resize(unsigned int width, unsigned int height, bool resizeSmoothly) override;
 
             void
-            dispose();
+            dispose() override;
 
             void
             disposeData() override;

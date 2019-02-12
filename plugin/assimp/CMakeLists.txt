@@ -76,7 +76,8 @@ file (
     "lib/assimp/contrib/unzip"    
 )
 
-minko_add_library ("assimp" STATIC "${ASSIMP_LIB_SRC}")
+# minko_add_library ("assimp" STATIC "${ASSIMP_LIB_SRC}")
+add_library("assimp" STATIC "${ASSIMP_LIB_SRC}")
 target_include_directories ("assimp" PUBLIC ${ASSIMP_LIB_INCLUDE})
 target_link_libraries ("assimp" "minko-plugin-zlib")
 target_include_directories ("assimp" PUBLIC "${MINKO_HOME}/plugin/zlib/lib/zlib")

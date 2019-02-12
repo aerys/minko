@@ -9,8 +9,6 @@ stages:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
     expire_in: 6 hr
     paths:
-      # FIXME: Remove this line when CEF is correctly handled
-      - build/DownloadCEF.cmake
       - build/module
       - build/framework/bin
       - build/framework/asset
@@ -27,15 +25,7 @@ stages:
       - build/plugin/nodejs-worker/src/minko/file/*.java
       - build/plugin/video-camera/src/minko/video/*.java
       - build/skeleton
-      - build/template
-      - build/android-build.cmake
-      - build/cpjf.cmake
-      - build/project.cmake
-      - build/minko.cmake
-      - build/plugins.cmake
-      - build/package.cmake
-      - build/sdk.cmake
-      - build/adapt-template.py
+      - build/cmake
       - LICENSE.md
       - README.md
 
