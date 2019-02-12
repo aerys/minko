@@ -8,7 +8,7 @@ function (minko_enable_plugin_assimp target)
         if (NOT EMSCRIPTEN AND NOT ANDROID)
             find_library (
                 LIBASSIMP_LIB
-                NAMES libassimp 
+                NAMES assimp
                 HINTS "${MINKO_HOME}/plugin/assimp/bin/"
             )
             target_link_libraries (${target} ${LIBASSIMP_LIB})
