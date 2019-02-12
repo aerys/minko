@@ -122,7 +122,7 @@ test:windows64_offscreen:
     - cd build
     - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=jpeg,png,ttf,sdl,ssl,serializer,websocket,http-worker,http-loader -DWITH_TESTS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
     - msbuild Project.sln /target:minko-test /property:Configuration=Release /property:Platform=x64 /m:4 /p:BuildProjectReferences=false
-    - cd .\test\bin\windows64\release
+    - cd .\test\bin\release
     - minko-test.exe
 
 test:linux_offscreen:
@@ -140,7 +140,7 @@ test:linux_offscreen:
     - mkdir -p build && cd build
     - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=jpeg,png,ttf,sdl,ssl,serializer,websocket,http-worker,http-loader -DWITH_TESTS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
     - make -j$(nproc)
-    - pushd ./test/bin/linux64/release
+    - pushd ./test/bin/release
     - ./minko-test
     - popd
 
