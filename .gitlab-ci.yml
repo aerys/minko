@@ -24,7 +24,7 @@ stages:
       - build/plugin/sensors/src/android/*.java
       - build/plugin/nodejs-worker/src/minko/file/*.java
       - build/plugin/video-camera/src/minko/video/*.java
-      - build/skeleton
+      - build/template
       - build/cmake
       - LICENSE.md
       - README.md
