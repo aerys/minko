@@ -7,7 +7,7 @@ if "%1"=="windows64" (
     set machine=x64
 ) else (
     set filename=libcurl
-    set machine=x64
+    set machine=x86
 )
 
 dumpbin /exports "%filename%.dll" > %filename%-exports.txt
