@@ -26,6 +26,7 @@ stages:
       - build/plugin/video-camera/src/minko/video/*.java
       - build/template
       - build/cmake
+      - build/test
       - LICENSE.md
       - README.md
 
@@ -115,14 +116,9 @@ test:windows64_offscreen:
     when: on_failure
     expire_in: 1 hr
     paths:
-      - test
+      - build/test
   script:
-    - set MINKO_HOME=%cd%
-    - if not exist build mkdir build
-    - cd build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=jpeg,png,ttf,sdl,ssl,serializer,websocket,http-worker,http-loader -DWITH_TESTS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
-    - msbuild Project.sln /target:minko-test /property:Configuration=Release /property:Platform=x64 /m:4 /p:BuildProjectReferences=false
-    - cd .\test\bin
+    - cd .\build\test\bin
     - minko-test.exe
 
 test:linux_offscreen:
@@ -135,14 +131,10 @@ test:linux_offscreen:
     when: on_failure
     expire_in: 1 hr
     paths:
-      - test
+      - build/test
   script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=jpeg,png,ttf,sdl,ssl,serializer,websocket,http-worker,http-loader -DWITH_TESTS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
-    - make -j$(nproc)
-    - pushd ./test/bin
+    - cd ./build/test/bin
     - ./minko-test
-    - popd
 
 archive:linux_offscreen:
   <<: *archive_template
