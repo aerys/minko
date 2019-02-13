@@ -2,7 +2,18 @@ cmake_minimum_required(VERSION 3.5.1)
 
 set(MINKO_HOME ${CMAKE_CURRENT_BINARY_DIR})
 
-if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+option (WITH_PLUGINS "list off plugins to build" ON)
+option (WITH_EXAMPLES "list off examples to build" ON)
+option (WITH_TESTS "used to enable the tests" OFF)
+option (WITH_WASM "enable WebAssembly" ON)
+option (WITH_OFFSCREEN "enable offscreen rendering" OFF)
+option (WITH_NODEJS_WORKER "enable the NodeJS worker plugin" OFF)
+
+if (NOT CMAKE_BUILD_TYPE)
+    set (CMAKE_BUILD_TYPE "Debug")
+endif ()
+
+if (WITH_OFFSCREEN)
     set (OFFSCREEN_PATH plugin/offscreen)
     file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/${OFFSCREEN_PATH}/enable.cmake DESTINATION ${MINKO_HOME}/${OFFSCREEN_PATH})
     file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/${OFFSCREEN_PATH}/include DESTINATION ${MINKO_HOME}/${OFFSCREEN_PATH})
@@ -18,29 +29,21 @@ endif()
 file (
     GLOB
     MINKO_CMAKE_UTILS
-    "*.cmake"
+    "cmake/*.cmake"
 )
 
 list (
     REMOVE_ITEM
     MINKO_CMAKE_UTILS
-    "${CMAKE_CURRENT_SOURCE_DIR}/sdk.cmake"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdk.cmake"
 )
 
-file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/sdk.cmake" DESTINATION ${MINKO_HOME})
-file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/adapt-template.py" DESTINATION ${MINKO_HOME})
-file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/module" DESTINATION ${MINKO_HOME})
+file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/cmake" DESTINATION ${MINKO_HOME})
 file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/template" DESTINATION ${MINKO_HOME})
-file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/skeleton" DESTINATION ${MINKO_HOME})
 foreach (MINKO_CMAKE_UTIL ${MINKO_CMAKE_UTILS})
     file (COPY ${MINKO_CMAKE_UTIL} DESTINATION ${MINKO_HOME})
     include (${MINKO_CMAKE_UTIL})
 endforeach ()
-
-
-if (NOT CMAKE_BUILD_TYPE)
-    set (CMAKE_BUILD_TYPE "Debug")
-endif ()
 
 if (APPLE AND NOT IOS)
    set (CMAKE_OSX_DEPLOYMENT_TARGET "")
@@ -52,10 +55,6 @@ endif ()
 add_subdirectory ("framework")
 
 get_property (FRAMEWORK_INCLUDES TARGET minko-framework PROPERTY INCLUDE_DIRECTORIES)
-
-option (WITH_PLUGINS "list off plugins to build" ON)
-option (WITH_EXAMPLES "list off examples to build" ON)
-option (WITH_TESTS "used to enable the tests" OFF)
 
 list (
     APPEND
@@ -85,14 +84,14 @@ list (
     websocket
 )
 
-if (WITH_NODEJS_WORKER STREQUAL "on" OR WITH_NODEJS_WORKER STREQUAL "ON")
+if (WITH_NODEJS_WORKER)
     if (NOT WITH_PLUGINS MATCHES OFF AND NOT WITH_PLUGINS MATCHES ON)
         set (WITH_PLUGINS "nodejs-worker,${WITH_PLUGINS}")
     endif ()
     list (APPEND PLUGINS nodejs-worker)
 endif ()
 
-if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+if (WITH_OFFSCREEN)
     if (NOT WITH_PLUGINS MATCHES OFF AND NOT WITH_PLUGINS MATCHES ON)
         set (WITH_PLUGINS "offscreen,${WITH_PLUGINS}")
     endif ()
@@ -206,10 +205,6 @@ if (NOT WITH_EXAMPLES MATCHES OFF)
     endif ()
 endif ()
 
-if (WASM)
-    unset (WASM CACHE)
-endif ()
-
-if (WITH_TESTS STREQUAL "on" OR WITH_TESTS STREQUAL "ON")
+if (WITH_TESTS)
     add_subdirectory ("test")
 endif ()

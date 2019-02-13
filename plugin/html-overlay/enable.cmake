@@ -8,7 +8,7 @@ function (minko_enable_plugin_html_overlay target)
     endif ()
     
     # Include CEF toolchain
-    include(${MINKO_HOME}/DownloadCEF.cmake)
+    include(${MINKO_HOME}/cmake/DownloadCEF.cmake)
 
     # Specify the CEF distribution version (in both CMakeLists.txt and enable.cmake).
     set (CEF_VERSION "3.3538.1852.gcb937fc")

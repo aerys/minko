@@ -74,7 +74,7 @@ namespace minko
 			}
 
 			AbstractComponent::Ptr
-			clone(const CloneOption& option);
+			clone(const CloneOption& option) override;
 
             float
             innerConeAngle() const;
@@ -167,10 +167,10 @@ namespace minko
 
 		protected:
 			void
-            updateModelToWorldMatrix(const math::mat4& modelToWorld);
+            updateModelToWorldMatrix(const math::mat4& modelToWorld) override;
 
             void
-            updateRoot(std::shared_ptr<scene::Node> root);
+            updateRoot(std::shared_ptr<scene::Node> root) override;
 
             void
             targetRemoved(std::shared_ptr<scene::Node> target) override;
