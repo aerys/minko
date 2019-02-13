@@ -1,3 +1,20 @@
+function (cpjf src_dir dest_dir)
+    file (
+        GLOB_RECURSE
+        JAVA_FILES
+        "${src_dir}/*.java"
+    )
+
+    foreach (FILE ${JAVA_FILES})
+        string (FIND ${FILE} "src/" DIR_SIZE)
+        string (LENGTH ${FILE} LEN)
+        math (EXPR RESULT ${LEN}-${DIR_SIZE}-4)
+        math (EXPR DIR_SIZE ${DIR_SIZE}+4)
+        string (SUBSTRING ${FILE} ${DIR_SIZE} ${RESULT} FINAL_DIR)
+        file (COPY "${FILE}" DESTINATION "${dest_dir}/src/com/${FINAL_DIR}")
+    endforeach ()
+endfunction()
+
 function (minko_plugin_link plugin_name target)
     string (FIND ${target} "minko-example" CHECK_EXAMPLE)
     string (FIND ${target} "minko-plugin" CHECK_PLUGIN)
@@ -8,11 +25,11 @@ function (minko_plugin_link plugin_name target)
             find_library (
                 ${plugin_name}_LIB
                 NAMES minko-plugin-${plugin_name} 
-                HINTS "${MINKO_HOME}/plugin/${plugin_name}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+                HINTS "${MINKO_HOME}/plugin/${plugin_name}/bin/"
             )
             target_link_libraries (${target} ${${plugin_name}_LIB})
         else ()
-            target_link_libraries (${target} "${MINKO_HOME}/plugin/${plugin_name}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}/libminko-plugin-${plugin_name}.a")
+            target_link_libraries (${target} "${MINKO_HOME}/plugin/${plugin_name}/bin//libminko-plugin-${plugin_name}.a")
         endif ()
     else ()
         target_link_libraries (${target} minko-plugin-${plugin_name})

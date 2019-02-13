@@ -22,7 +22,7 @@ set (PROJECT_NAME "minko-plugin-html-overlay")
 minko_add_library (${PROJECT_NAME} STATIC "")
 
 # Include CEF toolchain
-include(${MINKO_HOME}/DownloadCEF.cmake)
+include(${MINKO_HOME}/cmake/DownloadCEF.cmake)
 
 # Determine the platform.
 set (CEF_PLATFORM "${SYSTEM_NAME}${BITNESS}")

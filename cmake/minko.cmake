@@ -32,12 +32,12 @@ function (minko_set_variables)
 
     set (
         OUTPUT_PATH
-        "${CMAKE_CURRENT_BINARY_DIR}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
         PARENT_SCOPE
     )
     set (
         OUTPUT_PATH
-        "${CMAKE_CURRENT_BINARY_DIR}/bin/${SYSTEM_NAME}${BITNESS}/${BUILD_TYPE}"
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
     )
 endfunction ()
 

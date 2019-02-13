@@ -9,8 +9,6 @@ stages:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
     expire_in: 6 hr
     paths:
-      # FIXME: Remove this line when CEF is correctly handled
-      - build/DownloadCEF.cmake
       - build/module
       - build/framework/bin
       - build/framework/asset
@@ -26,16 +24,9 @@ stages:
       - build/plugin/sensors/src/android/*.java
       - build/plugin/nodejs-worker/src/minko/file/*.java
       - build/plugin/video-camera/src/minko/video/*.java
-      - build/skeleton
       - build/template
-      - build/android-build.cmake
-      - build/cpjf.cmake
-      - build/project.cmake
-      - build/minko.cmake
-      - build/plugins.cmake
-      - build/package.cmake
-      - build/sdk.cmake
-      - build/adapt-template.py
+      - build/cmake
+      - build/test
       - LICENSE.md
       - README.md
 
@@ -57,7 +48,7 @@ build:html5:
   image: registry.aerys.in/aerys/smartshape-docker/html5:2896
   script:
     - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/sdk/cmake/Modules/Platform/Emscripten.cmake ..
+    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_WASM=ON -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/sdk/cmake/Modules/Platform/Emscripten.cmake ..
     - make -j$(nproc)
 
 build:android:
@@ -85,7 +76,7 @@ build:linux_offscreen:
   script:
     - ./plugin/serializer/script/download_dependencies.sh .
     - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
+    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON -DWITH_TESTS=ON ..
     - make -j$(nproc)
 
 build:windows64:
@@ -111,7 +102,7 @@ build:windows64_offscreen:
     - bash plugin\serializer\script\download_dependencies.sh .
     - if not exist build mkdir build
     - cd build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
+    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON -DWITH_TESTS=ON ..
     - msbuild Project.sln /property:Configuration=Release /property:Platform=x64 /m:4
 
 test:windows64_offscreen:
@@ -125,14 +116,9 @@ test:windows64_offscreen:
     when: on_failure
     expire_in: 1 hr
     paths:
-      - test
+      - build/test
   script:
-    - set MINKO_HOME=%cd%
-    - if not exist build mkdir build
-    - cd build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=jpeg,png,ttf,sdl,ssl,serializer,websocket,http-worker,http-loader -DWITH_TESTS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
-    - msbuild Project.sln /target:minko-test /property:Configuration=Release /property:Platform=x64 /m:4 /p:BuildProjectReferences=false
-    - cd .\test\bin\windows64\release
+    - cd .\build\test\bin
     - minko-test.exe
 
 test:linux_offscreen:
@@ -145,14 +131,10 @@ test:linux_offscreen:
     when: on_failure
     expire_in: 1 hr
     paths:
-      - test
+      - build/test
   script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=jpeg,png,ttf,sdl,ssl,serializer,websocket,http-worker,http-loader -DWITH_TESTS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON ..
-    - make -j$(nproc)
-    - pushd ./test/bin/linux64/release
+    - cd ./build/test/bin
     - ./minko-test
-    - popd
 
 archive:linux_offscreen:
   <<: *archive_template
