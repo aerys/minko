@@ -28,6 +28,10 @@ rm -f node-${NODE_VERSION}.zip
 # getservbyport_r is not defined in Android NDK libc.
 sed -i 's/.*HAVE_GETSERVBYPORT_R.*//g' lib/node/deps/cares/config/android/ares_config.h
 
+# Set the output binary as libnode.so
+sed -i 's/so.%s/so/g' lib/node/configure.py
+sed -i 's/  shlib_suffix %= node_module_version//g' lib/node/configure.py
+
 # remove linker '-pie' flag since we generate a shared
 # library instead of an executable
 sed -i "s/, '-pie'//g" lib/node/common.gypi
@@ -50,10 +54,10 @@ sed -i 's/and OS=="linux"//g' ./lib/node/deps/openssl/openssl-cl_no_asm.gypi
 
 #
 #
-# Generate a 64-bits standalone toolchain:
+# Generate a standalone toolchain:
 TOOLCHAIN_PATH="${PWD}/my_toolchain" # Change this to the path where you want the toolchain to be created.
 rm -rf $TOOLCHAIN_PATH
-${ANDROID_NDK_HOME}/build/tools/make_standalone_toolchain.py --arch arm --api 28 --install-dir ${TOOLCHAIN_PATH}
+${ANDROID_NDK_HOME}/build/tools/make_standalone_toolchain.py --arch arm --api 26 --install-dir ${TOOLCHAIN_PATH}
 
 
 # Patch the toolchain (!)
@@ -97,6 +101,4 @@ export CXX_host="clang++ -m32"
 popd
 
 make -j8 -C lib/node
-
-# This will generate a ./lib/node/out/Release/lib.target/libnode.so.64 file.
-cp ./lib/node/out/Release/lib.target/libnode.so.64 lib/nodejs/lib/android/libnode.so
+cp ./lib/node/out/Release/lib.target/libnode.so lib/nodejs/lib/android/libnode.so

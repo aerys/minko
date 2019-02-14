@@ -28,6 +28,10 @@ rm -f node-${NODE_VERSION}.zip
 # getservbyport_r is not defined in Android NDK libc.
 sed -i 's/.*HAVE_GETSERVBYPORT_R.*//g' lib/node/deps/cares/config/android/ares_config.h
 
+# Set the output binary as libnode.so
+sed -i 's/so.%s/so/g' lib/node/configure.py
+sed -i 's/  shlib_suffix %= node_module_version//g' lib/node/configure.py
+
 # remove linker '-pie' flag since we generate a shared
 # library instead of an executable
 sed -i "s/, '-pie'//g" lib/node/common.gypi
