@@ -33,6 +33,8 @@ function (minko_enable_plugin_ssl target)
             "${SSL_PATH}/lib/openssl/lib/android/libssl.a"
             "${SSL_PATH}/lib/openssl/lib/android/libcrypto.a"
         )
+        file (COPY "${SSL_PATH}/lib/openssl/lib/android/libcrypto.so" DESTINATION "${OUTPUT_PATH}")
+        file (COPY "${SSL_PATH}/lib/openssl/lib/android/libssl.so" DESTINATION "${OUTPUT_PATH}")
     endif ()
     if (APPLE AND NOT IOS)
         target_link_libraries(${target}

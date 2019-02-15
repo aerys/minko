@@ -57,7 +57,7 @@ sed -i 's/and OS=="linux"//g' ./lib/node/deps/openssl/openssl-cl_no_asm.gypi
 # Generate a standalone toolchain:
 TOOLCHAIN_PATH="${PWD}/my_toolchain" # Change this to the path where you want the toolchain to be created.
 rm -rf $TOOLCHAIN_PATH
-${ANDROID_NDK_HOME}/build/tools/make_standalone_toolchain.py --arch arm --api 26 --install-dir ${TOOLCHAIN_PATH}
+${ANDROID_NDK_HOME}/build/tools/make_standalone_toolchain.py --arch arm --api 21 --install-dir ${TOOLCHAIN_PATH}
 
 
 # Patch the toolchain (!)
@@ -66,10 +66,10 @@ ${ANDROID_NDK_HOME}/build/tools/make_standalone_toolchain.py --arch arm --api 26
 #    #undef sa_sigaction;
 #    #undef sa_restorer;
 #    #undef sa_handler;
-signal_types=${TOOLCHAIN_PATH}/sysroot/usr/include/bits/signal_types.h
-ex -s -c '69i|#undef sa_sigaction;' -c x ${signal_types}
-ex -s -c '69i|#undef sa_restorer;' -c x ${signal_types}
-ex -s -c '69i|#undef sa_handler;' -c x ${signal_types}
+# signal_types=${TOOLCHAIN_PATH}/sysroot/usr/include/bits/signal_types.h
+# ex -s -c '69i|#undef sa_sigaction;' -c x ${signal_types}
+# ex -s -c '69i|#undef sa_restorer;' -c x ${signal_types}
+# ex -s -c '69i|#undef sa_handler;' -c x ${signal_types}
 
 #
 #
