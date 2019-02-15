@@ -27,7 +27,7 @@ OPENSSL_TARGET_ABI=$4
 OPENSSL_GCC_VERSION=$5
 OPENSSL_OUTPUT_PATH=$6
 
-NDK_MAKE_TOOLCHAIN="$NDK_DIR/build/tools/make-standalone-toolchain.sh"
+NDK_MAKE_TOOLCHAIN="$NDK_DIR/build/tools/make_standalone_toolchain.py"
 OPENSSL_TMP_FOLDER="/tmp/openssl"
 rm -rf "$OPENSSL_TMP_FOLDER"
 mkdir -p "$OPENSSL_TMP_FOLDER"
@@ -36,8 +36,8 @@ cp -r ${OPENSSL_BASE_FOLDER}/* ${OPENSSL_TMP_FOLDER}
 function build_library {
     mkdir -p ${OPENSSL_OUTPUT_PATH}
     export PATH=$TOOLCHAIN_PATH:$PATH
-    make && make install
-    rm -rf ${OPENSSL_TMP_FOLDER}
+    make -j8 CALC_VERSIONS="SHLIB_COMPAT=; SHLIB_SOVER=" all
+    cp ${OPENSSL_TMP_FOLDER}/*.so ${OPENSSL_TMP_FOLDER}/*.a ${OPENSSL_OUTPUT_PATH}/.
     echo "Build completed! Check output libraries in ${OPENSSL_OUTPUT_PATH}"
 }
 
@@ -93,14 +93,14 @@ then
 
 elif [ "$OPENSSL_TARGET_ABI" == "armeabi" ]
 then
-    ${NDK_MAKE_TOOLCHAIN} --platform=android-${OPENSSL_TARGET_API} \
-                          --toolchain=arm-linux-androideabi-${OPENSSL_GCC_VERSION} \
+    ${NDK_MAKE_TOOLCHAIN} --arch=arm \
+                          --api ${OPENSSL_TARGET_API} \
                           --install-dir="${OPENSSL_TMP_FOLDER}/android-toolchain-arm"
     export TOOLCHAIN_PATH="${OPENSSL_TMP_FOLDER}/android-toolchain-arm/bin"
     export TOOL=arm-linux-androideabi
     export NDK_TOOLCHAIN_BASENAME=${TOOLCHAIN_PATH}/${TOOL}
-    export CC=$NDK_TOOLCHAIN_BASENAME-gcc
-    export CXX=$NDK_TOOLCHAIN_BASENAME-g++
+    export CC=$NDK_TOOLCHAIN_BASENAME-clang
+    export CXX=$NDK_TOOLCHAIN_BASENAME-clang++
     export LINK=${CXX}
     export LD=$NDK_TOOLCHAIN_BASENAME-ld
     export AR=$NDK_TOOLCHAIN_BASENAME-ar
@@ -110,7 +110,7 @@ then
     export ARCH_LINK=
     export CPPFLAGS=" ${ARCH_FLAGS} -fpic -ffunction-sections -funwind-tables -fstack-protector -fno-strict-aliasing -finline-limit=64 "
     export CXXFLAGS=" ${ARCH_FLAGS} -fpic -ffunction-sections -funwind-tables -fstack-protector -fno-strict-aliasing -finline-limit=64 -frtti -fexceptions "
-    export CFLAGS=" ${ARCH_FLAGS} -fpic -ffunction-sections -funwind-tables -fstack-protector -fno-strict-aliasing -finline-limit=64 "
+    export CFLAGS=" ${ARCH_FLAGS} -D__ANDROID_API__=${OPENSSL_TARGET_API} -fpic -ffunction-sections -funwind-tables -fstack-protector -fno-strict-aliasing -finline-limit=64 "
     export LDFLAGS=" ${ARCH_LINK} "
     cd ${OPENSSL_TMP_FOLDER}
     ./Configure android --openssldir=${OPENSSL_OUTPUT_PATH}
