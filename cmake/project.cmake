@@ -93,6 +93,11 @@ function (minko_add_library target_name type sources)
             "-Wno-tautological-compare"
             "-DEVL_EGLEXT_PROTOTYPES"
         )
+
+        # The Android toolchain uses -g by default, which produces large binaries with debug
+        # symbols even when CMAKE_BUILD_TYPE is set to Release. To fix this, we set -g again
+        # but to 0.
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g0" PARENT_SCOPE)
     endif ()
     
     if (WIN32)
