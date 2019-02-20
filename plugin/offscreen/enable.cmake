@@ -30,33 +30,34 @@ function (minko_enable_plugin_offscreen target)
 
     target_include_directories(${target} PRIVATE ${OFFSCREEN_INCLUDE})
 
-    if (WIN32 AND BITNESS EQUAL 32)
-        # libdirs { minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/x86" }
-        get_property (INCLUDE_LIST TARGET ${target} PROPERTY INCLUDE_DIRECTORIES)
-        list(REMOVE_ITEM INCLUDE_LIST "${MINKO_HOME}/framework/lib/glew/include")
-        set_property (TARGET ${target} PROPERTY INCLUDE_DIRECTORIES ${INCLUDE_LIST})
-        find_library (
-            OSMESA_LIB 
-            NAMES "OSMesa"
-            HINTS "${MINKO_HOME}/plugin/offscreen/lib/osmesa/windows/lib/x86"
-        )
-        target_link_libraries(${target} ${OSMESA_LIB})
-        file (GLOB FILES "${OFFSCREEN_PATH}/lib/osmesa/windows/lib/x86/*.dll")
-        file (COPY ${FILES} DESTINATION ${OUTPUT_PATH})
-    endif ()
+    get_target_property(TARGET_TYPE ${target} TYPE)
+    if (TARGET_TYPE STREQUAL "EXECUTABLE")
+        get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
 
-    if (WIN32 AND BITNESS EQUAL 64)
-        # libdirs { minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/x64" }
         get_property (INCLUDE_LIST TARGET ${target} PROPERTY INCLUDE_DIRECTORIES)
         list(REMOVE_ITEM INCLUDE_LIST "${MINKO_HOME}/framework/lib/glew/include")
         set_property (TARGET ${target} PROPERTY INCLUDE_DIRECTORIES ${INCLUDE_LIST})
-        find_library (
-            OSMESA_LIB 
-            NAMES "OSMesa"
-            HINTS "${MINKO_HOME}/plugin/offscreen/lib/osmesa/windows/lib/x64"
-        )
-        target_link_libraries(${target} ${OSMESA_LIB})
-        file (GLOB FILES "${OFFSCREEN_PATH}/lib/osmesa/windows/lib/x64/*.dll")
-        file (COPY ${FILES} DESTINATION ${OUTPUT_PATH})
+
+        if (WIN32 AND BITNESS EQUAL 32)
+            find_library (
+                OSMESA_LIB 
+                NAMES "OSMesa"
+                HINTS "${MINKO_HOME}/plugin/offscreen/lib/osmesa/windows/lib/x86"
+            )
+            target_link_libraries(${target} ${OSMESA_LIB})
+            file (GLOB FILES "${OFFSCREEN_PATH}/lib/osmesa/windows/lib/x86/*.dll")
+            file (COPY ${FILES} DESTINATION ${OUTPUT_PATH})
+        endif ()
+
+        if (WIN32 AND BITNESS EQUAL 64)
+            find_library (
+                OSMESA_LIB 
+                NAMES "OSMesa"
+                HINTS "${MINKO_HOME}/plugin/offscreen/lib/osmesa/windows/lib/x64"
+            )
+            target_link_libraries(${target} ${OSMESA_LIB})
+            file (GLOB FILES "${OFFSCREEN_PATH}/lib/osmesa/windows/lib/x64/*.dll")
+            file (COPY ${FILES} DESTINATION ${OUTPUT_PATH})
+        endif ()
     endif ()
 endfunction ()
