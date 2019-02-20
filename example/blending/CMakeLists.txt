@@ -11,14 +11,8 @@ file (
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
-if (NOT ANDROID)
-    minko_add_executable(${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
-else ()
-    minko_add_library(${PROJECT_NAME} "SHARED" "${${PROJECT_NAME}_SRC}")
-endif ()
+minko_add_executable(${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
 
 target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
 minko_enable_plugin_sdl (${PROJECT_NAME})
-
-minko_package_assets ("*.effect;*.glsl" "embed")

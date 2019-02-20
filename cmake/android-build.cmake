@@ -14,6 +14,8 @@ function (build_android target target_name)
         message ("Warning: Missing environment variable ANDROID_KEYSTORE_PASSWORD, generated APK will be unsigned.")
     endif ()
 
+    get_target_property(OUTPUT_PATH ${target} LIBRARY_OUTPUT_DIRECTORY)
+
     # define all the needed variables
     set (VERSION "0")
     

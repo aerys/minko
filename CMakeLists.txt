@@ -42,8 +42,7 @@ if (APPLE AND NOT IOS)
 endif ()
 
 add_subdirectory ("framework")
-
-get_property (FRAMEWORK_INCLUDES TARGET minko-framework PROPERTY INCLUDE_DIRECTORIES)
+include("framework/enable.cmake")
 
 list (
     APPEND

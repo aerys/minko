@@ -23,11 +23,7 @@ file (
     "${CMAKE_CURRENT_SOURCE_DIR}/src/asset/*"
 )
 
-if (NOT ANDROID)
-    minko_add_executable(${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
-else ()
-    minko_add_library(${PROJECT_NAME} "SHARED" "${${PROJECT_NAME}_SRC}")
-endif ()
+minko_add_executable(${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
 
 target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
@@ -35,8 +31,8 @@ minko_enable_plugin_sdl (${PROJECT_NAME})
 minko_enable_plugin_jpeg (${PROJECT_NAME})
 minko_enable_plugin_vr (${PROJECT_NAME})
 
-if (EMSCRIPTEN)
-    minko_package_assets ("*.glsl;*.effect;*.jpg" "embed")
-else ()
-    minko_package_assets ("*.glsl;*.effect;*.jpg" "copy")
-endif ()
+minko_package_assets (
+    ${PROJECT_NAME}
+    EMBED
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/texture/*.jpg"
+)

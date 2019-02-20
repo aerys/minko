@@ -2,6 +2,9 @@ function (minko_enable_plugin_ssl target)
     set (SSL_PATH "${MINKO_HOME}/plugin/ssl")
     target_compile_options (${target} PRIVATE "-DMINKO_PLUGIN_SSL")
 
+    get_target_property(TARGET_TYPE ${target} TYPE)
+    get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
+
     target_include_directories(${target} 
         PRIVATE 
         "${SSL_PATH}/include"
@@ -33,8 +36,11 @@ function (minko_enable_plugin_ssl target)
             "${SSL_PATH}/lib/openssl/lib/android/libssl.a"
             "${SSL_PATH}/lib/openssl/lib/android/libcrypto.a"
         )
-        file (COPY "${SSL_PATH}/lib/openssl/lib/android/libcrypto.so" DESTINATION "${OUTPUT_PATH}")
-        file (COPY "${SSL_PATH}/lib/openssl/lib/android/libssl.so" DESTINATION "${OUTPUT_PATH}")
+
+        if (TARGET_TYPE STREQUAL "EXECUTABLE")
+            file (COPY "${SSL_PATH}/lib/openssl/lib/android/libcrypto.so" DESTINATION "${OUTPUT_PATH}")
+            file (COPY "${SSL_PATH}/lib/openssl/lib/android/libssl.so" DESTINATION "${OUTPUT_PATH}")
+        endif ()
     endif ()
     if (APPLE AND NOT IOS)
         target_link_libraries(${target}
@@ -51,12 +57,15 @@ function (minko_enable_plugin_ssl target)
             "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libcrypto.lib"
             "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libssl.lib"
         )
-        if (BITNESS EQUAL 32)
-            file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libcrypto-1_1.dll" DESTINATION "${OUTPUT_PATH}")
-            file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libssl-1_1.dll" DESTINATION "${OUTPUT_PATH}")
-        else ()
-            file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libcrypto-1_1-x64.dll" DESTINATION "${OUTPUT_PATH}")
-            file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libssl-1_1-x64.dll" DESTINATION "${OUTPUT_PATH}")
+
+        if (TARGET_TYPE STREQUAL "EXECUTABLE")
+            if (BITNESS EQUAL 32)
+                file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libcrypto-1_1.dll" DESTINATION "${OUTPUT_PATH}")
+                file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libssl-1_1.dll" DESTINATION "${OUTPUT_PATH}")
+            else ()
+                file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libcrypto-1_1-x64.dll" DESTINATION "${OUTPUT_PATH}")
+                file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libssl-1_1-x64.dll" DESTINATION "${OUTPUT_PATH}")
+            endif ()
         endif ()
     endif()
 endfunction ()

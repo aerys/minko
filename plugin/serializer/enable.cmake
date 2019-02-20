@@ -15,6 +15,9 @@ function (minko_enable_plugin_serializer target)
     target_include_directories(${target} PRIVATE ${SERIALIZER_INCLUDE})
     target_compile_options (${target} PRIVATE -DMINKO_PLUGIN_SERIALIZER)
 
+    get_target_property(TARGET_TYPE ${target} TYPE)
+    get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
+
     if (WITH_TEXTURE_COMPRESSOR STREQUAL "on" OR WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
         if (WIN32 AND BITNESS EQUAL 32)
             find_library (RET_PATH
@@ -27,8 +30,11 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32"
             )
             target_link_libraries(${target} ${RET_PATH})
-            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic/*.dll" "${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32/*.dll")
-            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+            
+            if (TARGET_TYPE STREQUAL "EXECUTABLE")
+                file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic/*.dll" "${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32/*.dll")
+                file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+            endif ()
         endif ()
 
         if (WIN32 AND BITNESS EQUAL 64)
@@ -39,8 +45,11 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_64/Dynamic"
             )
             target_link_libraries(${target} ${RET_PATH})
-            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_64/Dynamic/*.dll")
-            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+
+            if (TARGET_TYPE STREQUAL "EXECUTABLE")
+                file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_64/Dynamic/*.dll")
+                file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+            endif ()
         endif ()
 
         if (LINUX AND BITNESS EQUAL 32)
@@ -54,8 +63,11 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386"
             )
             target_link_libraries(${target} ${RET_PATH})
-            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic/*.so" "${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386/*.so")
-            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+
+            if (TARGET_TYPE STREQUAL "EXECUTABLE")
+                file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_32/Dynamic/*.so" "${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386/*.so")
+                file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+            endif ()
         endif ()
 
         if (LINUX AND BITNESS EQUAL 64)
@@ -66,8 +78,11 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_64/Dynamic"
             )
             target_link_libraries(${target} ${RET_PATH})
-            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_64/Dynamic/*.so" "${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386/*.so")
-            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+
+            if (TARGET_TYPE STREQUAL "EXECUTABLE")
+                file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Linux_x86_64/Dynamic/*.so" "${SERIALIZER_PATH}/lib/QCompress/Lib/ubuntu/i386/*.so")
+                file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+            endif ()
         endif ()
 
         if (LINUX)
@@ -84,8 +99,11 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/QCompress/Lib/osx/x86"
             )
             target_link_libraries(${target} ${RET_PATH})
-            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib" "${SERIALIZER_PATH}/lib/QCompress/Lib/osx/x86/*.dylib")
-            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+
+            if (TARGET_TYPE STREQUAL "EXECUTABLE")
+                file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib" "${SERIALIZER_PATH}/lib/QCompress/Lib/osx/x86/*.dylib")
+                file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+            endif ()
         endif ()
 
         if (APPLE AND NOT IOS AND BITNESS EQUAL 64)
@@ -96,11 +114,11 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic"
             )
             target_link_libraries(${target} ${RET_PATH})
-            file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib")
-            file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+
+            if (TARGET_TYPE STREQUAL "EXECUTABLE")
+                file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib")
+                file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})
+            endif ()
         endif ()
     endif ()
-
-    # function minko.plugin.serializer:dist(pluginDistDir)
-    # newoption { trigger	= "with-texture-compressor" }
 endfunction ()

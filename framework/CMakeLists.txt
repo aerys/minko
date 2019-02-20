@@ -4,14 +4,10 @@ file (RELATIVE_PATH RELATIVE_LIBRARY_PATH ${MINKO_HOME}/../ ${CMAKE_CURRENT_SOUR
 file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
 file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
 file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/asset DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/enable.cmake DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
 
 option (WITH_GLSL_OPTIMIZER
     "handle with-glsl-optimizer option"
-    OFF
-)
-
-option (WASM
-    "choose the emscripten method"
     OFF
 )
 
@@ -38,7 +34,6 @@ file (GLOB_RECURSE SPARSEHASH_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.h"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.cc"
 )
-
 
 if (WIN32)
     add_definitions("/wd4996")
@@ -94,7 +89,7 @@ target_include_directories (minko-framework
     "src"
     "lib/jsoncpp/src"
     "lib/glm"
-    #"lib/sparsehash/src"
+    "lib/sparsehash/src"
 )
 
 if (WIN32)
