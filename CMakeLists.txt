@@ -13,6 +13,14 @@ if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")
 endif ()
 
+file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/template" DESTINATION ${MINKO_HOME})
+file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/cmake" DESTINATION ${MINKO_HOME})
+include ("${MINKO_HOME}/cmake/project.cmake")
+include ("${MINKO_HOME}/cmake/plugins.cmake")
+include ("${MINKO_HOME}/cmake/package.cmake")
+include ("${MINKO_HOME}/cmake/minko.cmake")
+include ("${MINKO_HOME}/cmake/android-build.cmake")
+
 if (WITH_OFFSCREEN)
     set (OFFSCREEN_PATH plugin/offscreen)
     file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/${OFFSCREEN_PATH}/enable.cmake DESTINATION ${MINKO_HOME}/${OFFSCREEN_PATH})
@@ -25,25 +33,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "_UNSET" CACHE STRING "")
 if(${CMAKE_CXX_FLAGS_DEBUG} STREQUAL "_UNSET")
     set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -O0" CACHE STRING "" FORCE)
 endif()
-
-file (
-    GLOB
-    MINKO_CMAKE_UTILS
-    "cmake/*.cmake"
-)
-
-list (
-    REMOVE_ITEM
-    MINKO_CMAKE_UTILS
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdk.cmake"
-)
-
-file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/cmake" DESTINATION ${MINKO_HOME})
-file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/template" DESTINATION ${MINKO_HOME})
-foreach (MINKO_CMAKE_UTIL ${MINKO_CMAKE_UTILS})
-    file (COPY ${MINKO_CMAKE_UTIL} DESTINATION ${MINKO_HOME})
-    include (${MINKO_CMAKE_UTIL})
-endforeach ()
 
 if (APPLE AND NOT IOS)
    set (CMAKE_OSX_DEPLOYMENT_TARGET "")
