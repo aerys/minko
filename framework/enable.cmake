@@ -7,7 +7,12 @@ function (minko_enable_framework target)
     )
 
     if (WIN32)
-        target_link_libraries(${target} "${MINKO_HOME}/framework/bin/libminko-framework.lib")
+        find_library (
+            MINKO_FRAMEWORK_LIB
+            NAMES minko-framework
+            HINTS "${MINKO_HOME}/framework/bin/"
+        )
+        target_link_libraries (${target} "${MINKO_FRAMEWORK_LIB}")
     else ()
         target_link_libraries(${target} "${MINKO_HOME}/framework/bin/libminko-framework.a")
     endif ()
