@@ -12,11 +12,7 @@ file (
     "${CMAKE_CURRENT_SOURCE_DIR}/asset/*"
 )
 
-if (NOT ANDROID)
-    minko_add_executable(${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
-else ()
-    minko_add_library(${PROJECT_NAME} "SHARED" "${${PROJECT_NAME}_SRC}")
-endif ()
+minko_add_executable(${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
 
 target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
@@ -26,5 +22,3 @@ minko_enable_plugin_http_loader (${PROJECT_NAME})
 if (NOT EMSCRIPTEN)
     minko_enable_plugin_http_worker (${PROJECT_NAME})
 endif ()
-
-minko_package_assets ("*.effect;*.glsl" "embed")

@@ -39,12 +39,16 @@ if (APPLE AND NOT IOS OR LINUX)
     target_link_libraries (${PROJECT_NAME} "pthread")
 endif ()
 
-if (NOT EMSCRIPTEN)
-    minko_package_assets ("*.effect;*.glsl;*.png;*.scene;*.texture" "copy")
-endif ()
-
-if (EMSCRIPTEN)
-    minko_package_assets ("*.effect;*.glsl;*.png;*.scene;*.texture" "embed")
-endif ()
+minko_package_assets (
+    ${PROJECT_NAME}
+    EMBED
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/effect/*/*.effect"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/effect/*/*/*.effect"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/effect/*/*/*/*.effect"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/effect/*/*/*/*/*.effect"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/effect/*.glsl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/scene/*.scene"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/scene/*.texture"
+)
 
 target_include_directories (${PROJECT_NAME} PRIVATE "${EMSCRIPTEN}/system/lib/libcxxabi/include")

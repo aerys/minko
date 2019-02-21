@@ -9,5 +9,11 @@ function (minko_enable_plugin_angle target)
         HINTS "${SERIALIZER_PATH}/lib/win/ANGLE/lib"
     )
     target_link_libraries (${target} EGL_LIB)
-    file (COPY ${ANGLE_PATH}/lib/win/ANGLE/lib/*.dll ${OUTPUT_PATH})
+
+    get_target_property(TARGET_TYPE ${target} TYPE)
+    if (TARGET_TYPE STREQUAL "EXECUTABLE")
+        get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
+        file (COPY ${ANGLE_PATH}/lib/win/ANGLE/lib/*.dll ${OUTPUT_PATH})
+    endif ()
+
 endfunction ()

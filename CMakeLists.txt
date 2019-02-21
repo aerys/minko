@@ -53,8 +53,7 @@ if (APPLE AND NOT IOS)
 endif ()
 
 add_subdirectory ("framework")
-
-get_property (FRAMEWORK_INCLUDES TARGET minko-framework PROPERTY INCLUDE_DIRECTORIES)
+include("framework/enable.cmake")
 
 list (
     APPEND
@@ -73,9 +72,6 @@ list (
     http-worker
     http-loader
     html-overlay
-    #leap (outdated plugin - math dependencies)
-    #lua (outdated plugin)
-    #particles (outdated plugin - lua dependencies)
     bullet
     angle
     sensors
@@ -102,48 +98,28 @@ list (
     APPEND
     EXAMPLES
     cube
-    serializer
     assimp
     benchmark-cube
     blending
-    cel-shading
-    fog
-    audio
-    #clone #(error lookAt segfault if did like in the serializer)
-    #hologram
     devil
-    #effect-config
-    #flares
-    #frustum
     html-overlay
     http #emscripten compil error #(can't find BaseStreamingTemplate.effect)
-    jobs
     joystick
     #keyboard #(-lgl flag should be at the the end of the linkage line)
-    #leap-motion #(see plugin leap)
     light #(light display is under the ground)
-    #light-scattering #(html_overlay)
     line-geometry #can't see the stars
-    #multi-surfaces
-    #nodejs
-    #oculus #(oculus plugin does not exist anymore)
     #offscreen #(canvas->quit() has been removed)
-    #particles #(lua consequence)
     pbr #error execution (error: DrawCall.cpp:305 bindUniform(): Program "skybox-pass0": the uniform "uAspectRatio" is bound to the "aspectRatio" property but it's not defined and no default value was provided.)
     physics
-    #picking #annotations refund
-    #raycasting
-    section #emscripten compilation error
     sensors #segfault
+    serializer
     shadow-mapping
     sky-box
     sprite-batch
     stencil
     #ttf #emscripten and apple compilation error
-    video-camera
     #visibility
     #vr #(symbol missing in vr library)
-    #water #undefined symbol
 )
 
 if (IOS)
