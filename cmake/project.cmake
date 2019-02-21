@@ -1,11 +1,14 @@
 function (minko_add_library target_name type sources)
     minko_set_variables()
-    if (ANDROID)
-        set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/libminko-framework.a")
-        set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} ${MINKO_FRAMEWORK_LIB}" PARENT_SCOPE)
-    endif ()
-    add_library (${target_name} ${type} ${sources})
+
+    add_library (${target_name} ${type} "${sources}")
+
     minko_configure_target_flags (${target_name})
+    # Don't enable the framework for itself.
+    if (NOT ${target_name} STREQUAL "minko-framework")
+        minko_enable_framework(${target_name})
+    endif ()
+
     set (OUTPUT_PATH ${OUTPUT_PATH} PARENT_SCOPE)
     set (BITNESS ${BITNESS} PARENT_SCOPE)
     set (BUILD_TYPE ${BUILD_TYPE} PARENT_SCOPE)
@@ -22,51 +25,7 @@ function (minko_add_library target_name type sources)
     else ()
         target_compile_options (${target_name} PUBLIC "-DNDEBUG")
     endif ()
-    
-    list (APPEND FRAMEWORK_INCLUDES
-        "${MINKO_HOME}/framework/include"
-        "${MINKO_HOME}/framework/lib/glm"
-        "${MINKO_HOME}/framework/lib/sparsehash/src"
-        "${MINKO_HOME}/framework/lib/jsoncpp/src"
-    )
-    if (WIN32)
-        list (
-            APPEND
-            FRAMEWORK_INCLUDES
-            "${MINKO_HOME}/framework/lib/sparsehash/include/windows"
-        )
-    else ()
-        list (
-            APPEND
-            FRAMEWORK_INCLUDES
-            "${MINKO_HOME}/framework/lib/sparsehash/include"
-        )
-    endif ()   
-    target_include_directories (${target_name} PRIVATE "${FRAMEWORK_INCLUDES}")
-    
-    string (FIND ${target_name} "minko-example" TARGET_IS_EXAMPLE)
-    string (FIND ${target_name} "minko-plugin" TARGET_IS_PLUGIN)
-    string (FIND ${target_name} "minko-framework" TARGET_IS_FRAMEWORK)
-    string (FIND ${target_name} "libassimp" TARGET_IS_LIBASSIMP)
-    
-    if (TARGET_IS_EXAMPLE EQUAL -1 AND TARGET_IS_PLUGIN EQUAL -1 AND TARGET_IS_FRAMEWORK EQUAL -1 AND TARGET_IS_LIBASSIMP EQUAL -1)
-        if (NOT EMSCRIPTEN AND NOT ANDROID)
-            find_library(
-                MINKO_FRAMEWORK_LIB 
-                NAMES minko-framework
-                HINTS "${MINKO_HOME}/framework/bin"
-            )
-        else()
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/libminko-framework.a")
-        endif ()
-    else ()
-        set (MINKO_FRAMEWORK_LIB "minko-framework")
-    endif ()
-    
-    if (TARGET_IS_FRAMEWORK EQUAL -1)
-        target_link_libraries(${target_name} ${MINKO_FRAMEWORK_LIB})
-    endif ()
-
+       
     if (UNIX AND NOT APPLE AND NOT ANDROID)
         target_link_libraries (${target_name} "-lGL")
     endif ()
@@ -97,18 +56,7 @@ function (minko_add_library target_name type sources)
         # The Android toolchain uses -g by default, which produces large binaries with debug
         # symbols even when CMAKE_BUILD_TYPE is set to Release. To fix this, we set -g again
         # but to 0.
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g0" PARENT_SCOPE)
-    endif ()
-    
-    if (WIN32)
-        target_include_directories (${target_name}
-            PUBLIC 
-            "${MINKO_HOME}/framework/lib/sparsehash/include/windows"
-            "${MINKO_HOME}/framework/lib/glew/include"
-        )
-        target_compile_options (${target_name} PUBLIC "/wd4996")
-    else ()
-        target_include_directories (${target_name} PUBLIC "/framework/lib/sparsehash/include")
+        target_compile_options(${target_name} PUBLIC "-g0")
     endif ()
 
     if (IOS)
@@ -139,42 +87,22 @@ function (minko_add_library target_name type sources)
             set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -g4")
         endif ()
     endif ()
-    
-    string (FIND ${target_name} "minko-plugin" TARGET_IS_PLUGIN)
-    string (FIND ${target_name} "minko-framework" TARGET_IS_FRAMEWORK)
-    string (FIND ${target_name} "assimp" TARGET_IS_LIBASSIMP)
-    
-    if (ANDROID AND TARGET_IS_PLUGIN EQUAL -1 AND TARGET_IS_FRAMEWORK EQUAL -1 AND TARGET_IS_LIBASSIMP EQUAL -1)
-        minko_package_assets ("*.glsl;*.effect" "embed")
-        build_android (${target_name} "lib${target_name}.so")
-    endif ()
 endfunction ()
 
 # minko_add_executable function start
 function (minko_add_executable target_name sources)
+    if (ANDROID)
+        minko_add_library(${target_name} SHARED "${sources}")
+        build_android(${target_name} "lib${target_name}.so")
+
+        return()
+    endif()
+
     minko_set_variables()
 
-    if (TARGET_IS_EXAMPLE EQUAL -1)
-        if (NOT EMSCRIPTEN AND NOT ANDROID)
-            find_library (
-                MINKO_FRAMEWORK_LIB 
-                NAMES minko-framework
-                HINTS "${MINKO_HOME}framework/bin"
-            )
-        else ()
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/libminko-framework.a")
-        endif ()
-    else ()
-        if (LINUX OR ANDROID OR EMSCRIPTEN OR APPLE OR IOS)
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/libminko-framework.a")
-        else ()
-            set (MINKO_FRAMEWORK_LIB "${MINKO_HOME}/framework/bin/minko-framework.lib")
-        endif ()
-    endif ()
+    add_executable (${target_name} "${sources}")
 
-    # DO NOT overwrite CMAKE_CXX_STANDARD_LIBRARIES
-    set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} ${MINKO_FRAMEWORK_LIB}" PARENT_SCOPE)
-    add_executable (${target_name} ${sources})
+    minko_enable_framework(${target_name})
     minko_configure_target_flags (${target_name})
 
     if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
@@ -222,33 +150,7 @@ function (minko_add_executable target_name sources)
             "${MINKO_HOME}/framework/lib/sparsehash/include"
     )    
     endif ()
-    
-    minko_package_assets ("*.glsl;*.effect;*.png" "embed")
-    target_include_directories (${target_name} PRIVATE "${FRAMEWORK_INCLUDES}")
-    
-    if (WIN32)
-        find_library (GLEW32_LIB glew32 HINTS "${MINKO_HOME}/framework/lib/glew/lib/windows${BITNESS}")
-        target_link_libraries (
-            ${target_name}
-            ${MINKO_FRAMEWORK_LIB}
-            "OpenGL32"
-            ${GLEW32_LIB}
-        )
-        file (
-            GLOB
-            WINDOWS_DLL
-            "${MINKO_HOME}/framework/lib/glew/lib/windows${BITNESS}/*.dll"
-        )
-        target_include_directories (
-            ${target_name}
-            PUBLIC
-            "${MINKO_HOME}/framework/lib/glew/include"
-        )
-        foreach (DLL ${WINDOWS_DLL})
-            file (COPY "${DLL}" DESTINATION "${OUTPUT_PATH}")
-        endforeach ()
-    endif ()
-    
+        
     if (MSVC)
         target_compile_options(${target_name}
             PUBLIC 
@@ -261,11 +163,9 @@ function (minko_add_executable target_name sources)
     endif ()
     
     if (UNIX AND NOT APPLE AND NOT ANDROID)
-        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl --no-as-needed")
         link_directories ("/usr/lib64")
         target_link_libraries (
             ${target_name}
-            ${MINKO_FRAMEWORK_LIB}
             "GL"
             "m"
             "-pthread"
@@ -273,7 +173,6 @@ function (minko_add_executable target_name sources)
     elseif (APPLE AND NOT IOS)
         target_link_libraries (
             ${target_name}
-            ${MINKO_FRAMEWORK_LIB}
             "m"
             "-framework Cocoa"
             "-framework OpenGL"
@@ -282,7 +181,6 @@ function (minko_add_executable target_name sources)
     elseif (IOS)
         target_link_libraries (
             ${target_name}
-            ${MINKO_FRAMEWORK_LIB}
             "m"
             "-framework OpenGLES"
             "-framework Foundation"
@@ -329,8 +227,8 @@ function (minko_add_executable target_name sources)
                 POST_BUILD
                 # Compile the Emscripten (*.bc) bytecode to JavaScript (*.js)
                 COMMAND $ENV{EMSCRIPTEN}/em++
-                    ${OUTPUT_PATH}/${PROJECT_NAME}.bc
-                    -o ${OUTPUT_PATH}/${PROJECT_NAME}.html
+                    ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.bc
+                    -o ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.html
                     -g4
                     --js-library ${MINKO_HOME}/cmake/library.js
                     --memory-init-file 1
@@ -347,7 +245,7 @@ function (minko_add_executable target_name sources)
                 # Generate the *.data + *-preload.js for the embedded assets
                 COMMAND python
                     ${MINKO_HOME}/cmake/empkg.py
-                    ${OUTPUT_PATH}/${PROJECT_NAME}.data
+                    ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.data
             )
         else ()
             set_target_properties(${target_name} PROPERTIES LINK_FLAGS "--llvm-lto 1 -Wl --no-as-needed")
@@ -356,8 +254,8 @@ function (minko_add_executable target_name sources)
                 POST_BUILD
                 # Compile the Emscripten (*.bc) bytecode to JavaScript (*.js)
                 COMMAND $ENV{EMSCRIPTEN}/em++
-                    ${OUTPUT_PATH}/${PROJECT_NAME}.bc
-                    -o ${OUTPUT_PATH}/${PROJECT_NAME}.html
+                    ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.bc
+                    -o ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.html
                     -O3
                     --js-library ${MINKO_HOME}/cmake/library.js
                     --shell-file \"${SHELL_FILE_PATH}\"
@@ -374,7 +272,7 @@ function (minko_add_executable target_name sources)
                 # Generate the *.data + *-preload.js for the embedded assets
                 COMMAND python
                     ${MINKO_HOME}/cmake/empkg.py
-                    ${OUTPUT_PATH}/${PROJECT_NAME}.data
+                    ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.data
             )
         endif ()
     endif ()

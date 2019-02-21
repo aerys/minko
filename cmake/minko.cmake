@@ -22,23 +22,13 @@ function (minko_set_variables)
     set (BUILD_TYPE ${BUILD_TYPE} PARENT_SCOPE)
 
     if (EMSCRIPTEN)
-    set (SYSTEM_NAME "asmjs")
+        set (SYSTEM_NAME "asmjs")
         if (WASM)
             set (SYSTEM_NAME "wasm")
         endif ()
     endif ()
 
     set (SYSTEM_NAME ${SYSTEM_NAME} PARENT_SCOPE)
-
-    set (
-        OUTPUT_PATH
-        "${CMAKE_CURRENT_BINARY_DIR}/bin"
-        PARENT_SCOPE
-    )
-    set (
-        OUTPUT_PATH
-        "${CMAKE_CURRENT_BINARY_DIR}/bin"
-    )
 endfunction ()
 
 function (minko_configure_target_flags target)
@@ -58,22 +48,22 @@ function (minko_configure_target_flags target)
         ${target}
         PROPERTIES
         ARCHIVE_OUTPUT_DIRECTORY_DEBUG
-        ${OUTPUT_PATH}
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
         ARCHIVE_OUTPUT_DIRECTORY_RELEASE
-        ${OUTPUT_PATH}
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
         ARCHIVE_OUTPUT_DIRECTORY
-        ${OUTPUT_PATH}
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
         RUNTIME_OUTPUT_DIRECTORY_DEBUG
-        ${OUTPUT_PATH}
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
         RUNTIME_OUTPUT_DIRECTORY_RELEASE
-        ${OUTPUT_PATH}
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
         RUNTIME_OUTPUT_DIRECTORY
-        ${OUTPUT_PATH}
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
         LIBRARY_OUTPUT_DIRECTORY_DEBUG
-        ${OUTPUT_PATH}
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
         LIBRARY_OUTPUT_DIRECTORY_RELEASE
-        ${OUTPUT_PATH}
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
         LIBRARY_OUTPUT_DIRECTORY
-        ${OUTPUT_PATH}
+        "${CMAKE_CURRENT_BINARY_DIR}/bin"
     )
 endfunction ()

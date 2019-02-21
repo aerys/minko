@@ -16,7 +16,7 @@ def main():
     data = os.path.basename(sys.argv[1])
     html = os.path.splitext(data)[0] + '.html'
     preload = os.path.splitext(data)[0] + '.preload.js'
-    embeddir = 'embed'
+    embeddir = '../embed'
 
     if not os.path.isdir(os.path.join(targetdir, embeddir)):
         return
@@ -30,7 +30,6 @@ def main():
     binary = os.path.join(EMSCRIPTEN, 'tools', 'file_packager.py')
 
     files = [os.path.join(embeddir, name) + '@' + name for name in os.listdir(os.path.join(targetdir, embeddir))]
-    print(files)
 
     if os.getenv('verbose') != '0':
         print(' '.join(['python', binary, data, '--js-output=' + preload, '--preload'] + files))

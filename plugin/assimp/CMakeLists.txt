@@ -83,7 +83,8 @@ target_link_libraries ("assimp" "minko-plugin-zlib")
 target_include_directories ("assimp" PUBLIC "${MINKO_HOME}/plugin/zlib/lib/zlib")
 target_compile_options ("assimp" PUBLIC -DMINKO_PLUGIN_ZLIB)
 target_link_libraries (${PROJECT_NAME} "assimp")
-message("${OUTPUT_PATH}")
+
+get_target_property(OUTPUT_PATH ${PROJECT_NAME} ARCHIVE_OUTPUT_DIRECTORY)
 set_target_properties (
     "assimp"
     PROPERTIES
@@ -101,14 +102,16 @@ set_target_properties (
     ${OUTPUT_PATH}
 )
 target_compile_options (
-    "assimp" PRIVATE 
+    "assimp"
+    PRIVATE 
     -DASSIMP_BUILD_NO_OWN_ZLIB
     -DASSIMP_BUILD_NO_EXPORT
     -DASSIMP_BUILD_BOOST_WORKAROUND
     -DASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 )
 target_compile_options (
-    ${PROJECT_NAME} PRIVATE 
+    ${PROJECT_NAME}
+    PRIVATE 
     -DASSIMP_BUILD_NO_OWN_ZLIB
     -DASSIMP_BUILD_NO_EXPORT
     -DASSIMP_BUILD_BOOST_WORKAROUND

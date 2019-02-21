@@ -10,6 +10,7 @@ stages:
     expire_in: 6 hr
     paths:
       - build/module
+      - build/framework/enable.cmake
       - build/framework/bin
       - build/framework/asset
       - build/framework/lib
