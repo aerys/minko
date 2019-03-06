@@ -41,7 +41,11 @@ GeometryWriter::initialize()
         {
             return serializeIndexStream<unsigned short>(indexBuffer);
         },
-        [](std::shared_ptr<geometry::Geometry> geometry) { return true; },
+        [](std::shared_ptr<geometry::Geometry> geometry)
+		{
+			return geometry &&
+				geometry->indices()->dataPointer<unsigned short>() != nullptr;
+		},
 		0
 	);
 
@@ -50,7 +54,7 @@ GeometryWriter::initialize()
 		std::bind(
 			GeometryWriter::serializeIndexStreamChar,
 			std::placeholders::_1
-			),
+		),
 		std::bind(
 			GeometryWriter::indexBufferFitCharCompression,
 			std::placeholders::_1
@@ -67,8 +71,7 @@ GeometryWriter::initialize()
 		[](geometry::Geometry::Ptr geometry) -> bool
 		{
 			return geometry &&
-				geometry->numVertices() > std::numeric_limits<unsigned short>::max() &&
-				geometry->indices()->dataPointer<unsigned int>();
+				geometry->indices()->dataPointer<unsigned int>() != nullptr;
 		},
 		2
 	);
