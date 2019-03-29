@@ -62,29 +62,29 @@ endif ()
 if (WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
     file (GLOB_RECURSE
         TEXTURE_COMP_SRC
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.h"
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.hpp"
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.c"
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.cpp"
     )
 
     file (GLOB
         TEXTURE_COMP_INCLUDE
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib"
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/inc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/inc"
     )
 
     target_include_directories (${PROJECT_NAME} PRIVATE ${TEXTURE_COMP_INCLUDE})
 
     list (REMOVE_ITEM
         TEXTURE_COMP_SRC
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzham_win32_threading.h"
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzham_win32_threading.cpp"
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzham_timer.h"
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzham_timer.cpp"
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_jpgd.cpp"
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_jpge.cpp"
-        "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_winhdr.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzham_win32_threading.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzham_win32_threading.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzham_timer.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzham_timer.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_jpgd.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_jpge.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_winhdr.h"
     )
 
     target_compile_options (${PROJECT_NAME} PRIVATE
@@ -95,12 +95,12 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
     if (LINUX)
         list (REMOVE_ITEM
             TEXTURE_COMP_SRC
-            "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_threading_win32.h"
-            "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_threading_win32.cpp"
-            "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzma_LzFindMt.h"
-            "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzma_LzFindMt.cpp"
-            "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzma_Threads.h"
-            "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzma_Threads.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_threading_win32.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/crn_threading_win32.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzma_LzFindMt.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzma_LzFindMt.cpp"
+            "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzma_Threads.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib/lzma_Threads.cpp"
         )
     endif ()
 
@@ -134,7 +134,7 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
     if (WIN32 AND UNIX AND APPLE AND NOT IOS AND NOT EMSCRIPTEN)
         file (GLOB
             OPT_INCLUDE_1
-            "{CMAKE_CURRENT_SOURCE_DIR}/lib/PVRTexTool/Include"
+            "${CMAKE_CURRENT_SOURCE_DIR}/lib/PVRTexTool/Include"
         )
         target_include_directories (${PROJECT_NAME} PRIVATE ${OPT_INCLUDE_1})
     endif ()
