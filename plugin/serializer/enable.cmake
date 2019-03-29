@@ -1,12 +1,12 @@
 function (minko_enable_plugin_serializer target)
     set (SERIALIZER_PATH "${MINKO_HOME}/plugin/serializer")
-    
+
     minko_enable_plugin_jpeg (${target})
     minko_enable_plugin_png (${target})
     minko_enable_plugin_ttf (${target})
 
     minko_plugin_link ("serializer" ${target})
-    
+
     file (GLOB
         SERIALIZER_INCLUDE
         "${SERIALIZER_PATH}/include"
@@ -18,7 +18,7 @@ function (minko_enable_plugin_serializer target)
     get_target_property(TARGET_TYPE ${target} TYPE)
     get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
 
-    if (WITH_TEXTURE_COMPRESSOR STREQUAL "on" OR WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
+    if (WITH_TEXTURE_COMPRESSOR STREQUAL "ON" OR WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
         if (WIN32 AND BITNESS EQUAL 32)
             find_library (RET_PATH
                 NAMES
@@ -30,7 +30,7 @@ function (minko_enable_plugin_serializer target)
                 "${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32"
             )
             target_link_libraries(${target} ${RET_PATH})
-            
+
             if (TARGET_TYPE STREQUAL "EXECUTABLE")
                 file (GLOB COPY_LIST "${SERIALIZER_PATH}/lib/PVRTexTool/Windows_x86_32/Dynamic/*.dll" "${SERIALIZER_PATH}/lib/QCompress/Lib/windows/Win32/*.dll")
                 file (COPY ${COPY_LIST} DESTINATION ${OUTPUT_PATH})

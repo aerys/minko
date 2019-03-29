@@ -59,7 +59,7 @@ if (LINUX)
     )
 endif ()
 
-if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
+if (WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
     file (GLOB_RECURSE
         TEXTURE_COMP_SRC
         "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/*.h"
@@ -73,6 +73,7 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
         "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/crnlib"
         "{CMAKE_CURRENT_SOURCE_DIR}/lib/crnlib/inc"
     )
+
     target_include_directories (${PROJECT_NAME} PRIVATE ${TEXTURE_COMP_INCLUDE})
 
     list (REMOVE_ITEM
@@ -116,7 +117,7 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "on")
             -DMINKO_NO_CRNLIB
         )
     endif ()
-    
+
     if (APPLE AND IOS)
         target_compile_options (${PROJECT_NAME} PRIVATE
             -DMINKO_NO_QCOMPRESS

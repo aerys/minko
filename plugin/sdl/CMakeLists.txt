@@ -7,7 +7,7 @@ file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${MINKO_HOME}/${RELATIVE_
 
 set (PROJECT_NAME "minko-plugin-sdl")
 
-file (GLOB_RECURSE 
+file (GLOB_RECURSE
     ${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
@@ -15,11 +15,11 @@ file (GLOB_RECURSE
 )
 
 list (REMOVE_ITEM
-    ${PROJECT_NAME}_SRC 
+    ${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/minko/SDLWebGLBackend.cpp"
 )
 
-file (GLOB 
+file (GLOB
     ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/sdl/include"
@@ -30,15 +30,15 @@ file (GLOB
 
 if (EMSCRIPTEN)
     list (REMOVE_ITEM
-        ${PROJECT_NAME}_INCLUDE 
+        ${PROJECT_NAME}_INCLUDE
         "${CMAKE_CURRENT_SOURCE_DIR}/lib/sdl/include"
     )
-    list (APPEND 
-        ${PROJECT_NAME}_INCLUDE 
+    list (APPEND
+        ${PROJECT_NAME}_INCLUDE
         "${CMAKE_CURRENT_SOURCE_DIR}/SDL"
     )
-    list (APPEND 
-        ${PROJECT_NAME}_SRC 
+    list (APPEND
+        ${PROJECT_NAME}_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/src/minko/SDLWebGLBackend.cpp"
     )
 endif ()
@@ -48,8 +48,8 @@ if (APPLE)
 endif ()
 
 if (NOT ANDROID)
-    list (REMOVE_ITEM 
-        ${PROJECT_NAME}_SRC 
+    list (REMOVE_ITEM
+        ${PROJECT_NAME}_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/include/minko/file/APKProtocol.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/minko/file/APKProtocol.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/include/minko/file/APKProtocolWorker.hpp"
@@ -76,7 +76,7 @@ target_include_directories (${PROJECT_NAME}
 )
 
 # add requested offscreen
-if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+if (WITH_OFFSCREEN STREQUAL "ON" OR WITH_OFFSCREEN STREQUAL "ON")
     minko_enable_plugin_offscreen (${PROJECT_NAME})
     target_compile_options (${PROJECT_NAME} PRIVATE "-DSDL_AUDIO_ENABLED=0")
 endif ()
