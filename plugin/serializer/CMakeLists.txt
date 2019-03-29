@@ -125,13 +125,13 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
         )
     endif ()
 
-    if (BITNESS EQUAL 32)
+    if (BITNESS EQUAL 64)
         target_compile_options (${PROJECT_NAME} PRIVATE
-            "MINKO_NO_QCOMPRESS"
+            -DMINKO_NO_QCOMPRESS
         )
     endif ()
 
-    if (WIN32 AND UNIX AND APPLE AND NOT IOS AND NOT EMSCRIPTEN)
+    if (WIN32 OR UNIX OR APPLE)
         file (GLOB
             OPT_INCLUDE_1
             "${CMAKE_CURRENT_SOURCE_DIR}/lib/PVRTexTool/Include"
@@ -139,7 +139,7 @@ if (WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
         target_include_directories (${PROJECT_NAME} PRIVATE ${OPT_INCLUDE_1})
     endif ()
 
-    if (BITNESS EQUAL 32)
+    if ((WIN32 OR UNIX) AND BITNESS EQUAL 32)
         file (GLOB
             OPT_INCLUDE_2
             "lib/QCompress/Inc"
