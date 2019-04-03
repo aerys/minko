@@ -25,7 +25,7 @@ function (minko_add_library target_name type sources)
     else ()
         target_compile_options (${target_name} PUBLIC "-DNDEBUG")
     endif ()
-       
+
     if (UNIX AND NOT APPLE AND NOT ANDROID)
         target_link_libraries (${target_name} "-lGL")
     endif ()
@@ -42,7 +42,7 @@ function (minko_add_library target_name type sources)
         )
         set_target_properties (
             ${target_name}
-            PROPERTIES LINK_FLAGS 
+            PROPERTIES LINK_FLAGS
             "-Wl -shared -pthread -Wl,--no-undefined -Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
         )
         target_compile_options (
@@ -63,17 +63,17 @@ function (minko_add_library target_name type sources)
         set_target_properties (
             ${target_name}
             PROPERTIES
-            XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET 
+            XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET
             "7.0"
         )
     endif ()
 
     if (MSVC)
         target_compile_options(${target_name}
-            PUBLIC 
-            "-DNOMINMAX" 
-            "-D_VARIADIC_MAX=10" 
-            "-D_USE_MATH_DEFINES" 
+            PUBLIC
+            "-DNOMINMAX"
+            "-D_VARIADIC_MAX=10"
+            "-D_USE_MATH_DEFINES"
             "-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS"
             "/wd4503"
         )
@@ -105,7 +105,7 @@ function (minko_add_executable target_name sources)
     minko_enable_framework(${target_name})
     minko_configure_target_flags (${target_name})
 
-    if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+    if (WITH_OFFSCREEN STREQUAL "ON" OR WITH_OFFSCREEN STREQUAL "ON")
         minko_enable_plugin_offscreen (${target_name})
     endif ()
 
@@ -115,13 +115,13 @@ function (minko_add_executable target_name sources)
     set (SYSTEM_NAME ${SYSTEM_NAME} PARENT_SCOPE)
     set (BUILD_TYPE ${BUILD_TYPE} PARENT_SCOPE)
     set_target_properties(${target_name} PROPERTIES LINKER_LANGUAGE CXX)
-    
+
     if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_compile_options (${target_name} PUBLIC "-DDEBUG")
     else ()
         target_compile_options (${target_name} PUBLIC "-DNDEBUG")
     endif ()
-    
+
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         set (BITNESS 64)
     else ()
@@ -136,7 +136,7 @@ function (minko_add_executable target_name sources)
         "${MINKO_HOME}/framework/lib/sparsehash/src"
         "${MINKO_HOME}/framework/lib/jsoncpp/src"
     )
-    
+
     if (WIN32)
         list (
             APPEND
@@ -148,20 +148,20 @@ function (minko_add_executable target_name sources)
             APPEND
             FRAMEWORK_INCLUDES
             "${MINKO_HOME}/framework/lib/sparsehash/include"
-    )    
+    )
     endif ()
-        
+
     if (MSVC)
         target_compile_options(${target_name}
-            PUBLIC 
-            "-DNOMINMAX" 
-            "-D_VARIADIC_MAX=10" 
-            "-D_USE_MATH_DEFINES" 
+            PUBLIC
+            "-DNOMINMAX"
+            "-D_VARIADIC_MAX=10"
+            "-D_USE_MATH_DEFINES"
             "-D_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS"
             "/wd4503"
         )
     endif ()
-    
+
     if (UNIX AND NOT APPLE AND NOT ANDROID)
         link_directories ("/usr/lib64")
         target_link_libraries (
@@ -194,11 +194,11 @@ function (minko_add_executable target_name sources)
         file (GLOB_RECURSE IOS_SRC "*.plist")
         target_sources(${target_name} PUBLIC ${IOS_SRC})
     endif ()
-    
+
     if (APPLE)
         target_compile_options (${target_name} PUBLIC "-std=c++11")
     endif ()
-    
+
     if (EMSCRIPTEN)
         if (WITH_WASM)
             set (WASM_OPTS  -s WASM=1 -s ALLOW_MEMORY_GROWTH=1)
@@ -207,7 +207,7 @@ function (minko_add_executable target_name sources)
             set (WASM_OPTS  -s WASM=0)
             set (ASMJS_OPTS -s OUTLINING_LIMIT=20000 -s ALLOW_MEMORY_GROWTH=0)
         endif ()
-        
+
         if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/template.html)
             set (SHELL_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/template.html)
         else ()
@@ -218,7 +218,7 @@ function (minko_add_executable target_name sources)
         # 1. build the bytecode (*.bc)
         # 2. convert the bytecode to JavaScript (*.js)
         set_target_properties (${target_name} PROPERTIES SUFFIX ".bc")
-        
+
         if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
             set_target_properties(${target_name} PROPERTIES LINK_FLAGS "--llvm-lto 0 -g4 -Wl --no-as-needed")
             target_compile_options(${target_name} PRIVATE "-g4")
@@ -268,7 +268,7 @@ function (minko_add_executable target_name sources)
                     -s ERROR_ON_UNDEFINED_SYMBOLS=0
                     ${WASM_OPTS}
                     ${ASMJS_OPTS}
-                    
+
                 # Generate the *.data + *-preload.js for the embedded assets
                 COMMAND python
                     ${MINKO_HOME}/cmake/empkg.py
@@ -283,8 +283,8 @@ function (minko_add_worker target_name sources)
     minko_add_library (${target_name} "STATIC" "${sources}")
 
     get_property (
-        WORKER_LIBS 
-        TARGET ${target_name} 
+        WORKER_LIBS
+        TARGET ${target_name}
         PROPERTY LINK_LIBRARIES
     )
     list (
