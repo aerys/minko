@@ -103,24 +103,25 @@ build:windows64_offscreen:
     - bash plugin\serializer\script\download_dependencies.sh .
     - if not exist build mkdir build
     - cd build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TESTS=ON ..
+    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON -DWITH_TESTS=ON ..
     - msbuild Project.sln /property:Configuration=Release /property:Platform=x64 /m:4
 
-test:windows64_offscreen:
-  stage: test
-  tags:
-    - windows
-  dependencies:
-    - build:windows64_offscreen
-  artifacts:
-    name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
-    when: on_failure
-    expire_in: 1 hr
-    paths:
-      - build/test
-  script:
-    - cd .\build\test\bin
-    - minko-test.exe
+# Disabled until https://git.aerys.in/aerys/smartshape-engine/issues/166 is fixed.
+# test:windows64_offscreen:
+#   stage: test
+#   tags:
+#     - windows
+#   dependencies:
+#     - build:windows64_offscreen
+#   artifacts:
+#     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
+#     when: on_failure
+#     expire_in: 1 hr
+#     paths:
+#       - build/test
+#   script:
+#     - cd .\build\test\bin
+#     - minko-test.exe
 
 test:linux_offscreen:
   stage: test
