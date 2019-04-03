@@ -18,7 +18,7 @@ function (minko_enable_plugin_serializer target)
     get_target_property(TARGET_TYPE ${target} TYPE)
     get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
 
-    if (WITH_TEXTURE_COMPRESSOR STREQUAL "ON" OR WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
+    if (WITH_TEXTURE_COMPRESSOR STREQUAL "ON")
         if (WIN32 AND BITNESS EQUAL 32)
             find_library (RET_PATH
                 NAMES
