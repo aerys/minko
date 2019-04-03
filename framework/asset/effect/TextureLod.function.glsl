@@ -54,7 +54,7 @@ vec4 texturelod_texture2D(sampler2D tex, vec2 uv, vec2 texSize, float baseLod, f
             return texture2DLodEXT(tex, fract(uv), max(maxLod, requiredLod));
         #elif defined GL_ES
             // OpenGL ES 2.0 (android, ios)
-            // Unlikely `texture2DLod*` functions, `texture2D` accepts
+            // Unlike `texture2DLod*` functions, `texture2D` accepts
             // a LOD bias. We thus subtract the `requiredLod` to the result.
             // Refer to
             return texture2D(tex, fract(uv), max(maxLod, requiredLod) - requiredLod);
