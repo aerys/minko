@@ -17,11 +17,11 @@ minko_enable_plugin_serializer (${PROJECT_NAME})
 minko_enable_plugin_websocket (${PROJECT_NAME})
 minko_enable_plugin_http_loader (${PROJECT_NAME})
 minko_enable_plugin_ssl (${PROJECT_NAME})
-if (WITH_OFFSCREN STREQUAL "on" OR WITH_OFFSCREN STREQUAL "ON")
+if (WITH_OFFSCREN STREQUAL "ON" OR WITH_OFFSCREN STREQUAL "ON")
     minko_enable_plugin_offscreen (${PROJECT_NAME})
 endif ()
 
-file (GLOB GOOGLETEST_SRC 
+file (GLOB GOOGLETEST_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/googletest/src/gtest-all.cc"
 )
 
