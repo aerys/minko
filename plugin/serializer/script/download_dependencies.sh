@@ -9,7 +9,9 @@ pushd plugin/serializer/lib
 test -d PVRTexTool || {
   ARCHIVE=smartshape-converter-lib
   curl -s http://static.aerys.in/smartshape/converter/lib.tgz --output ./${ARCHIVE}.tgz
-  tar xzf ${ARCHIVE}.tgz
+  tar xzf ${ARCHIVE}.tgz \
+    PVRTexTool \
+    QCompress
   rm -rf ./${ARCHIVE}.tgz
 }
 popd
