@@ -42,17 +42,23 @@ vec4 texturelod_texture2D(sampler2D tex, vec2 uv, vec2 texSize, float baseLod, f
         return texture2D(tex, uv);
 
 #if __VERSION__ < 130
-    #if defined GL_OES_standard_derivatives && (defined GL_ES && defined GL_EXT_shader_texture_lod) || (!defined GL_ES && defined GL_ARB_shader_texture_lod)
+    #if defined GL_OES_standard_derivatives
         float requiredLod = texturelod_mipmapLevel(tex, uv, texSize);
-
         float maxTextureLod = floor(log2(texSize.x));
 
         if (maxLod >= maxTextureLod)
             return defaultColor;
 
-        #if defined GL_ES
+        #if defined GL_ES && defined GL_EXT_shader_texture_lod
+            // WebGL 1.0 (html5)
             return texture2DLodEXT(tex, fract(uv), max(maxLod, requiredLod));
-        #else
+        #elif defined GL_ES
+            // OpenGL ES 2.0 (android, ios)
+            // Unlike `texture2DLod*` functions, `texture2D` accepts
+            // a LOD bias. We thus subtract the `requiredLod` to the result.
+            return texture2D(tex, fract(uv), max(maxLod, requiredLod) - requiredLod);
+        #elif defined GL_ARB_shader_texture_lod
+            // Desktop
             return texture2DLod(tex, fract(uv), max(maxLod, requiredLod));
         #endif
     #else
