@@ -61,7 +61,7 @@ if (ANDROID)
     add_definitions(-DANDROID)
 endif ()
 
-list (APPEND 
+list (APPEND
     COMMON_SOURCES
     ${JSON_CPP_SRC}
     ${GLM_SRC}
@@ -71,7 +71,7 @@ list (APPEND
 
 minko_add_library (minko-framework STATIC "${COMMON_SOURCES}")
 
-if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+if (WITH_OFFSCREEN STREQUAL "ON" OR WITH_OFFSCREEN STREQUAL "ON")
     minko_enable_plugin_offscreen (minko-framework)
 endif ()
 
@@ -147,7 +147,7 @@ if (WITH_GLSL_OPTIMIZER)
         GLSL_OPTIMIZER_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/glsl/main.cpp"
     )
-    
+
     target_sources (minko-framework
         PRIVATE
         ${GLSL_OPTIMIZER_SRC}
