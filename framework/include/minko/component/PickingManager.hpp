@@ -126,7 +126,6 @@ namespace minko
 			bool										_addPickingLayout;
             bool                                        _emulateMouseWithTouch;
             bool                                        _running;
-            bool                                        _debug;
 
 		public:
 			inline static
@@ -288,13 +287,6 @@ namespace minko
 
             AbstractPicking::map<NodePtr, std::set<unsigned char>>
             pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true);
-
-            inline
-            void
-            debug(bool v)
-            {
-                _debug = v;
-            }
 
         protected:
 			void

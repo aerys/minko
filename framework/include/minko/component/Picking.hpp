@@ -91,6 +91,8 @@ namespace minko
             unsigned char                               _lastDepth[4];
 
             bool                                        _debug;
+            NodePtr                                     _debugQuad;
+            RendererPtr                                 _debugRenderer;
 
             bool                                        _multiselecting;
             minko::math::vec2                           _multiselectionStartPosition;
