@@ -12,17 +12,16 @@ file (
     "${CMAKE_CURRENT_SOURCE_DIR}/asset/*"
 )
 
-if (NOT ANDROID)
-    minko_add_executable(${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
-else ()
-    minko_add_library(${PROJECT_NAME} "SHARED" "${${PROJECT_NAME}_SRC}")
-endif ()
+minko_add_executable(${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
 
 target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
 minko_enable_plugin_sdl (${PROJECT_NAME})
 minko_enable_plugin_jpeg (${PROJECT_NAME})
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    minko_copy (${CMAKE_CURRENT_SOURCE_DIR}/asset ${OUTPUT_PATH}/asset ${PROJECT_NAME})
-endif ()
+minko_package_assets (
+    ${PROJECT_NAME}
+    EMBED
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/effect/*.jpg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/effect/*.effect"
+)

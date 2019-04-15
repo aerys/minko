@@ -1,5 +1,8 @@
 function (minko_enable_plugin_video_camera target)
     set (VIDEO_CAMERA_PATH "${MINKO_HOME}/plugin/video-camera")
+
+    get_target_property(TARGET_TYPE ${target} TYPE)
+    get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
     
     minko_plugin_link ("video-camera" ${target})
     file (GLOB
@@ -9,8 +12,8 @@ function (minko_enable_plugin_video_camera target)
     target_include_directories(${target} PRIVATE ${VIDEO_CAMERA_INCLUDE})
     target_compile_options (${target} PRIVATE "-DMINKO_PLUGIN_VIDEO_CAMERA")
 
-    if (EMSCIPTEN)
-        minko_copy (${VIDEO_CAMERA_PATH}/asset ${OUTPUT_PATH} ${target})
+    if (EMSCRIPTEN and TARGET_TYPE STREQUAL "EXECUTABLE")
+        file (COPY ${VIDEO_CAMERA_PATH}/asset DESTINATION ${OUTPUT_PATH}/asset)
     endif ()
 
     if (IOS)

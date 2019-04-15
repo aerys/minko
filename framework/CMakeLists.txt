@@ -1,12 +1,13 @@
 cmake_minimum_required (VERSION 3.5.1)
 
+file (RELATIVE_PATH RELATIVE_LIBRARY_PATH ${MINKO_HOME}/../ ${CMAKE_CURRENT_SOURCE_DIR})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/asset DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/enable.cmake DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+
 option (WITH_GLSL_OPTIMIZER
     "handle with-glsl-optimizer option"
-    OFF
-)
-
-option (WASM
-    "choose the emscripten method"
     OFF
 )
 
@@ -34,7 +35,6 @@ file (GLOB_RECURSE SPARSEHASH_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/sparsehash/src/sparsehash/*.cc"
 )
 
-
 if (WIN32)
     add_definitions("/wd4996")
     file (GLOB_RECURSE GLEW_SRC
@@ -61,7 +61,7 @@ if (ANDROID)
     add_definitions(-DANDROID)
 endif ()
 
-list (APPEND 
+list (APPEND
     COMMON_SOURCES
     ${JSON_CPP_SRC}
     ${GLM_SRC}
@@ -71,7 +71,7 @@ list (APPEND
 
 minko_add_library (minko-framework STATIC "${COMMON_SOURCES}")
 
-if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+if (WITH_OFFSCREEN STREQUAL "ON" OR WITH_OFFSCREEN STREQUAL "ON")
     minko_enable_plugin_offscreen (minko-framework)
 endif ()
 
@@ -89,7 +89,7 @@ target_include_directories (minko-framework
     "src"
     "lib/jsoncpp/src"
     "lib/glm"
-    #"lib/sparsehash/src"
+    "lib/sparsehash/src"
 )
 
 if (WIN32)
@@ -147,7 +147,7 @@ if (WITH_GLSL_OPTIMIZER)
         GLSL_OPTIMIZER_SRC
         "${CMAKE_CURRENT_SOURCE_DIR}/lib/glsl-optimizer/src/glsl/main.cpp"
     )
-    
+
     target_sources (minko-framework
         PRIVATE
         ${GLSL_OPTIMIZER_SRC}

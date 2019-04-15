@@ -11,22 +11,26 @@ file (GLOB_RECURSE
     "${CMAKE_CURRENT_SOURCE_DIR}/asset/*"
 )
 
-if (NOT ANDROID)
-    minko_add_executable(${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
-else ()
-    minko_add_library(${PROJECT_NAME} "SHARED" "${${PROJECT_NAME}_SRC}")
-endif ()
+minko_add_executable(${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
 
 target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
 minko_enable_plugin_sdl (${PROJECT_NAME})
 minko_enable_plugin_html_overlay (${PROJECT_NAME})
 
-minko_copy (${CMAKE_CURRENT_SOURCE_DIR}/asset ${OUTPUT_PATH}/asset ${PROJECT_NAME})
-
-if (EMSCRIPTEN)
-    minko_package_assets ("*.effect;*.glsl" "embed")
-endif ()
+minko_package_assets (
+    ${PROJECT_NAME}
+    EMBED
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/effect/*.effect"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/effect/*.glsl"
+)
+minko_package_assets (
+    ${PROJECT_NAME}
+    COPY
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/html/*/*.css"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/html/*/*.png"
+    "${CMAKE_CURRENT_SOURCE_DIR}/asset/html/*.html"
+)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(

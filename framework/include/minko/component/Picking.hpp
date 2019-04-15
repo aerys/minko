@@ -143,10 +143,10 @@ namespace minko
 
         protected:
 			void
-			targetAdded(NodePtr target);
+			targetAdded(NodePtr target) override;
 
 			void
-			targetRemoved(NodePtr target);
+			targetRemoved(NodePtr target) override;
 
 		private:
 

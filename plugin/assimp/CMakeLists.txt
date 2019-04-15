@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5.1)
 
+file (RELATIVE_PATH RELATIVE_LIBRARY_PATH ${MINKO_HOME}/../ ${CMAKE_CURRENT_SOURCE_DIR})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/enable.cmake DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+
 set (PROJECT_NAME "minko-plugin-assimp")
 
 file (
@@ -72,21 +76,42 @@ file (
     "lib/assimp/contrib/unzip"    
 )
 
-minko_add_library ("libassimp" STATIC "${ASSIMP_LIB_SRC}")
-target_include_directories ("libassimp" PUBLIC ${ASSIMP_LIB_INCLUDE})
-target_link_libraries ("libassimp" "minko-plugin-zlib")
-target_include_directories ("libassimp" PUBLIC "${MINKO_HOME}/plugin/zlib/lib/zlib")
-target_compile_options ("libassimp" PUBLIC -DMINKO_PLUGIN_ZLIB)
-target_link_libraries (${PROJECT_NAME} "libassimp")
+# minko_add_library ("assimp" STATIC "${ASSIMP_LIB_SRC}")
+add_library("assimp" STATIC "${ASSIMP_LIB_SRC}")
+target_include_directories ("assimp" PUBLIC ${ASSIMP_LIB_INCLUDE})
+target_link_libraries ("assimp" "minko-plugin-zlib")
+target_include_directories ("assimp" PUBLIC "${MINKO_HOME}/plugin/zlib/lib/zlib")
+target_compile_options ("assimp" PUBLIC -DMINKO_PLUGIN_ZLIB)
+target_link_libraries (${PROJECT_NAME} "assimp")
+
+get_target_property(OUTPUT_PATH ${PROJECT_NAME} ARCHIVE_OUTPUT_DIRECTORY)
+set_target_properties (
+    "assimp"
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY_DEBUG
+    ${OUTPUT_PATH}
+    ARCHIVE_OUTPUT_DIRECTORY_RELEASE
+    ${OUTPUT_PATH}
+    ARCHIVE_OUTPUT_DIRECTORY
+    ${OUTPUT_PATH}
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG
+    ${OUTPUT_PATH}
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE
+    ${OUTPUT_PATH}
+    LIBRARY_OUTPUT_DIRECTORY
+    ${OUTPUT_PATH}
+)
 target_compile_options (
-    "libassimp" PRIVATE 
+    "assimp"
+    PRIVATE 
     -DASSIMP_BUILD_NO_OWN_ZLIB
     -DASSIMP_BUILD_NO_EXPORT
     -DASSIMP_BUILD_BOOST_WORKAROUND
     -DASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 )
 target_compile_options (
-    ${PROJECT_NAME} PRIVATE 
+    ${PROJECT_NAME}
+    PRIVATE 
     -DASSIMP_BUILD_NO_OWN_ZLIB
     -DASSIMP_BUILD_NO_EXPORT
     -DASSIMP_BUILD_BOOST_WORKAROUND
@@ -105,7 +130,7 @@ if (MSVC)
         -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
     )
     target_compile_options (
-        libassimp PRIVATE
+        assimp PRIVATE
         -D_CRT_SECURE_NO_WARNINGS
         -D_SCL_SECURE_NO_WARNINGS
         -DAI_LMW_MAX_WEIGHTS=4
@@ -124,7 +149,7 @@ else ()
         -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
     )
     target_compile_options (
-        libassimp PRIVATE 
+        assimp PRIVATE 
         -DAI_LMW_MAX_WEIGHTS=4
         # OpenGL ES 2 max vertex count
         -DAI_SLM_DEFAULT_MAX_VERTICES=128000

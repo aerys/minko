@@ -1,0 +1,20 @@
+function (minko_package_assets target action)
+    get_target_property (TARGET_TYPE ${target} TYPE)
+
+    if (${TARGET_TYPE} STREQUAL "EXECUTABLE" OR (ANDROID AND ${TARGET_TYPE} STREQUAL "SHARED_LIBRARY"))
+        foreach (PATTERN ${ARGN})
+            file(GLOB ASSETS "${PATTERN}")
+
+            foreach (ASSET_PATH ${ASSETS})
+                string (FIND ${ASSET_PATH} "asset/" POS)
+                string (SUBSTRING ${ASSET_PATH} ${POS} -1 ASSET_REL_PATH)
+
+                if (EMSCRIPTEN AND ${action} STREQUAL "EMBED")
+                    configure_file("${ASSET_PATH}" "embed/${ASSET_REL_PATH}" COPYONLY)
+                else ()
+                    configure_file("${ASSET_PATH}" "bin/${ASSET_REL_PATH}" COPYONLY)
+                endif ()
+            endforeach ()
+        endforeach ()
+    endif ()
+endfunction ()

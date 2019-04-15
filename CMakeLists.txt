@@ -1,21 +1,38 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-set(MINKO_HOME ${CMAKE_CURRENT_SOURCE_DIR})
+set(MINKO_HOME ${CMAKE_CURRENT_BINARY_DIR})
 
-if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
-    include ("${MINKO_HOME}/plugin/offscreen/enable.cmake")
-endif ()
-
-include ("plugins.cmake")
-include ("package.cmake")
-include ("minko.cmake")
-include ("project.cmake")
-include ("copy.cmake")
-include ("android-build.cmake")
+option (WITH_PLUGINS "list off plugins to build" ON)
+option (WITH_EXAMPLES "list off examples to build" ON)
+option (WITH_TESTS "used to enable the tests" OFF)
+option (WITH_WASM "enable WebAssembly" ON)
+option (WITH_OFFSCREEN "enable offscreen rendering" OFF)
+option (WITH_NODEJS_WORKER "enable the NodeJS worker plugin" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE "Debug")
 endif ()
+
+file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/template" DESTINATION ${MINKO_HOME})
+file (COPY "${CMAKE_CURRENT_SOURCE_DIR}/cmake" DESTINATION ${MINKO_HOME})
+include ("${MINKO_HOME}/cmake/project.cmake")
+include ("${MINKO_HOME}/cmake/plugins.cmake")
+include ("${MINKO_HOME}/cmake/package.cmake")
+include ("${MINKO_HOME}/cmake/minko.cmake")
+include ("${MINKO_HOME}/cmake/android-build.cmake")
+
+if (WITH_OFFSCREEN)
+    set (OFFSCREEN_PATH plugin/offscreen)
+    file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/${OFFSCREEN_PATH}/enable.cmake DESTINATION ${MINKO_HOME}/${OFFSCREEN_PATH})
+    file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/${OFFSCREEN_PATH}/include DESTINATION ${MINKO_HOME}/${OFFSCREEN_PATH})
+    file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/${OFFSCREEN_PATH}/lib DESTINATION ${MINKO_HOME}/${OFFSCREEN_PATH})
+    include ("${MINKO_HOME}/../plugin/offscreen/enable.cmake")
+endif ()
+
+set(CMAKE_CXX_FLAGS_DEBUG "_UNSET" CACHE STRING "")
+if(${CMAKE_CXX_FLAGS_DEBUG} STREQUAL "_UNSET")
+    set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -O0" CACHE STRING "" FORCE)
+endif()
 
 if (APPLE AND NOT IOS)
    set (CMAKE_OSX_DEPLOYMENT_TARGET "")
@@ -25,11 +42,7 @@ if (APPLE AND NOT IOS)
 endif ()
 
 add_subdirectory ("framework")
-
-get_property (FRAMEWORK_INCLUDES TARGET minko-framework PROPERTY INCLUDE_DIRECTORIES)
-
-option (WITH_PLUGINS "list off plugins to build" ON)
-option (WITH_EXAMPLES "list off examples to build" ON)
+include("framework/enable.cmake")
 
 list (
     APPEND
@@ -47,24 +60,26 @@ list (
     debug
     http-worker
     http-loader
-    html-overlay #apple compil error
-    #leap (out dated plugin - math dependencies)
-    #lua (out dated plugin)
-    #particles (out dated plugin - lua dependencies)
+    html-overlay
     bullet
     angle
     sensors
     video-camera
     vr
     websocket
-    #nodejs-worker
 )
 
-if (WITH_NODEJS_WORKER STREQUAL "on" OR WITH_NODEJS_WORKER STREQUAL "ON")
+if (WITH_NODEJS_WORKER)
+    if (NOT WITH_PLUGINS MATCHES OFF AND NOT WITH_PLUGINS MATCHES ON)
+        set (WITH_PLUGINS "nodejs-worker,${WITH_PLUGINS}")
+    endif ()
     list (APPEND PLUGINS nodejs-worker)
 endif ()
 
-if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+if (WITH_OFFSCREEN)
+    if (NOT WITH_PLUGINS MATCHES OFF AND NOT WITH_PLUGINS MATCHES ON)
+        set (WITH_PLUGINS "offscreen,${WITH_PLUGINS}")
+    endif ()
     list (APPEND PLUGINS offscreen)
 endif ()
 
@@ -72,48 +87,28 @@ list (
     APPEND
     EXAMPLES
     cube
-    serializer
     assimp
     benchmark-cube
     blending
-    cel-shading
-    fog
-    audio
-    #clone #(error lookAt segfault if did like in the serializer)
-    #hologram
     devil
-    #effect-config #(error surface when resolve vector 4 texture don't provide 'default')
-    #flares
-    #frustum
-    #html-overlay #(plugin html-overlay problem)
-    http #emscripten compil error #(don't find BaseStreamingTemplate.effect but he is in asset)
-    jobs
+    html-overlay
+    http #emscripten compil error #(can't find BaseStreamingTemplate.effect)
     joystick
-    #keyboard #(-lgl shoudl be at the the of the compil line)
-    #leap-motion #(see plugin leap)
-    light #(display of light is behind ground)
-    #light-scattering #(html_overlay)
-    line-geometry #work but dont see stars
-    #multi-surfaces
-    #nodejs #(we should make it too ?)
-    #oculus #(oculus plugin don't exist anymore)
-    #offscreen #(canvas->quit() n'existe plus)
-    #particles #(cause of lua)
+    #keyboard #(-lgl flag should be at the the end of the linkage line)
+    light #(light display is under the ground)
+    line-geometry #can't see the stars
+    #offscreen #(canvas->quit() has been removed)
     pbr #error execution (error: DrawCall.cpp:305 bindUniform(): Program "skybox-pass0": the uniform "uAspectRatio" is bound to the "aspectRatio" property but it's not defined and no default value was provided.)
     physics
-    #picking #annotations refund
-    #raycasting
-    section #ems compil error
     sensors #segfault
+    serializer
     shadow-mapping
     sky-box
     sprite-batch
     stencil
-    #ttf #ems and apple compil error
-    video-camera
-    #visibility #(cpp errors with visility)
-    #vr #(symbol missing in vr lib)
-    #water #undefined symbol
+    #ttf #emscripten and apple compilation error
+    #visibility
+    #vr #(symbol missing in vr library)
 )
 
 if (IOS)
@@ -173,4 +168,8 @@ if (NOT WITH_EXAMPLES MATCHES OFF)
     else ()
         add_subdirectory("example/${WITH_EXAMPLES}")
     endif ()
+endif ()
+
+if (WITH_TESTS)
+    add_subdirectory ("test")
 endif ()

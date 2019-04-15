@@ -1,5 +1,21 @@
 cmake_minimum_required(VERSION 3.5.1)
 
+file (RELATIVE_PATH RELATIVE_LIBRARY_PATH ${MINKO_HOME}/../ ${CMAKE_CURRENT_SOURCE_DIR})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/enable.cmake DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+
+file (
+    GLOB_RECURSE
+    JAVA_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.java"
+)
+
+foreach(JAVA_FILE ${JAVA_FILES})
+    file (RELATIVE_PATH RELATIVE_JAVA_FILE_PATH ${MINKO_HOME}/../ ${JAVA_FILE})
+    configure_file (${JAVA_FILE} ${MINKO_HOME}/${RELATIVE_JAVA_FILE_PATH} COPYONLY)
+endforeach()
+
 if (NOT ANDROID)
     return ()
 endif ()
@@ -15,28 +31,9 @@ file (GLOB_RECURSE
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/node/deps/uv/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/node/deps/v8/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/node/src"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/nodejs/include"
 )
 
 minko_add_worker (${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
 target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
-
 minko_enable_plugin_sdl (${PROJECT_NAME})
-
-if (WIN32)
-    add_custom_command (
-        TARGET ${PROJECT_NAME}
-        PRE_BUILD
-        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/script/build_nodejs.sh --use-prebuilt
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-else ()
-    add_custom_command (
-        TARGET ${PROJECT_NAME}
-        PRE_BUILD
-        COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/script/build_nodejs.sh
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-endif ()

@@ -24,8 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "chromium/dom/ChromiumDOMEngine.hpp"
 #include "chromium/dom/ChromiumDOMElement.hpp"
 #include "chromium/dom/ChromiumDOMV8Handler.hpp"
-#include "include/cef_runnable.h"
 #include "include/cef_task.h"
+#include "include/wrapper/cef_closure_task.h"
+#include "include/base/cef_bind.h"
 
 using namespace chromium;
 using namespace chromium::dom;
@@ -86,11 +87,11 @@ ChromiumDOM::init(CefRefPtr<CefV8Context> context, CefRefPtr<CefFrame> frame)
 {
 	_v8Context = context;
 	_frame = frame;
-
+	
 	_v8Context->Enter();
 
 	_global = _v8Context->GetGlobal();
-	_minkoObject = CefV8Value::CreateObject(nullptr);
+	_minkoObject = CefV8Value::CreateObject(nullptr, nullptr);
     _minkoObject->SetValue("ready", CefV8Value::CreateBool(false), V8_PROPERTY_ATTRIBUTE_NONE);
 
 	_document = _global->GetValue("document");
@@ -127,19 +128,25 @@ ChromiumDOM::body()
 }
 
 void
+ChromiumDOM::sendMessageWrapper(const std::string message, ChromiumDOM* target)
+{
+	target->sendMessage(message);
+	target->_blocker.store(false);
+}
+
+void
 ChromiumDOM::sendMessage(const std::string& message, bool async)
 {
-	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
 		_v8Context->Enter();
+
 		CefRefPtr<CefV8Value> func = _minkoObject->GetValue("dispatchMessage");
 
 		if (func->IsFunction())
 		{
 			CefV8ValueList args;
 			args.push_back(CefV8Value::CreateString(message));
-
 			CefRefPtr<CefV8Value> result = func->ExecuteFunction(_minkoObject, args);
 		}
 		_v8Context->Exit();
@@ -147,21 +154,17 @@ ChromiumDOM::sendMessage(const std::string& message, bool async)
 	else
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		//if (async)
-			_blocker.store(true);
+		_blocker.store(true);
 
-		auto fn = [=]()
-		{
-			sendMessage(message);
-			//if (async)
-				_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		//if (async)
-			while (_blocker.load());
+		runner->PostTask(CefCreateClosureTask(base::Bind(&ChromiumDOM::sendMessageWrapper, message, this)));
 	}
+}
+
+void
+ChromiumDOM::evalWrapper(const std::string* message, ChromiumDOM* target)
+{
+	target->eval(*message);
+	target->_blocker.store(false);
 }
 
 void
@@ -172,10 +175,11 @@ ChromiumDOM::eval(const std::string& message, bool async)
 	{
 		_v8Context->Enter();
 
+		const std::string url = "";
 		CefRefPtr<CefV8Value> returnValue;
 		CefRefPtr<CefV8Exception> exceptionValue;
 
-		_v8Context->Eval(message, returnValue, exceptionValue);
+		_v8Context->Eval(message, url, 42, returnValue, exceptionValue);
 		
 		_v8Context->Exit();
 	}
@@ -185,14 +189,7 @@ ChromiumDOM::eval(const std::string& message, bool async)
 		//if (async)
 		_blocker.store(true);
 
-		auto fn = [=]()
-		{
-			eval(message);
-			//if (async)
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
+		runner->PostTask(CefCreateClosureTask(base::Bind(&ChromiumDOM::evalWrapper, &message, this)));
 
 		//if (async)
 		while (_blocker.load());
@@ -245,17 +242,6 @@ ChromiumDOM::addDispatchMessageFunction()
     code += "   Minko.listeners[type].push(callback);";
     code += "};";
 
-    code += "Minko.dispatchEvent = function(event)";
-    code += "{";
-    code += "   var callbacks = Minko.listeners[event.type];";
-
-    code += "   if (!callbacks)";
-    code += "       return;";
-
-    code += "   for(var i = 0; i < callbacks.length; ++i)";
-    code += "       callbacks[i](event);";
-    code += "};";
-    
     code += "Minko.removeEventListener = function(type, callback)";
     code += "{";
     code += "   if (!(Minko.listeners[type]))";
@@ -274,8 +260,9 @@ ChromiumDOM::addDispatchMessageFunction()
     code += "   if (!callbacks)";
     code += "       return;";
 
-    code += "   for(var i = 0; i < callbacks.length; ++i)";
+    code += "   for(var i = 0; i < callbacks.length; ++i) {";
     code += "       callbacks[i](event);";
+	code += "	}";
     code += "};";
 
     code += "Minko.dispatchMessage = function(message)";
@@ -283,12 +270,12 @@ ChromiumDOM::addDispatchMessageFunction()
     code += "	var ev = document.createEvent(\"Event\");";
     code += "	ev.initEvent(\"message\", true, true);";
     code += "	ev.message = message;";
-    code += "	Minko.dispatchEvent(ev);";
 
+	code += "	Minko.dispatchEvent(ev);";
     code += "   if(Minko.onmessage)";
     code += "	    Minko.onmessage(message);";
     code += "};";
-    
+
     eval(code);
 }
 
@@ -329,7 +316,7 @@ ChromiumDOM::update()
 
 	_receivedMessages.clear();
 	_receivedMessagesMutex.unlock();
-	
+
 	for (std::string message : messages)
 	{
 		_onmessage->execute(shared_from_this(), message);
@@ -357,6 +344,13 @@ ChromiumDOM::update()
 	return false;
 }
 
+void
+ChromiumDOM::createElementWrapper(const std::string* tag, ChromiumDOMElement::Ptr* element, ChromiumDOM* target)
+{
+	*element = std::dynamic_pointer_cast<ChromiumDOMElement>(target->createElement(*tag));
+	target->_blocker.store(false);
+}
+
 AbstractDOMElement::Ptr
 ChromiumDOM::createElement(const std::string& tag)
 {
@@ -379,17 +373,18 @@ ChromiumDOM::createElement(const std::string& tag)
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
 		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			element = std::dynamic_pointer_cast<ChromiumDOMElement>(createElement(tag));
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
+		runner->PostTask(CefCreateClosureTask(base::Bind(&ChromiumDOM::createElementWrapper, &tag, &element, this)));
 
 		while (_blocker.load());
 	}
 	return element;
+}
+
+void
+ChromiumDOM::getElementByIdWrapper(const std::string* id, ChromiumDOMElement::Ptr* element, ChromiumDOM* target)
+{
+	*element = std::dynamic_pointer_cast<ChromiumDOMElement>(target->getElementById(*id));
+	target->_blocker.store(false);
 }
 
 AbstractDOMElement::Ptr
@@ -413,18 +408,19 @@ ChromiumDOM::getElementById(const std::string& id)
 	{
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
 		_blocker.store(true);
-		
-		auto fn = [&]()
-		{
-			element = std::dynamic_pointer_cast<ChromiumDOMElement>(getElementById(id));
-			_blocker.store(false);
-		};
 
-		runner->PostTask(NewCefRunnableFunction(&fn));
+		runner->PostTask(CefCreateClosureTask(base::Bind(&ChromiumDOM::getElementByIdWrapper, &id, &element, this)));
 
 		while (_blocker.load());
 	}
 	return element;
+}
+
+void
+ChromiumDOM::getElementsByClassNameWrapper(const std::string* className, std::vector<AbstractDOMElement::Ptr>* list, ChromiumDOM* target)
+{
+	*list = target->getElementsByClassName(*className);
+	target->_blocker.store(false);
 }
 
 std::vector<AbstractDOMElement::Ptr>
@@ -449,17 +445,18 @@ ChromiumDOM::getElementsByClassName(const std::string& className)
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
 		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			list = getElementsByClassName(className);
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
+		runner->PostTask(CefCreateClosureTask(base::Bind(&ChromiumDOM::getElementsByClassNameWrapper, &className, &list, this)));
 
 		while (_blocker.load());
 	}
 	return list;
+}
+
+void
+ChromiumDOM::getElementsByTagNameWrapper(const std::string* tagName, std::vector<AbstractDOMElement::Ptr>* list, ChromiumDOM* target)
+{
+	*list = target->getElementsByTagName(*tagName);
+	target->_blocker.store(false);
 }
 
 std::vector<AbstractDOMElement::Ptr>
@@ -485,17 +482,18 @@ ChromiumDOM::getElementsByTagName(const std::string& tagName)
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
 		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			list = getElementsByTagName(tagName);
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
+		runner->PostTask(CefCreateClosureTask(base::Bind(&ChromiumDOM::getElementsByTagNameWrapper, &tagName, &list, this)));
 
 		while (_blocker.load());
 	}
 	return list;
+}
+
+void
+ChromiumDOM::fullUrlWrapper(std::string* result, std::atomic<bool>* blocker, ChromiumDOM* target)
+{
+	*result = target->fullUrl();
+	target->_blocker.store(false);
 }
 
 std::string
@@ -512,19 +510,19 @@ ChromiumDOM::fullUrl()
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
 		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			result = fullUrl();
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
+		runner->PostTask(CefCreateClosureTask(base::Bind(&fullUrlWrapper, &result, &_blocker, this)));
 
 		while (_blocker.load());
 	}
 	return result;
 }
 
+void
+ChromiumDOM::isMainWrapper(bool* result, std::atomic<bool>* blocker, ChromiumDOM* target)
+{
+	*result = target->isMain();
+	target->_blocker.store(false);
+}
 
 bool
 ChromiumDOM::isMain()
@@ -540,13 +538,7 @@ ChromiumDOM::isMain()
 		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
 		_blocker.store(true);
 
-		auto fn = [&]()
-		{
-			result = isMain();
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
+		runner->PostTask(CefCreateClosureTask(base::Bind(&ChromiumDOM::isMainWrapper, &result, &_blocker, this)));
 
 		while (_blocker.load());
 	}

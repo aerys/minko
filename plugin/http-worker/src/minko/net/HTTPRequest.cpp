@@ -389,3 +389,47 @@ HTTPRequest::fileExists(const std::string& filename,
 
     return requestSucceeded;
 }
+
+std::string
+HTTPRequest::getURLAfterRedirection(const std::string url, bool insecure)
+{
+    CURL* curl = curl_easy_init();
+    std::string newUrl;
+
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+        // Set the request type to HEAD.
+        curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+        if (insecure)
+        {
+            // Skip SSL certificate verification
+            curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+        }
+        // Follow redirects.
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+        CURLcode res = curl_easy_perform(curl);
+
+        if(res == CURLE_OK) {
+            long int redirectCount = 0;
+            char *url = NULL;
+
+            curl_easy_getinfo(curl, CURLINFO_REDIRECT_COUNT, &redirectCount);
+
+            if (redirectCount > 0)
+            {
+                curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &url);
+
+                if(url)
+                    newUrl = url;
+            }
+        }
+
+        curl_easy_cleanup(curl);
+    } else {
+        LOG_ERROR("Failed to initialize curl.");
+    }
+
+    return newUrl;
+}

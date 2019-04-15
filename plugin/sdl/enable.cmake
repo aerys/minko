@@ -3,11 +3,11 @@ function (minko_enable_plugin_sdl target)
     target_compile_options(${target} PRIVATE "-DMINKO_PLUGIN_SDL")
     set(SDL_PATH "${MINKO_HOME}/plugin/sdl")
     list (APPEND
-        SDL_INCLUDE 
+        SDL_INCLUDE
         "${SDL_PATH}/include"
     )
     if (NOT EMSCRIPTEN)
-        list (APPEND 
+        list (APPEND
             SDL_INCLUDE
             "${SDL_PATH}/lib/sdl/include"
         )
@@ -34,17 +34,21 @@ function (minko_enable_plugin_sdl target)
             WINDOWS_DLL
             "${SDL_PATH}/lib/sdl/lib/windows${BITNESS}/*.dll"
         )
-        if (DLL STREQUAL "ON")
-            string(FIND ${target} "minko-plugin" TEST_PLUGIN)
-            if (TEST_PLUGIN STREQUAL -1)
+        get_target_property(TARGET_TYPE ${target} TYPE)
+        if (TARGET_TYPE STREQUAL "EXECUTABLE")
+            get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
+            if (DLL STREQUAL "ON")
+                string(FIND ${target} "minko-plugin" TEST_PLUGIN)
+                if (TEST_PLUGIN STREQUAL -1)
+                    foreach (DLL ${WINDOWS_DLL})
+                        file(COPY "${DLL}" DESTINATION "${OUTPUT_PATH}")
+                    endforeach ()
+                endif ()
+            else ()
                 foreach (DLL ${WINDOWS_DLL})
-                    configure_file("${DLL}" "${OUTPUT_PATH}" COPYONLY)
+                    file(COPY "${DLL}" DESTINATION "${OUTPUT_PATH}")
                 endforeach ()
             endif ()
-        else ()
-            foreach (DLL ${WINDOWS_DLL})
-                configure_file("${DLL}" "${OUTPUT_PATH}" COPYONLY)
-            endforeach ()
         endif ()
     elseif (LINUX)
         target_link_libraries(${target}
@@ -83,7 +87,7 @@ function (minko_enable_plugin_sdl target)
         )
     endif ()
     # add requested offscreen
-    if (WITH_OFFSCREEN STREQUAL "on" OR WITH_OFFSCREEN STREQUAL "ON")
+    if (WITH_OFFSCREEN STREQUAL "ON" OR WITH_OFFSCREEN STREQUAL "ON")
         minko_enable_plugin_offscreen (${target})
     endif ()
 endfunction ()

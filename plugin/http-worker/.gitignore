@@ -1,2 +1,8 @@
 bin
 obj
+lib/curl/lib/*/*.exp
+lib/curl/lib/*/*-exports.txt
+lib/curl/lib/*/*.def
+!lib/curl/lib/*/*.a
+!lib/curl/lib/*/*.dll
+!lib/curl/lib/*/*.lib

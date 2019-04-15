@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "chromium/dom/ChromiumDOMElement.hpp"
 #include "chromium/dom/ChromiumDOMEvent.hpp"
-#include "include/cef_runnable.h"
 #include "include/cef_task.h"
 
 using namespace chromium;

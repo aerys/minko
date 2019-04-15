@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5.1)
 
+file (RELATIVE_PATH RELATIVE_LIBRARY_PATH ${MINKO_HOME}/../ ${CMAKE_CURRENT_SOURCE_DIR})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/enable.cmake DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
+
 set (PROJECT_NAME "minko-plugin-bullet")
 
 file (
@@ -68,7 +72,8 @@ endif ()
 if (MSVC)
     target_compile_options (
         ${PROJECT_NAME} PRIVATE
-        -D_CRT_SECURE_NO_WARNINGS
-        -D_CRT_SECURE_NO_DEPRECATE
+        "-D_CRT_SECURE_NO_WARNINGS"
+        "-D_CRT_SECURE_NO_DEPRECATE"
+        "-D_DISABLE_EXTENDED_ALIGNED_STORAGE"
     )
 endif ()

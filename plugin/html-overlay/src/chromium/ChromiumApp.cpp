@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "chromium/ChromiumRenderProcessHandler.hpp"
 #include "chromium/ChromiumRenderHandler.hpp"
 #include "chromium/ChromiumClient.hpp"
-#include "include/cef_command_line.h"
 
 using namespace minko;
 using namespace chromium;
@@ -48,25 +47,41 @@ ChromiumApp::initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<
 }
 
 void
+ChromiumApp::OnBeforeCommandLineProcessing(const CefString& process_type, CefRefPtr<CefCommandLine> command_line)
+{
+	command_line->AppendSwitch("off-screen-rendering-enabled");
+	command_line->AppendSwitch("single-process");
+	command_line->AppendSwitch("no-sandbox");
+#ifdef DEBUG
+	command_line->AppendSwitchWithValue("remote-debugging-port", "8080");
+#endif
+	if (!_secure) {
+		command_line->AppendSwitch("disable-web-security");
+		command_line->AppendSwitch("ignore-certificate-errors");
+	}
+}
+
+void
 ChromiumApp::OnContextInitialized()
 {
 	CefWindowInfo window_info;
 	CefBrowserSettings browserSettings;
 
-	browserSettings.web_security = _secure ? STATE_ENABLED : STATE_DISABLED;
 	browserSettings.file_access_from_file_urls = STATE_ENABLED;
 	browserSettings.universal_access_from_file_urls = STATE_ENABLED;
 	browserSettings.webgl = STATE_DISABLED;
 
 	CefRefPtr<ChromiumClient> browserClient = new ChromiumClient(_impl);
 
-	// in linux set a gtk widget, in windows a hwnd. If not available set nullptr - may cause some render errors, in context-menu and plugins.
-	window_info.SetAsOffScreen(nullptr);
-	window_info.SetTransparentPainting(true);
+	// in linux set a gtk widget, in windows a hwnd. If not available set to null (not nullptr) - may cause some render errors, in context-menu and plugins.
+	window_info.SetAsWindowless(0);
+	// if [parent] is not provided then the main screen monitor will be used
+  	// and some functionality that requires a parent window may not function correctly.
+	// transparency is set by default in the latest CEF3 versions.
 
 	_impl->browser = CefBrowserHost::CreateBrowserSync(window_info, browserClient.get(), "", browserSettings, nullptr);
 
-    _impl->browser->GetHost()->SetMouseCursorChangeDisabled(false);
+	_impl->browser->GetHost()->SetMouseCursorChangeDisabled(false);
     _impl->browser->GetHost()->SetFocus(true);
 
 	bindControls();
