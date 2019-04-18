@@ -150,6 +150,17 @@ Renderer::initializePostProcessingGeometry()
 }
 
 void
+Renderer::initializeDataProvider()
+{
+    if (!_rendererProvider)
+    {
+        _rendererProvider = data::Provider::create();
+        _rendererProvider->set("surfacesSize", 0.0f);
+        target()->data().addProvider(_rendererProvider);
+    }
+}
+
+void
 Renderer::targetAdded(std::shared_ptr<Node> target)
 {
     // Comment due to reflection component
@@ -452,6 +463,10 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	}
     _toCollect.clear();
 
+    // Update the number of surfaces.
+    if (_rendererProvider)
+        _rendererProvider->set("numSurfaces", static_cast<float>(_surfaceToDrawCallIterator.size()));
+
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
 	auto rt = _renderTarget ? _renderTarget : renderTarget;
@@ -563,6 +578,7 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 			), _priority);
 
 			initializePostProcessingGeometry();
+            initializeDataProvider();
 		}
 		else
 		{
