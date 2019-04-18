@@ -96,6 +96,7 @@ namespace minko
             Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot                      _renderingBeginSlot;
             SurfaceSlotMap                                                          _surfaceChangedSlots;
             Signal<Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot  _worldToScreenMatrixPropertyChangedSlot;
+            ProviderPtr                                                             _rendererProvider;
 
             render::DrawCallPool                                                    _drawCallPool;
             std::unordered_map<SurfacePtr, uint>                                    _surfaceToDrawCallIterator;
@@ -422,6 +423,9 @@ namespace minko
 
             void
             initializePostProcessingGeometry();
+
+            void
+            initializeDataProvider();
 
             void
             addedHandler(NodePtr node, NodePtr target, NodePtr parent);
