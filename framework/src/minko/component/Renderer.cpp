@@ -155,7 +155,7 @@ Renderer::initializeDataProvider()
     if (!_rendererProvider)
     {
         _rendererProvider = data::Provider::create();
-        _rendererProvider->set("surfacesSize", 0.0f);
+        _rendererProvider->set("numSurfaces", 0.0f);
         target()->data().addProvider(_rendererProvider);
     }
 }
