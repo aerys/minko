@@ -206,6 +206,12 @@ Renderer::targetRemoved(std::shared_ptr<Node> target)
 
 	if (_effect)
 		target->data().removeProvider(_effect->data(), Surface::EFFECT_COLLECTION_NAME);
+
+    if (_rendererProvider)
+    {
+        target->data().removeProvider(_rendererProvider);
+        _rendererProvider = nullptr;
+    }
 }
 
 void
