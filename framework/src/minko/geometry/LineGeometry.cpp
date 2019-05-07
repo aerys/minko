@@ -31,12 +31,14 @@ using namespace minko::render;
 /*static*/ const std::string LineGeometry::ATTRNAME_START_POS	= "startPosition";
 /*static*/ const std::string LineGeometry::ATTRNAME_STOP_POS    = "stopPosition";
 /*static*/ const std::string LineGeometry::ATTRNAME_WEIGHTS		= "weights";
+/*static*/ const std::string LineGeometry::ATTRNAME_DASHOFFSET	= "dashOffset";
 
 LineGeometry::LineGeometry():
 	Geometry("line"),
 	_currentX(0.f),
 	_currentY(0.f),
 	_currentZ(0.f),
+    _currentLength(0.f),
 	_numLines(0),
 	_vertexBuffer(nullptr),
 	_indexBuffer(nullptr)
@@ -55,6 +57,7 @@ LineGeometry::initialize(AbstractContext::Ptr context, int numSegments)
 	_vertexBuffer->addAttribute(ATTRNAME_START_POS,	3, 0);
 	_vertexBuffer->addAttribute(ATTRNAME_STOP_POS, 3, 3);
 	_vertexBuffer->addAttribute(ATTRNAME_WEIGHTS, 3, 6);
+    _vertexBuffer->addAttribute(ATTRNAME_DASHOFFSET, 1, 9);
 
     if (numSegments > 0)
     {
@@ -101,6 +104,7 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 	const float stepX = (x - _currentX) * invNumSegments;
 	const float stepY = (y - _currentY) * invNumSegments;
 	const float stepZ = (z - _currentZ) * invNumSegments;
+    const float stepLength = math::length(math::vec3(stepX, stepY, stepZ));
 	unsigned int vid = oldVertexDataSize;
 	unsigned int iid = oldIndexDataSize;
 
@@ -116,12 +120,15 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 		const float nextX = _currentX + stepX;
 		const float nextY = _currentY + stepY;
 		const float nextZ = _currentZ + stepZ;
+        const float nextLength = _currentLength + stepLength;
 
 		for (unsigned int k = 0; k < 4; ++k)
 		{
-			const float wStart = k < 2 ? 1.f : 0.f;
-			const float	wStop = k < 2 ? 0.f : 1.f;
+            const bool  isStart = k < 2;
+			const float wStart = isStart ? 1.f : 0.f;
+			const float	wStop = isStart ? 0.f : 1.f;
 			const float lineSpread = 0 < k && k < 3 ? 1.f : -1.f;
+            const float dashOffset = (isStart ? _currentLength : nextLength) * 2.f;
 
 			// start position
 			vertexData[vid++] = _currentX;
@@ -137,6 +144,9 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 			vertexData[vid++] = wStart;
 			vertexData[vid++] = wStop;
 			vertexData[vid++] = lineSpread;
+
+            // dash offset attribute
+            vertexData[vid++] = dashOffset;
 		}
 
 		const unsigned int iOffset = (_numLines << 2);
@@ -151,6 +161,7 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 		_currentX = nextX;
 		_currentY = nextY;
 		_currentZ = nextZ;
+        _currentLength = nextLength;
 		++_numLines;
 	}
 

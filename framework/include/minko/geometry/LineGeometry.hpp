@@ -37,10 +37,12 @@ namespace minko
 			static const std::string				ATTRNAME_START_POS;
 			static const std::string				ATTRNAME_STOP_POS;
 			static const std::string				ATTRNAME_WEIGHTS;
+			static const std::string				ATTRNAME_DASHOFFSET;
 
 			float									_currentX;
 			float									_currentY;
 			float									_currentZ;
+            float                                   _currentLength;
 			uint									_numLines;
 
 			std::shared_ptr<render::VertexBuffer>	_vertexBuffer;
