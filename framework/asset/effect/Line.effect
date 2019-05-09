@@ -5,7 +5,8 @@
     "attributes" : {
         "aStartPosition"  : "geometry[$geometryUuid].startPosition",
 		"aStopPosition"   : "geometry[$geometryUuid].stopPosition",
-		"aWeights"        : "geometry[$geometryUuid].weights"
+		"aWeights"        : "geometry[$geometryUuid].weights",
+		"aDashOffset"     : "geometry[$geometryUuid].dashOffset"
     },
 
     "uniforms"   : {

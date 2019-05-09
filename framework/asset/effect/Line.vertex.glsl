@@ -11,6 +11,7 @@
 attribute vec3 aStartPosition;
 attribute vec3 aStopPosition;
 attribute vec3 aWeights;
+attribute float aDashOffset;
 
 uniform	mat4 uModelToWorldMatrix;
 uniform	mat4 uWorldToScreenMatrix;
@@ -26,6 +27,7 @@ main()
 	float wStart = aWeights.x;
 	float wStop = aWeights.y;
 	float lineSpread = aWeights.z;
+    vec4  dashVector = vec4(aDashOffset, 0.0, 0.0, 0.0);
 
 	vec4 startPos = vec4(aStartPosition, 1.0);
 	vec4 stopPos = vec4(aStopPosition, 1.0);
@@ -33,16 +35,18 @@ main()
 	#ifdef MODEL_TO_WORLD
 		startPos = uModelToWorldMatrix * startPos;
 		stopPos	= uModelToWorldMatrix * stopPos;
+        dashVector = uModelToWorldMatrix * dashVector;
 	#endif // MODEL_TO_WORLD
 
 	startPos = uWorldToScreenMatrix * startPos;
 	stopPos = uWorldToScreenMatrix * stopPos;
+    dashVector = uWorldToScreenMatrix * dashVector;
 
 	vec4 pos = wStart * startPos + wStop * stopPos;
 	float posW = pos.w;
 
     vPosW = posW;
-    vWeight = (wStop - wStart) * distance(startPos, stopPos);
+    vWeight = length(dashVector);
 
 	// account for perspective division for screen-space offsetting
 	startPos /= startPos.w;
