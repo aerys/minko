@@ -154,8 +154,8 @@ SceneParser::SceneParser()
         std::placeholders::_3,
         std::placeholders::_4));
 
-    registerComponent(serialize::ASCII_TEXT,
-        std::bind(&deserialize::ComponentDeserializer::deserializeASCIIText,
+    registerComponent(serialize::UTF8_TEXT,
+        std::bind(&deserialize::ComponentDeserializer::deserializeUTF8Text,
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3,

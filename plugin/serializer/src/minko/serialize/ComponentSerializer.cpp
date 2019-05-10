@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/animation/AbstractTimeline.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/component/Animation.hpp"
-#include "minko/component/ASCIIText.hpp"
+#include "minko/component/UTF8Text.hpp"
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Camera.hpp"
@@ -479,17 +479,17 @@ ComponentSerializer::serializeMetadata(NodePtr              node,
 }
 
 std::string
-ComponentSerializer::serializeASCIIText(NodePtr              node,
+ComponentSerializer::serializeUTF8Text(NodePtr              node,
                                         AbstractComponentPtr component,
                                         AssetLibraryPtr      assetLibrary,
                                         DependencyPtr        dependencies)
 {
-    auto text = std::static_pointer_cast<component::ASCIIText>(component);
+    auto text = std::static_pointer_cast<component::UTF8Text>(component);
 
 	file::DependencyId materialId = text->material() ? dependencies->registerDependency(text->material()) : file::DependencyId(0);
 	file::DependencyId effectId = text->effect() ? dependencies->registerDependency(text->effect()) : file::DependencyId(0);
 
-    const auto type = static_cast<int8_t>(serialize::ASCII_TEXT);
+    const auto type = static_cast<int8_t>(serialize::UTF8_TEXT);
 	msgpack::type::tuple<std::string, file::DependencyId, file::DependencyId> src(
         text->text(),
 		materialId,

@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/deserialize/ComponentDeserializer.hpp"
 #include "minko/file/AbstractSerializerParser.hpp"
-#include "minko/component/ASCIIText.hpp"
+#include "minko/component/UTF8Text.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Camera.hpp"
@@ -514,7 +514,7 @@ ComponentDeserializer::deserializeMetadata(file::SceneVersion                   
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeASCIIText(file::SceneVersion                    sceneVersion,
+ComponentDeserializer::deserializeUTF8Text(file::SceneVersion                    sceneVersion,
                                             std::string&                          packed,
                                             std::shared_ptr<file::AssetLibrary>   assetLibrary,
                                             std::shared_ptr<file::Dependency>     dependencies)
@@ -526,5 +526,5 @@ ComponentDeserializer::deserializeASCIIText(file::SceneVersion                  
 	auto material = dst.get<1>() != file::DependencyId(0) ? dependencies->getMaterialReference(dst.get<1>()) : nullptr;
 	auto effect = dst.get<2>() != file::DependencyId(0) ? dependencies->getEffectReference(dst.get<2>()) : nullptr;
 
-    return component::ASCIIText::create(nullptr, text, material, effect);
+    return component::UTF8Text::create(nullptr, text, material, effect);
 }

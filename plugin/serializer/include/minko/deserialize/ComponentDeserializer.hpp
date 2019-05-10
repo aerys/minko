@@ -146,7 +146,7 @@ namespace minko
 
             static
             std::shared_ptr<component::AbstractComponent>
-            deserializeASCIIText(file::SceneVersion  sceneVersion,
+            deserializeUTF8Text(file::SceneVersion  sceneVersion,
                                  std::string&        packed,
                                  AssetLibraryPtr     assetLibrary,
                                  DependencyPtr       dependencies);

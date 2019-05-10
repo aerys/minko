@@ -28,7 +28,7 @@ namespace minko
 		enum ComponentId
 		{
             IMAGE_BASED_LIGHT           = 30,
-            ASCII_TEXT                  = 31,
+            UTF8_TEXT                   = 31,
             _COMPONENT_ID_RESERVED_1    = 32,
             _COMPONENT_ID_RESERVED_2    = 33,
             _COMPONENT_ID_RESERVED_3    = 34,
