@@ -19,5 +19,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/component/ASCIIText.hpp"
+#include "minko/component/UTF8Text.hpp"
 #include "minko/geometry/TextGeometry.hpp"

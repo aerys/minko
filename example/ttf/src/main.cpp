@@ -95,11 +95,11 @@ main(int argc, char** argv)
             root->addChild(textMeshes.at(i));
         }
 
-        root->addChild(scene::Node::create("ASCIIText")
+        root->addChild(scene::Node::create("UTF8Text")
             ->addComponent(Transform::create(math::scale(math::vec3(.006f))))
-            ->addComponent(ASCIIText::create(
+            ->addComponent(UTF8Text::create(
                 textGeometries.front()->atlasTexture(),
-                "ASCIIText component example",
+                "UTF8Text component example",
                 material::Material::create()->set({ { "diffuseColor", math::vec4(1.f) } }),
                 sceneManager->assets()->effect(EFFECT_FILENAME))
             )

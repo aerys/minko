@@ -139,7 +139,7 @@ namespace minko
 
             static
             std::string
-            serializeASCIIText(NodePtr               node,
+            serializeUTF8Text(NodePtr               node,
                                AbstractComponentPtr  component,
                                AssetLibraryPtr       assetLibrary,
                                DependencyPtr         dependencies);

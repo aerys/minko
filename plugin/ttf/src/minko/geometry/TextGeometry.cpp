@@ -37,7 +37,7 @@ using namespace minko::geometry;
 
 struct FontCharacter
 {
-    signed char                 c;
+    unsigned long               c;
     std::vector<unsigned char>  textureData;
     math::ivec2                 size;
     math::ivec2                 bearing;
@@ -53,7 +53,7 @@ struct Font
 };
 
 static
-const std::vector<signed char>&
+const std::vector<unsigned long>&
 getCharacterSet();
 
 #ifdef MINKO_PLUGIN_TTF_FREETYPE
@@ -66,27 +66,29 @@ bool
 buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& fontFilename, float scale, unsigned int fontCharacterStride);
 
 static
-bool
-getCharacterBox(const Font&         font,
-                const std::string&  text,
-                float               scale,
-                math::ivec2&        boxMin,
-                math::ivec2&        boxMax,
-                int                 characterIndex = -1);
+void
+getCharacterBox(const Font&     font,
+                unsigned long   text,
+                float           scale,
+                math::ivec2&    boxMin,
+                math::ivec2&    boxMax);
 #endif
 
 static
 math::vec2
-getTextSize(const Font& font, const std::string& text, float scale);
+getTextSize(const Font& font, const std::vector<unsigned long>& text, float scale);
 
 static
 bool
-buildGeometry(render::AbstractContext::Ptr  context,
-              Geometry::Ptr                 geometry,
-              const std::string&            text,
-              float                         fontSize,
-              const Font&                   font,
-		      bool							centerOrigin);
+buildGeometry(render::AbstractContext::Ptr      context,
+              Geometry::Ptr                     geometry,
+              const std::vector<unsigned long>& text,
+              float                             fontSize,
+              const Font&                       font,
+		      bool							    centerOrigin);
+
+std::vector<unsigned long>
+strToUnicode(const std::string& str);
 
 TextGeometry::TextGeometry(const std::string& name) :
     Geometry(name),
@@ -97,6 +99,7 @@ TextGeometry::TextGeometry(const std::string& name) :
 }
 
 #ifdef MINKO_PLUGIN_TTF_FREETYPE
+
 TextGeometry::Ptr
 TextGeometry::setText(const std::string& fontFilename, const std::string& text, float scale, bool centerOrigin)
 {
@@ -120,21 +123,24 @@ TextGeometry::setText(const std::string& fontFilename, const std::string& text, 
         font.atlas->upload();
     }
 
-	_atlasTexture = font.atlas;
-    _textSize = getTextSize(font, text, scale);
+    auto textUnicode = strToUnicode(text);
 
-    buildGeometry(_context, shared_from_this(), text, scale, font, centerOrigin);
+	_atlasTexture = font.atlas;
+    _textSize = getTextSize(font, textUnicode, scale);
+
+    buildGeometry(_context, shared_from_this(), textUnicode, scale, font, centerOrigin);
 
     return std::static_pointer_cast<TextGeometry>(shared_from_this());
 }
+
 #endif
 
 TextGeometry::Ptr
-TextGeometry::setText(std::shared_ptr<render::AbstractTexture>    atlasTexture,
-                      const std::string&                          text,
-                      float                                       scale,
-                      bool                                        centerOrigin,
-                      int                                         stride)
+TextGeometry::setText(std::shared_ptr<render::AbstractTexture>  atlasTexture,
+                      const std::string&                        text,
+                      float                                     scale,
+                      bool                                      centerOrigin,
+                      int                                       stride)
 {
     if (!atlasTexture)
         return std::static_pointer_cast<TextGeometry>(shared_from_this());
@@ -148,10 +154,12 @@ TextGeometry::setText(std::shared_ptr<render::AbstractTexture>    atlasTexture,
     font.atlasCharOffset = math::uvec2(font.atlasSize) / static_cast<unsigned int>(stride);
     font.atlas = atlasTexture;
 
-    _atlasTexture = font.atlas;
-    _textSize = getTextSize(font, text, scale);
+    auto textUnicode = strToUnicode(text);
 
-    buildGeometry(_context, shared_from_this(), text, scale, font, centerOrigin);
+    _atlasTexture = font.atlas;
+    _textSize = getTextSize(font, textUnicode, scale);
+
+    buildGeometry(_context, shared_from_this(), textUnicode, scale, font, centerOrigin);
 
     return std::static_pointer_cast<TextGeometry>(shared_from_this());
 }
@@ -242,8 +250,7 @@ buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& 
     {
         auto fontCharacterBoxMin = math::ivec2();
         auto fontCharacterBoxMax = math::ivec2();
-        if (!getCharacterBox(font, std::string{ fontCharacters.at(i).c }, 1.f, fontCharacterBoxMin, fontCharacterBoxMax))
-            continue;
+        getCharacterBox(font, fontCharacters.at(i).c, 1.f, fontCharacterBoxMin, fontCharacterBoxMax);
 
         if (fontCharacters.at(i).c == referenceChar)
         {
@@ -287,8 +294,8 @@ buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& 
 
         auto fontCharacterBoxMin = math::ivec2();
         auto fontCharacterBoxMax = math::ivec2();
-        if (!getCharacterBox(font, std::string{ fontCharacter.c }, 1.f, fontCharacterBoxMin, fontCharacterBoxMax))
-            continue;
+        getCharacterBox(font, fontCharacter.c, 1.f, fontCharacterBoxMin, fontCharacterBoxMax);
+
         const auto fontCharacterSize = fontCharacterBoxMax - fontCharacterBoxMin;
         assert(fontCharacterSize == math::ivec2(w, h) && "Inconsistent computed character box");
 
@@ -343,77 +350,56 @@ buildAtlas(Font& font, render::AbstractContext::Ptr context, const std::string& 
     return true;
 }
 
-bool
-getCharacterBox(const Font&         font,
-                const std::string&  text,
-                float               scale,
-                math::ivec2&        boxMin,
-                math::ivec2&        boxMax,
-                int                 characterIndex)
+void
+getCharacterBox(const Font&     font,
+                unsigned long   character,
+                float           scale,
+                math::ivec2&    boxMin,
+                math::ivec2&    boxMax)
 {
     boxMin = math::vec2(0.f, -std::numeric_limits<float>::max());
 
-    if (characterIndex < 0)
-        characterIndex = text.size();
+    const auto it = std::find_if(
+        font.characters.begin(),
+        font.characters.end(),
+        [character](const FontCharacter& fontCharacter) { return fontCharacter.c == character; });
 
-    if (characterIndex > text.size())
+    if (it == font.characters.end())
     {
-        LOG_WARNING("Character index is out of bounds");
-        return false;
+        LOG_WARNING("Unhandled character " << character);
     }
-
-    for (auto i = 0; i < characterIndex; ++i)
+    else
     {
-        const auto c = text.at(i);
-
-        const auto it = std::find_if(
-            font.characters.begin(),
-            font.characters.end(),
-            [&c](const FontCharacter& fontCharacter) { return fontCharacter.c == c; });
-
-        if (it == font.characters.end())
-        {
-            LOG_WARNING("Unhandled character " << c);
-            continue;
-        }
-
         const auto& fontCharacter = *it;
 
-        if (i == 0 && characterIndex > 1)
-            boxMin.x += (fontCharacter.advance - fontCharacter.bearing.x) * scale;
-        else if (i < characterIndex - 1)
-            boxMin.x += fontCharacter.advance * scale;
-        else
-        {
-            boxMin.x += fontCharacter.bearing.x * scale;
-            boxMax.x = boxMin.x + fontCharacter.size.x * scale;
+        boxMin.x += fontCharacter.bearing.x * scale;
+        boxMax.x = boxMin.x + fontCharacter.size.x * scale;
 
-            boxMin.y = -fontCharacter.bearing.y * scale;
-            boxMax.y = boxMin.y + fontCharacter.size.y * scale;
-        }
+        boxMin.y = -fontCharacter.bearing.y * scale;
+        boxMax.y = boxMin.y + fontCharacter.size.y * scale;
     }
-
-    return true;
 }
 #endif
 
-const std::vector<signed char>&
+const std::vector<unsigned long>&
 getCharacterSet()
 {
-    static auto characters = std::vector<signed char>();
+    static auto characters = std::vector<unsigned long>();
 
     if (characters.empty())
     {
         characters.reserve(256);
-        for (int i = std::numeric_limits<signed char>::min(); i <= std::numeric_limits<signed char>::max(); ++i)
-            characters.push_back(static_cast<signed char>(i));
+        for (unsigned long i = 128; i < 256; ++i)
+            characters.push_back(i);
+        for (unsigned long i = 0; i < 128; ++i)
+            characters.push_back(i);
     }
 
     return characters;
 }
 
 math::vec2
-getTextSize(const Font& font, const std::string& text, float scale)
+getTextSize(const Font& font, const std::vector<unsigned long>& text, float scale)
 {
     return math::vec2(
         font.atlasCharOffset.x * static_cast<float>(text.size()),
@@ -424,7 +410,7 @@ getTextSize(const Font& font, const std::string& text, float scale)
 bool
 buildGeometry(render::AbstractContext::Ptr          context,
               Geometry::Ptr                         geometry,
-              const std::string&                    text,
+              const std::vector<unsigned long>&     text,
               float                                 scale,
               const Font&                           font,
 			  bool									centerOrigin)
@@ -505,4 +491,50 @@ buildGeometry(render::AbstractContext::Ptr          context,
     geometry->upload();
 
     return true;
+}
+
+unsigned long
+charToUlong(char c)
+{
+    return (unsigned long)(unsigned char)c;
+}
+
+// Convert a string to an array of UTF-8 identifiers
+// This function assumes that the input is valid UTF-8 and does not perform any check.
+// Source: https://en.wikipedia.org/wiki/UTF-8#Description
+std::vector<unsigned long>
+strToUnicode(const std::string& str)
+{
+    std::vector<unsigned long> result;
+
+    for (int i = 0; i < str.size(); ++i)
+    {
+        unsigned long value = 0;
+        unsigned long c = charToUlong(str[i]);
+
+        if (c < 128)
+            value = c;
+        else if (c < 224)
+        {
+            unsigned long c2 = charToUlong(str[++i]);
+            value = ((c & 0b00011111) << 6) + (c2 & 0b00111111);
+        }
+        else if (c < 240)
+        {
+            unsigned long c2 = charToUlong(str[++i]);
+            unsigned long c3 = charToUlong(str[++i]);
+            value = ((c & 0b00001111) << 12) + ((c2 & 0b00111111) << 6) + (c3 & 0b00111111);
+        }
+        else if (c < 248)
+        {
+            unsigned long c2 = charToUlong(str[++i]);
+            unsigned long c3 = charToUlong(str[++i]);
+            unsigned long c4 = charToUlong(str[++i]);
+            value = ((c & 0b00000111) << 18) + ((c2 & 0b00111111) << 12) + ((c3 & 0b00111111) << 6) + (c4 & 0b00111111);;
+        }
+
+        result.push_back(value);
+    }
+
+    return result;
 }

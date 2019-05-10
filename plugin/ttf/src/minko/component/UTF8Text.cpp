@@ -1,4 +1,4 @@
-#include "minko/component/ASCIIText.hpp"
+#include "minko/component/UTF8Text.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -16,7 +16,7 @@ using namespace minko;
 using namespace minko::component;
 
 math::vec2
-ASCIIText::textSize() const
+UTF8Text::textSize() const
 {
     if (!_textSurface)
         return math::vec2();
@@ -24,34 +24,34 @@ ASCIIText::textSize() const
     return std::static_pointer_cast<geometry::TextGeometry>(_textSurface->geometry())->textSize();
 }
 
-ASCIIText::Ptr
-ASCIIText::text(const std::string& text)
+UTF8Text::Ptr
+UTF8Text::text(const std::string& text)
 {
     if (_text == text)
-        return std::static_pointer_cast<ASCIIText>(shared_from_this());
+        return std::static_pointer_cast<UTF8Text>(shared_from_this());
 
     _text = text;
 
     rebuildGeometry();
 
-    return std::static_pointer_cast<ASCIIText>(shared_from_this());
+    return std::static_pointer_cast<UTF8Text>(shared_from_this());
 }
 
-ASCIIText::Ptr
-ASCIIText::atlas(render::AbstractTexture::Ptr atlas)
+UTF8Text::Ptr
+UTF8Text::atlas(render::AbstractTexture::Ptr atlas)
 {
     if (_atlas == atlas)
-        return std::static_pointer_cast<ASCIIText>(shared_from_this());
+        return std::static_pointer_cast<UTF8Text>(shared_from_this());
 
     _atlas = atlas;
 
     rebuildGeometry();
 
-    return std::static_pointer_cast<ASCIIText>(shared_from_this());
+    return std::static_pointer_cast<UTF8Text>(shared_from_this());
 }
 
 void
-ASCIIText::targetAdded(scene::Node::Ptr target)
+UTF8Text::targetAdded(scene::Node::Ptr target)
 {
     AbstractComponent::targetAdded(target);
 
@@ -59,7 +59,7 @@ ASCIIText::targetAdded(scene::Node::Ptr target)
 }
 
 void
-ASCIIText::targetRemoved(scene::Node::Ptr target)
+UTF8Text::targetRemoved(scene::Node::Ptr target)
 {
     AbstractComponent::targetRemoved(target);
 
@@ -68,7 +68,7 @@ ASCIIText::targetRemoved(scene::Node::Ptr target)
 }
 
 void
-ASCIIText::rebuildGeometry()
+UTF8Text::rebuildGeometry()
 {
     auto target = this->target();
 

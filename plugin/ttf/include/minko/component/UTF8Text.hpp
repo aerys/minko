@@ -7,10 +7,10 @@ namespace minko
 {
     namespace component
     {
-        class ASCIIText : public AbstractComponent
+        class UTF8Text : public AbstractComponent
         {
         public:
-            using Ptr = std::shared_ptr<ASCIIText>;
+            using Ptr = std::shared_ptr<UTF8Text>;
 
         private:
             std::shared_ptr<render::AbstractTexture>    _atlas;
@@ -28,7 +28,7 @@ namespace minko
                    std::shared_ptr<material::Material>          material,
                    std::shared_ptr<render::Effect>              effect)
             {
-                auto instance = Ptr(new ASCIIText());
+                auto instance = Ptr(new UTF8Text());
 
                 instance->_atlas = atlas;
                 instance->_material = material;
@@ -66,7 +66,7 @@ namespace minko
             atlas(std::shared_ptr<render::AbstractTexture> atlas);
 
         private:
-            ASCIIText() = default;
+            UTF8Text() = default;
 
             void
             targetAdded(std::shared_ptr<scene::Node> target) override;

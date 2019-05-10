@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/component/Animation.hpp"
-#include "minko/component/ASCIIText.hpp"
+#include "minko/component/UTF8Text.hpp"
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Camera.hpp"
@@ -166,9 +166,9 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 	);
 
     registerComponent(
-        &typeid(component::ASCIIText),
+        &typeid(component::UTF8Text),
         std::bind(
-            &serialize::ComponentSerializer::serializeASCIIText,
+            &serialize::ComponentSerializer::serializeUTF8Text,
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4
         )
     );
