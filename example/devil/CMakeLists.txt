@@ -22,6 +22,7 @@ target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
 minko_enable_plugin_sdl (${PROJECT_NAME})
 minko_enable_plugin_devil (${PROJECT_NAME})
+minko_enable_plugin_zlib (${PROJECT_NAME})
 
 minko_package_assets (
     ${PROJECT_NAME}

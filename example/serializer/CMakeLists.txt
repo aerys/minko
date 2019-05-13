@@ -18,6 +18,7 @@ minko_enable_plugin_sdl (${PROJECT_NAME})
 minko_enable_plugin_serializer (${PROJECT_NAME})
 minko_enable_plugin_jpeg (${PROJECT_NAME})
 minko_enable_plugin_assimp (${PROJECT_NAME})
+minko_enable_plugin_zlib (${PROJECT_NAME})
 minko_enable_plugin_png (${PROJECT_NAME})
 
 minko_package_assets (
