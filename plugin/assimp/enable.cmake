@@ -1,6 +1,8 @@
 function (minko_enable_plugin_assimp target)
     set (ASSIMP_PATH "${MINKO_HOME}/plugin/assimp")
-    minko_enable_plugin_zlib (${target})
+    # Enabling zlib by default my cause multiple definition linking errors.
+    # So the app CMakeLists.txt must enable the zlib plugin on a case-by-case basis.
+    # minko_enable_plugin_zlib (${target})
     minko_plugin_link ("assimp" ${target})
     string (FIND ${target} "minko-example" TEST_EXAMPLE)
     string (FIND ${target} "minko-plugin" TEST_PLUGIN)
