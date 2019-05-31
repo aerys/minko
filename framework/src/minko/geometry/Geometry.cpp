@@ -47,12 +47,17 @@ Geometry::Geometry(const Geometry& geometry) :
 {
 }
 
-std::shared_ptr<Geometry>
-Geometry::clone()
+Geometry::Ptr
+Geometry::clone() const
 {
-	Ptr geometry(new Geometry(*this));	
+    auto cloned = Geometry::create(_data->get<std::string>("name"));
 
-	return geometry;
+    for (const auto vertexBuffer : _vertexBuffers)
+        cloned->addVertexBuffer(vertexBuffer->clone());
+
+    cloned->indices(_indexBuffer->clone());
+
+	return cloned;
 }
 
 void
@@ -528,7 +533,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 				*hitXyz = {
 					ray->origin().x + minDistance * ray->direction().x,
 					ray->origin().y + minDistance * ray->direction().y,
-					ray->origin().z + minDistance * ray->direction().z					
+					ray->origin().z + minDistance * ray->direction().z
 				};
 			}
 		}

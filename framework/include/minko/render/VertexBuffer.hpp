@@ -97,6 +97,9 @@ namespace minko
 				return create(context, data.begin(), data.end());
 			}
 
+            Ptr
+            clone() const;
+
 			inline
 			std::vector<float>&
 			data()
