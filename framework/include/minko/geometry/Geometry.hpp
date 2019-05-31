@@ -73,7 +73,7 @@ namespace minko
             }
 
 			Ptr
-			clone();
+			clone() const;
 
 			inline
 			ProviderPtr
