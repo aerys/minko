@@ -32,7 +32,7 @@ IndexBuffer::clone() const
     else if (dataPointer<unsigned int>())
         return IndexBuffer::create(_context, *dataPointer<unsigned int>());
     else
-        throw std::runtime_error("Unkown index size");
+        throw std::runtime_error("IndexBuffer::clone: Unknown index size");
 }
 
 void
