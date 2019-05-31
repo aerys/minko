@@ -116,9 +116,9 @@ namespace minko
             inline
             const std::vector<T>*
             dataPointer() const
-			{
-			    return Any::cast<std::vector<T>>(&_data);
-			}
+            {
+                return Any::cast<std::vector<T>>(&_data);
+            }
 
 			inline
 			unsigned int
