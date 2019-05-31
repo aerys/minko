@@ -94,6 +94,9 @@ namespace minko
 				dispose();
 			}
 
+            Ptr
+            clone() const;
+
 			inline
 			std::vector<unsigned short>&
 			data()
@@ -105,6 +108,14 @@ namespace minko
             inline
             std::vector<T>*
             dataPointer()
+			{
+			    return Any::cast<std::vector<T>>(&_data);
+			}
+
+            template <typename T>
+            inline
+            const std::vector<T>*
+            dataPointer() const
 			{
 			    return Any::cast<std::vector<T>>(&_data);
 			}

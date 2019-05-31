@@ -24,6 +24,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
+IndexBuffer::Ptr
+IndexBuffer::clone() const
+{
+    if (dataPointer<unsigned short>())
+        return IndexBuffer::create(_context, *dataPointer<unsigned short>());
+    else if (dataPointer<unsigned int>())
+        return IndexBuffer::create(_context, *dataPointer<unsigned int>());
+    else
+        throw std::runtime_error("Unkown index size");
+}
+
 void
 IndexBuffer::upload(uint	offset,
 					int		count)

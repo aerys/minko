@@ -69,6 +69,17 @@ VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context, float* begi
 	upload();
 }
 
+VertexBuffer::Ptr
+VertexBuffer::clone() const
+{
+    auto cloned  = VertexBuffer::create(_context, _data);
+
+    for (const auto& attribute : _attributes)
+        cloned->addAttribute(*attribute.name, attribute.size, attribute.offset);
+
+    return cloned;
+}
+
 void
 VertexBuffer::upload(uint offset, uint numVertices)
 {
