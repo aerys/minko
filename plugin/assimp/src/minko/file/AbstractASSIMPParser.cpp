@@ -564,7 +564,7 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     auto existingGeometry = _aiMeshToGeometry.find(mesh);
 
     if (existingGeometry != _aiMeshToGeometry.end())
-        return existingGeometry->second;
+        return existingGeometry->second->clone();
 
 	unsigned int vertexSize = 0u;
 
