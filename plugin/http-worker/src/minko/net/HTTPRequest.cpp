@@ -147,6 +147,10 @@ createCurl(const std::string&                                   url,
     if (!verifyPeer)
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
+    // https://git.aerys.in/aerys/smartshape-engine/issues/179
+    // https://stackoverflow.com/a/10755612/7512344
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+
     // POST method
     if (!postFields.empty())
     {
