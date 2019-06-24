@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Hash.hpp"
 
 namespace minko
 {
@@ -127,6 +128,30 @@ namespace minko
             clear()
             {
                 _index.clear();
+            }
+
+            typename Index::iterator
+            begin()
+            {
+                return _index.begin();
+            }
+
+            typename Index::iterator
+            end()
+            {
+                return _index.end();
+            }
+
+            typename Index::const_iterator
+            begin() const
+            {
+                return _index.begin();
+            }
+
+            typename Index::const_iterator
+            end() const
+            {
+                return _index.end();
             }
 
         private:
