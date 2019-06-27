@@ -444,6 +444,7 @@ namespace minko
 
             void
             setStateValueFromStore(const std::string&   stateName,
+                                   const std::string&   resolvedPropertyName,
                                    const data::Store&   store);
 
 			void
