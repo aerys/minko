@@ -48,7 +48,7 @@ DrawCallPool::SortPropertyKeyComparator::operator()(const SortPropertyTuple& lef
     const auto leftPriority = std::get<0>(left);
     const auto rightPriority = std::get<0>(right);
 
-    const bool samePriority = fabsf(leftPriority - rightPriority) < 1e-3f;
+    const bool samePriority = fabsf(leftPriority - rightPriority) < 1e-6f;
 
     if (samePriority)
     {
@@ -499,7 +499,7 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
         delete resolvedBinding;
     }
 
-    if (input.type == ProgramInputs::Type::sampler2d || 
+    if (input.type == ProgramInputs::Type::sampler2d ||
         input.type == ProgramInputs::Type::samplerCube ||
         input.type == ProgramInputs::Type::samplerExternalOES)
         samplerStatesBindingPropertyAddedHandler(drawCall, input, uniformBindingMap);
