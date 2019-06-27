@@ -688,7 +688,7 @@ DrawCall::bindState(const std::string&        					            stateName,
     else
     {
         if (!binding->store.hasProperty(binding->propertyName))
-            setStateValueFromStore(stateName, binding->propertyName, defaultValues);
+            setStateValueFromStore(stateName, stateName, defaultValues);
         else
             setStateValueFromStore(stateName, binding->propertyName, binding->store);
     }
