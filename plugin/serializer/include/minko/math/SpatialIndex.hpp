@@ -131,6 +131,18 @@ namespace minko
             }
 
             typename Index::iterator
+            find(const math::vec3& position)
+            {
+                return _index.find(position);
+            }
+
+            typename Index::const_iterator
+            find(const math::vec3& position) const
+            {
+                return _index.find(position);
+            }
+
+            typename Index::iterator
             begin()
             {
                 return _index.begin();
