@@ -53,7 +53,7 @@ namespace minko
             Ptr
             setText(const std::string& fontFilename, const std::string& text, float scale, bool centerOrigin = true);
 #endif
-            
+
             Ptr
             setText(std::shared_ptr<render::AbstractTexture>    atlasTexture,
                     const std::string&                          text,
@@ -72,6 +72,9 @@ namespace minko
             {
                 return _textSize;
             }
+
+            void
+            upload() override;
 
         private:
             explicit
