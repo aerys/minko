@@ -538,3 +538,11 @@ strToUnicode(const std::string& str)
 
     return result;
 }
+
+void
+TextGeometry::upload()
+{
+    Geometry::upload();
+
+    computeCenterPosition();
+}
