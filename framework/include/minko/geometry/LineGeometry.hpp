@@ -42,8 +42,9 @@ namespace minko
 			float									_currentX;
 			float									_currentY;
 			float									_currentZ;
-            float                                   _currentLength;
+            float                                   _dashOffset;
 			uint									_numLines;
+			minko::math::vec2						_viewport;
 
 			std::shared_ptr<render::VertexBuffer>	_vertexBuffer;
 			std::shared_ptr<render::IndexBuffer>	_indexBuffer;
@@ -58,6 +59,14 @@ namespace minko
 				ptr->initialize(context, numSegments);
 
 				return ptr;
+			}
+
+			Ptr
+			viewport(const minko::math::vec2& viewport)
+			{
+				_viewport = viewport;
+
+				return std::static_pointer_cast<LineGeometry>(shared_from_this());
 			}
 
 			math::vec3

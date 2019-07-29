@@ -32,15 +32,17 @@ main()
 	vec4 startPos = vec4(aStartPosition, 1.0);
 	vec4 stopPos = vec4(aStopPosition, 1.0);
 
-	#ifdef MODEL_TO_WORLD
-		startPos = uModelToWorldMatrix * startPos;
-		stopPos	= uModelToWorldMatrix * stopPos;
-        dashVector = uModelToWorldMatrix * dashVector;
-	#endif // MODEL_TO_WORLD
+	#ifndef IS_2D_LINE
+		#ifdef MODEL_TO_WORLD
+			startPos = uModelToWorldMatrix * startPos;
+			stopPos	= uModelToWorldMatrix * stopPos;
+			dashVector = uModelToWorldMatrix * dashVector;
+		#endif // MODEL_TO_WORLD
 
-	startPos = uWorldToScreenMatrix * startPos;
-	stopPos = uWorldToScreenMatrix * stopPos;
-    dashVector = uWorldToScreenMatrix * dashVector;
+		startPos = uWorldToScreenMatrix * startPos;
+		stopPos = uWorldToScreenMatrix * stopPos;
+		dashVector = uWorldToScreenMatrix * dashVector;
+	#endif // IS_2D_LINE
 
 	vec4 pos = wStart * startPos + wStop * stopPos;
 	float posW = pos.w;
