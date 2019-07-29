@@ -37,7 +37,11 @@ main()
         timeTerm = uLineDashSpeed * uTime / 1000.0;
     #endif
 
-    color.a *= sign(sin(vWeight / vPosW / uLineDashLength * 1000.0 + timeTerm));
+    float dashLength = uLineDashLength * 4.0;
+    if (mod(vWeight + timeTerm, dashLength * 2.0) > dashLength)
+        color.a = 0.0;
+
+    // color.a *= sign(sin(vWeight / vPosW / uLineDashLength * 1000.0 + timeTerm));
 #endif
 
 	gl_FragColor = color;

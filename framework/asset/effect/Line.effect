@@ -24,7 +24,8 @@
         "DIFFUSE_COLOR"     : "material[$materialUuid].diffuseColor",
         "MODEL_TO_WORLD"    : "modelToWorldMatrix",
         "LINE_DASH_LENGTH"  : "material[$materialUuid].lineDashLength",
-        "LINE_DASH_SPEED"   : "material[$materialUuid].lineDashSpeed"
+        "LINE_DASH_SPEED"   : "material[$materialUuid].lineDashSpeed",
+        "IS_2D_LINE"        : "material[$materialUuid].is2dLine"
     },
 
     "states" : {
