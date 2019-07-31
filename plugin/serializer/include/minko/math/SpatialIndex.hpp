@@ -33,36 +33,17 @@ namespace minko
             typedef std::shared_ptr<SpatialIndex>   Ptr;
 
         private:
+            struct                                  CompareVec3;
             struct                                  IndexHash;
             struct                                  IndexEqual;
 
-            typedef std::unordered_map<
+            typedef std::map<
                 math::vec3,
                 T,
-                IndexHash,
-                IndexEqual
+                CompareVec3
             >                                       Index;
 
-            struct IndexHash
-            {
-                float precision;
-
-                std::size_t
-                operator()(const math::vec3& position) const
-                {
-                    return minko::Hash<math::vec3>()(
-                        math::floor(position * precision + math::vec3(0.5f)) / precision
-                    );
-                }
-
-                explicit
-                IndexHash(float epsilon) :
-                    precision(1.f / epsilon)
-                {
-                }
-            };
-
-            struct IndexEqual
+            struct CompareVec3
             {
                 float epsilon;
 
@@ -71,11 +52,17 @@ namespace minko
                 {
                     const auto epsilonEqual = math::epsilonEqual(lhs, rhs, epsilon);
 
-                    return epsilonEqual.x && epsilonEqual.y && epsilonEqual.z;
+                    if (!epsilonEqual.x)
+                        return lhs.x < rhs.x;
+
+                    if (!epsilonEqual.y)
+                        return lhs.y < rhs.y;
+
+                    return !epsilonEqual.z && lhs.z < rhs.z;
                 }
 
                 explicit
-                IndexEqual(float epsilon) :
+                CompareVec3(float epsilon) :
                     epsilon(epsilon)
                 {
                 }
@@ -169,7 +156,7 @@ namespace minko
         private:
             explicit
             SpatialIndex(float epsilon) :
-                _index(0u, IndexHash(epsilon), IndexEqual(epsilon))
+                _index(CompareVec3(epsilon))
             {
             }
         };
