@@ -492,7 +492,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	{
         getHitNormal(i, &normal);
 
-        if (math::dot(math::normalize(ray->direction()), normal) > 0.f)
+        if (math::dot(math::normalize(ray->direction()), normal) > EPSILON)
         {
             // The triangle faces away the ray caster.
             continue;
