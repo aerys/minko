@@ -468,6 +468,8 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto xyzVertexSize = xyzBuffer->vertexSize();
 	auto xyzOffset = xyzBuffer->attribute("position").offset;
 
+    const auto hasNormalAttribute = vertexBuffer("normal") != nullptr;
+
 	auto minDistance = std::numeric_limits<float>::infinity();
 	auto lambda = math::vec2(0.f);
 	auto triangleIndice = -3;
@@ -490,12 +492,15 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 
 	for (uint i = 0; i < numIndices; i += 3)
 	{
-        getHitNormal(i, &normal);
-
-        if (math::dot(math::normalize(ray->direction()), normal) > EPSILON)
+        if (hasNormalAttribute)
         {
-            // The triangle faces away the ray caster.
-            continue;
+            getHitNormal(i, &normal);
+
+            if (math::dot(math::normalize(ray->direction()), normal) > EPSILON)
+            {
+                // The triangle faces away the ray caster.
+                continue;
+            }
         }
 
 		v0 = math::make_vec3(xyzPtr + indicesData[i] * xyzVertexSize);
@@ -549,7 +554,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
             if (hitUv)
                 getHitUv(triangle, lambda, hitUv);
 
-            if (hitNormal)
+            if (hasNormalAttribute && hitNormal)
                 *hitNormal = normal;
 		}
 	}
