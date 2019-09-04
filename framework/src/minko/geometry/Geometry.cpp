@@ -472,6 +472,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 	auto lambda = math::vec2(0.f);
 	auto triangleIndice = -3;
 
+    math::vec3 normal;
 	math::vec3 v0;
 	math::vec3 v1;
 	math::vec3 v2;
@@ -489,6 +490,14 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 
 	for (uint i = 0; i < numIndices; i += 3)
 	{
+        getHitNormal(i, &normal);
+
+        if (math::dot(math::normalize(ray->direction()), normal) > 0.f)
+        {
+            // The triangle faces away the ray caster.
+            continue;
+        }
+
 		v0 = math::make_vec3(xyzPtr + indicesData[i] * xyzVertexSize);
 		v1 = math::make_vec3(xyzPtr + indicesData[i + 1] * xyzVertexSize);
 		v2 = math::make_vec3(xyzPtr + indicesData[i + 2] * xyzVertexSize);
@@ -536,13 +545,13 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 					ray->origin().z + minDistance * ray->direction().z
 				};
 			}
+
+            if (hitUv)
+                getHitUv(triangle, lambda, hitUv);
+
+            if (hitNormal)
+                *hitNormal = normal;
 		}
-
-		if (hitUv)
-			getHitUv(triangle, lambda, hitUv);
-
-		if (hitNormal)
-			getHitNormal(triangle, hitNormal);
 	}
 
 	return hit;
