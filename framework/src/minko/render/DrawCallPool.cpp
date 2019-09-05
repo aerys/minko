@@ -453,18 +453,10 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
             ? resolvedBinding->store.propertyRemoved(propertyName)
             : resolvedBinding->store.propertyAdded(propertyName);
 
-
-
-
-
-        std::string signal_kind = propertyExist
-            ? std::string("propertyRemoved")
-            : std::string("propertyAdded");
-
         _propChangedSlot->insert(std::make_pair(
             std::make_pair(bindingPtr, &drawCall),
             signal.connect(
-                [&, bindingPtr, signal_kind](data::Store& store, data::Provider::Ptr, const data::Provider::PropertyName&)
+                [&, bindingPtr](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
                 {
                     _propChangedSlot->erase({ bindingPtr, &drawCall });
                     (*_drawCallToPropRebindFuncs)[&drawCall].push_back(
