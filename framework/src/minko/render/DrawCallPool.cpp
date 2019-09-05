@@ -256,7 +256,12 @@ DrawCallPool::addMacroCallback(const MacroBindingKey&   key,
                                PropertyChanged&         signal,
                                const PropertyCallback&  callback)
 {
-    _macroChangedSlot->insert(std::make_pair(key, ChangedSlot(signal.connect(callback), 1)));
+    // Relies on the fact that the callbacks are always the same (capture the same values/pointers)
+    // for a given key. Otherwise, we'd have to store each callback in the map.
+    if (!_macroChangedSlot->count(key))
+        _macroChangedSlot->insert(std::make_pair(key, ChangedSlot(signal.connect(callback), 1)));
+    else
+        _macroChangedSlot->find(key)->second.second++;
 }
 
 void
