@@ -220,9 +220,10 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 					   std::shared_ptr<Node> parent)
 {
 	findSceneManager();
+
+    // If the added node is an ancestor of our target, the root may have been modified.
     listenRootSignals();
 
-	//_lightMaskFilter->root(target->root());
     reset();
 
 	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
@@ -234,7 +235,10 @@ Renderer::removedHandler(std::shared_ptr<Node> node,
 						 std::shared_ptr<Node> parent)
 {
 	findSceneManager();
+
+    // If the removed node is an ancestor of our target, the root has been modified.
     listenRootSignals();
+
 	rootDescendantRemovedHandler(nullptr, target->root(), nullptr);
 }
 
@@ -264,6 +268,8 @@ Renderer::listenRootSignals()
             std::placeholders::_3
         ), std::numeric_limits<float>::max());
 
+        // Listening to the root allows us to see changes in every branches of
+        // the scene tree instead of just the changes of the branch we are in.
         // If our target is our own root, don't listen to the root signals.
         // In this situation, we already listen to addition and removal because
         // of the _addedSlot and _removedSlot.
