@@ -519,6 +519,9 @@ namespace minko
 
             void
             removeOutOfSceneSurfaces();
+
+            void
+            listenRootSignals();
         };
     }
 }
