@@ -247,7 +247,9 @@ Renderer::listenRootSignals()
 {
     auto root = target()->root();
 
-    // We will reconnect to the new root.
+    // Avoid listening to the old scene tree if the new one has no root.
+    _componentAddedSlot = nullptr;
+    _componentRemovedSlot = nullptr;
     _rootDescendantAddedSlot = nullptr;
     _rootDescendantRemovedSlot = nullptr;
 
