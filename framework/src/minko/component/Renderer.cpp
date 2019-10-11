@@ -221,39 +221,9 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 {
 	findSceneManager();
 
-	_rootDescendantAddedSlot = target->root()->added().connect(std::bind(
-		&Renderer::rootDescendantAddedHandler,
-		std::static_pointer_cast<Renderer>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	), std::numeric_limits<float>::max());
+    // If the added node is an ancestor of our target, the root may have been modified.
+    listenRootSignals();
 
-	_rootDescendantRemovedSlot = target->root()->removed().connect(std::bind(
-		&Renderer::rootDescendantRemovedHandler,
-		std::static_pointer_cast<Renderer>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	), std::numeric_limits<float>::max());
-
-	_componentAddedSlot = target->root()->componentAdded().connect(std::bind(
-		&Renderer::componentAddedHandler,
-		std::static_pointer_cast<Renderer>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	), std::numeric_limits<float>::max());
-
-	_componentRemovedSlot = target->root()->componentRemoved().connect(std::bind(
-		&Renderer::componentRemovedHandler,
-		std::static_pointer_cast<Renderer>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	), std::numeric_limits<float>::max());
-
-	//_lightMaskFilter->root(target->root());
     reset();
 
 	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
@@ -266,12 +236,64 @@ Renderer::removedHandler(std::shared_ptr<Node> node,
 {
 	findSceneManager();
 
-	_rootDescendantAddedSlot	= nullptr;
-	_rootDescendantRemovedSlot	= nullptr;
-	_componentAddedSlot			= nullptr;
-	_componentRemovedSlot		= nullptr;
+    // If the removed node is an ancestor of our target, the root has been modified.
+    listenRootSignals();
 
 	rootDescendantRemovedHandler(nullptr, target->root(), nullptr);
+}
+
+void
+Renderer::listenRootSignals()
+{
+    auto root = target()->root();
+
+    // Avoid listening to the old scene tree if the new one has no root.
+    _componentAddedSlot = nullptr;
+    _componentRemovedSlot = nullptr;
+    _rootDescendantAddedSlot = nullptr;
+    _rootDescendantRemovedSlot = nullptr;
+
+    if (root != nullptr) {
+        _componentAddedSlot = root->componentAdded().connect(std::bind(
+            &Renderer::componentAddedHandler,
+            std::static_pointer_cast<Renderer>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3
+        ), std::numeric_limits<float>::max());
+
+        _componentRemovedSlot = root->componentRemoved().connect(std::bind(
+            &Renderer::componentRemovedHandler,
+            std::static_pointer_cast<Renderer>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3
+        ), std::numeric_limits<float>::max());
+
+        // Listening to the root allows us to see changes in every branches of
+        // the scene tree instead of just the changes of the branch we are in.
+        // If our target is our own root, don't listen to the root signals.
+        // In this situation, we already listen to addition and removal because
+        // of the _addedSlot and _removedSlot.
+        if (root != target())
+        {
+            _rootDescendantAddedSlot = root->added().connect(std::bind(
+                &Renderer::rootDescendantAddedHandler,
+                std::static_pointer_cast<Renderer>(shared_from_this()),
+                std::placeholders::_1,
+                std::placeholders::_2,
+                std::placeholders::_3
+            ), std::numeric_limits<float>::max());
+
+            _rootDescendantRemovedSlot = root->removed().connect(std::bind(
+                &Renderer::rootDescendantRemovedHandler,
+                std::static_pointer_cast<Renderer>(shared_from_this()),
+                std::placeholders::_1,
+                std::placeholders::_2,
+                std::placeholders::_3
+            ), std::numeric_limits<float>::max());
+        }
+    }
 }
 
 void

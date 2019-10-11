@@ -375,3 +375,48 @@ TEST_F(RendererTest, SetEffect)
         }
     }
 }
+
+
+TEST_F(RendererTest, RenderAfterMultipleRemovalTest)
+{
+    auto effect = MinkoTests::loadEffect("effect/Basic.effect");
+    auto canvas = MinkoTests::canvas();
+    auto sceneManager = component::SceneManager::create(canvas);
+    auto context = canvas->context();
+    auto root = scene::Node::create();
+    auto node1 = scene::Node::create();
+    auto node2 = scene::Node::create();
+
+    const auto geometry = geometry::CubeGeometry::create(context);
+    const auto material = material::BasicMaterial::create();
+
+    root->addComponent(Transform::create());
+    node1
+        ->addComponent(Transform::create())
+        ->addComponent(Surface::create(
+            geometry,
+            material,
+            effect
+        ));
+
+    node2
+        ->addComponent(Transform::create())
+        ->addComponent(Surface::create(
+            geometry,
+            material,
+            effect
+        ));
+
+    auto renderer = Renderer::create();
+
+    root->addComponent(sceneManager);
+    root->addComponent(renderer)
+         ->addComponent(Camera::create(math::perspective(.785f, 1.f, 0.1f, 1000.f)));
+    root->addChild(node1);
+    root->addChild(node2);
+
+    renderer->render(context);
+    root->removeChild(node1);
+    node2->removeComponent(node2->component<Surface>());
+    renderer->render(context);
+}
