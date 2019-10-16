@@ -172,7 +172,7 @@ namespace minko
                 {
                     T* ptr = Any::cast<T>(getValue(propertyName));
 
-#if DEBUG
+#ifndef NDEBUG
                     if (!ptr)
                         throw std::invalid_argument("Property `" + *propertyName + "` does not exist or has an incorrect type.");
 #endif
