@@ -201,7 +201,7 @@ function (minko_add_executable target_name sources)
 
     if (EMSCRIPTEN)
         set (WASM_OPTS  -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s "BINARYEN_TRAP_MODE='clamp'")
-        set (ASMJS_OPTS -s WASM=0 -s ALLOW_MEMORY_GROWTH=0 -s OUTLINING_LIMIT=20000)
+        set (ASMJS_OPTS -s WASM=0 -s ALLOW_MEMORY_GROWTH=0)
 
         if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/template.html)
             set (SHELL_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/template.html)
