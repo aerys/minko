@@ -46,7 +46,7 @@ stages:
 build:html5:
   <<: *build_with_artifacts_template
   stage: build
-  image: registry.aerys.in/aerys/smartshape-docker/html5:8582
+  image: registry.aerys.in/aerys/smartshape-docker/html5:14459
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_WASM=ON -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/sdk/cmake/Modules/Platform/Emscripten.cmake ..
