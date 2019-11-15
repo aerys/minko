@@ -86,10 +86,11 @@ MaterialParser::parse(const std::string&                filename,
     static auto nameId = 0;
     auto uniqueName = material->name();
 
-    while (assetLibrary->material(uniqueName) != nullptr)
-        uniqueName = "material" + std::to_string(nameId++);
+    // while (assetLibrary->material(uniqueName) != nullptr)
+    //     uniqueName = "material" + std::to_string(nameId++);
 
-    assetLibrary->material(uniqueName, material);
+    if (!assetLibrary->material(uniqueName))
+        assetLibrary->material(uniqueName, material);
     _lastParsedAssetName = uniqueName;
 }
 

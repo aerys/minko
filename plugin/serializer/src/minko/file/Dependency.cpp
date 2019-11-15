@@ -386,7 +386,7 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
                               std::shared_ptr<file::WriterOptions>  writerOptions)
 {
 	auto writer = MaterialWriter::create();
-    auto filename = assetLibrary->materialName(material);
+    auto filename = material->name();
     auto assetType = serialize::AssetType();
     auto content = std::string();
 

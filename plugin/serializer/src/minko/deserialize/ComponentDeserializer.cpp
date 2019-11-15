@@ -266,7 +266,7 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
     unpack(dst, packed.data(), packed.size() - 1);
 
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.get<0>());
-	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.get<1>());
+	material::Material::Ptr		material	= assetLibrary->material(dependencies->getMaterialReference(dst.get<1>())->name());
 
     const auto effectId = dst.get<2>();
 
