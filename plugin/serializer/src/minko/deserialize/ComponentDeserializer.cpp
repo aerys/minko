@@ -266,7 +266,19 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
     unpack(dst, packed.data(), packed.size() - 1);
 
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.get<0>());
-	material::Material::Ptr		material	= assetLibrary->material(dependencies->getMaterialReference(dst.get<1>())->name());
+	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.get<1>());
+    if (!dependencies->options()->preserveMaterials())
+    {
+        // In case where strict material preservation
+        // is not required, these are globally indexed by
+        // name in the asset library in order to "deduplicate"
+        // them.
+        // This is required, for instance, when multiple .scene
+        // files are loaded, as every SceneParser manages its own
+        // local dependency table. Relying the shared asset library
+        // is then needed.
+        material = assetLibrary->material(material->name());
+    }
 
     const auto effectId = dst.get<2>();
 

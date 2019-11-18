@@ -83,15 +83,21 @@ MaterialParser::parse(const std::string&                filename,
 
 	material = options->materialFunction()(material->name(), material);
 
-    static auto nameId = 0;
-    auto uniqueName = material->name();
+    auto materialName = material->name();
+    if (options->preserveMaterials())
+    {
+        static auto nameId = 0;
+        while (assetLibrary->material(materialName) != nullptr)
+            materialName = "material" + std::to_string(nameId++);
+        assetLibrary->material(materialName, material);
+    }
+    else
+    {
+        if (!assetLibrary->material(materialName))
+            assetLibrary->material(materialName, material);
+    }
 
-    // while (assetLibrary->material(uniqueName) != nullptr)
-    //     uniqueName = "material" + std::to_string(nameId++);
-
-    if (!assetLibrary->material(uniqueName))
-        assetLibrary->material(uniqueName, material);
-    _lastParsedAssetName = uniqueName;
+    _lastParsedAssetName = materialName;
 }
 
 void
