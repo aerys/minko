@@ -18,7 +18,7 @@ file (GLOB_RECURSE
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
     "include"
-    "lib/freetype/include/freetype2"
+    "lib/freetype/include/freetype"
     "lib/freetype/include"
 )
 
@@ -31,5 +31,5 @@ if (WIN32 OR LINUX)
 endif ()
 
 if (WIN32 AND DLL STREQUAL "ON")
-    target_link_libraries(${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/lib/freetype/lib/windows${BITNESS}/freetype28.lib")
+    target_link_libraries(${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/lib/freetype/lib/windows${BITNESS}/freetype.lib")
 endif ()
