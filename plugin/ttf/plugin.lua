@@ -28,7 +28,7 @@ function minko.plugin.ttf:enable()
 	minko.plugin.links { "ttf" }
 
     configuration { "windows" }
-        links { "freetype28" }
+        links { "freetype" }
         defines { "MINKO_PLUGIN_TTF_FREETYPE" }
 
     configuration { "windows32", "ConsoleApp or WindowedApp" }
