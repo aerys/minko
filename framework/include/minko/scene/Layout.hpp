@@ -25,7 +25,7 @@ namespace minko
 {
     namespace scene
     {
-        typedef uint32_t Layout;
+        typedef uint64_t Layout;
 
         struct BuiltinLayout
         {
