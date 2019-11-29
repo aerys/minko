@@ -39,4 +39,4 @@ const Layout BuiltinLayout::_RESERVED_4         = 1 << 13;
 
 const Layout LayoutMask::NOTHING                    = 0;
 const Layout LayoutMask::COLLISIONS_DYNAMIC_DEFAULT = EVERYTHING & ~BuiltinLayout::STATIC;
-const Layout LayoutMask::EVERYTHING                 = 0xffffffff;
+const Layout LayoutMask::EVERYTHING                 = std::numeric_limits<Layout>::max();
