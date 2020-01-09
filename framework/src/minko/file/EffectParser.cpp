@@ -338,6 +338,7 @@ EffectParser::findPassFromEffectFilename(const std::string& effectFilename,
                                          const std::string& techniqueName,
                                          const std::string& passName)
 {
+    std::cout << "you did not see me coming" << std::endl;
     auto effect = _assetLibrary->effect(effectFilename);
 
     if (effect == nullptr)
@@ -387,7 +388,7 @@ EffectParser::getPassToExtend(const JSON2::json& extendNode)
         auto techniqueName = extendNode["technique"].get<std::string>();
         auto effectFilename = extendNode["effect"].get<std::string>();
 
-        std::cout << "extendNode['effect'] : " << extendNode["effect"].front() << std::endl;
+        std::cout << "effectFilename content : " << effectFilename << std::endl;
         if (techniqueName == "")
             techniqueName = "default";
 
@@ -406,7 +407,7 @@ EffectParser::getPassToExtend(const JSON2::json& extendNode)
             });
             std::cout << "load ? " << std::endl;
             loader->load();
-            std::cout << "yes" << std::endl;
+            
         }
         else
         {
@@ -433,7 +434,7 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
     }
     else if (node.is_object())
     {
-        std::cout << "parsePass is_object" << std::endl;
+        std::cout << "parsePass is_object : " << node.dump() << std::endl;
         // If the pass is an actual pass object, we parse all its data, create the corresponding
         // Pass object and add it to the vector.
         Scope passScope(scope, scope);
@@ -570,7 +571,7 @@ EffectParser::parseDefaultValue(const JSON2::json&  node,
             throw; // FIXME: support array default values
     }
     else if (defaultValueNode.is_boolean()) {
-        defaultValues->set(valueName, defaultValueNode.front());
+        defaultValues->set(valueName, defaultValueNode.get<bool>());
     }
     else if (defaultValueNode.is_number_integer()) {
         defaultValues->set(valueName, defaultValueNode.get<int>());
@@ -625,7 +626,7 @@ EffectParser::parseDefaultValueStates(const JSON2::json&    node,
     auto defaultValueNode = node.value("default", JSON2::json());
 
     if (defaultValueNode.is_boolean())
-        defaultValues->set(stateName, defaultValueNode.front());
+        defaultValues->set(stateName, defaultValueNode.get<bool>());
     else if (defaultValueNode.is_number_integer())
         defaultValues->set(stateName, std::stoi(defaultValueNode.get<std::string>()));
     else if (defaultValueNode.is_number_float())
@@ -682,7 +683,7 @@ EffectParser::parseDefaultValueVectorArray(const JSON2::json&    defaultValueNod
         // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[i].front();
+            value[i] = defaultValueNode[i].get<bool>();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -732,7 +733,7 @@ EffectParser::parseDefaultValueVectorObject(const JSON2::json&    defaultValueNo
         // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[offsets[i]].front();
+            value[i] = defaultValueNode[offsets[i]].get<bool>();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -1134,7 +1135,7 @@ EffectParser::parseZSort(const JSON2::json&	node,
                          StateBlock&        stateBlock)
 {
     if (node.is_boolean())
-        stateBlock.states.zSorted(node.front());
+        stateBlock.states.zSorted(node.get<bool>());
 }
 
 void
@@ -1143,7 +1144,7 @@ EffectParser::parseColorMask(const JSON2::json&	node,
                              StateBlock&        stateBlock) const
 {
     if (node.is_boolean())
-        stateBlock.states.colorMask(node.front());
+        stateBlock.states.colorMask(node.get<bool>());
 }
 
 void
@@ -1152,7 +1153,7 @@ EffectParser::parseDepthMask(const JSON2::json&	    node,
                              StateBlock&            stateBlock)
 {
     if (node.is_boolean())
-        stateBlock.states.depthMask(node.front());
+        stateBlock.states.depthMask(node.get<bool>());
 }
 
 void
@@ -1295,7 +1296,7 @@ EffectParser::parseScissorTest(const JSON2::json& node,
                                StateBlock&        stateBlock)
 {
     if (!node.is_null() && node.is_boolean())
-        stateBlock.states.scissorTest(node.front());
+        stateBlock.states.scissorTest(node.get<bool>());
 }
 
 void
@@ -1360,9 +1361,7 @@ EffectParser::parseTarget(const JSON2::json&    node,
             height = (unsigned int)std::stoi(node.value("height", "0"));
         }
 
-        const bool isCubeTexture = node.value("isCube", JSON2::json()).is_boolean()
-            ? (node.value("isCube", JSON2::json()).is_boolean()) ? true : false
-            : false;
+        const bool isCubeTexture = node.value("isCube", JSON2::json()).is_boolean() ? true : false;
         
 
         if (isCubeTexture)
