@@ -338,7 +338,6 @@ EffectParser::findPassFromEffectFilename(const std::string& effectFilename,
                                          const std::string& techniqueName,
                                          const std::string& passName)
 {
-    std::cout << "you did not see me coming" << std::endl;
     auto effect = _assetLibrary->effect(effectFilename);
 
     if (effect == nullptr)
@@ -367,14 +366,12 @@ EffectParser::getPassToExtend(const JSON2::json& extendNode)
 
     if (extendNode.is_string())
     {
-        std::cout << "extendNode is string" << std::endl;
         passName = extendNode.get<std::string>();
 
         // if the "extends" node is just a string, we're extending a "free" pass
         // thus we have to look into the root scope
         auto passIt = std::find_if(_globalScope.passes.begin(), _globalScope.passes.end(), [&](PassPtr p)
         {
-            std::cout << "return passIt" << std::endl;
             return p->name() == passName;
         });
 
@@ -383,12 +380,10 @@ EffectParser::getPassToExtend(const JSON2::json& extendNode)
     }
     else if (extendNode.is_object())
     {
-        std::cout << "extendNode is object" << std::endl;
         passName = extendNode["pass"].get<std::string>();
         auto techniqueName = extendNode["technique"].get<std::string>();
         auto effectFilename = extendNode["effect"].get<std::string>();
 
-        std::cout << "effectFilename content : " << effectFilename << std::endl;
         if (techniqueName == "")
             techniqueName = "default";
 
@@ -398,14 +393,12 @@ EffectParser::getPassToExtend(const JSON2::json& extendNode)
             auto loader = file::Loader::create(_assetLibrary->loader());
 
             options->loadAsynchronously(false);
-            std::cout << "effectfilename : " << effectFilename << std::endl;
             loader->queue(effectFilename, options);
             // FIXME: handle errors
             auto effectComplete = loader->complete()->connect([&](file::Loader::Ptr l)
             {
                 pass = findPassFromEffectFilename(effectFilename, techniqueName, passName);
             });
-            std::cout << "load ? " << std::endl;
             loader->load();
             
         }
@@ -420,7 +413,6 @@ EffectParser::getPassToExtend(const JSON2::json& extendNode)
     }
     if (pass == nullptr)
         throw std::runtime_error("Undefined base pass with name '" + passName + "'.");
-    std::cout << "the return" << std::endl;
     return pass;
 }
 
@@ -429,12 +421,10 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
 {
     if (node.is_string())
     {
-        std::cout << "parsePass is_string" << std::endl;
         passes.push_back(Pass::create(getPassToExtend(node), false));
     }
     else if (node.is_object())
     {
-        std::cout << "parsePass is_object : " << node.dump() << std::endl;
         // If the pass is an actual pass object, we parse all its data, create the corresponding
         // Pass object and add it to the vector.
         Scope passScope(scope, scope);
@@ -446,7 +436,6 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
         
 		if (!node.value("extends", JSON2::json()).is_null())
 		{
-            std::cout << "parsePass is not null" << std::endl;
 			auto extendNode = node.value("extends", JSON2::json()); // previously created an empty object if key does not exist
             render::Pass::Ptr pass = getPassToExtend(extendNode);
 			// If a pass "extends" another pass, then we have to merge its properties with the already existing ones
@@ -456,7 +445,6 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
             passScope.macroBlock.bindingMap.types.insert(pass->macroBindings().types.begin(), pass->macroBindings().types.end());
             passScope.stateBlock.bindingMap.bindings.insert(pass->stateBindings().bindings.begin(), pass->stateBindings().bindings.end());
 
-            std::cout << "many if" << std::endl;
             if (pass->attributeBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.attributeBlock.bindingMap.defaultValues.providers().size() == 0)
@@ -489,18 +477,15 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
             fragmentShader = pass->program()->fragmentShader();
             isForward = pass->isForward();
             passName = pass->name();
-            std::cout << "later" << std::endl;
 		}
         if (nameNode.is_string()) {
             passName = nameNode.get<std::string>();
         }
         // FIXME: throw otherwise
-        std::cout << "some functions " <<std::endl;
         parseAttributes(node, passScope, passScope.attributeBlock);
         parseUniforms(node, passScope, passScope.uniformBlock);
         parseMacros(node, passScope, passScope.macroBlock);
         parseStates(node, passScope, passScope.stateBlock);
-        std::cout << "shaders" << std::endl;
 		//if (!node.value("vertexShader", JSON2::json()).empty()) {
         	vertexShader = parseShader(node.value("vertexShader", JSON2::json()), passScope, Shader::Type::VERTEX_SHADER);
         //}
@@ -962,7 +947,7 @@ EffectParser::parseStates(const JSON2::json& node, const Scope& scope, StateBloc
     {
         for (auto item : statesNode.items())
         {
-            if (std::find(States::PROPERTY_NAMES.begin(), States::PROPERTY_NAMES.end(), item.value()) != States::PROPERTY_NAMES.end())
+            if (std::find(States::PROPERTY_NAMES.begin(), States::PROPERTY_NAMES.end(), item.key()) != States::PROPERTY_NAMES.end())
             {
                 // Parse states
                 if (statesNode[item.key()].is_object())
@@ -985,7 +970,7 @@ EffectParser::parseStates(const JSON2::json& node, const Scope& scope, StateBloc
                     parseState(statesNode[item.key()], scope, stateBlock, item.key());
                 }
             }
-            else if (std::find(_extraStateNames.begin(), _extraStateNames.end(), item.value()) != _extraStateNames.end())
+            else if (std::find(_extraStateNames.begin(), _extraStateNames.end(), item.key()) != _extraStateNames.end())
             {
                 // Parse extra states
                 if (item == EXTRA_PROPERTY_BLENDING_MODE)
