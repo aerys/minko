@@ -486,23 +486,24 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
         parseUniforms(node, passScope, passScope.uniformBlock);
         parseMacros(node, passScope, passScope.macroBlock);
         parseStates(node, passScope, passScope.stateBlock);
-		//if (!node.value("vertexShader", JSON2::json()).empty()) {
+		if (!node.value("vertexShader", JSON2::json()).empty()) {
         	vertexShader = parseShader(node.value("vertexShader", JSON2::json()), passScope, Shader::Type::VERTEX_SHADER);
-        //}
+        }
        /* else if (!vertexShader) {
 			throw std::runtime_error("Missing vertex shader for pass \"" + passName + "\"");
         }*/
-		//if (node.value("fragmentShader", JSON2::json()).empty()) {
+		if (!node.value("fragmentShader", JSON2::json()).empty()) {
         	fragmentShader = parseShader(node.value("fragmentShader", JSON2::json()), passScope, Shader::Type::FRAGMENT_SHADER);
-        //}
+        }
 		/*else if (!fragmentShader) {
 			throw std::runtime_error("Missing fragment shader for pass \"" + passName + "\"");
         }*/
-		if (!node.value("forward", JSON2::json()).is_null())
+		if (!node.value("forward", JSON2::json()).is_null()) {
 			isForward = node.value("forward", JSON2::json()).front();
+        }
         if (!isForward)
             checkDeferredPassBindings(passScope);
-        passes.push_back(Pass::create(
+            passes.push_back(Pass::create(
             passName,
 			isForward,
             Program::create(passName, _options->context(), vertexShader, fragmentShader),
@@ -741,8 +742,8 @@ EffectParser::parseAttributes(const JSON2::json& node, const Scope& scope, Attri
         for (auto& item : attributesNode.items())
         {
             auto attribute = attributesNode[item.key()];
-
 			data::Binding binding;
+
             if (parseBinding(item.value(), scope, binding))
 				attributes.bindingMap.bindings[item.key()] = binding;
 
