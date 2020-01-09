@@ -628,15 +628,15 @@ EffectParser::parseDefaultValueStates(const JSON2::json&    node,
     if (defaultValueNode.is_boolean())
         defaultValues->set(stateName, defaultValueNode.get<bool>());
     else if (defaultValueNode.is_number_integer())
-        defaultValues->set(stateName, std::stoi(defaultValueNode.get<std::string>()));
+        defaultValues->set(stateName, defaultValueNode.get<int>());
     else if (defaultValueNode.is_number_float())
-        defaultValues->set(stateName, std::stof(defaultValueNode.get<std::string>()));
+        defaultValues->set(stateName, defaultValueNode.get<float>());
     else if (defaultValueNode.is_string())
         defaultValues->set(stateName, defaultValueNode.get<std::string>());
     else if (defaultValueNode.is_array())
     {
         if (stateName == States::PROPERTY_PRIORITY && node[0].is_string() && node[1].is_number_float())
-            defaultValues->set(stateName, getPriorityValue(node[0].get<std::string>()) + (float)(std::stof(node[1].get<std::string>())));
+            defaultValues->set(stateName, getPriorityValue(node[0].get<std::string>()) + node[1].get<float>());
         else
             throw; // FIXME: support array default values
     }
@@ -656,7 +656,7 @@ EffectParser::parseDefaultValueVectorArray(const JSON2::json&    defaultValueNod
     {
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = std::stoi(defaultValueNode[i].get<std::string>());
+            value[i] = defaultValueNode[i].get<int>();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -668,7 +668,7 @@ EffectParser::parseDefaultValueVectorArray(const JSON2::json&    defaultValueNod
     {
         std::vector<float> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = std::stof(defaultValueNode[i].get<std::string>());
+            value[i] = defaultValueNode[i].get<float>();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<float>(&value[0]));
         else if (size == 3)
@@ -706,7 +706,7 @@ EffectParser::parseDefaultValueVectorObject(const JSON2::json&    defaultValueNo
     {
         std::vector<int> value(defaultValueNode.size());
         for (auto i = 0u; i < size; ++i)
-            value[i] = std::stoi(defaultValueNode[offsets[i]].get<std::string>());
+            value[i] = defaultValueNode[offsets[i]].get<int>();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -718,7 +718,7 @@ EffectParser::parseDefaultValueVectorObject(const JSON2::json&    defaultValueNo
     {
         std::vector<float> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = std::stof(defaultValueNode[offsets[i]].get<std::string>());
+            value[i] = defaultValueNode[offsets[i]].get<float>();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<float>(&value[0]));
         else if (size == 3)
@@ -1059,15 +1059,15 @@ EffectParser::parsePriority(const JSON2::json&	node,
         float priority = 0.f;
 
         if (node.is_number_integer())
-            priority = std::stof(node.get<std::string>());
+            priority = node.get<int>();
         else if (node.is_number_float())
-            priority = std::stof(node.get<std::string>());
+            priority = node.get<float>();
         else if (node.is_string())
             priority = getPriorityValue(node.get<std::string>());
         else if (node.is_array())
         {
             if (node[0].is_string() && node[1].is_number_float())
-                priority = getPriorityValue(node[0].get<std::string>()) + std::stof(node[1].get<std::string>());
+                priority = getPriorityValue(node[0].get<std::string>()) + node[1].get<float>();
         }
 
         stateBlock.states.priority(priority);
@@ -1229,7 +1229,7 @@ EffectParser::parseStencilReference(const JSON2::json&  node,
                                     StateBlock&         stateBlock)
 {
     if (node.is_number_integer())
-        stateBlock.states.stencilReference(std::stoi(node.get<std::string>()));
+        stateBlock.states.stencilReference(node.get<int>());
 }
 
 void
@@ -1238,7 +1238,7 @@ EffectParser::parseStencilMask(const JSON2::json&  node,
                                StateBlock&         stateBlock)
 {
     if (node.is_number_integer())
-        stateBlock.states.stencilMask((unsigned int) std::stoi(node.get<std::string>()));
+        stateBlock.states.stencilMask((unsigned int) node.get<int>());
 }
 
 void
@@ -1309,13 +1309,13 @@ EffectParser::parseScissorBox(const JSON2::json& node,
         auto scissorBox = math::ivec4();
 
         if (node[0].is_number_integer())
-            scissorBox.x = std::stoi(node[0].get<std::string>());
+            scissorBox.x = node[0].get<int>();
         if (node[1].is_number_integer())
-            scissorBox.y = std::stoi(node[1].get<std::string>());
+            scissorBox.y = node[1].get<int>();
         if (node[2].is_number_integer())
-            scissorBox.z = std::stoi(node[2].get<std::string>());
+            scissorBox.z = node[2].get<int>();
         if (node[3].is_number_integer())
-            scissorBox.w = std::stoi(node[3].get<std::string>());
+            scissorBox.w = node[3].get<int>();
 
         stateBlock.states.scissorBox(scissorBox);
     }
@@ -1362,7 +1362,6 @@ EffectParser::parseTarget(const JSON2::json&    node,
         }
 
         const bool isCubeTexture = node.value("isCube", JSON2::json()).is_boolean() ? true : false;
-        
 
         if (isCubeTexture)
         {
@@ -1458,12 +1457,12 @@ EffectParser::parseMacroBinding(const JSON2::json& node, const Scope& scope, Mac
 
     auto minNode = bindingNode.value("min", JSON2::json());
     if (minNode.is_number_integer())
-        binding.minValue = std::stoi(minNode.get<std::string>());
+        binding.minValue = minNode.get<int>();
     // FIXME: throw otherwise
 
     auto maxNode = bindingNode.value("max", JSON2::json());
     if (maxNode.is_number_integer())
-        binding.maxValue = std::stoi(maxNode.get<std::string>());
+        binding.maxValue = maxNode.get<int>();
     // FIXME: throw otherwise
 }
 
