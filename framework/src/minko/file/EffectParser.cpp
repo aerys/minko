@@ -180,19 +180,12 @@ EffectParser::parse(const std::string&				    filename,
 void
 EffectParser::parseGlobalScope(const JSON2::json& node, Scope& scope)
 {
-    std::cout << "CALLED 1" << std::endl;
     parseAttributes(node, scope, scope.attributeBlock);
-    std::cout << "CALLED 2" << std::endl;
     parseUniforms(node, scope, scope.uniformBlock);
-    std::cout << "CALLED 3" << std::endl;
     parseMacros(node, scope, scope.macroBlock);
-    std::cout << "CALLED 4" << std::endl;
     parseStates(node, scope, scope.stateBlock);
-    std::cout << "CALLED 5" << std::endl;
     parsePasses(node, scope, scope.passes);
-    std::cout << "CALLED 6" << std::endl;
     parseTechniques(node, scope, scope.techniques);
-    std::cout << "CALLED 7 SO WE WENT OVER ALL CODE" << std::endl;
 }
 
 bool
@@ -298,17 +291,11 @@ EffectParser::parseTechniques(const JSON2::json& node, Scope& scope, Techniques&
                     : _effectName + "-technique-" + std::to_string(techniques.size());
 
             Scope techniqueScope(scope, scope);
-            std::cout << "parseAttributes" << std::endl;
             parseAttributes(techniqueNode, techniqueScope, techniqueScope.attributeBlock);
-            std::cout << "parseUniforms" << std::endl;
             parseUniforms(techniqueNode, techniqueScope, techniqueScope.uniformBlock);
-            std::cout << "parseMacros" << std::endl;
             parseMacros(techniqueNode, techniqueScope, techniqueScope.macroBlock);
-            std::cout << "parseStates" << std::endl;
             parseStates(techniqueNode, techniqueScope, techniqueScope.stateBlock);
-            std::cout << "parsePasses" << std::endl;
             parsePasses(techniqueNode, techniqueScope, techniques[techniqueName]);
-            std::cout << "fixMissingPassPriorities" << std::endl;
             fixMissingPassPriorities(techniques[techniqueName]);
         }
     }
@@ -540,7 +527,7 @@ EffectParser::parseDefaultValue(const JSON2::json&  node,
                                 const Scope&        scope,
                                 const std::string&  valueName,
                                 data::Provider::Ptr defaultValues)
-{
+{  
     if (!node.is_object())
         return;
     if (node.find("default") == node.end())
@@ -770,7 +757,8 @@ EffectParser::parseUniforms(const JSON2::json& node, const Scope& scope, Uniform
 {
     auto uniformsNode = node.value("uniforms", JSON2::json());
 
-    if (uniformsNode.is_object())
+    
+    if (uniformsNode.is_object() && uniformsNode != node)
     {
         data::Provider::Ptr defaultValuesProvider;
 
@@ -954,11 +942,12 @@ EffectParser::parseStates(const JSON2::json& node, const Scope& scope, StateBloc
                 if (statesNode[item.key()].is_object())
                 {
                     data::Binding binding;
-                    if (parseBinding(statesNode[item.key()], scope, binding))
+                    if (parseBinding(statesNode[item.key()], scope, binding)) {
                         stateBlock.bindingMap.bindings[item.key()] = binding;
-                    else
+                    }
+                    else {
                         parseState(statesNode[item.key()], scope, stateBlock, item.key());
-
+                    }
                     // Don't forget to parse default value, even if there is no binding
                     if (statesNode[item.key()].find("default") != statesNode[item.key()].end())
                     {
@@ -997,42 +986,78 @@ EffectParser::parseState(const JSON2::json& node,
                          StateBlock&        stateBlock,
                          const std::string& stateProperty)
 {
-    if (stateProperty == States::PROPERTY_PRIORITY)
+    if (stateProperty == States::PROPERTY_PRIORITY) {
+        std::cout << "state : parsePriority" << std::endl;
         parsePriority(node, scope, stateBlock);
-    else if (stateProperty == _extraStateNames[0])
+    }
+    else if (stateProperty == _extraStateNames[0]) {
+        std::cout << "state : parseBlendingMode" << std::endl;
         parseBlendingMode(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_BLENDING_SOURCE)
-        parseBlendingSource(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_BLENDING_DESTINATION)
+    }
+    else if (stateProperty == States::PROPERTY_BLENDING_SOURCE) {
+        std::cout << "state : parseBlendingSource" << std::endl;
+        parseBlendingSource(node, scope, stateBlock);   
+    }
+    else if (stateProperty == States::PROPERTY_BLENDING_DESTINATION) {
+        std::cout << "state : parseBlendingDestination" << std::endl;
         parseBlendingDestination(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_ZSORTED)
+    }
+    else if (stateProperty == States::PROPERTY_ZSORTED) {
+        std::cout << "state : parseZsort" << std::endl;
         parseZSort(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_COLOR_MASK)
+    }
+    else if (stateProperty == States::PROPERTY_COLOR_MASK) {
+        std::cout << "state : parseColorMask" << std::endl;
         parseColorMask(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_DEPTH_MASK)
+    }
+    else if (stateProperty == States::PROPERTY_DEPTH_MASK) {
+        std::cout << "state : parseDepthMask" << std::endl;
         parseDepthMask(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_DEPTH_FUNCTION)
+    }
+    else if (stateProperty == States::PROPERTY_DEPTH_FUNCTION) {
+        std::cout << "state : parseDepthFunction" << std::endl;
         parseDepthFunction(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_TRIANGLE_CULLING)
+    }
+    else if (stateProperty == States::PROPERTY_TRIANGLE_CULLING) {
+        std::cout << "state : parseTriangleCulling" << std::endl;
         parseTriangleCulling(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_FUNCTION)
+    }
+    else if (stateProperty == States::PROPERTY_STENCIL_FUNCTION) {
+        std::cout << "state : parseStencilMask" << std::endl;
         parseStencilFunction(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_REFERENCE)
+    }
+    else if (stateProperty == States::PROPERTY_STENCIL_REFERENCE) {
+        std::cout << "state : parseStencilReference" << std::endl;
         parseStencilReference(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_MASK)
+    }
+    else if (stateProperty == States::PROPERTY_STENCIL_MASK) {
+        std::cout << "state : parseStencilMask" << std::endl;
         parseStencilMask(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_FAIL_OPERATION)
+    }
+    else if (stateProperty == States::PROPERTY_STENCIL_FAIL_OPERATION) {
+        std::cout << "state : parseStencilFailOperation" << std::endl;
         parseStencilFailOperation(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_ZFAIL_OPERATION)
+    }
+    else if (stateProperty == States::PROPERTY_STENCIL_ZFAIL_OPERATION) {
+        std::cout << "state : parseStencilZFailOperation" << std::endl;
         parseStencilZFailOperation(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_ZPASS_OPERATION)
+    }
+    else if (stateProperty == States::PROPERTY_STENCIL_ZPASS_OPERATION) {
+        std::cout << "state : parseStencilZPassOperation" << std::endl;
         parseStencilZPassOperation(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_SCISSOR_TEST)
+    }
+    else if (stateProperty == States::PROPERTY_SCISSOR_TEST) {
+        std::cout << "state : parseScissorTest" << std::endl;
         parseScissorTest(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_SCISSOR_BOX)
+    }
+    else if (stateProperty == States::PROPERTY_SCISSOR_BOX) {
+        std::cout << "state : parseScissorBox" << std::endl;
         parseScissorBox(node, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_TARGET)
+    }
+    else if (stateProperty == States::PROPERTY_TARGET) {
+        std::cout << "state : parseTarget" << std::endl;
         parseTarget(node, scope, stateBlock);
+    }
 }
 
 void
@@ -1065,8 +1090,10 @@ EffectParser::parseBlendingMode(const JSON2::json&	node,
                                 const Scope&        scope,
                                 StateBlock&         stateBlock)
 {
+    std::cout << "blending mode function" << std::endl;
     if (node.is_array())
     {
+        std::cout << "blending mode is array : " << node.dump() << std::endl;
         auto blendingSrcString = node[0].get<std::string>();
         if (_blendingSourceMap.count(blendingSrcString))
             stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(_blendingSourceMap.at(blendingSrcString)));
@@ -1077,6 +1104,7 @@ EffectParser::parseBlendingMode(const JSON2::json&	node,
     }
     else if (node.is_string())
     {
+        std::cout << "blending mode is string : " << node.dump() << std::endl;
         auto blendingModeString = node.get<std::string>();
 
         if (_blendingModeMap.count(blendingModeString))
@@ -1328,8 +1356,9 @@ EffectParser::parseTarget(const JSON2::json&    node,
         auto width = 0;
         auto height = 0;
 
-        if (node.find("size") == node.end())
-            width = height = (unsigned int)std::stoi(node.value("size", "0"));
+        if (!node.value("size", JSON2::json()).empty()) {
+            width = height = (unsigned int)node.value("size", JSON2::json()).get<int>();
+        }
         else
         {
             if (node.find("width") == node.end() || node.find("height") == node.end())
@@ -1342,9 +1371,8 @@ EffectParser::parseTarget(const JSON2::json&    node,
                     )
                 );
             }
-
-            width = (unsigned int)std::stoi(node.value("width", "0"));
-            height = (unsigned int)std::stoi(node.value("height", "0"));
+            width = (unsigned int)node.value("width", JSON2::json()).get<int>();
+            height = (unsigned int)node.value("height", JSON2::json()).get<int>();
         }
 
         const bool isCubeTexture = node.value("isCube", JSON2::json()).is_boolean() ? true : false;
