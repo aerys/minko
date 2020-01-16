@@ -74,18 +74,8 @@
                         "STREAMED_TEXTURE_LOD_BLENDING_ENABLED" : { "binding" : { "property" : "streamedTextureLodBlendingPeriod", "source" : "root" } },
                         "VERTEX_POP_PROTECTED"      : "geometry[${geometryUuid}].popProtected"
                     },
-                    "vertexShader" : "
-                        void main(void)
-                        {
-                            gl_Position = vec4(1.0);
-                        }
-                    ",
-                    "fragmentShader" : "
-                        void main(void)
-                        {
-                            gl_FragColor = vec4(1.0);
-                        }
-                    "
+                    "vertexShader" : "void main(void){gl_Position = vec4(1.0);}",
+                    "fragmentShader" : "void main(void){gl_FragColor = vec4(1.0);}"
         		}
             ]
     	}

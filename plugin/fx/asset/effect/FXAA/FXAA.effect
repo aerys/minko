@@ -20,73 +20,8 @@
 
 	"techniques" : [{
     	"passes"	: [{
-			"vertexShader" : "
-				#ifdef GL_ES
-					#ifdef GL_FRAGMENT_PRECISION_HIGH
-					    precision highp float;
-					#else
-					    precision mediump float;
-					#endif
-				#endif
-
-				#pragma include \"FXAA.function.glsl\"
-
-				attribute vec3 aPosition;
-				attribute vec2 aUV;
-
-				uniform vec2 uResolution;
-
-				varying vec2 vRGBNW;
-				varying vec2 vRGBNE;
-				varying vec2 vRGBSW;
-				varying vec2 vRGBSE;
-				varying vec2 vRGBM;
-				varying vec2 vUV;
-
-				void main(void)
-				{
-					vec4 position = vec4(aPosition, 1) * vec4(1., -1., 1., 0.5);
-
-					vUV = position.xy + 0.5;
-   					// vUV.y = 1.0 - vUV.y;
-					//vUV = aUV;
-
-					vec2 fragCoord = vUV * uResolution;
-					fxaa_texcoords(fragCoord, uResolution, vRGBNW, vRGBNE, vRGBSW, vRGBSE, vRGBM);
-
-					gl_Position = position;
-				}
-			",
-			"fragmentShader" : "
-				#ifdef GL_ES
-					#ifdef GL_FRAGMENT_PRECISION_HIGH
-						precision highp float;
-					#else
-						precision mediump float;
-					#endif
-				#endif
-
-				#pragma include \"FXAA.function.glsl\"
-
-				uniform sampler2D uTextureSampler;
-
-				varying vec2 vRGBNW;
-				varying vec2 vRGBNE;
-				varying vec2 vRGBSW;
-				varying vec2 vRGBSE;
-				varying vec2 vRGBM;
-				varying vec2 vUV;
-
-				uniform vec2 uResolution;
-
-				void main(void)
-				{
-					vec2 fragCoord = vUV * uResolution;
-
-					//gl_FragColor = vec4(vUV, 0.0, 1.0);
-					gl_FragColor = fxaa(uTextureSampler, fragCoord, uResolution, vRGBNW, vRGBNE, vRGBSW, vRGBSE, vRGBM);
-				}
-			"
+			"vertexShader" : "#ifdef GL_ES #ifdef GL_FRAGMENT_PRECISION_HIGH precision highp float;#else precision mediump float;#endif #endif #pragma include \"FXAA.function.glsl\" attribute vec3 aPosition;attribute vec2 aUV;uniform vec2 uResolution;varying vec2 vRGBNW;varying vec2 vRGBNE;varying vec2 vRGBSW;varying vec2 vRGBSE;varying vec2 vRGBM;varying vec2 vUV;void main(void){vec4 position = vec4(aPosition, 1) * vec4(1., -1., 1., 0.5);vUV = position.xy + 0.5;vec2 fragCoord = vUV * uResolution;fxaa_texcoords(fragCoord, uResolution, vRGBNW, vRGBNE, vRGBSW, vRGBSE, vRGBM);gl_Position = position;}",
+			"fragmentShader" : "#ifdef GL_ES #ifdef GL_FRAGMENT_PRECISION_HIGH precision highp float;#else precision mediump float;#endif #endif #pragma include \"FXAA.function.glsl\" uniform sampler2D uTextureSampler;varying vec2 vRGBNW;varying vec2 vRGBNE;varying vec2 vRGBSW;varying vec2 vRGBSE;varying vec2 vRGBM;varying vec2 vUV;uniform vec2 uResolution;void main(void){vec2 fragCoord = vUV * uResolution;gl_FragColor = fxaa(uTextureSampler, fragCoord, uResolution, vRGBNW, vRGBNE, vRGBSW, vRGBSE, vRGBM);}"
 		}]
 	}]
 }
