@@ -567,8 +567,9 @@ EffectParser::parseDefaultValueSamplerStates(const JSON2::json&    node,
     if (!node.is_object())
         return;
 
-    if (node.find("default") == node.end())
+    if (node.find("default") == node.end()) {
         return;
+    }
 
     auto defaultValueNode = node.value("default", JSON2::json());
 
@@ -656,7 +657,7 @@ EffectParser::parseDefaultValueVectorArray(const JSON2::json&    defaultValueNod
         // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[i].get<bool>();
+            value[i] = defaultValueNode[i].get<int>();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -706,7 +707,7 @@ EffectParser::parseDefaultValueVectorObject(const JSON2::json&    defaultValueNo
         // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[offsets[i]].get<bool>();
+            value[i] = defaultValueNode[offsets[i]].get<int>();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -963,11 +964,11 @@ EffectParser::parseStates(const JSON2::json& node, const Scope& scope, StateBloc
             else if (std::find(_extraStateNames.begin(), _extraStateNames.end(), item.key()) != _extraStateNames.end())
             {
                 // Parse extra states
-                if (item == EXTRA_PROPERTY_BLENDING_MODE)
+                if (item.key() == EXTRA_PROPERTY_BLENDING_MODE)
                 {
                     parseBlendingMode(statesNode[item.key()], scope, stateBlock);
                 }
-                else if (item == EXTRA_PROPERTY_STENCIL_TEST)
+                else if (item.key() == EXTRA_PROPERTY_STENCIL_TEST)
                 {
                     parseStencilState(statesNode[item.key()], scope, stateBlock);
                 }
@@ -1085,7 +1086,6 @@ EffectParser::parseBlendingMode(const JSON2::json&	node,
     else if (node.is_string())
     {
         auto blendingModeString = node.get<std::string>();
-
         if (_blendingModeMap.count(blendingModeString))
         {
             auto blendingMode = _blendingModeMap.at(blendingModeString);
