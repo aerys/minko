@@ -145,7 +145,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 				"uFlares"		: { "textureFilter" : "linear" }
 			},
 			"vertexShader" : "#pragma include('AnamorphicLensFlare.vertex.glsl')",
-			"fragmentShader" : "#ifdef GL_ES precision mediump float;#endif uniform sampler2D uBackbuffer;uniform sampler2D uFlares;varying vec2 vTexcoord;void main(void){gl_FragColor = texture2D(uBackbuffer, vTexcoord) + texture2D(uFlares, vTexcoord);}"
+			"fragmentShader" : "
+				#ifdef GL_ES
+				precision mediump float;
+				#endif
+				
+				uniform sampler2D uBackbuffer;
+				uniform sampler2D uFlares;
+				
+				varying vec2 vTexcoord;
+				
+				void main(void)
+				{
+					gl_FragColor = texture2D(uBackbuffer, vTexcoord) + texture2D(uFlares, vTexcoord);
+				}
+			"
 		}
 	]
 }

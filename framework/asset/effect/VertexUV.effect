@@ -51,8 +51,80 @@
 		"name"		: "default",
 		"passes" 	: [{
 			"name"			: "uv-pass",
-			"vertexShader" 	: "#ifdef GL_ES #ifdef GL_FRAGMENT_PRECISION_HIGH precision highp float;#else precision mediump float;#endif #endif uniform mat4 uModelToWorldMatrix;uniform mat4 uWorldToScreenMatrix;attribute vec3 aPosition;attribute vec2 aUV;#ifdef SKINNING_NUM_BONES attribute vec4 aBoneWeightsA;attribute vec4 aBoneWeightsB;#endif uniform float uPopLod;uniform float uPopBlendingLod;uniform float uPopFullPrecisionLod;uniform vec3 uPopMinBound;uniform vec3 uPopMaxBound;varying vec2 vertexUV;#pragma include \"Skinning.function.glsl\" #pragma include \"Pop.function.glsl\" void main(void){vec4 pos = vec4(aPosition, 1.0);vertexUV = aUV;#ifdef SKINNING_NUM_BONES pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);#endif // SKINNING_NUM_BONES #ifdef POP_LOD_ENABLED #ifdef POP_BLENDING_ENABLED pos = pop_blend(pos, vec3(0.0), uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound); #else pos = pop_quantify(pos, vec3(0.0), uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);#endif // POP_BLENDING_ENABLED #endif // POP_LOD_ENABLED #ifdef MODEL_TO_WORLD pos = uModelToWorldMatrix * pos;#endif // MODEL_TO_WORLD gl_Position = uWorldToScreenMatrix * pos;}",
-			"fragmentShader" : "#ifdef GL_ES #ifdef GL_FRAGMENT_PRECISION_HIGH precision highp float;#else precision mediump float;#endif #endif varying vec2 vertexUV;void main(void){vec2 uv = fract(vertexUV);gl_FragColor = vec4(uv.x, uv.y, 0.0, 1.0);}"
+			"vertexShader" 	: "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+				uniform mat4 uModelToWorldMatrix;
+				uniform mat4 uWorldToScreenMatrix;
+
+				attribute vec3 aPosition;
+				attribute vec2 aUV;
+
+				#ifdef SKINNING_NUM_BONES
+				attribute vec4 aBoneWeightsA;
+				attribute vec4 aBoneWeightsB;
+				#endif
+
+				uniform float uPopLod;
+				uniform float uPopBlendingLod;
+				uniform float uPopFullPrecisionLod;
+				uniform vec3 uPopMinBound;
+				uniform vec3 uPopMaxBound;
+
+				varying vec2 vertexUV;
+
+				#pragma include \"Skinning.function.glsl\"
+			    #pragma include \"Pop.function.glsl\"
+
+				void main(void)
+				{
+					vec4 pos = vec4(aPosition, 1.0);
+					
+					vertexUV = aUV;
+					
+					#ifdef SKINNING_NUM_BONES
+						pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);
+					#endif // SKINNING_NUM_BONES
+					
+    				#ifdef POP_LOD_ENABLED
+    				    #ifdef POP_BLENDING_ENABLED
+    				        pos = pop_blend(pos, vec3(0.0), uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, 				uPopMaxBound);
+    				    #else
+    				        pos = pop_quantify(pos, vec3(0.0), uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+    				    #endif // POP_BLENDING_ENABLED
+    				#endif // POP_LOD_ENABLED
+
+					#ifdef MODEL_TO_WORLD
+						pos = uModelToWorldMatrix * pos;
+					#endif // MODEL_TO_WORLD
+
+					gl_Position = uWorldToScreenMatrix * pos;
+				}
+			",
+			"fragmentShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+				varying vec2 vertexUV;
+
+				void main(void)
+				{
+                    vec2 uv = fract(vertexUV);
+
+					gl_FragColor = vec4(uv.x, uv.y, 0.0, 1.0);
+				}
+			"
 		}]
 	}]
 }

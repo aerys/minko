@@ -34,9 +34,69 @@
                         }
                     },
 
-                    "vertexShader"      : "attribute vec3 aPosition;attribute vec2 aUV;varying vec2 vVertexUV;void main(void){vVertexUV = vec2(aUV.x, 1.0 - aUV.y);gl_Position = vec4(aPosition, 1.0) * vec4(1.0, 1.0, 1.0, 0.5);}",
+                    "vertexShader"      :
+                    "
+                        attribute vec3 aPosition;
+                        attribute vec2 aUV;
 
-                    "fragmentShader"    : "#ifdef GL_ES #ifdef GL_FRAGMENT_PRECISION_HIGH precision highp float;#else precision mediump float;#endif #endif uniform vec2 uScreenSpaceLightPosition;uniform sampler2D uBackbuffer;uniform sampler2D uEmissionMap;uniform float uDecay;uniform float uWeight;uniform float uExposure;uniform float uDensity;varying vec2 vVertexUV;void main(){vec4 pixelColor = texture2D(uBackbuffer, vVertexUV.xy);vec4 pixelLight = texture2D(uEmissionMap, vVertexUV.xy);vec2 deltaTextCoord = vec2(vVertexUV.xy - uScreenSpaceLightPosition.xy);vec2 textCoord = vVertexUV.xy;deltaTextCoord *= 1.0 / float(NUM_SAMPLES) * uDensity;float illuminationDecay = 1.0;for (int i = 0; i < NUM_SAMPLES; i++){textCoord -= deltaTextCoord;vec4 sample = texture2D(uEmissionMap, textCoord);sample *= illuminationDecay * uWeight;pixelLight += sample;illuminationDecay *= uDecay;}pixelLight *= uExposure;gl_FragColor = pixelLight + pixelColor;}"
+                        varying vec2 vVertexUV;
+
+                        void main(void)
+                        {
+                            vVertexUV = vec2(aUV.x, 1.0 - aUV.y);
+                            gl_Position = vec4(aPosition, 1.0) * vec4(1.0, 1.0, 1.0, 0.5);
+                        }
+                    ",
+
+                    "fragmentShader"    :
+                    "
+                        #ifdef GL_ES
+                            #ifdef GL_FRAGMENT_PRECISION_HIGH
+                                precision highp float;
+                            #else
+                                precision mediump float;
+                            #endif
+                        #endif
+
+                        uniform vec2 uScreenSpaceLightPosition;
+                        uniform sampler2D uBackbuffer;
+                        uniform sampler2D uEmissionMap;
+
+                        uniform float uDecay;
+                        uniform float uWeight;
+                        uniform float uExposure;
+                        uniform float uDensity;
+
+                        varying vec2 vVertexUV;
+
+                        void main()
+                        {
+                            vec4 pixelColor = texture2D(uBackbuffer, vVertexUV.xy);
+                            vec4 pixelLight = texture2D(uEmissionMap, vVertexUV.xy);
+
+                            vec2 deltaTextCoord = vec2(vVertexUV.xy - uScreenSpaceLightPosition.xy);
+                            vec2 textCoord = vVertexUV.xy;
+                            deltaTextCoord *= 1.0 / float(NUM_SAMPLES) * uDensity;
+                            float illuminationDecay = 1.0;
+
+                            for (int i = 0; i < NUM_SAMPLES; i++)
+                            {
+                                textCoord -= deltaTextCoord;
+                                vec4 sample = texture2D(uEmissionMap, textCoord);
+
+                                sample *= illuminationDecay * uWeight;
+
+                                pixelLight += sample;
+
+                                illuminationDecay *= uDecay;
+                             }
+
+                             pixelLight *= uExposure;
+
+                             // gl_FragColor = pixelLight;
+                             gl_FragColor = pixelLight + pixelColor;
+                        }
+                    "
                 }
             ]
         }

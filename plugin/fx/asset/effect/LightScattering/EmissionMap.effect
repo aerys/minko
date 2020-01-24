@@ -76,7 +76,16 @@
                     },
 
                     "vertexShader" : "#pragma include \"../Basic.vertex.glsl\"",
-                    "fragmentShader" : "uniform int uIsLightSource;void main(){gl_FragColor = vec4(vec3(float(uIsLightSource)), 1.0);}"
+
+                    "fragmentShader" :
+                    "
+                        uniform int uIsLightSource;
+
+                        void main()
+                        {
+                            gl_FragColor = vec4(vec3(float(uIsLightSource)), 1.0);
+                        }
+                    "
                 }
             ]
         }

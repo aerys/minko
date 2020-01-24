@@ -97,7 +97,26 @@
 				"uBurst"		: { "textureFilter" : "linear" }
 			},
 			"vertexShader" : "#pragma include('PseudoLensFlare.vertex.glsl')",
-			"fragmentShader" : "#ifdef GL_ES precision mediump float;#endif uniform sampler2D uBackbuffer;uniform sampler2D uFeatures;uniform sampler2D uDirt;uniform sampler2D uBurst;uniform float uArtefactsScale;varying vec2 vTexcoord;void main(void){gl_FragColor = texture2D(uFeatures, vTexcoord) * (texture2D(uDirt, vTexcoord) + texture2D(uBurst, vTexcoord)) * vec4(vec3(uArtefactsScale), 1.0);gl_FragColor += texture2D(uBackbuffer, vTexcoord);}"
+			"fragmentShader" : "
+				#ifdef GL_ES
+				precision mediump float;
+				#endif
+				
+				uniform sampler2D uBackbuffer;
+				uniform sampler2D uFeatures;
+				uniform sampler2D uDirt;
+				uniform sampler2D uBurst;
+				uniform float uArtefactsScale;
+				
+				varying vec2 vTexcoord;
+				
+				void main(void)
+				{
+					gl_FragColor = texture2D(uFeatures, vTexcoord) * (texture2D(uDirt, vTexcoord) + texture2D(uBurst, vTexcoord))
+						* vec4(vec3(uArtefactsScale), 1.0);
+					gl_FragColor += texture2D(uBackbuffer, vTexcoord);
+				}
+			"
 		}
 	]
 }
