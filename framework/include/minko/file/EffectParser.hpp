@@ -420,6 +420,9 @@ namespace minko
             ShaderPtr
             parseShader(const JSONValue& node, const Scope& scope, render::Shader::Type type);
 
+            std::vector<unsigned char>
+            breakLineRemove(std::vector<unsigned char> &shader);
+
             void
             parseGLSL(const std::string&        glsl,
                       OptionsPtr                options,

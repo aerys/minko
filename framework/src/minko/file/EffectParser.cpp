@@ -155,8 +155,8 @@ EffectParser::parse(const std::string&				    filename,
 
     auto tempData = data;
     tempData.push_back('\n');
- 
-    parsed = JSON2::json::parse(tempData);
+    
+    parsed = JSON2::json::parse(breakLineRemove(tempData));
     _options = options->clone()->loadAsynchronously(false);
 
     int pos	= resolvedFilename.find_last_of("/\\");
@@ -306,7 +306,7 @@ void
 EffectParser::parsePasses(const JSON2::json& node, Scope& scope, std::vector<PassPtr>& passes)
 {
     auto passesNode = node.value("passes", JSON2::json());
-
+    
     if (passesNode.is_array())
     {
         for (auto passNode : passesNode)
@@ -386,8 +386,7 @@ EffectParser::getPassToExtend(const JSON2::json& extendNode)
             {
                 pass = findPassFromEffectFilename(effectFilename, techniqueName, passName);
             });
-            loader->load();
-            
+            loader->load();            
         }
         else
         {
@@ -420,9 +419,9 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
         auto passName = _effectName + "-pass" + std::to_string(scope.passes.size());
         auto nameNode = node.value("name", JSON2::json());
 		auto isForward = true;
-        
 		if (!node.value("extends", JSON2::json()).is_null())
 		{
+
 			auto extendNode = node.value("extends", JSON2::json()); // previously created an empty object if key does not exist
             render::Pass::Ptr pass = getPassToExtend(extendNode);
 			// If a pass "extends" another pass, then we have to merge its properties with the already existing ones
@@ -431,7 +430,6 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
             passScope.macroBlock.bindingMap.bindings.insert(pass->macroBindings().bindings.begin(), pass->macroBindings().bindings.end());
             passScope.macroBlock.bindingMap.types.insert(pass->macroBindings().types.begin(), pass->macroBindings().types.end());
             passScope.stateBlock.bindingMap.bindings.insert(pass->stateBindings().bindings.begin(), pass->stateBindings().bindings.end());
-
             if (pass->attributeBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.attributeBlock.bindingMap.defaultValues.providers().size() == 0)
@@ -474,7 +472,6 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
         parseMacros(node, passScope, passScope.macroBlock);
         parseStates(node, passScope, passScope.stateBlock);
 		if (!node.value("vertexShader", JSON2::json()).empty()) {
-            // function remove line breaks
         	vertexShader = parseShader(node.value("vertexShader", JSON2::json()), passScope, Shader::Type::VERTEX_SHADER);
         }
        /* else if (!vertexShader) {
@@ -1473,6 +1470,15 @@ EffectParser::parseShader(const JSON2::json& node, const Scope& scope, render::S
     blocks->push_front(GLSLBlock(GLSLBlockType::TEXT, ""));
     _shaderToGLSL[shader] = blocks;
     parseGLSL(glsl, _options, blocks, blocks->begin());
+    return shader;
+}
+
+std::vector<unsigned char>
+EffectParser::breakLineRemove(std::vector<unsigned char> &shader)
+{
+    for (size_t i = 0; shader[i] != '\0'; i++)
+        if (shader[i] == '\n')
+            shader[i] = ' ';
     return shader;
 }
 
