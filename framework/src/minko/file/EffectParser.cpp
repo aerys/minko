@@ -991,75 +991,57 @@ EffectParser::parseState(const JSON2::json& node,
                          const std::string& stateProperty)
 {
     if (stateProperty == States::PROPERTY_PRIORITY) {
-        std::cout << "state : parsePriority" << std::endl;
         parsePriority(node, scope, stateBlock);
     }
     else if (stateProperty == _extraStateNames[0]) {
-        std::cout << "state : parseBlendingMode" << std::endl;
         parseBlendingMode(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_BLENDING_SOURCE) {
-        std::cout << "state : parseBlendingSource" << std::endl;
         parseBlendingSource(node, scope, stateBlock);   
     }
     else if (stateProperty == States::PROPERTY_BLENDING_DESTINATION) {
-        std::cout << "state : parseBlendingDestination" << std::endl;
         parseBlendingDestination(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_ZSORTED) {
-        std::cout << "state : parseZsort" << std::endl;
         parseZSort(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_COLOR_MASK) {
-        std::cout << "state : parseColorMask" << std::endl;
         parseColorMask(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_DEPTH_MASK) {
-        std::cout << "state : parseDepthMask" << std::endl;
         parseDepthMask(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_DEPTH_FUNCTION) {
-        std::cout << "state : parseDepthFunction" << std::endl;
         parseDepthFunction(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_TRIANGLE_CULLING) {
-        std::cout << "state : parseTriangleCulling" << std::endl;
         parseTriangleCulling(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_STENCIL_FUNCTION) {
-        std::cout << "state : parseStencilMask" << std::endl;
         parseStencilFunction(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_STENCIL_REFERENCE) {
-        std::cout << "state : parseStencilReference" << std::endl;
         parseStencilReference(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_STENCIL_MASK) {
-        std::cout << "state : parseStencilMask" << std::endl;
         parseStencilMask(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_STENCIL_FAIL_OPERATION) {
-        std::cout << "state : parseStencilFailOperation" << std::endl;
         parseStencilFailOperation(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_STENCIL_ZFAIL_OPERATION) {
-        std::cout << "state : parseStencilZFailOperation" << std::endl;
         parseStencilZFailOperation(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_STENCIL_ZPASS_OPERATION) {
-        std::cout << "state : parseStencilZPassOperation" << std::endl;
         parseStencilZPassOperation(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_SCISSOR_TEST) {
-        std::cout << "state : parseScissorTest" << std::endl;
         parseScissorTest(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_SCISSOR_BOX) {
-        std::cout << "state : parseScissorBox" << std::endl;
         parseScissorBox(node, scope, stateBlock);
     }
     else if (stateProperty == States::PROPERTY_TARGET) {
-        std::cout << "state : parseTarget" << std::endl;
         parseTarget(node, scope, stateBlock);
     }
 }
@@ -1094,10 +1076,8 @@ EffectParser::parseBlendingMode(const JSON2::json&	node,
                                 const Scope&        scope,
                                 StateBlock&         stateBlock)
 {
-    std::cout << "blending mode function" << std::endl;
     if (node.is_array())
     {
-        std::cout << "blending mode is array : " << node.dump() << std::endl;
         auto blendingSrcString = node[0].get<std::string>();
         if (_blendingSourceMap.count(blendingSrcString))
             stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(_blendingSourceMap.at(blendingSrcString)));
@@ -1108,7 +1088,6 @@ EffectParser::parseBlendingMode(const JSON2::json&	node,
     }
     else if (node.is_string())
     {
-        std::cout << "blending mode is string : " << node.dump() << std::endl;
         auto blendingModeString = node.get<std::string>();
         if (_blendingModeMap.count(blendingModeString))
         {
@@ -1417,10 +1396,8 @@ EffectParser::parseBinding(const JSON2::json& node, const Scope& scope, Binding&
 {
     binding.source = Binding::Source::TARGET;
 
-    std::cout << "node = " << node.dump() << std::endl;
     if (node.is_string())
     {
-        std::cout << "parseBinding method if node is_string" << std::endl;
         binding.propertyName = node.get<std::string>();
 		return true;
     }
@@ -1431,7 +1408,6 @@ EffectParser::parseBinding(const JSON2::json& node, const Scope& scope, Binding&
         if (bindingNode.is_string())
         {
             binding.propertyName = bindingNode.get<std::string>();
-            std::cout << "binding.propertyName " << binding.propertyName << std::endl;
 			return true;
         }
         else if (bindingNode.is_object())
