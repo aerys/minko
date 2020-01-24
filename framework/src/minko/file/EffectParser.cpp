@@ -435,7 +435,7 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
             if (pass->attributeBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.attributeBlock.bindingMap.defaultValues.providers().size() == 0)
-                    passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, true);
+                    passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, 1);
 
                 for (auto provider : pass->attributeBindings().defaultValues.providers())
                     passScope.attributeBlock.bindingMap.defaultValues.providers().front()->copyFrom(provider);
@@ -443,7 +443,7 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
             if (pass->uniformBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.uniformBlock.bindingMap.defaultValues.providers().size() == 0)
-                    passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, true);
+                    passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, 1);
 
                 for (auto provider : pass->uniformBindings().defaultValues.providers())
                     passScope.uniformBlock.bindingMap.defaultValues.providers().front()->copyFrom(provider);
@@ -474,12 +474,14 @@ EffectParser::parsePass(const JSON2::json& node, Scope& scope, std::vector<PassP
         parseMacros(node, passScope, passScope.macroBlock);
         parseStates(node, passScope, passScope.stateBlock);
 		if (!node.value("vertexShader", JSON2::json()).empty()) {
+            // function remove line breaks
         	vertexShader = parseShader(node.value("vertexShader", JSON2::json()), passScope, Shader::Type::VERTEX_SHADER);
         }
        /* else if (!vertexShader) {
 			throw std::runtime_error("Missing vertex shader for pass \"" + passName + "\"");
         }*/
 		if (!node.value("fragmentShader", JSON2::json()).empty()) {
+            // function remove line breaks
         	fragmentShader = parseShader(node.value("fragmentShader", JSON2::json()), passScope, Shader::Type::FRAGMENT_SHADER);
         }
 		/*else if (!fragmentShader) {
@@ -647,8 +649,9 @@ EffectParser::parseDefaultValueVectorArray(const JSON2::json&    defaultValueNod
             defaultValues->set(valueName, math::make_vec2<float>(&value[0]));
         else if (size == 3)
             defaultValues->set(valueName, math::make_vec3<float>(&value[0]));
-        else if (size == 4)
+        else if (size == 4) {
             defaultValues->set(valueName, math::make_vec4<float>(&value[0]));
+        }
     }
     else if (defaultValueNode[0].is_boolean())
     {
@@ -762,11 +765,12 @@ EffectParser::parseUniforms(const JSON2::json& node, const Scope& scope, Uniform
     if (uniformsNode.is_object() && uniformsNode != node)
     {
         data::Provider::Ptr defaultValuesProvider;
-
-		if (uniforms.bindingMap.defaultValues.providers().size() != 0)
+		if (uniforms.bindingMap.defaultValues.providers().size() != 0) {
 			defaultValuesProvider = uniforms.bindingMap.defaultValues.providers().front();
+        }
 		else
 		{
+
 			defaultValuesProvider = data::Provider::create();
         	uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 		}
@@ -774,7 +778,6 @@ EffectParser::parseUniforms(const JSON2::json& node, const Scope& scope, Uniform
         {
             auto uniformNode = uniformsNode[item.key()];
 			data::Binding binding;
-
             if (parseBinding(uniformNode, scope, binding)) {
 				uniforms.bindingMap.bindings[item.key()] = binding;
             }
@@ -1393,8 +1396,10 @@ EffectParser::parseBinding(const JSON2::json& node, const Scope& scope, Binding&
 {
     binding.source = Binding::Source::TARGET;
 
+    std::cout << "node = " << node.dump() << std::endl;
     if (node.is_string())
     {
+        std::cout << "parseBinding method if node is_string" << std::endl;
         binding.propertyName = node.get<std::string>();
 		return true;
     }
@@ -1405,7 +1410,7 @@ EffectParser::parseBinding(const JSON2::json& node, const Scope& scope, Binding&
         if (bindingNode.is_string())
         {
             binding.propertyName = bindingNode.get<std::string>();
-
+            std::cout << "binding.propertyName " << binding.propertyName << std::endl;
 			return true;
         }
         else if (bindingNode.is_object())
