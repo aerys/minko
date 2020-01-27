@@ -31,6 +31,8 @@ using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
 
+bool Node::_signalBubblingEnabled = true;
+
 Node::Node() :
     Uuid::enable_uuid(),
 	_name(""),
@@ -92,6 +94,12 @@ Node::cloneNode()
 }
 
 void
+Node::enableSignalBubbling(bool enabled)
+{
+    _signalBubblingEnabled = enabled;
+}
+
+void
 Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, std::map<AbsCmpPtr, AbsCmpPtr>& components)
 {
 	for (auto component : _components)
@@ -132,15 +140,18 @@ Node::layout(Layout layout)
 	{
         _layout = layout;
 
-		// bubble down
-        auto descendants = NodeSet::create(shared_from_this())->descendants(true);
-		for (auto descendant : descendants->nodes())
-			descendant->_layoutChanged.execute(descendant, shared_from_this());
+        if (_signalBubblingEnabled)
+        {
+            // bubble down
+            auto descendants = NodeSet::create(shared_from_this())->descendants(true);
+            for (auto descendant : descendants->nodes())
+                descendant->_layoutChanged.execute(descendant, shared_from_this());
 
-		// bubble up
-		auto ancestors = NodeSet::create(shared_from_this())->ancestors();
-		for (auto ancestor : ancestors->nodes())
-			ancestor->_layoutChanged.execute(ancestor, shared_from_this());
+            // bubble up
+            auto ancestors = NodeSet::create(shared_from_this())->ancestors();
+            for (auto ancestor : ancestors->nodes())
+                ancestor->_layoutChanged.execute(ancestor, shared_from_this());
+        }
 	}
 
 	return shared_from_this();
@@ -157,15 +168,18 @@ Node::addChild(Node::Ptr child)
 	child->_parent = shared_from_this();
 	child->updateRoot();
 
-	// bubble down
-	auto descendants = NodeSet::create(child)->descendants(true);
-	for (auto descendant : descendants->nodes())
-		descendant->_added.execute(descendant, child, shared_from_this());
+    if (_signalBubblingEnabled)
+    {
+        // bubble down
+        auto descendants = NodeSet::create(child)->descendants(true);
+        for (auto descendant : descendants->nodes())
+            descendant->_added.execute(descendant, child, shared_from_this());
 
-	// bubble up
-	auto ancestors = NodeSet::create(shared_from_this())->ancestors(true);
-	for (auto ancestor : ancestors->nodes())
-		ancestor->_added.execute(ancestor, child, shared_from_this());
+        // bubble up
+        auto ancestors = NodeSet::create(shared_from_this())->ancestors(true);
+        for (auto ancestor : ancestors->nodes())
+            ancestor->_added.execute(ancestor, child, shared_from_this());
+    }
 
 	return shared_from_this();
 }
@@ -183,15 +197,18 @@ Node::removeChild(Node::Ptr child)
 	child->_parent.reset();
 	child->updateRoot();
 
-	// bubble down
-    auto descendants = NodeSet::create(child)->descendants(true);
-	for (auto descendant : descendants->nodes())
-		descendant->_removed.execute(descendant, child, shared_from_this());
+    if (_signalBubblingEnabled)
+    {
+        // bubble down
+        auto descendants = NodeSet::create(child)->descendants(true);
+        for (auto descendant : descendants->nodes())
+            descendant->_removed.execute(descendant, child, shared_from_this());
 
-	// bubble up
-	auto ancestors = NodeSet::create(shared_from_this())->ancestors(true);
-	for (auto ancestor : ancestors->nodes())
-		ancestor->_removed.execute(ancestor, child, shared_from_this());
+        // bubble up
+        auto ancestors = NodeSet::create(shared_from_this())->ancestors(true);
+        for (auto ancestor : ancestors->nodes())
+            ancestor->_removed.execute(ancestor, child, shared_from_this());
+    }
 
 	return shared_from_this();
 }
@@ -227,15 +244,18 @@ Node::addComponent(std::shared_ptr<AbstractComponent> component)
 	_components.push_back(component);
 	component->target(shared_from_this());
 
-	// bubble down
-	auto descendants = NodeSet::create(shared_from_this())->descendants(true);
-	for (auto descendant : descendants->nodes())
-		descendant->_componentAdded.execute(descendant, shared_from_this(), component);
+    if (_signalBubblingEnabled)
+    {
+        // bubble down
+        auto descendants = NodeSet::create(shared_from_this())->descendants(true);
+        for (auto descendant : descendants->nodes())
+            descendant->_componentAdded.execute(descendant, shared_from_this(), component);
 
-	// bubble up
-	auto ancestors = NodeSet::create(shared_from_this())->ancestors();
-	for (auto ancestor : ancestors->nodes())
-		ancestor->_componentAdded.execute(ancestor, shared_from_this(), component);
+        // bubble up
+        auto ancestors = NodeSet::create(shared_from_this())->ancestors();
+        for (auto ancestor : ancestors->nodes())
+            ancestor->_componentAdded.execute(ancestor, shared_from_this(), component);
+    }
 
 	return shared_from_this();
 }
@@ -254,14 +274,17 @@ Node::removeComponent(std::shared_ptr<AbstractComponent> component)
 	_components.erase(it);
     component->target(nullptr);
 
-	// bubble down
-	auto descendants = NodeSet::create(shared_from_this())->descendants(true);
-	for (auto descendant : descendants->nodes())
-		descendant->_componentRemoved.execute(descendant, shared_from_this(), component);
+    if (_signalBubblingEnabled)
+    {
+        // bubble down
+        auto descendants = NodeSet::create(shared_from_this())->descendants(true);
+        for (auto descendant : descendants->nodes())
+            descendant->_componentRemoved.execute(descendant, shared_from_this(), component);
 
-	// bubble up
-	for (Ptr ancestor = parent(); ancestor != nullptr; ancestor = ancestor->parent())
-		ancestor->_componentRemoved.execute(ancestor, shared_from_this(), component);
+        // bubble up
+        for (Ptr ancestor = parent(); ancestor != nullptr; ancestor = ancestor->parent())
+            ancestor->_componentRemoved.execute(ancestor, shared_from_this(), component);
+    }
 
 	return shared_from_this();
 }
