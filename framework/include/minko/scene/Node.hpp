@@ -54,6 +54,8 @@ namespace minko
 			Signal<Ptr, Ptr, AbsCmpPtr>		_componentAdded;
 			Signal<Ptr, Ptr, AbsCmpPtr>		_componentRemoved;
 
+            static bool _signalBubblingEnabled;
+
 		public:
             ~Node()
             {
@@ -119,6 +121,10 @@ namespace minko
 
                 return node;
             }
+
+            static
+            void
+            enableSignalBubbling(bool enabled);
 
 			Ptr
 			clone(const CloneOption& option);

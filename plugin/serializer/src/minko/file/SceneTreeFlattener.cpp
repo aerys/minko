@@ -49,9 +49,15 @@ SceneTreeFlattener::process(Node::Ptr& node, AssetLibrary::Ptr assetLibrary)
 
     auto retargetedSurfaces = std::list<RetargetedSurface>();
 
+    // Turn off signal bubbling for performance reasons.
+    Node::enableSignalBubbling(false);
+
     collapseNode(node, nullptr, node, retargetedSurfaces);
 
     patchNode(node, retargetedSurfaces);
+
+    // Turn signal bubbling back on.
+    Node::enableSignalBubbling(true);
 
     _progressRate = 1.f;
 
