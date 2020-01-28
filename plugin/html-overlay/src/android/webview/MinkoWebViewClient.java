@@ -61,9 +61,6 @@ public class MinkoWebViewClient extends WebViewClient
 
             Log.i("minko-java", "[MinkoWebViewClient] Page has FINISHED to load (url: " + url + ").");
         }
-
-
-
     }
 
     private void injectScriptFile(WebView view, String scriptFile)

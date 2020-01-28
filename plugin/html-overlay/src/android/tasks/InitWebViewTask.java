@@ -23,6 +23,7 @@ import android.webkit.CookieManager;
 import android.view.ViewGroup.OnHierarchyChangeListener;
 import android.view.Surface;
 import org.libsdl.app.*;
+import minko.plugin.htmloverlay.MinkoWebChromeClient;
 
 public class InitWebViewTask implements Runnable
 {
@@ -53,8 +54,9 @@ public class InitWebViewTask implements Runnable
         _webView.setRenderer(_minkoWebViewRenderer);
 
         // Enable the JS for the WebView
+
         _webView.getSettings().setJavaScriptEnabled(true);
-        WebChromeClient wcc = new WebChromeClient();
+        WebChromeClient wcc = new MinkoWebChromeClient();
         _webView.setWebChromeClient(wcc);
 
         // Set our own WebViewClient to override some
