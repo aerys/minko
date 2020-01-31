@@ -423,6 +423,9 @@ namespace minko
             std::vector<unsigned char>
             breakLineRemove(std::vector<unsigned char> &shader);
 
+            std::string
+            breakLineUndo(const std::string &node);
+
             void
             parseGLSL(const std::string&        glsl,
                       OptionsPtr                options,
