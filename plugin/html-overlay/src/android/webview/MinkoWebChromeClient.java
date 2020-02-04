@@ -10,7 +10,9 @@ final class MinkoWebChromeClient extends WebChromeClient
 {
     @Override
     public void onPermissionRequest(PermissionRequest request) {
-        String[] permissions = {PermissionRequest.RESOURCE_VIDEO_CAPTURE};
+        // Allow HTML5 Camera API.
+        String[] permissions = { PermissionRequest.RESOURCE_VIDEO_CAPTURE };
+
         request.grant(permissions);
     }
 }
