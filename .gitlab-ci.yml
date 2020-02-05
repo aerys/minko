@@ -2,8 +2,8 @@ stages:
   - build
   - test
   - archive
-  - trigger
   - release
+  - trigger
 
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
