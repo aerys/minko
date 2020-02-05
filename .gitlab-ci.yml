@@ -3,6 +3,7 @@ stages:
   - test
   - archive
   - trigger
+  - release
 
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
@@ -184,6 +185,15 @@ archive:windows64_offscreen:
     ARCHIVE_NAME: ${CI_PROJECT_NAME}-windows64_offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
     - build:windows64_offscreen
+
+release:
+  stage: release
+  image: registry.aerys.in/aerys/gitlab-flow-release:latest
+  only:
+    - tags
+  variables:
+    GIT_STRATEGY: none
+  script: gitlab-flow-release --private-token "${RELEASE_PRIVATE_TOKEN}" release
 
 trigger:
   stage: trigger
