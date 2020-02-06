@@ -1472,7 +1472,7 @@ EffectParser::breakLineRemove(std::vector<unsigned char> &shader)
         if (i > 0 && shader[i] == '"' && shader[i - 1] != '\\')
             quote++;
         if (shader[i] == '\n' && quote % 2 == 1)
-            shader[i] = '@'; // 31 stand for US (Unit Separator in ASCII TABLE for 1Byte)
+            shader[i] = 127; // 127 stand for DEL char in ASCII table for 1 Byte
     }
     return shader;
 }
@@ -1483,7 +1483,7 @@ EffectParser::breakLineUndo(const std::string &node)
     std::string stringNode(node);
 
     for (size_t i = 0; stringNode[i] != '\0'; i++) {
-        if (stringNode[i] == '@')
+        if (stringNode[i] == 127)
             stringNode[i] = '\n';
     }
     return stringNode;
