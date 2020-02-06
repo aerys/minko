@@ -156,6 +156,11 @@ EffectParser::parse(const std::string&				    filename,
     auto tempData = data;
     tempData.push_back('\n');
     
+    /* 
+        We do remove every \n character from tempDate before giving it to the JSON parser,
+       JSON implementation forbide line return or any other break inside a string value,
+       find the full discuss about it here : https://git.aerys.in/aerys/smartshape-engine/issues/193 
+    */
     parsed = JSON::json::parse(breakLineRemove(tempData));
     _options = options->clone()->loadAsynchronously(false);
 
@@ -1451,9 +1456,11 @@ EffectParser::parseMacroBinding(const JSON::json& node, const Scope& scope, Macr
 render::Shader::Ptr
 EffectParser::parseShader(const JSON::json& node, const Scope& scope, render::Shader::Type type)
 {
-    /*if (!node.is_string())
-        throw;*/
-    
+    /*
+        Undo the breakLine removal made for the JSON parser,
+        for the compilation of the shaders and glsl code,
+        find the full discuss about it : https://git.aerys.in/aerys/smartshape-engine/issues/193
+    */
     std::string glsl = breakLineUndo(node.get<std::string>());
     auto shader = Shader::create(_options->context(), type, glsl);
     auto blocks = std::shared_ptr<GLSLBlockList>(new GLSLBlockList());
