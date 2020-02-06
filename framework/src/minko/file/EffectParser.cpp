@@ -1467,7 +1467,7 @@ std::vector<unsigned char>
 EffectParser::breakLineRemove(std::vector<unsigned char> &shader)
 {
     size_t quote = 0;
-
+    
     for (size_t i = 0; shader[i] != '\0'; i++) {
         if (i > 0 && shader[i] == '"' && shader[i - 1] != '\\')
             quote++;
@@ -1482,9 +1482,10 @@ EffectParser::breakLineUndo(const std::string &node)
 {
     std::string stringNode(node);
 
-    for (size_t i = 0; stringNode[i] != '\0'; i++)
+    for (size_t i = 0; stringNode[i] != '\0'; i++) {
         if (stringNode[i] == '@')
             stringNode[i] = '\n';
+    }
     return stringNode;
 }
 
