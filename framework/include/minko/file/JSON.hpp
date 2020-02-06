@@ -28,10 +28,6 @@ namespace minko
     {
         namespace JSON
         {
-            using namespace Json;
-        }
-        namespace JSON2
-        {
             using namespace nlohmann;
         }
     }

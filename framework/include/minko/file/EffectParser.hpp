@@ -61,7 +61,7 @@ namespace minko
             typedef std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>  LoaderCompleteSlotMap;
             typedef std::unordered_map<LoaderPtr, LoaderErrorSlot>          LoaderErrorSlotMap;
 
-            typedef minko::file::JSON2::json                              JSONValue;
+            typedef minko::file::JSON::json                              JSONValue;
 
             enum class GLSLBlockType
             {
