@@ -109,17 +109,19 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
     if (nativeEventIsCopy)
         env->ReleaseStringUTFChars(eventData, rawNativeEvent);
 
-    JSON::Value root;
-    JSON::Reader reader;
+    JSON::json root;
+    //JSON::Reader reader;
 
-    if (!reader.parse(nativeEvent.data(), root, false))
+    /*if (!reader.parse(nativeEvent.data(), root, false))
     {
         LOG_ERROR(reader.getFormattedErrorMessages().c_str());
 
         return;
-    }
+    }*/
+    root = JSON::json::parse(nativeEvent.data());
 
-    auto type = root.get("type", "unknown").asString();
+    //auto type = root.get("type", "unknown").asString();
+    auto type = root.value("type", JSON::json()).get<std::string>();
     auto target = AndroidWebViewDOMElement::getDOMElement(nativeAccessor, AndroidWebViewDOMEngine::currentEngine);
 
     if (type == "input" || type == "change")
@@ -143,18 +145,22 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
     else if (type.substr(0, 5) == "touch")
     {
         // Parse touches
-        auto touches = root.get("changedTouches", 0);
+        //auto touches = root.get("changedTouches", 0);
+        auto touches = root.value("changedTouches", JSON::json());
 
-        if (touches.isArray())
+        if (touches.is_array())
         {
             for (auto touch : touches)
             {
                 // Touch event
                 auto touchEvent = AndroidWebViewDOMTouchEvent::create(type, target);
 
-                touchEvent->clientX(touch.get("clientX", 0).asInt());
+                /*touchEvent->clientX(touch.get("clientX", 0).asInt());
                 touchEvent->clientY(touch.get("clientY", 0).asInt());
-                touchEvent->identifier(touch.get("identifier", 0).asInt());
+                touchEvent->identifier(touch.get("identifier", 0).asInt());*/
+                touchEvent->clientX(touch.value("clientX", JSON::json()).get<int>());
+                touchEvent->clientY(touch.value("clientY", JSON::json()).get<int>());
+                touchEvent->identifier(touch.value("identifier", JSON::json()).get<int>());
 
                 AndroidWebViewDOMEngine::events.push_back(touchEvent);
 
@@ -163,10 +169,14 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
 
                 mouseEvent->clientX(touchEvent->clientX());
                 mouseEvent->clientY(touchEvent->clientY());
-                mouseEvent->pageX(root.get("pageX", 0).asInt());
+                /*mouseEvent->pageX(root.get("pageX", 0).asInt());
                 mouseEvent->pageY(root.get("pageY", 0).asInt());
                 mouseEvent->screenX(root.get("screenX", 0).asInt());
-                mouseEvent->screenY(root.get("screenY", 0).asInt());
+                mouseEvent->screenY(root.get("screenY", 0).asInt());*/
+                mouseEvent->pageX(root.value("pageX", JSON::json()).get<int>());
+                mouseEvent->pageY(root.value("pageY", JSON::json()).get<int>());
+                mouseEvent->screenX(root.value("screenX", JSON::json()).get<int>());
+                mouseEvent->screenY(root.value("screenY", JSON::json()).get<int>());
 
                 if (type == "touchstart")
                 {
