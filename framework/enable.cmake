@@ -16,8 +16,7 @@ function (minko_enable_framework target)
         "${MINKO_HOME}/framework/include"
         "${MINKO_HOME}/framework/lib/glm"
         "${MINKO_HOME}/framework/lib/sparsehash/src"
-        "${MINKO_HOME}/framework/lib/jsoncpp/src"
-        "${MINKO_HOME}/framework/lib/jsonmoderncpp"
+        "${MINKO_HOME}/framework/lib/jsonmoderncpp/include"
     )
     if (WIN32)
         list (
