@@ -486,8 +486,7 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
 		/*else if (!fragmentShader) {
 			throw std::runtime_error("Missing fragment shader for pass \"" + passName + "\"");
         }*/
-		if (!node.value("forward", JSON::json()).is_null()) {
-			isForward = node.value("forward", JSON::json()).front();
+		isForward = node.value("forward", isForward);
         }
         if (!isForward)
             checkDeferredPassBindings(passScope);
