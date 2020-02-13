@@ -902,7 +902,7 @@ EffectParser::parseMacros(const JSON::json& node, const Scope& scope, MacroBlock
 			macros.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 		}
 
-        for (auto& item : macrosNode.items())
+        for (const auto& item : macrosNode.items())
         {
             auto macroNode = macrosNode[item.key()];
 			data::MacroBinding binding;
