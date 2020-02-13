@@ -1352,7 +1352,7 @@ EffectParser::parseTarget(const JSON::json&    node,
             height = (unsigned int)node.value("height", JSON::json()).get<int>();
         }
 
-        const bool isCubeTexture = node.value("isCube", JSON::json()).is_boolean() ? true : false;
+        const bool isCubeTexture = node.value("isCube", false);
 
         if (isCubeTexture)
         {
