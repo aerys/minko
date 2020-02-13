@@ -421,10 +421,10 @@ namespace minko
             parseShader(const JSONValue& node, const Scope& scope, render::Shader::Type type);
 
             std::vector<unsigned char>
-            breakLineRemove(std::vector<unsigned char> &shader);
+            replaceBreakLine(std::vector<unsigned char> &shader);
 
             std::string
-            breakLineUndo(const std::string &node);
+            undoBreakLine(const std::string &node);
 
             void
             parseGLSL(const std::string&        glsl,

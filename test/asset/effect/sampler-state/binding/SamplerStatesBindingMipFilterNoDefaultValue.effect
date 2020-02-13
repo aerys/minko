@@ -11,7 +11,14 @@
     "techniques" : [{
         "passes" : [{
             "vertexShader" : "#pragma include \"../../dummy.glsl\"",
-            "fragmentShader" : "uniform sampler2D uDiffuseMap;void main(void){gl_FragColor = texture2D(uDiffuseMap, vec2(0, 0));}"
+            "fragmentShader" : "
+                uniform sampler2D uDiffuseMap;
+
+                void main(void)
+                {
+                    gl_FragColor = texture2D(uDiffuseMap, vec2(0, 0));
+                }
+            "
         }]
     }]
 }

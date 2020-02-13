@@ -431,6 +431,7 @@ Store::doAddProvider(ProviderPtr provider, CollectionPtr collection)
             executePropertySignal(p, collection, propertyName, _propertyChanged, *_propertyNameToChangedSignal);
         }
     ));
+    
     for (const auto& property : provider->values())
         providerPropertyAddedHandler(provider, collection, property.first);
 

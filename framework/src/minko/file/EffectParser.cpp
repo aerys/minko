@@ -157,11 +157,11 @@ EffectParser::parse(const std::string&				    filename,
     tempData.push_back('\n');
     
     /* 
-        We do remove every \n character from tempDate before giving it to the JSON parser,
-       JSON implementation forbide line return or any other break inside a string value,
-       find the full discuss about it here : https://git.aerys.in/aerys/smartshape-engine/issues/193 
+        We do replace every \n with a DEL character from tempData before giving it to the JSON parser,
+       JSON specification forbid line return or any other break inside a string value,
+       find the full discussion about it here : https://git.aerys.in/aerys/smartshape-engine/issues/193 
     */
-    parsed = JSON::json::parse(breakLineRemove(tempData));
+    parsed = JSON::json::parse(replaceBreakLine(tempData));
     _options = options->clone()->loadAsynchronously(false);
 
     int pos	= resolvedFilename.find_last_of("/\\");
@@ -233,6 +233,7 @@ EffectParser::parseConfiguration(const JSON::json& node)
     }
     else
         return true;
+
     return r;
 }
 
@@ -425,7 +426,7 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
 		auto isForward = true;
 		if (!node.value("extends", JSON::json()).is_null())
 		{
-			auto extendNode = node.value("extends", JSON::json()); // previously created an empty object if key does not exist
+			auto extendNode = node.value("extends", JSON::json());
             render::Pass::Ptr pass = getPassToExtend(extendNode);
 			// If a pass "extends" another pass, then we have to merge its properties with the already existing ones
             passScope.attributeBlock.bindingMap.bindings.insert(pass->attributeBindings().bindings.begin(), pass->attributeBindings().bindings.end());
@@ -436,7 +437,7 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
             if (pass->attributeBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.attributeBlock.bindingMap.defaultValues.providers().size() == 0)
-                    passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, 1);
+                    passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, true);
 
                 for (auto provider : pass->attributeBindings().defaultValues.providers())
                     passScope.attributeBlock.bindingMap.defaultValues.providers().front()->copyFrom(provider);
@@ -444,12 +445,12 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
             if (pass->uniformBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.uniformBlock.bindingMap.defaultValues.providers().size() == 0)
-                    passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, 1);
+                    passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, true);
 
                 for (auto provider : pass->uniformBindings().defaultValues.providers())
                     passScope.uniformBlock.bindingMap.defaultValues.providers().front()->copyFrom(provider);
             }
-            if (pass->macroBindings().defaultValues.providers().size() >= 0)
+            if (pass->macroBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.macroBlock.bindingMap.defaultValues.providers().size() == 0)
                     passScope.macroBlock.bindingMap.defaultValues = data::Store(pass->macroBindings().defaultValues, true);
@@ -477,18 +478,16 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
 		if (!node.value("vertexShader", JSON::json()).empty()) {
         	vertexShader = parseShader(node.value("vertexShader", JSON::json()), passScope, Shader::Type::VERTEX_SHADER);
         }
-       /* else if (!vertexShader) {
+        else if (!vertexShader) {
 			throw std::runtime_error("Missing vertex shader for pass \"" + passName + "\"");
-        }*/
+        }
 		if (!node.value("fragmentShader", JSON::json()).empty()) {
         	fragmentShader = parseShader(node.value("fragmentShader", JSON::json()), passScope, Shader::Type::FRAGMENT_SHADER);
         }
-		/*else if (!fragmentShader) {
+		else if (!fragmentShader) {
 			throw std::runtime_error("Missing fragment shader for pass \"" + passName + "\"");
-        }*/
-		if (!node.value("forward", JSON::json()).is_null()) {
-			isForward = node.value("forward", JSON::json()).front();
         }
+		isForward = node.value("forward", isForward);
         if (!isForward)
             checkDeferredPassBindings(passScope);
             passes.push_back(Pass::create(
@@ -546,7 +545,7 @@ EffectParser::parseDefaultValue(const JSON::json&  node,
             throw; // FIXME: support array default values
     }
     else if (defaultValueNode.is_boolean()) {
-        defaultValues->set(valueName, defaultValueNode.get<int>());
+        defaultValues->set(valueName, defaultValueNode.get<bool>() ? 1 : 0);
     }
     else if (defaultValueNode.is_number_integer()) {
         defaultValues->set(valueName, defaultValueNode.get<int>());
@@ -659,7 +658,7 @@ EffectParser::parseDefaultValueVectorArray(const JSON::json&    defaultValueNode
         // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[i].get<int>();
+            value[i] = defaultValueNode[i].get<bool>() ? 1 : 0;
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -709,7 +708,7 @@ EffectParser::parseDefaultValueVectorObject(const JSON::json&    defaultValueNod
         // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[offsets[i]].get<int>();
+            value[i] = defaultValueNode[offsets[i]].get<bool>() ? 1 : 0;
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -903,7 +902,7 @@ EffectParser::parseMacros(const JSON::json& node, const Scope& scope, MacroBlock
 			macros.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 		}
 
-        for (auto& item : macrosNode.items())
+        for (const auto& item : macrosNode.items())
         {
             auto macroNode = macrosNode[item.key()];
 			data::MacroBinding binding;
@@ -1334,7 +1333,7 @@ EffectParser::parseTarget(const JSON::json&    node,
         auto width = 0;
         auto height = 0;
 
-        if (!node.value("size", JSON::json()).empty()) {
+        if (node.find("size") != node.end()) {
             width = height = (unsigned int)node.value("size", JSON::json()).get<int>();
         }
         else
@@ -1353,7 +1352,7 @@ EffectParser::parseTarget(const JSON::json&    node,
             height = (unsigned int)node.value("height", JSON::json()).get<int>();
         }
 
-        const bool isCubeTexture = node.value("isCube", JSON::json()).is_boolean() ? true : false;
+        const bool isCubeTexture = node.value("isCube", false);
 
         if (isCubeTexture)
         {
@@ -1457,11 +1456,11 @@ render::Shader::Ptr
 EffectParser::parseShader(const JSON::json& node, const Scope& scope, render::Shader::Type type)
 {
     /*
-        Undo the breakLine removal made for the JSON parser,
+        Undo the breakLine replacement made for the JSON parser,
         for the compilation of the shaders and glsl code,
-        find the full discuss about it : https://git.aerys.in/aerys/smartshape-engine/issues/193
+        find the full discussion about it : https://git.aerys.in/aerys/smartshape-engine/issues/193
     */
-    std::string glsl = breakLineUndo(node.get<std::string>());
+    std::string glsl = undoBreakLine(node.get<std::string>());
     auto shader = Shader::create(_options->context(), type, glsl);
     auto blocks = std::shared_ptr<GLSLBlockList>(new GLSLBlockList());
     blocks->push_front(GLSLBlock(GLSLBlockType::TEXT, ""));
@@ -1471,7 +1470,7 @@ EffectParser::parseShader(const JSON::json& node, const Scope& scope, render::Sh
 }
 
 std::vector<unsigned char>
-EffectParser::breakLineRemove(std::vector<unsigned char> &shader)
+EffectParser::replaceBreakLine(std::vector<unsigned char> &shader)
 {
     size_t quote = 0;
     
@@ -1485,7 +1484,7 @@ EffectParser::breakLineRemove(std::vector<unsigned char> &shader)
 }
 
 std::string
-EffectParser::breakLineUndo(const std::string &node)
+EffectParser::undoBreakLine(const std::string &node)
 {
     std::string stringNode(node);
 
