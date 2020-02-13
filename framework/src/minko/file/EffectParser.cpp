@@ -658,7 +658,7 @@ EffectParser::parseDefaultValueVectorArray(const JSON::json&    defaultValueNode
         // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[i].get<int>();
+            value[i] = defaultValueNode[i].get<bool>() ? 1 : 0;
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
