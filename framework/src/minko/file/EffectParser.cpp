@@ -1333,7 +1333,7 @@ EffectParser::parseTarget(const JSON::json&    node,
         auto width = 0;
         auto height = 0;
 
-        if (!node.value("size", JSON::json()).empty()) {
+        if (node.find("size") != node.end()) {
             width = height = (unsigned int)node.value("size", JSON::json()).get<int>();
         }
         else
