@@ -100,10 +100,12 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
                            data::Store&             targetData)
 {
     const auto& technique = effect->technique(techniqueName);
+
     _batchId++;
     for (const auto& pass : technique)
     {
         DrawCall* drawCall = new DrawCall(_batchId, pass, variables, rootData, rendererData, targetData);
+
         initializeDrawCall(*drawCall);
 
         // if the draw call is meant only for post-processing, then it should only exist once
@@ -383,12 +385,15 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall, bool forceRebind)
     const auto& variables = variablesChanged
         ? newVariables
         : drawCall.variables();
+
     auto pass = drawCall.pass();
+
     auto programAndSignature = pass->selectProgram(
         variables, drawCall.targetData(), drawCall.rendererData(), drawCall.rootData()
     );
 
     auto program = programAndSignature.first;
+
     if (program == drawCall.program())
     {
         if (variablesChanged)
@@ -434,6 +439,7 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
 {
     if (!forceRebind && _invalidDrawCalls.find(&drawCall) != _invalidDrawCalls.end())
         return;
+
     data::ResolvedBinding* resolvedBinding = drawCall.bindUniform(
         input, uniformBindingMap.bindings, uniformBindingMap.defaultValues
     );
@@ -775,6 +781,7 @@ void
 DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr program, bool forceRebind)
 {
     drawCall.bind(program);
+
     // bind attributes
     // FIXME: like for uniforms, watch and swap default values / binding value
     for (const auto& input : program->inputs().attributes())

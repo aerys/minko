@@ -296,11 +296,13 @@ EffectParser::parseTechniques(const JSON::json& node, Scope& scope, Techniques& 
                     : _effectName + "-technique-" + std::to_string(techniques.size());
 
             Scope techniqueScope(scope, scope);
+
             parseAttributes(techniqueNode, techniqueScope, techniqueScope.attributeBlock);
             parseUniforms(techniqueNode, techniqueScope, techniqueScope.uniformBlock);
             parseMacros(techniqueNode, techniqueScope, techniqueScope.macroBlock);
             parseStates(techniqueNode, techniqueScope, techniqueScope.stateBlock);
             parsePasses(techniqueNode, techniqueScope, techniques[techniqueName]);
+
             fixMissingPassPriorities(techniques[techniqueName]);
         }
     }
@@ -319,6 +321,7 @@ EffectParser::parsePasses(const JSON::json& node, Scope& scope, std::vector<Pass
             // FIXME: switch to fallback instead of ignoring
             if (passNode.is_object() && !parseConfiguration(passNode))
                 continue;
+
             parsePass(passNode, scope, passes);
         }
     }
@@ -399,9 +402,8 @@ EffectParser::getPassToExtend(const JSON::json& extendNode)
         }
     }
     else 
-    {
         throw;
-    }
+
     if (pass == nullptr)
         throw std::runtime_error("Undefined base pass with name '" + passName + "'.");
     return pass;
@@ -428,12 +430,14 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
 		{
 			auto extendNode = node.value("extends", JSON::json());
             render::Pass::Ptr pass = getPassToExtend(extendNode);
+
 			// If a pass "extends" another pass, then we have to merge its properties with the already existing ones
             passScope.attributeBlock.bindingMap.bindings.insert(pass->attributeBindings().bindings.begin(), pass->attributeBindings().bindings.end());
             passScope.uniformBlock.bindingMap.bindings.insert(pass->uniformBindings().bindings.begin(), pass->uniformBindings().bindings.end());
             passScope.macroBlock.bindingMap.bindings.insert(pass->macroBindings().bindings.begin(), pass->macroBindings().bindings.end());
             passScope.macroBlock.bindingMap.types.insert(pass->macroBindings().types.begin(), pass->macroBindings().types.end());
             passScope.stateBlock.bindingMap.bindings.insert(pass->stateBindings().bindings.begin(), pass->stateBindings().bindings.end());
+            
             if (pass->attributeBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.attributeBlock.bindingMap.defaultValues.providers().size() == 0)
@@ -442,6 +446,7 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
                 for (auto provider : pass->attributeBindings().defaultValues.providers())
                     passScope.attributeBlock.bindingMap.defaultValues.providers().front()->copyFrom(provider);
             }
+
             if (pass->uniformBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.uniformBlock.bindingMap.defaultValues.providers().size() == 0)
@@ -450,6 +455,7 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
                 for (auto provider : pass->uniformBindings().defaultValues.providers())
                     passScope.uniformBlock.bindingMap.defaultValues.providers().front()->copyFrom(provider);
             }
+
             if (pass->macroBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.macroBlock.bindingMap.defaultValues.providers().size() == 0)
@@ -458,6 +464,7 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
                 for (auto provider : pass->macroBindings().defaultValues.providers())
                     passScope.macroBlock.bindingMap.defaultValues.providers().front()->copyFrom(provider);
             }
+
             passScope.stateBlock.bindingMap.defaultValues.providers().front()->copyFrom(
                 pass->stateBindings().defaultValues.providers().front()
             );
@@ -471,6 +478,7 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
             passName = nameNode.get<std::string>();
         }
         // FIXME: throw otherwise
+
         parseAttributes(node, passScope, passScope.attributeBlock);
         parseUniforms(node, passScope, passScope.uniformBlock);
         parseMacros(node, passScope, passScope.macroBlock);
@@ -985,60 +993,42 @@ EffectParser::parseState(const JSON::json& node,
                          StateBlock&        stateBlock,
                          const std::string& stateProperty)
 {
-    if (stateProperty == States::PROPERTY_PRIORITY) {
+    if (stateProperty == States::PROPERTY_PRIORITY)
         parsePriority(node, scope, stateBlock);
-    }
-    else if (stateProperty == _extraStateNames[0]) {
+    else if (stateProperty == _extraStateNames[0])
         parseBlendingMode(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_BLENDING_SOURCE) {
+    else if (stateProperty == States::PROPERTY_BLENDING_SOURCE)
         parseBlendingSource(node, scope, stateBlock);   
-    }
-    else if (stateProperty == States::PROPERTY_BLENDING_DESTINATION) {
+    else if (stateProperty == States::PROPERTY_BLENDING_DESTINATION)
         parseBlendingDestination(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_ZSORTED) {
+    else if (stateProperty == States::PROPERTY_ZSORTED)
         parseZSort(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_COLOR_MASK) {
+    else if (stateProperty == States::PROPERTY_COLOR_MASK)
         parseColorMask(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_DEPTH_MASK) {
+    else if (stateProperty == States::PROPERTY_DEPTH_MASK)
         parseDepthMask(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_DEPTH_FUNCTION) {
+    else if (stateProperty == States::PROPERTY_DEPTH_FUNCTION)
         parseDepthFunction(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_TRIANGLE_CULLING) {
+    else if (stateProperty == States::PROPERTY_TRIANGLE_CULLING)
         parseTriangleCulling(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_STENCIL_FUNCTION) {
+    else if (stateProperty == States::PROPERTY_STENCIL_FUNCTION)
         parseStencilFunction(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_STENCIL_REFERENCE) {
+    else if (stateProperty == States::PROPERTY_STENCIL_REFERENCE)
         parseStencilReference(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_STENCIL_MASK) {
+    else if (stateProperty == States::PROPERTY_STENCIL_MASK)
         parseStencilMask(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_STENCIL_FAIL_OPERATION) {
+    else if (stateProperty == States::PROPERTY_STENCIL_FAIL_OPERATION)
         parseStencilFailOperation(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_STENCIL_ZFAIL_OPERATION) {
+    else if (stateProperty == States::PROPERTY_STENCIL_ZFAIL_OPERATION)
         parseStencilZFailOperation(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_STENCIL_ZPASS_OPERATION) {
+    else if (stateProperty == States::PROPERTY_STENCIL_ZPASS_OPERATION)
         parseStencilZPassOperation(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_SCISSOR_TEST) {
+    else if (stateProperty == States::PROPERTY_SCISSOR_TEST)
         parseScissorTest(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_SCISSOR_BOX) {
+    else if (stateProperty == States::PROPERTY_SCISSOR_BOX)
         parseScissorBox(node, scope, stateBlock);
-    }
-    else if (stateProperty == States::PROPERTY_TARGET) {
+    else if (stateProperty == States::PROPERTY_TARGET)
         parseTarget(node, scope, stateBlock);
-    }
 }
 
 void
