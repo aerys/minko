@@ -545,7 +545,7 @@ EffectParser::parseDefaultValue(const JSON::json&  node,
             throw; // FIXME: support array default values
     }
     else if (defaultValueNode.is_boolean()) {
-        defaultValues->set(valueName, defaultValueNode.get<int>());
+        defaultValues->set(valueName, defaultValueNode.get<bool>() ? 1 : 0);
     }
     else if (defaultValueNode.is_number_integer()) {
         defaultValues->set(valueName, defaultValueNode.get<int>());
