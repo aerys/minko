@@ -1460,17 +1460,17 @@ EffectParser::parseShader(const JSON::json& node, const Scope& scope, render::Sh
 }
 
 std::vector<unsigned char>
-EffectParser::replaceBreakLine(std::vector<unsigned char> &shader)
+EffectParser::replaceBreakLine(std::vector<unsigned char> &data)
 {
     size_t quote = 0;
     
-    for (size_t i = 0; shader[i] != '\0'; i++) {
-        if (i > 0 && shader[i] == '"' && shader[i - 1] != '\\')
+    for (size_t i = 0; data[i] != '\0'; i++) {
+        if (i > 0 && data[i] == '"' && data[i - 1] != '\\')
             quote++;
-        if (shader[i] == '\n' && quote % 2 == 1)
-            shader[i] = 127; // 127 stand for DEL char in ASCII table for 1 Byte
+        if (data[i] == '\n' && quote % 2 == 1)
+            data[i] = 127; // 127 stand for DEL char in ASCII table for 1 Byte
     }
-    return shader;
+    return data;
 }
 
 std::string

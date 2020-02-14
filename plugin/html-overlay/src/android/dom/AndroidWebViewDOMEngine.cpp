@@ -109,7 +109,12 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
     if (nativeEventIsCopy)
         env->ReleaseStringUTFChars(eventData, rawNativeEvent);
 
-    JSON::json root = JSON::json::parse(nativeEvent.data());
+    JSON::json root = JSON::json::parse(nativeEvent.data(), nullptr, false);
+    
+    if (root == JSON::json::value_t::discarded) {
+        LOG_ERROR("Json parser error, couldn't parse the given data");
+        return;
+    }
 
     auto type = root.value("type", JSON::json()).get<std::string>();
     auto target = AndroidWebViewDOMElement::getDOMElement(nativeAccessor, AndroidWebViewDOMEngine::currentEngine);

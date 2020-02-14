@@ -421,7 +421,7 @@ namespace minko
             parseShader(const JSONValue& node, const Scope& scope, render::Shader::Type type);
 
             std::vector<unsigned char>
-            replaceBreakLine(std::vector<unsigned char> &shader);
+            replaceBreakLine(std::vector<unsigned char> &data);
 
             std::string
             undoBreakLine(const std::string &node);
