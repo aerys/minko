@@ -28,7 +28,6 @@ public class WebViewJSInterface
 	@JavascriptInterface
 	public void onMessage(String message)
 	{
-		Log.i("minko-java", "[WebViewJSInterface] onMessage: " + message);
 		minkoNativeOnMessage(message);
 	}
 	
