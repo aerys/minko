@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "json/json.h"
+#include "nlohmann/json.hpp"
 
 namespace minko
 {
@@ -27,7 +27,7 @@ namespace minko
     {
         namespace JSON
         {
-            using namespace Json;
+            using namespace nlohmann;
         }
     }
 }
