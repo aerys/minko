@@ -47,7 +47,7 @@ namespace minko
 
             void write(const char* message)
             {
-                LOG((*minko::log::Logger::defaultLogger()), message, _level);
+                SMARTSHAPE_LOG((*minko::log::Logger::defaultLogger()), message, _level);
             }
         };
     }
