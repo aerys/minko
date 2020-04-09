@@ -78,3 +78,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "Clang"
         -Wno-deprecated-declarations
     )
 endif()
+
+# generate config.h
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/include/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/include/config.h)
