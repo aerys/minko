@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // ImageLib Sources
-// Copyright (C) 2000-2009 by Denton Woods
+// Copyright (C) 2000-2017 by Denton Woods
 // Last modified: 01/19/2009
 //
 // Filename: src-IL/src/il_nvidia.cpp
@@ -13,7 +13,6 @@
 
 #include "il_internal.h"
 #include "il_dds.h"
-#include "il_manip.h"
 #include <limits.h>
 
 
@@ -224,4 +223,4 @@ ILAPI ILubyte* ILAPIENTRY ilNVidiaCompressDXT(ILubyte *Data, ILuint Width, ILuin
 	return NULL;
 }
 
-#endif//IL_NO_DXTC_NVIDIA
+#endif//IL_USE_DXTC_NVIDIA

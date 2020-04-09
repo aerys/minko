@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // ImageLib Sources
-// Copyright (C) 2000-2008 by Denton Woods
+// Copyright (C) 2000-2017 by Denton Woods
 // Last modified: 09/26/2008
 //
 // Filename: src-IL/include/il_hdr.h
