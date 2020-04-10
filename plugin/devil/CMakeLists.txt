@@ -37,7 +37,7 @@ file (
     GLOB
     ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-ILU/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-ILUT/include"
