@@ -1,0 +1,250 @@
+DevIL TODO:
+
+-----------
+
+Denton:
+
+Bugs:
+- Conversion to IL_ALPHA seems to be crashing (WindowsTest.cpp).
+- Conversion to IL_ALPHA can be flipped?
+
+
+By next release:
+
+- https://www.cvedetails.com/vulnerability-list/vendor_id-8981/product_id-15876/version_id-67926/Devil-Developers-Image-Library-1.7.4.html
+- NVTT.dll as a delay-loaded DLL.
+- Update docs with next DXT code, new mipmap/cubemap access, new SaveL code.
+- Update DevIL website with file formats (psd-saving, etc.).
+- Add Nebula Device to projects page.
+- Add VTF Edit to projects page.
+- Add http://vrml.cip.ica.uni-stuttgart.de/dune/install.html to projects page.
+- Verify all formats are listed in il_io.c Doxygen documentation.
+- http://www.fileformat.info/format/drhalo/sample/index.htm - Check these.
+- Update Portable Any Map name in manual and code. http://www.bbhscanners.com/support/infinity_WF/faqs/faq_001.html
+- Update http://en.wikipedia.org/wiki/Tagged_Image_File_Format name as above.
+- Same with MNG
+- Update Targa extensions in manual.
+- Update license page on the website.
+
+
+Easier:
+- Find out what is different in the VTF headers that are 64 bytes.
+- Make DXT1 decompression function that does not do alpha.
+- Implement ilIsValid calls for ROT.
+- Make sure ilFixImage is called everytime something is loaded.
+- Add BLP loading of alpha sizes other than 0 and 1 for BLP2 RAW.
+- Add BLP loading of mipmaps for all other types (jpeg will be the hardest).
+- Find out why BLP2 files do not follow DXTC specs when width or height < 4.
+  It looks like they are not wasting space with the small mipmaps.
+  An example is a 2x8 image in DXT5.  Their mipmap length claims to be 16, instead of 32.
+- Recompile libtiff with extra options (but not jpeg...).
+- Clean up ilSetAlpha.
+- DxtcReadColor and DxtcReadColors need to expand the colours from 565 to 888 properly.
+- Add faces to WindowsTest.
+- Add reading other files in directory to WindowsTest, so you can easily view all files in a dir.
+- Finish BLP loading (indexed mipmaps, jpeg data).
+- dcraw support
+- http://en.wikipedia.org/wiki/2xSaI
+- Clean up WDP code.
+- Get WDP code to do conversions within the WDP library (check to see if type/format set by user).
+- Get WDP code to properly do float, short, etc.
+- Make DecompressDXT1 and DecompressDXT1a functions separate (.blp files could use this).
+- Keep TPL DXT data.
+- DecompressDXT1 (and more) do not set an error if returning IL_FALSE (should be an internal error, I think).
+- Add ilIsValidFits* functions to il_io.c.
+- Add ilIsValidWdp* functions.
+- iGetString may not work properly with Unicode strings.
+- Look at adding ilIsValid* for mng, iff, wbmp, wal and pxr.
+- Added ilSetError error codes to il_files.c.
+- Get rid of check for precache.
+- If IL_NO_JP2 is defined, lines 306-307 shouldn't just cause the entire thing to fail.  We should just skip that entry.
+- Change ilConvertBuffer to be able to convert paletted images as well.
+- Fix MSVC8 solutions for text files.
+- ilSavePnmF needs to set FName if not called by ilSavePnm.
+- Make TPL_CMP case in iLoadTplInternal code more modular (also in il_dds.c).
+- Get rid of iluSwapColours call in ilutConvertToSDLSurface.
+- Use GL/glext.h.
+- Update Eclipse projects.
+- Add Code::Blocks projects.
+- Check to make sure all VTF formats are supported.
+- Look at DDSTextureLoader.cpp for new DDS formats.
+- http://www.leunen.com/cbuilder/rotbmp.html
+- 3d mipmaps and better 2d: http://www.opengl.org/discussion_boards/ubbthreads.php?ubb=showflat&Number=236590&fpart=2
+  http://zach.in.tu-clausthal.de/teaching/cg2_07/literatur/frame_buffer_objects.html
+  http://objectmix.com/graphics/745877-glgeneratemipmapext.html
+- Make libsquish and NVTT code compress volume textures (do each slice separately).
+- Check .dcx code - does it even load multiple images?
+- Make ilBlit either error with color indexed images or work with them.
+- iluScale: Make ilTexImage or whatever actually use Temp->Data instead of copying.
+- Get rid of globals in il_dds.c and ilu_scale2d.c.
+- Make ilApplyPal also work for file streams and lumps.
+- Make a version of ilApplyPal where a palette buffer and palette type are specified.
+- Renormalize FITS and DICOM files (make it an option?).
+- Add scaling functions to IL (and wrappers in ILU).
+- Fix DXT2 and DXT4 loading.
+- Add _ilLoadExt/_ilSaveExt Unicode in il_states.c.
+- XCF (Gimp) support
+
+
+More involved:
+- ILinfo struct still has number of images...
+- Use loaded mipmaps in OpenGL and DirectX.
+- JPEG and PNG in .bmp files?
+- It looks like ilSetRead/ilSetWrite don't actually do anything.
+- Run Valgrind on library - all functions.
+- Make iSaveJp2Internal and iSaveExrInternal work with palettes (make ilConvertBuffer work on palettes as well).
+- Make .ico/.icns uses Mipmaps field instead for smaller icons (can icns have multiple images?).
+- Work on http://en.wikipedia.org/wiki/Apple_Icon_Image page.
+- http://mirrored.xentax.com/gfe/index.html (lots of game graphics formats)
+- Strife textures
+- Starcraft GRP textures - http://web.archive.org/web/20041011165218/http://user.cs.tu-berlin.de/~mickyk/cv.html
+- Commenting out lines 729-731 in pngread.c of libpng (1.2.9?) will allow reading of certain malformed Vista PNG-compressed .ico files with extra data at the end of the stream.  An example can be found in test/in and was created using Microangelo.
+- Add .ico/.icns saving.
+- Readd CMAKE support
+- Better static lib support in MSVC++ 8/9
+- Median cut quantization
+- Lib EXIF support
+- APNG support
+- Koala support
+- Flashpix (.fpx) support
+- Multipage PNM files
+- Fortran support
+- D language support - There exists a program to convert C headers to D.
+- Better DirectX 10 support
+- Open URL in WindowsTest not working
+- Should probably check for errors in iGetWdpHead and etc...
+- ilGetAlpha returns malloc'ed memory that cannot be freed by the caller.
+- Support for DX10 .dds files - one new format is found in HDRRendering sample in nVidia DX10 SDK.
+- More checks for headers of unknown file types
+- Set CompSize in ReadData of il_dds.c for DDS_LINEARSIZE flag?
+- Look at resize filters in VTFEdit.
+- Get rid of globals in il_dds.c.
+- TIFF with JPEG encoding
+- Bicubic scaling
+- Freebasic support
+- Multiple images in FITs files (through extensions).
+- Reorder loading/saving in il_io.c
+- Get il_vtf.c to do less memory allocation.  Just use the precache function.
+- In il_gif.c, make sure subimages with offsets will not lead to an overflow.
+- il_bmp.c / il_dds.c / il_dds-save.c may not be safe for Big Endian for 16-bit data.
+- Change how mipmaps are stored (do not use Next pointer in ILimage).
+- Check ASCII PPM code for the ability to read data that wraps around to multiple lines.
+- Check return on all ilFixImage calls.
+- Printing not working from Windows test.
+- Can ilConvertImage deal correctly with signed image formats?
+- Add function to create cubemaps.
+- Request compressed texture data in ilutGLSetTex2D?
+- Upload cubemaps directly to OpenGL/D3D.
+- Change some calls (such as in il_tiff.c) to ilGetString to non-Unicode.
+- Check saving of Luminance (8 bpp/1 Bpp) BMP
+- Check compatibility with all the files in the BMP Suite.
+- IL_COLOUR_INDEX:  must be implemented in iluReplaceColour(ILubyte Red, ILubyte Green, ILubyte Blue, ILfloat Tolerance);
+- iluEqualize must be implemented for various Bpc
+- Update the state stack in IL.  Right now, it only saves part of the states when you push/pop.
+- Redo Compress in il_dds-save.c.
+- Check 16-bit images being loaded have their lower bits properly set.  An example is the il_dds.c entry on 2009-01-15.
+- Fix image loading problems listed on http://www.seriema.net/thumbview/index.php?page=compatibility.
+- Look at http://en.wikipedia.org/wiki/Comparison_of_graphics_file_formats
+- PNG and JPG compression in .bmp files?
+- Scan line table for RLE .tga files.
+- Allow more formats for saving .tga (does not do IL_ALPHA for instance) - also in iTargaSize.
+  Make sure iConvertImage is called.  Right now, it would not be.
+- XBM support.
+- Check XPM support for different types: http://en.wikipedia.org/wiki/XPM_(image_format)
+- Find test images for all .tpl formats.
+- Create new palette types for luminance, luminance-alpha and alpha (.tpl has luminance-alpha) (also change ilutConvertToSDLSurface and maybe others).
+- iGetActiveNum needs to be rewritten somehow to allow for mipmaps under a cubemap in an animation chain (extreme example).
+- TPL saving
+- Test Windows Mobile code.
+- OpenMP support: http://stackoverflow.com/questions/326487/multithreaded-image-processing-in-c
+  http://www.ddj.com/architect/184405586
+- Shear rotation: http://www.codeproject.com/KB/graphics/rotatebyshear.aspx
+- Icon Library (.icl) support.
+- Test all DDS types.
+- New (DX10) DDS types
+- Gamecube BMD and BTI support (http://www.amnoid.de/gc/)
+- Conversion from half to int is producing artifacts.
+- Support for mp3 frames with Unicode strings
+
+
+Lots of work:
+- Go through forks on GitHub to see what needs to be included in the main release
+- Thread safe version: look at https://github.com/gscept/DevIL/commit/a8bbbb934344237c362a15164b536f97f54d2cd8
+- Linux Unicode support is partially broken.
+- Write own .exr routines.
+- Native WDP support
+- Enable descriptive error strings in IL.
+- Librsvg
+- Give estimates for buffer sizes for ilSaveL.
+- MNG saving
+- Metadata
+- Add flag for determining whether DDS data is outdated.
+- TIFF saving to file streams and lumps
+- Use fseek/ftell 64-bit?
+- Check for any external library pointers that are assumed to be 32-bit.
+- Possibly make palettes always 768 (or 1024) bytes so that it is not possible to access outside by bad data?
+- Add padding options, so that each line could be DWORD-padded, for instance.
+- Add dithering.
+- Work on making DevIL more stable. There's probably a few places where I don't check the return value of ilNewImage, for instance.
+- Add support for callbacks so that users can create progress meters for loading and saving in their applications.  We could extend this idea further and allow cancellation of loading/saving images.
+- global use of restricted pointers where available (for now only il_bmp.{c,h} uses it)
+- iluScaleColours is BUGGED, doesn't handle the image with the correct type! more Bpc (except luminance and paletted one)
+- Add a real Layer facility.
+- IL_LUMINANCE_ALPHA support must be tested in ilApplyPal();
+- ilApplyPal should work on any type of image, not only IL_BYTE or IL_UNSIGNED_BYTE
+- Look at adding FreeType support to ILU.
+- Work on the signed/unsigned conversions a bit more (IL_BYTE versus IL_UNSIGNED_BYTE, etc.).  A good link for defining signed formats is http://www.sgi.com/software/opengl/advanced98/notes/node31.html .
+- Add TWAIN support.
+- Add clipboard and printing support in Linux.
+- Finish support for regions in ILU.
+- Add support for regions in IL.  This could be used to save only a specific portion of an image.
+- Add support for user-defined filters (possibly of a user-defined size).
+- Add more filters. Some sites to look at are http://www.jasonwaltman.com/thesis/introduction.html http://www.dai.ed.ac.uk/CVonline/transf.htm http://www.fortunecity.com/lavendar/kane/39/ffpg.htm and http://www.opengl.org/developers/documentation/Version1.2/1.2specs/convolution_border_modes.txt .  The last link describes ways to handle borders for the convolution filters.  It might be worthwhile to allow these kinds of options.
+- Possibly add support for other colour spaces besides RGB (CMYK, YUV, etc.)
+- Implement a scripting "language" with LUA for ILU. This way, people can generate scripts to run a certain set of filters on all images.
+- Look at other rescaling algorithms:
+http://java.sun.com/products/java-media/jai/forDevelopers/jai1_0guide/Geom-image-manip.doc.html
+http://java.sun.com/products/java-media/jai/forDevelopers/jai1_0guide/Geom-image-manip.doc.html#55431
+http://www.npac.syr.edu/projects/nasa/MILOJE/final/node36.html
+http://www.ultranet.com/~aramini/design.html
+- ilKeyColor ilAddKey...
+- Find a way to make the filters (especially the convolution filters) work in three dimensions.
+- Make better versions of the DevIL ports of the NeHe tutorials. Several of the tutorials don't call ilInit, for instance.
+- Change parameters of iread to use ILsizei.
+- Make sure all bugs in bug tracker are squashed.
+
+
+Questions:
+- Should IL_CONV_PAL convert to more than RGB?
+- Possibly readd VC6 projects?
+- Add BeOS support back in?
+- Create Dev-C++/MingW/Cygwin .a files for releases?
+- Does ilIsValidTga generate an unnecessary IL_INVALID_EXTENSION error?
+- Why is IL_HALF even used in ilut_directx9.c?
+- Fix problems loading .dds files on Big Endian machines (still a problem or not?)
+- Should we be calculating DXT endpoints before converting data to 565 format?
+- Use Extreme DXT compression code?
+- Support half data internally?
+- Will ilDetermineType fail if file reading functions are overriden?
+- Is ilSaveCHeader fine with Unicode?
+- Should ilFlipSurfaceDxtcData and more work on mipmaps/cubemaps as well?
+- Should ilImageToDxtcData work on cubemaps?
+- Should we seek back to the initial position on filestreams?
+- Should we return the number of bytes read in loading lumps?
+- Should we be renormalizing float and double data in FITS files?
+
+
+From old TODO:
+For 1.7.0
+- fixed OpenGL Loading (breaks old code which inverted the images)
+- iluReplaceColour should have a color to describe which color to set.
+- ilBindImage must return a result. It may fail!
+- ilInit() call iSetImage0 and ilBindTemp. This shouldn't happen and image names must start from 0
+- Rename iGetIntegervImage to ilGetImageIntegerv and make it public
+
+Matej:
+- Make a test suite (IL ok, now ILU tests)
+- Make DevIL parts that require external libraries modular
+- Make the library include files correct (fix the config.h problem)
+- Look into TIFF loading (support for images with greater bpp should be possible)
+- Fix examples
