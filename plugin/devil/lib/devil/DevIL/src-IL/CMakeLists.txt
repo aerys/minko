@@ -65,8 +65,9 @@ endif(BUILD_SHARED_LIBS)
 
 
 
+### Commented to avoid CMake error when building for html5.
 # various compiler stuff
-test_big_endian(WORDS_BIGENDIAN)
+#test_big_endian(WORDS_BIGENDIAN)
 
 
 # check availability of optional external libs
