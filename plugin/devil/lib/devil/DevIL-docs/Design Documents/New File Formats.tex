@@ -1,0 +1,84 @@
+\documentclass[letterpaper,10pt]{article}
+\title{Adding New File Formats to DevIL}
+\author{Denton Woods}
+\date{March 2009}
+\usepackage{amsmath,graphicx,fullpage}
+\begin{document}
+\maketitle
+
+\section*{Adding the .c or .cpp File}
+Make sure that the new .c or .cpp file is added to the Subversion repository using the \emph{svn add} command.
+
+\subsubsection*{Microsoft Visual C++}
+The .c or .cpp file must be added to the Microsoft Visual C++ 9 projects \emph{src-IL/projects/msvc9/ImageLib Unicode.sln} and \emph{src-IL/projects/msvc9/ImageLib.sln}.  The file must also be added to the MSVC++ 8 projects \emph{src-IL/projects/msvc8/ImageLib Unicode.sln} and \emph{src-IL/projects/msvc8/ImageLib.sln}.
+
+\subsubsection*{Linux, Cygwin and Mac OS X}
+For the Linux/Cygwin/Mac OS X makefile system, add the filename to the libIL\_la\_SOURCES line of lib/Makefile.am.
+
+
+\section*{configure.ac}
+Add the format to configure.ac around line 320, with a description.
+
+
+\section*{DevIL_manual.texi}
+Add the file format to the appendix entitled \emph{Supported File Formats} in the TexInfo manual.
+
+
+\section*{il.h}
+Add the appropriate IL\_XXX define to il.h (around line 240).  Make sure to include a commented description in Doxygen format.
+
+
+\section*{il\_internal.h}
+Add the function declarations to il\_internal.h around line 224.
+
+
+\section*{il\_io.c}
+
+\subsubsection*{Validation}
+If \textbf{ilIsValid*} functions are created for the new format, the function calls must be implemented in \textbf{ilDetermineTypeF}, \textbf{ilDetermineTypeL}, \textbf{ilIsValid}, \textbf{ilIsValidF} and \textbf{ilIsValidL}.
+
+\subsubsection*{Loading}
+The first thing that needs to be added is checks for the extensions in \textbf{ilTypeFromExt}.
+
+Next add the appropriate function calls to \textbf{ilLoad}, \textbf{ilLoadF}, \textbf{ilLoadL} and \textbf{ilLoadImage}.  Make sure to put the IL\_XXX define in the Doxygen comment before the function!
+
+\subsubsection*{Saving}
+Add the function calls to \textbf{ilSave}, \textbf{ilSaveF}, \textbf{ilSaveL} and \textbf{ilSaveImage}.  Make sure to put the IL\_XXX define in the Doxygen comment before the function!
+
+
+\section*{il\_states.c and il\_states.h}
+Change \_ilLoadExt and/or \_ilSaveExt to include the new format name in il\_states.c.  Also add the format to il\_states.h.
+
+\section*{Website}
+Add to the list of types the DevIL can load on the About and the Features pages.
+
+
+\section*{Summary of Changes to Make}
+\begin{itemize}
+\item Run \emph{svn ci}.
+\item Add to MSVC++ 8 projects.
+\item Add to MSVC++ 9 projects.
+\item Add to lib/Makefile.am sources line.
+\item Add to configure.ac with description.
+\item Add to DevIL_manual.texi appendix.
+\item Add IL\_XXX to il.h.
+\item Add function declarations to il\_internal.h.
+\item Add validation functions if they exist.
+\item For loading functions:
+	\begin {itemize}
+		\item \textbf{ilTypeFromExt}
+		\item \textbf{ilLoad}, \textbf{ilLoadF}, \textbf{ilLoadL} and \textbf{ilLoadImage}
+		\item Add Doxygen comments to \textbf{ilLoad}, \textbf{ilLoadF}, \textbf{ilLoadL} and \textbf{ilLoadImage}.
+	\end {itemize}
+\item For saving functions:
+	\begin {itemize}
+		\item \textbf{ilSave}, \textbf{ilSaveF}, \textbf{ilSaveL} and \textbf{ilSaveImage}
+		\item Add Doxygen comments to \textbf{ilSave}, \textbf{ilSaveF}, \textbf{ilSaveL} and \textbf{ilSaveImage}.
+	\end {itemize}
+\item Add to il\_states.c and il\_states.h.
+\item Add to website (about and features pages).
+\end{itemize}
+
+
+\end{document}
+

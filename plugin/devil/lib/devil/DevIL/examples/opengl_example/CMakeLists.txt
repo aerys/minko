@@ -1,0 +1,69 @@
+PROJECT(Example_GL)
+
+FILE(GLOB Example_GL_SRCS *.c *.cpp *.h )
+
+INCLUDE_DIRECTORIES(
+
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${DevIL_SOURCE_DIR}/include
+	${DevIL_SOURCE_DIR}/../include
+	${DevIL_XTRA_SOURCE_DIR}/freeglut
+)
+
+LINK_DIRECTORIES(
+
+	${DEVIL_LIB_DEST_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}
+	${DevIL_XTRA_SOURCE_DIR}/freeglut
+)
+
+#
+# for windows add the .def and .rc files to the source list
+#
+IF(WIN32)
+	ADD_DEFINITIONS(-DIL_USE_PRAGMA_LIBS)
+
+	IF(BUILD_SHARED_LIBS)
+	ELSE(BUILD_SHARED_LIBS)
+		ADD_DEFINITIONS(-DIL_STATIC_LIB)
+	ENDIF(BUILD_SHARED_LIBS)
+ENDIF(WIN32)
+
+SOURCE_GROUP(code FILES ${Example_GL_SRCS} )
+
+ADD_EXECUTABLE(Example_GL Example_GL_SRCS)
+
+## add link sub library info
+
+TARGET_LINK_LIBRARIES(Example_GL
+	
+	DevIL
+	DevILU
+	DevILUT
+)
+
+INCLUDE_DIRECTORIES(
+
+	 ${DevIL_SOURCE_DIR}
+	 ${DevILU_SOURCE_DIR}
+	 ${DevILUT_SOURCE_DIR}
+)
+
+#
+# Copy dlls into the output dir, so stuff just works from vcc
+#
+IF(WIN32)
+
+	ADD_CUSTOM_COMMAND( TARGET Example_GL POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy
+		${DevIL_XTRA_SOURCE_DIR}/freeglut/freeglut.dll
+		${CMAKE_CFG_INTDIR}
+	)
+
+	IF(BUILD_SHARED_LIBS)
+		ADD_CUSTOM_COMMAND( TARGET Example_GL POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy
+			${DEVIL_LIB_DEST_DIR}/*.dll
+			${CMAKE_CFG_INTDIR}
+		)
+	ENDIF(BUILD_SHARED_LIBS)
+
+ENDIF(WIN32)

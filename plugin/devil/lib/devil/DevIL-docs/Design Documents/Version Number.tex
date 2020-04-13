@@ -1,0 +1,34 @@
+\documentclass[letterpaper,10pt]{article}
+\title{Changing DevIL Version Number}
+\author{Denton Woods}
+\date{March 2009}
+\usepackage{amsmath,graphicx,fullpage}
+\begin{document}
+\maketitle
+
+\section*{Microsoft Visual C++ Resource Files}
+\subsection*{Unicode Resource Files}
+\emph{src-IL/msvc9/IL Unicode.rc}, \emph{src-IL/msvc8/IL Unicode.rc}, \emph{src-ILU/msvc9/ILU Unicode.rc}, \emph{src-ILU/msvc8/ILU Unicode.rc}, \emph{src-ILUT/msvc9/ILUT Unicode.rc} and \emph{src-ILUT/msvc8/ILUT Unicode.rc} must all be updated with the new version number.  Look for the lines starting with \emph{FILEVERSION}, \emph{PRODUCTVERSION}, \emph{VALUE $\backslash$``FileVersion$\backslash$''}, \emph{VALUE $\backslash$``ProductVersion$\backslash$''} and \emph{IDC\_OPENIL}.
+
+\subsection*{Ansi Resource Files}
+\emph{src-IL/msvc9/IL.rc}, \emph{src-IL/msvc8/IL.rc}, \emph{src-ILU/msvc9/ILU.rc}, \emph{src-ILU/msvc8/ILU.rc}, \emph{src-ILUT/msvc9/ILUT.rc} and \emph{src-ILUT/msvc8/ILUT.rc} all have the same format as the Unicode resource files.
+
+
+\section*{configure.ac}
+Change the version number on line 12.
+
+
+\section*{IL.h, ILU.h, ILUT.h}
+At about line 164 in IL.h, change IL\_VERSION\_ and IL\_VERSION to reflect the new version number.  The equivalent lines are at line 40 in ilu.h and line 32 in ilut.h.
+
+
+\section*{README}
+Change the first line of README to the new version number.
+
+
+\section*{il\_states.c, ilu\_states.c and ilut\_states.c}
+At the top of each of these files, change the \_il(u(t))Vendor and \_il(u(t))Version lines to the new version number.
+ 
+
+\end{document}
+

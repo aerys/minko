@@ -1,0 +1,255 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource."
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG_ABOUT DIALOGEX 0, 0, 278, 220
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About DevIL"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,113,198,50,14
+    GROUPBOX        "Info",IDC_STATIC,7,7,264,69
+    GROUPBOX        "Errors",IDC_STATIC,7,86,264,76
+    LTEXT           "Vendor:",IDC_STATIC,27,22,27,8
+    LTEXT           "Version:",IDC_STATIC,26,35,26,8
+    CTEXT           "",IDC_ERROR1,40,98,79,8
+    LTEXT           "Vendor",IDC_ABOUT_VENDOR,68,22,126,8
+    LTEXT           "Version String",IDC_ABOUT_VER_STRING,68,35,125,8
+    LTEXT           "Version Num",IDC_ABOUT_VER_NUM,68,46,38,8
+    CTEXT           "",IDC_ERROR4,158,98,79,8
+    CTEXT           "",IDC_ERROR6,158,142,79,8
+    CTEXT           "",IDC_ERROR2,40,119,79,8
+    CTEXT           "",IDC_ERROR5,158,120,79,8
+    CTEXT           "",IDC_ERROR3,40,142,79,8
+    LTEXT           "Visit the DevIL website at http://openil.sf.net.",IDC_OPENIL_LINK,56,182,164,8
+    ICON            "",IDC_STATIC,243,15,20,20
+END
+
+IDD_DIALOG_FILTER DIALOGEX 0, 0, 186, 95
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog Options"
+FONT 8, "MS Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,14,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,31,50,14
+    LTEXT           "Enter number of iterations, monkey foo!",IDC_FILTER_DESC_TEXT,21,14,95,31
+    EDITTEXT        IDC_FILTER_EDIT,13,54,160,14,ES_AUTOHSCROLL
+END
+
+IDD_DIALOG_RESIZE DIALOGEX 0, 0, 266, 95
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Resize Options"
+FONT 8, "MS Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,77,65,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,137,65,50,14
+    LTEXT           "Enter new image size:",IDC_STATIC,97,15,70,8
+    EDITTEXT        IDC_EDIT_RESIZE_X,33,36,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_RESIZE_Y,109,36,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_RESIZE_Z,187,37,40,14,ES_AUTOHSCROLL
+    LTEXT           "X:",IDC_STATIC,20,39,8,8
+    LTEXT           "Y:",IDC_STATIC,96,38,8,8
+    LTEXT           "Z:",IDC_STATIC,173,39,8,8
+END
+
+IDD_DIALOG_BATCHCONV DIALOGEX 0, 0, 200, 138
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Batch Conversion Options"
+FONT 8, "MS Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,43,108,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,107,108,50,14
+    LTEXT           "Enter Directory:",IDC_FILTER_DESC_TEXT,21,14,95,14
+    EDITTEXT        IDC_BATCH_DIR,21,30,160,14,ES_AUTOHSCROLL
+    CONTROL         "Parse Subdirectories?",IDC_BATCH_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,57,89,85,10
+    LTEXT           "Enter New Extension:",IDC_STATIC,21,55,69,8
+    EDITTEXT        IDC_BATCH_NEWEXT,21,66,44,14,ES_AUTOHSCROLL
+END
+
+IDD_DIALOG_PROPERTIES DIALOGEX 0, 0, 243, 158
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Image Properties"
+FONT 8, "MS Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,81,137,50,14
+    GROUPBOX        "Info",IDC_STATIC,7,7,229,119
+    LTEXT           "Filename:",IDC_STATIC,16,24,31,8
+    LTEXT           "Width:",IDC_STATIC,25,43,22,8
+    LTEXT           "Height:",IDC_STATIC,23,62,24,8
+    LTEXT           "Depth:",IDC_STATIC,25,81,22,8
+    LTEXT           "Filename",IDC_PROP_FILENAME,61,24,169,8
+    LTEXT           "Width",IDC_PROP_WIDTH,61,43,42,8
+    LTEXT           "Height",IDC_PROP_HEIGHT,61,62,42,8
+    LTEXT           "Depth",IDC_PROP_DEPTH,61,81,42,8
+    LTEXT           "Size:",IDC_STATIC,31,100,16,8
+    LTEXT           "Size",IDC_PROP_SIZE,61,100,41,8
+    LTEXT           "byte(s)",IDC_STATIC,111,100,22,8
+    LTEXT           "pixel(s)",IDC_STATIC,111,81,22,8
+    LTEXT           "pixel(s)",IDC_STATIC,111,62,22,8
+    LTEXT           "pixel(s)",IDC_STATIC,111,43,22,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_LOAD
+        MENUITEM "Open &URL...\tCtrl+U",        ID_FILE_OPENURL
+        MENUITEM "&Save...\tCtrl+S",            ID_FILE_SAVE
+        MENUITEM "&Image Properties",           ID_FILE_PROPERTIES
+        MENUITEM "&Print",                      ID_FILE_PRINT
+        MENUITEM "E&xit\tEsc",                  ID_FILE_EXIT
+    END
+    POPUP "&Convert"
+    BEGIN
+        MENUITEM "&Colour Indexed",             ID_CONVERT_PALETTE
+        MENUITEM "&Luminance",                  ID_CONVERT_LUMINANCE
+        MENUITEM "L&uminance Alpha",            ID_CONVERT_LUMINANCEALPHA
+        MENUITEM "&Rgb",                        ID_CONVERT_RGB
+        MENUITEM "Rgba",                        ID_CONVERT_RGBA
+        MENUITEM "&Bgr",                        ID_CONVERT_BGR
+        MENUITEM "Bgra",                        ID_CONVERT_BGRA
+        MENUITEM "&Alpha",                      ID_EDIT_VIEWALPHA
+        MENUITEM "Batch Convert",               ID_BATCHCONVERT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo",                       ID_EDIT_UNDO
+        MENUITEM "Undo &Level",                 ID_EDIT_UNDOLEVEL
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "View Mipmap",                 ID_EDIT_VIEWMIPMAP
+        MENUITEM "View ImageNum",               ID_EDIT_VIEWIMAGENUM
+        MENUITEM "Next Image",                  ID_EDIT_NEXT
+        MENUITEM "Previous Image",              ID_EDIT_PREV
+    END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "&Count Colours",              ID_EFFECTS_COUNTCOLORS
+        MENUITEM "&Background Colour",          ID_EFFECTSTOOLS_BACKGROUNDCOLOUR
+        POPUP "&Filters"
+        BEGIN
+            MENUITEM "&Alienify",                   ID_FILTER_ALIENIFY
+            MENUITEM "Apply &Wave",                 ID_EFFECTS_FILTERS_WAVE
+            POPUP "Blur"
+            BEGIN
+                MENUITEM "&Average",                    ID_FILTERS_BLUR_AVERAGE
+                MENUITEM "&Gaussian",                   ID_FILTERS_BLUR_GAUSSIAN
+            END
+            POPUP "Ed&ge Detect"
+            BEGIN
+                MENUITEM "&Emboss",                     ID_EFFECTS_FILTERS_EDGEDETECT_EMBOSS
+                MENUITEM "Prewitt",                     ID_EFFECTS_FILTERS_EDGEDETECT_PREWITT
+                MENUITEM "Sobel",                       ID_EFFECTS_FILTERS_EDGEDETECT_SOBEL
+            END
+            MENUITEM "&Emboss",                     ID_FILTER_EMBOSS
+            MENUITEM "E&qualize",                   ID_FILTER_EQUALIZE
+            MENUITEM "&Gamma Correct",              ID_FILTER_GAMMACORRECT
+            MENUITEM "&Negative",                   ID_FILTER_NEGATIVE
+            MENUITEM "N&oise",                      ID_FILTER_NOISE
+            MENUITEM "&Pixelize",                   ID_FILTER_PIXELIZE
+            MENUITEM "&Sharpen",                    ID_FILTER_SHARPEN
+        END
+        MENUITEM "Fli&p",                       ID_EFFECTS_FLIP
+        MENUITEM "&Mirror",                     ID_EFFECTS_MIRROR
+        MENUITEM "&Rotate",                     ID_EFFECTS_FILTERS_ROTATE
+        MENUITEM "&Scale",                      ID_EFFECTS_FILTERS_SCALE
+        MENUITEM "&ScaleBOX",                   ID_EFFECTS_FILTERS_SCALEBOX
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      ID_HELP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MENU1 ACCELERATORS 
+BEGIN
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
+    "O",            ID_FILE_LOAD,           VIRTKEY, CONTROL
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
+    "U",            ID_FILE_OPENURL,        VIRTKEY, CONTROL
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON                    "./resources/DevIL Logo.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

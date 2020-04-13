@@ -1,0 +1,14 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+includedir=${prefix}/include
+libdir=${exec_prefix}/lib
+
+Name: ILUT
+Description: Developer's Image Library - ILUT part (connection to higher level libraries)
+Version: @VERSION@
+URL: http://openil.sourceforge.net
+Requires: IL ILU
+Cflags: -I${includedir}
+Libs: -L${libdir} -lILUT
+Libs.private: -lIL -lILU
+

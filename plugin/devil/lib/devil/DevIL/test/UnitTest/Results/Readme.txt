@@ -1,0 +1,1 @@
+This is where the results of the pictures go when the UnitTest is running.

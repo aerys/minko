@@ -1,0 +1,51 @@
+* add IL_LUMINANCE_ALPHA everywhere
+* Search for all ILU*_OUT_OF_MEMORY errors to add at the various functions (IL completed)
+
+iluInvertAlpha should be void 				<---
+ilModAlpha e ilSetAlpha should to go ILU 	<--
+
+* add functions:
+IL:
++ ILboolean ilApplyPal(const ILstring FileName);
++ ILboolean ilBlit(ILuint Source, ILint DestX, ILint DestY, ILint DestZ, ILuint SrcX, ILuint SrcY, ILuint SrcZ, ILuint Width, ILuint Height, ILuint Depth);
++ ILboolean ilCompressFunc(ILenum Mode);
++ ILuint ilCreateSubImage(ILenum Type, ILuint Num);
++ ILboolean ilFormatFunc(ILenum Mode);
++ ILvoid ilModAlpha( ILint AlphaValue );
++ ILvoid ilSetAlpha( ILuint AlphaValue );
++ ILuint ilGetDXTCData(ILvoid *Buffer, ILuint BufferSize, ILenum DXTCFormat);
++ ILuint ilGetLumpPos(ILvoid);
++ ILboolean ilIsValid(ILenum Type, const ILstring FileName);
++ ILboolean ilIsValidF(ILenum Type, ILHANDLE File);
++ ILboolean ilIsValidL(ILenum Type, ILvoid *Lump, ILuint Size);
++ ILvoid ilKeyColour(ILclampf Red, ILclampf Green, ILclampf Blue, ILclampf Alpha);
++ ILuint ilSaveF(ILenum Type, ILHANDLE File);
++ ILuint ilSaveL(ILenum Type, ILvoid *Lump, ILuint Size);
+- ilSetSharedPal
+
+ILU:
++ iluEdgeDetectE
++ iluEqualize
++ iluGammaCorrect
++ ILuint iluLoadImage(const ILstring FileName);
++ ILvoid iluRegionfv(ILpointf *Points, ILuint n);
++ ILvoid iluRegioniv(ILpointi *Points, ILuint n);
++ ILboolean iluReplaceColour(ILubyte Red, ILubyte Green, ILubyte Blue, ILfloat Tolerance);
++ ILboolean iluWave(ILfloat Angle);
++ iluConvolution
+
+ILUT: need verification
+BITMAP* ilutAllegLoadImage(const ILstring FileName);
+BBitmap ilutConvertToBBitmap(ILvoid);�
+ILboolean ilutGLSaveImage(const ILstring FileName, GLuint TexID);
+ILboolean ilutGLSetTex(GLuint TexID);
+ILboolean ilutSDLSurfaceFromBitmap(SDL_Surface *Bitmap)
+ILboolean ilutGetWinClipboard(ILvoid);
+ILboolean ilutWinLoadUrl(const ILstring Url);
+ILboolean ilutWinPrint(ILuint XPos, ILuint YPos, ILuint Width, ILuint Height, HDC hDC);
+IDirect3DVolumeTexture9* ILAPIENTRY ilutD3D9VolumeTexture(IDirect3DDevice9 *Device);
+ILboolean ilutD3D9VolTexFromFile(IDirect3DDevice9 *Device, char *FileName, IDirect3DVolumeTexture9 **Texture);
+ILboolean ilutD3D9VolTexFromFileInMemory(IDirect3DDevice9 *Device, ILvoid *Lump, ILuint Size, IDirect3DVolumeTexture9 **Texture);
+ILboolean ilutD3D9VolTexFromFileHandle(IDirect3DDevice9 *Device, ILHANDLE File, IDirect3DVolumeTexture9 **Texture);
+ILboolean ilutD3D9VolTexFromResource(IDirect3DDevice9 *Device, HMODULE SrcModule, char *SrcResource, IDirect3DVolumeTexture9 **Texture);
+ILboolean ilutD3D9LoadSurface(IDirect3DDevice9 *Device, IDirect3DSurface9 *Surface);

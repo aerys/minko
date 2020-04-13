@@ -1,0 +1,68 @@
+#!/bin/bash
+REF_IMAGES_DIR=../docs/images
+TESTDIR=ilu_test
+if test -f $TESTDIR
+then
+	echo "The directory '$TESTDIR', where we plan to dump test files, already exists."
+	echo "This may be dangerous, bailing out..."
+	exit
+fi
+
+echo
+echo "Running ILU manipulation test..."
+
+mkdir $TESTDIR
+# Generate the images that should be +- in the docs...
+sh $REF_IMAGES_DIR/../generate-images.sh "$REF_IMAGES_DIR/small_stairway.jpg" "$TESTDIR"
+OUR_FILES=$(ls $TESTDIR)
+
+# if using Wine makes sense, use it...
+if [ "x@build_os@" != "x@host_os@" ] 
+	then
+	if [ "x@PLATFORM@" = "xMINGW32" -o "x@PLATFORM@" = "xCYGWIN" ] 
+	then
+		test $(which wine 2> /dev/null) && WINE="wine"
+		echo "Warning: Using wine to test executables (not 100% reliable)"
+	fi
+fi
+
+FAILED_MANIPULATIONS=""
+PASSED_MANIPULATIONS=""
+#manipulations that may fail
+PROBLEMATIC="noisify"
+
+for image in $OUR_FILES
+do
+	MANIPULATION_NAME=$(echo $image | sed -e 's/.*_\([a-z][a-zA-Z0-9]*\)[_\.].*/\1/')
+	if [ $(expr match "' $PROBLEMATIC '" '.*\s'$MANIPULATION_NAME'\s*') -ne 0 ] 
+	then # This manipulation is not considered as supported...
+		continue
+	fi	
+	$WINE ./testil@EXEEXT@ -sp $TESTDIR/$image,$REF_IMAGES_DIR/$image	
+	# We have to capture whether the test has failed or not
+	if [ ! $? -eq 0 ]
+	then # we have an error here...
+		FAILED_MANIPULATIONS="$FAILED_MANIPULATIONS $MANIPULATION_NAME"
+		FAILED="yes"
+	else #no error...
+		PASSED_MANIPULATIONS="$PASSED_MANIPULATIONS $MANIPULATION_NAME"
+	fi
+done
+
+#clean the mess
+rm -rf $TESTDIR
+
+#let's tell something to the user as well:
+if [ "x$FAILED" = "x" ] 
+then #everything went fine
+	echo "All examined manipulations were OK:$PASSED_MANIPULATIONS"
+else #something went wrong
+	echo "Errors were encountered during the test :-("
+	echo "Manipulations that were OK:$PASSED_MANIPULATIONS"
+	echo "Failed manipulations: $FAILED_MANIPULATIONS"
+	FAILED="1"
+fi # end of something went wrong
+echo "Problematic (untested) manipulations: $PROBLEMATIC"
+
+# And we have to tell the result to the shell, too...
+exit $FAILED

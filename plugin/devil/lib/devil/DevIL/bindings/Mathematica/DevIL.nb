@@ -1,0 +1,142 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 6.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[      4305,        133]
+NotebookOptionsPosition[      3741,        109]
+NotebookOutlinePosition[      4105,        125]
+CellTagsIndexPosition[      4062,        122]
+WindowFrame->Normal
+ContainsDynamic->False*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[
+ RowBox[{"link", " ", "=", " ", 
+  RowBox[{
+  "Install", "[", "\"\<E:\\DevIL\\projects\\Mathematica\\devil.exe\>\"", 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.44382235517484*^9, 3.4438223572684565`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+  "Imagename", " ", "=", " ", 
+   "\"\<E:\\DevIL\\projects\\Mathematica\\rgb32.tga\>\""}], ";"}]], "Input",
+ CellChangeTimes->{{3.433336425992341*^9, 3.433336437270916*^9}, {
+  3.433336500650648*^9, 3.4333365039531717`*^9}, {3.433336644044791*^9, 
+  3.433336644308446*^9}, {3.43333691883775*^9, 3.4333369191961255`*^9}, {
+  3.4438223711542864`*^9, 3.4438223802972555`*^9}, {3.4438224311895065`*^9, 
+  3.443822433804573*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"If", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"mlLoad", "[", "Imagename", "]"}], "\[Equal]", "1"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"width", " ", "=", " ", 
+       RowBox[{"mlWidth", "[", "1", "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"height", "=", 
+       RowBox[{"mlHeight", "[", "1", "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"data", " ", "=", " ", 
+       RowBox[{"mlData", "[", "1", "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"r", " ", "=", " ", 
+       RowBox[{"Table", "[", 
+        RowBox[{
+         RowBox[{"Table", "[", 
+          RowBox[{
+           RowBox[{"Table", "[", 
+            RowBox[{
+             RowBox[{"data", "[", 
+              RowBox[{"[", 
+               RowBox[{
+                RowBox[{"y", " ", "*", " ", "width", " ", "*", " ", "4"}], 
+                " ", "+", " ", 
+                RowBox[{"x", "*", "4"}], " ", "+", " ", "c"}], "]"}], "]"}], 
+             ",", 
+             RowBox[{"{", 
+              RowBox[{"c", ",", "4"}], "}"}]}], "]"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"x", ",", "0", ",", 
+             RowBox[{"width", "-", "1"}]}], "}"}]}], "]"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"y", ",", "0", ",", 
+           RowBox[{"height", "-", "1"}]}], "}"}]}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"image", " ", "=", 
+       RowBox[{"Graphics", "[", 
+        RowBox[{"Raster", "[", "r", "]"}], "]"}]}]}], ")"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"Print", "[", "\"\<Could not load image.\>\"", "]"}]}], "]"}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.433336299124484*^9, 3.433336308652195*^9}, {
+   3.433336340650147*^9, 3.4333364425606165`*^9}, {3.4333365088102827`*^9, 
+   3.4333365154026337`*^9}, {3.433336600067137*^9, 3.4333366264160366`*^9}, 
+   3.4333370439234943`*^9}],
+
+Cell[BoxData["\<\"Could not load image.\"\>"], "Print",
+ CellChangeTimes->{3.4438224626357355`*^9, 3.443822636813064*^9}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"Show", "[", "image", "]"}]], "Input",
+ CellChangeTimes->{{3.4333366309743385`*^9, 3.4333366324136996`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"Uninstall", "[", "link", "]"}]], "Input"],
+
+Cell[BoxData["\<\"\\\"E:\\\\DevIL\\\\projects\\\\Mathematica\\\\devil.exe\\\"\
+\"\>"], "Output",
+ CellChangeTimes->{3.4438224816530733`*^9, 3.4438226422609577`*^9, 
+  3.4438227036476536`*^9}]
+}, Open  ]]
+},
+WindowSize->{1161, 898},
+WindowMargins->{{54, Automatic}, {Automatic, -1}},
+ShowSelection->True,
+FrontEndVersion->"6.0 for Microsoft Windows (32-bit) (April 28, 2007)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[568, 21, 220, 5, 31, "Input"],
+Cell[791, 28, 459, 9, 31, "Input"],
+Cell[CellGroupData[{
+Cell[1275, 41, 1896, 47, 152, "Input"],
+Cell[3174, 90, 121, 1, 23, "Print"]
+}, Open  ]],
+Cell[3310, 94, 131, 2, 31, "Input"],
+Cell[CellGroupData[{
+Cell[3466, 100, 65, 1, 31, "Input"],
+Cell[3534, 103, 191, 3, 30, "Output"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)

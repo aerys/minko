@@ -1,0 +1,1181 @@
+These are just highlights of what was changed during each release.  For a more in-depth version of what was changed, please look at the ChangeLog.
+
+1.7.8
+---
+- Loading added: fits, iwi, blp, dicom, ftx, rot, texture, dpx, ilbm, utx, mp3
+- Saving added: vtf
+- Rewrote bilinear scaling routine.
+- Rewrote the HD Photo code so that it works properly.
+- Fixed return values of ilSaveL.
+- Windows Example: Added slideshow capabilities with Page Up and Page Down.
+- Windows Example: Added mipmap functionality to 0-9 keys (0 goes to main image).
+- Added Mathematica interface project.
+- Added the ilur - commandline ILU frontend.
+- Added IL_NO_GAMES define.
+- Updated documentation.
+- Added new ILU images to the manual; set the manual license to GFDL.
+- Fixed iluBuildMipmaps (only generated one).
+- Redid iluBuildMipmaps to use iluScale functions instead of nearest.
+- Added an option to describe image formats in configure script.
+- Fixed PNM loading bug.
+- Added support for DDS g16b16, g32b32, r16, r32, a2r10g10b10 and a2b10g10r10 images.
+- Added support for VTF files with 64-byte headers.
+- Fixed some errors in image type conversion.
+- Added IL_VTF_COMP define to control the output format of VTF files.
+- Added French translation of errors.
+- Updated libraries.txt with new external libraries.
+	
+
+1.7.7
+---
+- Redefined clamping values in il.h.
+- Added 64-bit integer types.
+- Fixed bug in iRegisterLoad (https://sourceforge.net/forum/message.php?msg_id=5973761).
+- Added WBMP support (loading and saving).
+- EXR files can now be loaded as file streams and lumps.
+- Changed iNeuQuant to take number of colors in palette.
+- Compiled MNG support back in.
+- Added Sun Raster file reading.
+- Better Linux configuration scripts
+- Added libsquish and nVidia Texture Tools support - accessed through ilCompressDXT.
+- Added IL_ALPHA support.
+- Fixed a bug dealing with 16-bit luminance .psd images.
+- Added ilutGLSetTex2D and ilutGLSetTex3D.
+- Added support for BGRA4444 .vtf images.
+- Changed support for cubemaps to be separate from animation lists.
+- Fixed possible buffer overruns in .hdr and .pnm loading code.
+- Changed GIF loading code to better load files with local palettes in each frame.
+- Added support for environment maps and animations to .vtf loading.
+- Added ilClampNTSC function.
+- Added TIFF saving to file streams.
+- Added JPEG 2000 saving.
+- Added support for more .jp2 formats.
+- Improved the internal DXT compressor.
+- Added OpenEXR saving.
+- Reenabled PhotoCD support.
+- Fixed SoftImage PIC support.
+- Updated MSVC++ x64 projects.
+- Readded DXT extension functions.
+- Added IFF loading.
+- Fixed pixel shift issue with iluRotate.
+- Added code in ilSaveL to return the number of bytes required by the output file data.
+- Added code to determine the filetypes of JP2, MDL, XMP and EXR from their headers.
+- Changed the return values of ilSaveF and ilSaveL to integers telling the number of bytes written.
+- Added checks for malformed .psd files.
+- Added Windows Mobile projects.
+- Added DevIL.Net project.
+- Added TPL format loading.
+- Updated ilutConvertToSDLSurface.
+- Rearranged how mipmaps are stored internally and accessed.
+- Fixed bug loading malformed RLE Targa images.
+- Added support in ilCopyPixels when copying from indexed images.
+- Added Doxygen documentation.
+- Updated main documentation.
+
+
+1.7.5
+---
+- Added check in iluScale for parameters of 0, which would cause a crash.
+- Cleaned up the tons of extra lines in il_dds.c.
+- Added .vtf support.
+- Fixed bug in file caching if the buffer was too small.
+- Fixed crash saving .tga files if no author name string present.
+- Fixed crash in ilActive* if a number too large is specified.
+- Added support for alpha-only formats (IL_ALPHA).
+- Better conversion from lower bpp to higher bpp data.
+
+1.7.4
+---
+- Added German translations of error codes in ILU.
+- Added ilutGLSubTex back to ilut.h.
+- Added 64-bit Windows configurations to projects.
+- Fixed various 64-bit bugs.
+- Fixed dependency of ILUT on MSVCRT DLL.
+- Redefined ILsizei as size_t.
+- Changed allocation functions to ILsizei from ILuint.
+- Removed ILvoid, since it is now illegal in GCC 4.2.
+- Started rewriting Windows HD Photo support from scratch.
+- Started DirectX 10 code.
+- Changed ilSaveCHeader's second argument to char*.
+- Changed ilutGLScreenie to use Unicode if needed.
+- Fixed various Unicode problems with ilSetString.
+- Added progressive saving of .jpg with IL_JPG_PROGRESSIVE flag.
+- Added more to the Fortran wrapper.
+- Fixed TIF loading/saving (#define LZW_SUPPORT not enabled in libtiff).
+- Changed MSVC++ to use MSVCRT libraries again.
+- Added IL_BLIT_BLEND to influence alpha blending in ilBlit/ilOverlayImage.
+
+1.7.3
+---
+- ilGenImage now returns ILuint instead of ILint.
+- Added pkgconfig devil.pc.
+- Applied bugfixes from Richard Sims (mainly .psd).
+- Added new Xcode framework.
+- Added Fortran support.
+- Changed MSVC++ 2005 project to link with static MSVCRT library.
+- Added patch by SF user robin_charlton for Windows BMP support in ILUT.
+- Updated Cmake files.
+- Added preliminary Microsoft HD Photo support.
+- Added better Unicode support.
+- Changed .jp2 loading so that file streams can now be loaded.
+- Changed limit/clamp in il.h to IL_LIMIT/IL_CLAMP.
+- Added .hdr saving.
+- Added Dutch/Spanish/Arabic/Japanese translations of error codes in ILU.
+- Added ilut_directxm.c (DirectX Mobile support) from Vincent Richomme.
+- Fixed a possible buffer overrun in iClipString.
+
+1.7.2
+---
+- Added preliminary OpenEXR support.
+- Fixed crash in ilSwapColours with images having bits-per-channel greater than 8.
+- Fixed ilClearImage not clearing images properly with bpc greater than 8.
+- Added MSVC++ 8 projects back.
+- Added MSVC++ Unicode projects.
+
+1.7.1
+---
+- Added Mac OS X .icns support
+- Fixed a bug with non-standard .ico files that have PNG compression and palettes.
+- Added JPEG 2000 support with JasPer.
+- Added support for 256x256 and 512x512 JPEG 2000 encoded .icns.
+
+1.7.0
+---
+- Fixed a windows padding problem with bitmaps (thanks to robin_charlton)
+- Added ILUT-X11 thank's to Jesse Maurais patch
+- fixed PNM loading problem if the image contained 0x20 (a gray) in the beginning of the image
+- added internal asserts to check pedanticaly check consistency in debug builds
+- fixed SSE3 check
+- added support for lua with swig
+- from now the format of an opengl image can be GL_ALPHA too. (only when for opengl, not usable anywhere else). it's more an hack then a solution.
+- new versions of ilReadRLE8Bmp, ilReadRLE4Bmp from Björn Ganster
+- applied submitted patch #1645286. patch for reading X offset and Y offset from TIFF files.
+- fixed lump reading bug. from Bjürn Ganster
+- Fixed gif loading patched from Bjürn Ganster
+- Fixed bug #1643309.  wrong buffer size on ilSaveL with IL_BMP
+- Fixed some iluCompareImage patched from James Kirkpatrick
+- Fixed many security holes patched from Bjürn Ganster
+- fixed bug #1637588. iMemSwap bugs
+- fixed bug #1634099. Infinite loop on corrupt JPEG
+- applied submitted patch #1632474. GIF loading fails on incomplete images
+- applied patch #1612477. _UNICODE / UNICODE fixes. more win32 unicode fixes.
+- TIFF compression method changed to LZW
+- added the DEPRECATED macro and deprecated iluGenImage and iluDeleteImage
+- glCompress2DARB now works with OS X too.
+- incorporated patches from debian.
+- Added support for non power of 2 texture loading (if available)
+- fixed bug #1609417. Bug in iluGetImageInfo
+- iGetIntegervImage(IL_IMAGE_CHANNELS) now returns a correct value
+- fixed bug #1561642. ILstring is poorly implemented (w.r.t const and others)
+- fixed bug #1562955. PSD 16 bits
+- ilInit and ilShutdown can now be called more then one times or shutdown even if not initialized without crashing anything.
+- fixed bug #662903 ilBlit result incorrect when source is not (0,0)
+- internal clamp functions now are macros
+- ilSetAlpha now returns a boolean value since it can fail
+- fixed an error in the configure script were breaking compilation if libpng-config wasn't in the path
+- applied submitted patch #1550471. missing const in il_tiff.c
+- fixed bug #1554447. broken bmp loading with less then 256 color and a palette
+- applied submitted patch #1554358. headers fixes
+- Added MSVC++ Express 2008 projects and removed MSVC++ 6 projects.
+- Added support for loading Windows Vista icons.
+
+1.6.8 RC2
+-----
+- applied submitted patch #1539074. Fixes some bugs with paletted images, adds iluScaleAlpha (from jbitnet)
+- fixed OpenGL loading
+- altivec code is now merged inside IL sources, not on a separate directory
+- more dds fixes
+- now the returned number of layer, mipmaps or subimage is correct (computed at every call)
+- added ilGenImage() and ilDeleteImage()
+- fixed iluMirror, ilMirror duplicate code
+- added _mm_malloc _mm_free for vectorized code memory managment
+- fixed precedence for memory mangment variants
+- Altivec,SSE,SSE2,SSE3 checks completed
+- applied submitted patch #1483941
+- applied submitted patch #1476315
+- applied submitted patch #1085415 DXT3 and DXT5 save is broken
+- applied submitted patch #1504388.(by Hans de Goede)
+- fixed bug #1411053 now Lump loads parameters are const pointer
+- fixed bug #1211071 pcx with the padding header not 0 filled will be loaded
+- fixed bug #1092521 png save memory leak fixed
+- fixed bug #1183924 iluScale checks for return values of ilTexImage
+- fixed bug #1173264 iluInvertAlpha inverting the wrong channels
+- fixed bug #1119508 il_tiff high order bit garbage when using uint32 as shorts.
+- ilTypeFromExt is now exported
+- ILstring now is (const char*). The typecastings are now not necessary to pass ILstrings
+- iluFlipImage now is 3x faster and doesn't use any memory allocation
+- IL_LUMINANCE and IL_LUMINANCE_ALPHA are now correctly handled; corrected function:
+	iluInvertAlpha,	[iluScaleColours needs testing]
+- iluScaleColours will return error when passing not BYTE or UNSIGNED_BYTE images, needs enhanchments to enable all the types.
+- Finalized the Unicode support for windows.
+- Fixed inlining for small function (i.e.g. endianess, rouding..)
+- Added to configure script the ability to configure the path for the libraries
+
+1.6.8 RC1
+-----
+
+- Fixed a lot of minor bugs in various image format (especially TIFF)
+- Rewritten documentation
+- Dev-Cpp support
+- Added ilSetAlpha
+- Added ilModAlpha
+- Removed ilSetSharedPal
+- Fixed a common TARGA/TIFF/PNG memory Leak
+- Fixed bug 785053 in il_header.c
+- Fixed bug 785178 in il_header.c
+- Fixed stack problem for name reuse
+
+1.6.7
+-----
+
+- Added hdr image format
+
+
+1.6.6
+-----
+
+- Added .gif support back in.
+- Fixed some DDS problems.
+- Added DirectX 9 support.
+
+
+1.6.5
+-----
+
+- Created a stress test application.
+- Found out that you have to set PNG_NO_STDIO when compiling libpng on Win32,
+  or else it will try to write via fprintf on an error, causing a crash.
+- Fixed a similar problem with libjpeg, though you don't have to recompile.
+- Fixed a problem converting palette'd images to higher than IL_UNSIGNED_BYTE.
+- Changed 1-bit .bmp files to use 0 and 1 instead of 0 and 255 (using a palette).
+- Fixed a divide by 0 in iluPixelize() if the pixel size was 0.
+- Fixed some problems with iluEqualize().
+- Found and fixed three memory leaks using Paul Nettle's memory manager.
+- Changed the filters to properly work on images with higher than 8-bit channels.
+- Fixed some uninitialized values when using ilConvertImage on palette'd images.
+- Fixed a problem saving .dds mipmaps.
+- Fixed a bug saving .dds files with blocks of all the same colour.
+- Added support for the IL_LUMINANCE_ALPHA format.
+- Fixed a bug loading corrupt .gif files.
+- Removed .gif support, to comply with the Unisys patent (though the code is still there).
+- Added preliminary region checking in ILU.
+
+
+1.6.1
+-----
+
+- Fixed a bug loading 8-bit .psp files.
+
+
+1.6.0
+-----
+
+- Removed the NeuQuant samples limit of 15.
+- Fixed conversion to IL_FLOAT and IL_DOUBLE types.
+- Rewrote a lot of the Endian conversion routines.
+- Added missing Endian conversion to .gif and .ico files.
+- Removed the unneeded il(u/t)_error.h files.
+- Added the devil_internal_exports.h file and moved lots of il(u/t)_internal.h in there.
+- Fixed a bug converting from IL_BGR to IL_LUMINANCE on IL_INT and IL_UNSIGNED_INT types.
+- Went through the code and fixed many possible problems if ialloc failed.
+- Fixed a possible memory leak in iGetPaddedData().
+- Removed a function not being used from the .sgi code.
+- Fixed several leaks and double allocations in iConvertPal().
+- Fixed a possible leak in iluColoursUsed().
+- Added IL_LOAD_EXT and IL_SAVE_EXT functionality to ilGetString().
+- Merged in Ryan Butterfoss's changes to the DDS saving code.
+- Moved ilSetPal() from il_devil.c to il_pal.c.
+- Fixed potential memory leaks while loading a corrupt .gif file.
+- Added the IL_FILE_WRITE_ERROR #define.
+- Fixed double flipping in ilCopyPixels() and ilSetPixels(), along with some crashes.
+- Fixed a crash calling iluColoursUsed() when a 1x1 image was bound.
+- Fixed a leak if .dds mipmap reading failed.
+- Fixed leaks in ilRegisterMipNum() and ilRegisterNumImages() if they failed.
+- Sped up several aspects of loading and saving .sgi files.
+- Added ILUT_D3D_POOL for ilutSetInteger() and ilutGetInteger().
+- Changed ilGetString() to return an ILstring.
+- Added IL_BGRA support back in to ilApplyProfile().
+- Removed double flipping when saving .pcx and .jpg files.
+
+
+1.5.6
+-----
+
+- Fixed a problem loading .psd files when IL_MEM_SPEED_HINT is set to IL_FASTEST.
+- Fixed a bug loading corrupted .pcx files.
+- Fixed some bugs using ilLoadL.
+
+
+1.5.5
+-----
+
+- Temporarily removed .pcd support, since no .pcd images were loading correctly.
+- Fixed problems with greyscale .bmp, .jpg and .pcx files.
+- Made ilLoadFromJpegStruct and ilSaveFromJpegStruct exportable even if IL_NO_JPG defined.
+- Fixed a bug loading .gif files with "local palettes".
+- Fixed a problem loading .ico/.cur files with ColoursUsed set to 0 in their headers.
+- Fixed a bug loading 4-bit .bmp images.
+- Added a check to see if a .jpg is missing data at the end, so it does not loop infinitely.
+- Fixed the Delphi headers.
+- Added a check for extensions in GIF87A files.
+- Added .psd saving.
+- Optimized ilutGetPaddedData a bit.
+- Added some checks to prevent corrupt .psd files from crashing the library when loading.
+- Fixed a problem using ilLoadL with the IJL.
+- Updated the Win CE project files.
+- Added .plt support.
+
+
+1.5.1
+-----
+
+- Fixed several problems with the internal file routines that caused many bugs.
+- Fixed a simple problem loading .gif files.
+
+
+1.5.0
+-----
+
+- Removed the printfs that somehow got left in il_sgi.c.
+- Added ILUT_D3D_MIPLEVELS to ilutSetInteger().
+- Updated the static library workspace.
+- Updated ilAddAlpha, ilAddAlphaKey and ilRemoveAlpha in il_convert.c to deal
+  with differing bits per channel.
+- Changed the registered loading/saving function handler so that they can return errors.
+- Changed ILU and ILUT to use DevIL's memory handler.
+- Removed the last of the malloc/free calls.
+- Changed the file/lump reading functions to set IL_FILE_READ_ERROR automatically
+  when one occurs.
+- Added IL_EOF for use with other languages.
+- Fixed a small memory leak in the .psp loading code.
+- Fixed a bug where images with types larger than short were not saving as .sgi correctly.
+- Added checks for all file reads to see if they succeeded.
+- Added recognition for the .pdd extension (.psd renamed).
+- Fixed some leaks in the .dcx code.
+- Added ilutFreePaddedData().
+- Fixed some possible leaks in ilTexImage().
+- Fixed a problem with loading some .dds volume textures (LinearSize field appears to be
+  incorrect on some images).
+- Fixed a problem loading some .tga files.
+- Added more checks to determine if a .dds file has a volume texture in it.
+- Added ilGetDXTCData().
+- Fixed some RLE .sgi loading bugs.
+- Added direct S3TC/DXTC to OpenGL code.
+- Added ILUT_DIRECT3D8 for use with ilutRenderer.
+- Added direct DXTC to Direct3D 8 code.
+- Added IL_DXTC_DATA_FORMAT for use with ilGetInteger(v).
+- Added support for more formats with IL_TYPE_UNKNOWN.
+- Added .pix support.
+- Added .pxr support.
+- Added .xpm support.
+- Fixed MSVC++ post-build, thanks to Nick Marley.
+- Changed the load order to check for popular image formats first.
+
+
+1.4.2
+-----
+
+- Fixed a crash with the .psp code and a large memory leak.
+- Fixed .gif loading, even loading animations better than I did with libungif.
+- Added the static library workspace to /projects/msvc/static.
+- Fixed another Mac OS X compilation problem.
+- Removed references to libungif.
+
+
+1.4.0
+-----
+
+- Fixed .dds volume texture support.
+- Wrote the VolTex test application that writes out the individual slices of a volume texture.
+- Changed the internal iConvertImage to make things much nicer.
+- Fixed iluRotate so that it works on colour-indexed images.
+- Added ilGetAlpha().
+- Added iluInvertAlpha().
+- Fixed Halo palette loading (didn't close the file handle after reading).
+- Added .act palette support (Adobe Color Table).
+- Added support for the Paint Shop Pro file format (.psp).
+- Added the last bit of code to load TIFF files from memory buffers.
+- Fixed the out-of-date Intel JPEG Library support.
+- Rewrote .gif support.
+- Fixed some problems with the Mac OS X compilation.
+- Added Sam's fixes for .jpg and .bmp handling.
+
+
+1.3.1
+-----
+
+- Fixed a huge ilLoadPal() bug.
+- Disabled SDL (hopefully temporarily) to get rid of their main() mangling.
+- Fixed greyscale .bmp saving bug.
+- Removed the iluScaleTest() declaration.
+
+
+1.3.0
+-----
+
+- Reworked sources tree.
+- Updated *nix support, now uses autoconf/automake.
+- Optimized ilCopyPixels and ilSetPixels if the destination and source formats/types are the same (suggestion by Kenneth Hurley).
+- Fixed an ilSetPixels memory leak.
+- Fixed the Big Endian versions of GetLittleFloat and GetLittleDouble.
+- Changed iprintf to ilprintf to fix an error compiling with Cygwin.
+- Changed iCurImage to iluCurImage and ilutCurImage in ILU and ILUT, respectively, to help with static libs.
+- Removed ilShutDown call from ilInit (gave an erroneous error).
+- Changed return type of ilSaveF and ilSaveL to return how many bytes were written.
+- Added colour-indexed support to .tif saving.
+- Fixed colour-indexed support with .bmp saving.
+- Added MSVC++ 7 solutions and projects.
+- Fixed an ilConvertImage bug when a colour profile was present in the image.
+- Upgraded to LittleCMS 1.0.8.
+- Updated some of the DDS loading to load more images.
+- Added .psd support.
+- Added some more Endian swap routines.
+- Added offsets to internal image struct and added IL_IMAGE_OFFX and IL_IMAGE_OFFY to il.h.
+- Added some more permissable Modes to ilSetInteger.
+- Changed a malloc to ialloc in il_profiles.c.
+- Added Kenneth Hurley's contributions to the DDS code.
+- Added NeuQuant code and defines for controlling quantization.
+- Fixed PowerBasic test files.
+- Added GDI+ and MFC static library interfaces.
+- Added more Modes for ilSetString, along with setting the C Header output string.
+- Added DDS saving.
+- Added preliminary (not functional) .psp support.
+- Added a config.h generator for MSVC++.
+
+
+1.2.4
+-----
+
+- Moved ilInit to il_istack.c.
+- Changed iFreeMem to ilShutDown, and made it external.
+- Rewrote much of the DDS support.
+- Made a "Dynamic" project in the MSVC++ workspace, where it delayloads some external libraries for a smaller memory footprint.
+
+
+1.2.2
+-----
+
+- Removed saving support for .bmp files with negative heights.
+- Added ilApplyProfile for colour profile support.
+- Moved several projects from the 'TestIL' directory to 'Examples'.
+- Fixed the DDS cyan bug.
+- Added DCX support.
+- Fixed the iluScaleAdvanced return value, thanks to Rune Kock.
+
+
+
+1.2.0
+-----
+
+- When .bmp files don't have biColorsUsed set, DevIL now uses a default value when a palette is present.
+- Added FreeBSD makefiles, thanks to Wojciech Sobczuk.
+- Added .dds loading support.
+- Updated the manual.
+- Fixed some bugs in the documentation.
+
+
+1.1.9
+-----
+
+- Removed .oil support -- it wasn't used anyway.
+- Better Linux makefiles, thanks to Ismo K�rkk�inen.
+- Fixed a problem compiling in Linux.
+- Renamed all DevIL files with il_*, to make it easier to compile as a static library (no name conflicts).
+- Added IL_STATIC_LIB if you want to compile as a static library (no pragma options in MSVC++).
+
+
+1.1.8
+-----
+
+- Added the new scaling features to ILU.
+- Fixed crash when saving .tif files.
+- Added full Windows CE support.
+- Fixed iBindImageTemp in ILUT, correcting several functions that used this.
+- Fixed ILUT's GL functions when the window did not have a width of 4x.
+- Added TexImage and Resize to the ilImage C++ wrapper.
+- Corrected Big Endian support in the data (all data was shown with blue and red swapped, and the alpha was in the wrong position).
+
+
+1.1.5
+-----
+
+- Made ilSetPixels accept negative offsets.
+- Cleaned up rle.c some and added credits to the top.
+- Fixed .gif animation loading.
+- Made memset and memcpy intrinsic -- removed ilMemSet and ilMemCpy.
+- Fixed a bug loading .jpg files with overrided versions of the loading functions.
+- Fixed a bug loading ASCII .pnm files that do not end with an endline.
+- Fixed a loading problem with .png files with bit depths less than 8.
+- Fixed a loading problem with .png files of type PNG_COLOR_TYPE_GRAY_ALPHA.
+- Changed .png loading to use the gamma values on PCs.
+- Removed .lbm support.
+- Added several new examples.
+- Fixed the RGB order of jpeg loading/saving.
+- Enabled ilTypeFunc functionality.
+- Removed the bit filters from ILU.
+
+
+1.1.3
+-----
+
+- Added IL_FLOAT and IL_DOUBLE support to ilConvertImage().
+- Fixed a large bug when writing to "lumps".
+- Added ilSetString() and implemented behaviour in states.c for customized strings.
+- Changed writing to use a const void* buffer instead of a void* buffer.
+- Fixed a bug in reading non-compressed .oil files.
+- Fixed lots of problems with mipmaps.
+- Added ilSetMemory() and callbacks.
+
+
+1.1.1
+-----
+
+- Added palette support to iluEqualize().
+- Added palette support to ilu convolution filters.
+- Fixed iluEnlargeImage(), which was erroring out.
+- Fixed iluScale(), which was not setting the origin of some images correctly.
+- Changed all function parameters from char* to const char*.
+- Removed WinMain from the GLTest examples but used a linker setting to get rid of the console window.
+- Added preliminary .mng support, thanks to libmng.
+- Removed anal debug memory messages.
+- Added ilutD3D8Texture() and ilutD3D8VolumeTexture().
+- Fixed crash with some palette'd .png images.
+- Added ilutD3D8TexFromFile(), ilutD3D8VolTexFromFile() and several more D3D8 functions.
+- Removed png_.h from /OpenIL to get rid of any libpng conflicts.
+- Added interlace support for .png saving.
+- Fixed some problems with origins (notably targa loading).
+- Wrote OpenILUT/BeOS.cpp.
+- Fixed .bmp saving.
+- Fixed .pnm loading when the file is of zero length.
+- Fixed ilClearImage(), which was only setting the first byte of each pixel.
+- Fixed an iluNoisify() bug where it would crash when the tolerance was too low, and also another bug where the output is garbled.
+- Removed the last of the ilutOgl function declarations and the GL compressed functions.
+- Fixed the JPEG blockiness problems with some rare JPEGs.
+- Removed the two poor gamma correction functions.
+- Changed all OpenIL references to NeoIL.
+- Added ilBlit().
+- Fixed ilBindImage() behaviour when a new image was requested.
+- Added footer writing to .tga saving.
+- Added .tga extension support.
+- Fixed .sgi RLE writing.
+- Added iGetFlipped() internally to speed up temporary flipping of an image (usually for saving).
+- Added origin correction to .oil saving.
+- Started using libpng 1.0.11.
+- Fixed 1-bit .bmp loading (previously assumed luminance when supposed to be textured).
+- Added gif.c.
+- Removed the glext.h dependency.
+- Added ilSet() and ilutSet().
+- Fixed a bug saving 32-bit .bmp files.
+
+
+2.1.4b
+------
+
+- Fixed crash in iluGammaCorrectCurve() when the image had a palette.
+- Non-Windows systems no longer call ilutCompGLInit().
+- Moved #include <windows.h> in alloc.c inside the #ifdef _WIN32.
+- Fixed so much with multiple bpc's and image volumes.
+- Fixed some quirks in ilConvertImage().
+- Found and fixed a memory leak in 4-bit .pcx and 16-bit .tga support.
+
+
+2.1.3b
+------
+
+- Started the major work needed to make OpenIL use multiple bytes per channel.
+- Created convbuff.c and converted ilConvertBuffer() to convert between types instead of just between formats (extremely exhausting!).
+- Finished 2 bpc support for .sgi files.
+- Finished 2 bpc support for .png files.
+- Found and fixed some problems in ilCopyPixels().
+- Changed iluNoisify to accept a float parameter.
+- Added ilApplyPal() and iluReplaceColour().
+- Fixed a bug in all saving functions where it would crash if a file had not been read beforehand.
+- Fixed iLoadDataInternal()'s problem with origins.
+- Added iluLoadImage().
+- Fixed a problem where ilutGLBuildMipmaps() was flipping images that did not need to be flipped.
+- Fixed .png-saving of palette'd images where the colours were in the wrong order (bgr instead of rgb in some cirumstances).
+- Fixed a problem saving palettes in the .oil format.
+- Added batch conversion to WindowsTest.
+- Created openilu/bit.c and moved the bit filters over there.
+- Fixed ilutGetPaddedData() where it was not flipping the image and swapping colours.
+- Made ilConvertImage() not perform conversions when unnecessary.
+- Added seeking and telling to the file writing functions.
+- Fixed memory leak in ilCopyPixels(), thanks to m|G-21.
+- Added 4-bit .pcx support.
+- Added support for the Intel Jpeg Library (IJL).
+- Fixed a bug in ilCopyPixels() when the buffer was larger than the image itself.
+- Removed IL_IMAGE_DATA from il/il.h.
+- Added .lif support.
+- Moved #pragmas for external libs into internal.h from il/il.h (fixed SDL linking problem).
+- Updated the .oil specs to include lzo compression.
+- Added pause / resume to AnimTest.
+- Fixed 3d bilinear filtering in iluScale().
+- Fixed .tif-saving orientation problem.
+- Changed most functions using ILfloats as parameters to use ILclampf instead.
+
+
+2.1.1b
+------
+
+- Added back lzo support to oil.c.
+- Added alloc.* to help find memory leaks in debug mode in Windows.
+- Found and fixed two small memory leaks:
+  - In iLoadOilInternal(), in oil.c, the directory was not being freed.
+  - In iConvertPalette(), in convert.c, NewImage's palette was not being freed.
+- Added key colour support (not thoroughly tested yet).
+- Fixed a problem in AnimTest/WindowsTest where the openfilename buffer was not large enough.
+- Fixed a bug in ilFixCur() in convert.c where it was setting the type as the format of the image.
+- Rewrote ilutGLSetTex().
+
+
+2.1.0b
+------
+
+- Renamed ilSetDefaultCallbacks() to ilResetRead() and ilSetFileCallbacks() to ilSetRead().
+- Created ilResetWrite() and ilSetWrite().
+- Added IL_SEEK_XXX #defines.
+- Fixed .sgi loading (was reading too much per channel).
+= Added ilGetLumpPos().
+- Added ilSaveF and ilSaveL.
+- Revamped a lot of the internal file routines (especially saving).
+- Fixed .bmp saving and loading (both padding issues).
+- Fixed .pcx saving and added support for truecolour .pcx files (including 32-bit).
+- Changed ilutSetWinClipboard() to convert images to bgr format before sending to the clipboard.
+- Rewrote bitfile routines to use ILHANDLEs.
+- Rewrote most saving routines to utilize saving to file streams and memory lumps.
+- Wrote ilutWinLoadUrl().
+- Created an internal file buffer in files.c.
+- Created ilutOglBindCompressed() (untested so far) and ilutOglMipCompressed().
+- Fixed colour quantization.
+- Fixed bugs in ilSetPixels() that caused incorrect copies.
+- Added drag-and-drop capability to WindowsTest.
+- Fixed a rare case of ilCopyPixels flipping the image when it wasn't supposed to.
+- Fixed WindowsTest not working correctly in Windows 2000.
+- Wrote oil.c, oil.h and the Oil Gen project to utilize the new .oil format (tentative name).
+- Added OS/2-style .bmp loading.
+- Created AnimTest to test animation (mainly .oil).
+
+
+2.0.9b
+------
+
+- Fixed a problem reading some 8-bit .bmp files where the palette was read incorrectly.
+- Changed iluScale and the filter functions to convert palette'd images to their truecolour counterparts.  I will change them back at the end when I fix the problems with colour quantization.
+- Added palette support to iluGammaCorrectCurve.
+- Fixed iluSwapColours() where iCurImage was NULL.
+- ilut's OpenGL functions now resize a texture before sending it to OpenGL if the texture is too large.
+- Fixed a problem when sending large images to OpenGL (now supports extremely large images).
+- Fixed a padding bug when loading low-bit .bmp images.
+- Changed il.h's ILAPIENTRY and ILAPI #define's.
+- Removed the #pragma from the top of WindowsTest.
+- Changed the ilActive* functions to reset to the base image when 0 is used as the parameter.
+- Fixed ilLoadPal where it was reading extensions incorrectly.
+- Added .wal support.
+- Fixed a problem in iGetActiveNum, where it was trying to access a NULL pointer's Next pointer.
+
+
+2.0.8b
+------
+
+- Changed the ilActive* functions to use the current image, not the base image.
+- Added the IL_CUR_IMAGE #define to get the current image name via ilGetInteger().
+- Modified WindowsTest to preserve the original image.
+
+
+2.0.7b
+------
+
+- Added SDL timing to the Benchmark project, though I cannot get it to link correctly.
+- Added colour quantization, thanks to romka.
+- Changed the WindowsTest icon.
+- Included the debug libs and dlls in the full Windows installer.
+- Modified ilGenImages()/ilBindImage()/ilDeleteImages() behaviour so that you can bypass ilGenImages() and call ilBindImage() directly.  This probably requires more thorough testing but appears to be stable.
+
+
+2.0.6b
+------
+
+- Fixed some linker problems, so I'm uploading it as 2.0.6b.
+
+
+2.0.5b
+------
+
+- Changed ilNewImage() to set the format and type of an image.
+- Fixed an error in the ilGetInteger() documentation.
+- Added some new features to the DDrawTest project that were already present in WindowsTest.
+- Added loading functions to the API-specific ilut functions for easier loading.
+- Added ilutSetHBitmap() and made ilutGetWinClipboard() utilize it.
+- Added ilutOglSetTex(), which doesn't work yet.
+- Added saving functions to the API-specific ilut functions.
+- Added the IL_USE_KEY_COLOUR #define and ilKeyColour(), which do not actually do anything yet.
+- Fixed a problem in several OpenGL functions where it was not using the resized bitmap.
+- Fixed a bug in iluSharpen() where it was using iCurImage instead of CurImage and another where it was using a depth of 0.
+- Added iluDeleteImage() and iluGenImage().
+- Added iluGetImageInfo().
+- Got the GL_RGB8 and GL_RGBA8 stuff working in the OpenGL functions when ILUT_OPENGL_CONV is enabled.
+- Fixed problems in iConvertPal() when converting from IL_PAL_BGR32 or IL_PAL_RGB32 to IL_PAL_BGRA32 and IL_PAL_RGBA32 palette formats.
+- Renamed ilutOglBuildMipmaps() to ilutOglBindMipmaps() and created a new ilutOglBuildMipmaps().
+
+
+2.0.3b
+------
+
+- Added subimage support to ilCopyImageAttr().
+- Added the IL_ACTIVE_XXX #define's for use with ilGetInteger/v().
+- Added ilCloneCurImage().
+- Modified Windows Test to work with subimages.
+- Fixed a problem loading some (very few that I've found...) .pcx images.
+- Fixed the Windows Test window width problem.
+- Added format and type mode setting.
+- Added 4-bit rle .bmp support.
+- Updated ilAddAlphaKey().
+- Fixed a bug in ilSaveSgi() where it wasn't changing from bgr(a) to rgb(a).
+- Modified the MSVC++ project settings to generate separate debug dlls and libs, so you don't have to change the directories everytime you switch from release -> debug or vice-versa.
+- Added iluEnlargeImage().
+- Changed ilSaveTarga() to preserve the current image's palette.
+- Made an ilConvertBuffer() function that iConvertImage() now uses.
+- Changed ilFlipImage() to use memcpy() instead of a for loop.
+- Fixed a problem in ilSetPixels() and made ilSetPixels() and ilCopyPixels() use the new ilConvertBuffer() function.
+- Changed ilOverlayImage() to use ilConvertBuffer().
+
+
+
+2.0.0b
+------
+
+- Added resources to ilu and ilut.
+- Got rid of ilVersion and put its functionality in ilGetInteger.  I did the same for ilu and ilut, too.
+- Moved ilFlipImage and ilSwapColours to ilu.
+- Made ilAddAlpha, ilAddAlphaKey and ilRemoveAlpha internal to il.
+- Made all of rle.c internal to il.  There was no need to make it public.
+- Added .pic, .pnm and .sgi validity functions.
+- Changed all the *F functions (e.g. ilLoadTargaF) to restore the file stream's previous state before the call.
+- Added pattern.c and everything within.
+- Added rawdata.c and everything within.
+- Changed the functions in raw.c to accept "normal" parameters.
+- Changed internal functions to prevent from using ilGetState (which was rather nasty to use) and removed ilGetState.
+- Removed dependency on OpenGL.
+- Removed using the paletted texture extension in ilut for OpenGL.
+- Added ilGetPalette().
+- I don't know how it happened, but I inadvertently left out two very important lines in iLoadJpegInternal() that cleaned-up after libjpeg, so now they're in.
+- Changed iLoadTiffInternal() a lot.
+- Fixed a possible leak in iLoadPngInternal and streamlined it some.
+- Hopefully fixed all problems displaying palette'd images.
+- Added ilGetExtension.
+- Hopefully finally figured the formula for padding for .bmp files.
+- Disabled checking for extensions in all the ilLoadXXX functions so they can be forced to load that specific type of image no matter what.
+- Added more support for converting palettes via the IL_CONV_PAL mode.
+- Added better registration in register.c.
+- Fixed problems with libtiff, but I had to override using memcmp, because that is where it would fail in the libtiff library - Also overrided the warning and error functions of libtiff.
+- Got rid of ilSetDoomPal() and made a ilSetSharedPal() function to use by stupid file formats that don't have a palette but are colour-indexed nonetheless.
+- Made unified ilLoad and ilSave functions that use enums.
+- Changed the image stack size to 1024 (but it can be enlarged...).
+- Changed ilut around.  Users need to change any ilut code they've used previously.
+- Added compression control features to ilHint().
+- Added boolean values to ilGetInteger() and vice-versa.
+- Added the iluBitFilter functions.
+- Added interpolation to the iluScaleNd() functions.
+- Got rid of the unused ilAlphaFunc().
+- Removed ilOverlayImage().
+- Started overriding the error/warning handlers for libjpeg in jpeg.c.
+- Moved bitfile functions into the private OpenIL sector.
+- Began lbm support.
+- Included new Delphi headers and the all-new Linux makefiles.
+- Added a unified ilLoadPal() and got rid of the specific palette-loading functions.
+- Fixed 1 bpp and 4 bpp .bmp loading.
+- Fixed 8-bit rle .bmp loading.
+- Got lbm support working, but it only works with one image I have and none of the PSP-generated ones.
+- Made all utility.c functions private.  Equivalent functionality is in ilGetInteger().
+- Added iluImageParameter() to control filtering in iluScale() and placement in iluEnlargeCanvas().
+- Unified ilCopyPixels1D, ilCopyPixels2D and ilCopyPixels3D into an ilCopyPixels.
+- Combined ilCrop2D and ilCrop3D into an ilCrop.
+- Changed ilSetError() to handle stack overflows in the error stack more gracefully.
+- Used IL_MEM_SPEED_HINT in targa.c, bmp.c and pcx.c to decode quicker if IL_FASTEST is set.
+- Got OpenIL* compiling and running under DJGPP again.
+- Attempted to do ilutSetWinClipboard() and ilutGetWinClipboard() (but failed miserably!).
+- Added 3d mipmap generation in ilu (totally untested).
+
+- Changed ilTexSubImage() to ilSetData().
+- Moved ilCompareImage() and ilColoursUsed() to ilu.
+- Removed ilDefaultStates() from public scope.
+- Removed all the extension stuff.
+- Changed ilSaveJascPal() to ilSavePal() and added support for saving palettes to ilSave().
+- Changed ilDeleteImages() to use a quicker algorithm (not having to check against the linked list).
+- Removed ilSetPixel() due to objections.
+- Renamed ilCreateDefaultTex() to ilDefaultImage().
+- Removed ilutGetState().
+- Changed OpenIL* project settings to optimize for size instead of speed.
+- Removed ilutOglIsExtensionSupported() from ilut.
+- Changed the IL_OPENGL, IL_ALLEGRO and IL_DIRECTX #defines to ILUT_OPENGL, ILUT_ALLEGRO and ILUT_DIRECTX, respectively.
+- Mapped ilu and ilut errors to their corresponding OpenIL errors.
+- Fixed ilPushAttrib, ilPopAttrib and their ilut counterparts.
+- Moved file handling from internal.c/.h to the new files.c/.h.
+- Added IL_IMAGE_DEPTH and IL_IMAGE_SIZE_OF_DATA #defines.
+- Looked at libjpeg docs and jdatasrc.c to figure how to make it use all the input types OpenIL supports.
+- Started 1-bit .pcx support.
+- Added iluEmboss() and iluEmbossDark().
+- Made iluScaleColours() work with palette'd images.
+- Added the ilFilters class to the C++ wrapper.
+- Added an iluNoisify() function.
+- Optimized the iluScalexD_() functions a lot.
+- Multiplied the image size by a correction factor of 4/3 when using IL_FASTEST with several formats.  This is mostly for poor compression schemes that can result in larger compressed images than the uncompressed versions (e.g. RLE).
+- Fixed a bug in ilGenImages when an image name is being reused (was NULL after deletion but never recreated).
+- Reinstated .ico support.  All icons I've passed to this have worked so far.
+- Added ilSetPixels().
+- Fixed a severe problem in ilCopyPixels().
+- Created the "3d Test" and the "3d Targa Gen" projects to test 3d images.
+- Fixed problems in several functions that would crash when a given parameter was NULL.
+- Made ilCopyPixels() and ilSetPixels() heed set origins.
+- Commented the hell out of some of the test apps.
+- Renamed WindowTest to GLTest.
+- Created a Windows Test (Windows-specific code).
+- Fixed a buttload of little bugs and similar stuff that were found when using the Windows Test App.
+- Fixed a serious bug in ilCopyImage().
+- Fixed a bug in iluSharpen() where the image was sharpened with a flipped version of the image.
+- Added IL_COLOR_INDEX -> IL_LUMINANCE conversion in ilConvertImage().
+- Fixed ilConvertImage() with several conversions and optimized it a lot.
+- Renamed pattern.c as io.c (loading and saving, along with determining and verifying functions).
+- Changed the MSVC++ proejct setting to be a little more friendly.
+- Fixed the problem with ilSavePal() sometimes saving 0-length .pal files.
+- Created the GdiTest project.
+- Finally got around to writing ilSaveTiff().
+- Added the IL_LIB_TIFF_ERROR #define.
+- Added ilRegisterMipNum() and ilRegisterNumImages().
+- Added ilutLoadResource().
+- Fixed ilutSetWinClipboard() and ilutGetWinClipboard().
+- Worked some on iluRotate() and got it working.
+- Added back ilOverlayImage() (crude but working...) with alpha blending.
+- Redid iluColoursUsed() with a hash table.
+- Added ilutSetHPal(().
+- Made a neat installer with NullSoft's SuperPiMP installer dev kit.
+- Fixed a bug in ilSaveJpeg() when saving images with alpha channels (libjpeg doesn't accept alpha channels).
+- Started on matrix.c.
+- Added iluGammaCorrectCurve().
+- Added preliminary support for Half-Life's model format skins.
+
+
+1.6.0b
+------
+
+- Decided to up OpenIL to a beta status.
+- Fixed a potentially harmful bug if too many images were used in iEnlargeStack().
+- Changed ilBindImage(), ilGenImages() and ilDeleteImages() to be more like their OpenGL counterparts.
+- Fixed ilConvertPal().
+- Added ilCompareImage().
+- Added ilSetPixel().
+- Fixed ilSaveBitmap() and ilLoadBitmap().
+- Fixed many small bugs and changed some small things around that weren't noteworthy enough to document, imo.
+- Included the first (yet incomplete) documentation.
+
+
+1.5.9a
+------
+
+- Added the ilIsImage() definition to il.h.  I quite obviously had forgotten to when I made the function, so it has just been sitting there in many releases...oh well.
+- Looked at the GIMP file associations and noticed PNM, which collectively describes pbm/pgm/ppm, so I decided to change some things in ppmpgm.c, such as renaming it to pnm.c and renaming functions.
+- Fixed two pretty major .bmp bugs.  One stemmed from the fact that I misread the .bmp documentation and thought it was word-aligned, but it was dword-aligned.  The other was the the biColoursUsed member of the .bmp header isn't filled-out correctly half the time, so now it's always calculating a 256-entry palette.
+
+
+1.5.8a
+------
+
+- Fixed a major bug in ilTexSubImage2D_().
+- Renamed ilTexSubImage2D() and ilTexSubImage2D_() to ilTexSubImage() and ilTexSubImage_(), respectively.
+- ilClearImage now uses the correct error code.
+- Fixed a bug in ilTexImage_() that sets IL_OUT_OF_MEMORY, even when there is plenty of memory, thanks to ABee.
+- Fixed bugs in the ilCopyPixels family that dealt with not calculating the offsets correctly and added error-checking to them to make sure the caller wasn't requesting dimensions too large.
+- Replaced all the 4x4 filter matrices with 3x3 filter matrices.
+- Added ilColoursUsed().
+- Added iluPixelize().
+- Changed ilColoursUsed() to use a hash table, but it's still pretty damn slow...
+- Added ilHint().
+- Added ilutGetHPal().
+- Added ilClearColour() and changed ilClearImage() to use the values passed to it.
+- Optimized ilColoursUsed() by using a totally different algorithm (quicksort).
+- Fixed ilConvertImage(GL_LUMINANCE) when the source was a bgr(a) image.
+
+
+1.5.7a
+------
+
+- Added some support for 1-bit .bmp's.
+- 16-bit targa files are now converted to 24-bit on-the-fly.
+- Fixed a bug in iReadUnmapTga() where it only read 24-bit targas.
+- Added iluVersion() and ilutVersion().
+- Added ILUT_OPENGL_CONV to ilut to be enforced in ilutOglFormat() in ilut/opengl.c.
+- Started enforcing IL_CONV_PAL (automatically converts palette'd images to unmapped images).
+- Added checks for IL_ORIGIN_SET to more image formats.
+- Moved ilMirrorImage() and ilNegativeImage() to ilu from il.
+- Added iluEnlargeCanvas().
+- Fixed a bug in ilCopyPixels2D() and ilCopyPixels3D() when the destination was not the same size as the source.
+- Added iluCropImage2D() and iluCropImage3D().
+- Fixed a stupid bug in iluNegativeImage().
+- Changed a lot of ilu function names from iluxxxImage to iluxxx - the Image part was sorta redundant, as this *is* an image lib.
+- Added filter.c and everything within.
+
+
+1.5.2a
+------
+
+- Started differentiating between SizeOfPlane and SizeOfData somewhat.
+- Updated header.c to output the depth.
+- Fixed a bug in ilCopyImage_() where it was using iCurImage instead of Image.
+- Updated ilMirrorImage() to work with depths of other than just 1.
+- Updated ilFlipImage() to work with depths of other than just 1.
+- Changed ilCopyPixels() to ilCopyPixels2D() and created 1D and 3D versions.
+- Got rid of the now-obsolete IL_IMAGE_1D, IL_IMAGE_2D and IL_IMAGE_3D #define's and removed Target params from ilActiveImage(), ilActiveMipmap() and ilBindImage().
+- Added new scaling functions (iluScaleImage1D and iluScaleImage3D) to ilu.
+- Added new rotation function to ilu.
+- Renamed ilTexImage2D() to ilTexImage().
+- Fixed where I accidentally left ILUT_USE_ALLEGRO #define'd in ilut.h.
+
+
+1.5.0a
+------
+
+- Removed ilRealloc()/ilRecalloc() from being global...it's only used in istack.c now.
+- Changed the ILTargaSave struct in il.h to use a 255-char array instead of a char pointer for ID, as VB didn't like it, and I also removed IDLen.
+- Added ilVersion() and the IL_VERSION #define in il.h.  This is to check to see if your executable was compiled with a different version of OpenIL than what is on the user's system.
+- Removed ilGetFloat()/ilGetFloatv() from il.h.
+- Updated the Cpp Wrapper project by adding an ilRender class.
+- Fixed ilSaveBitmap() from unnecessarily swapping the colours.
+- Updated ilSwapColours() to work with palettes better.
+- Added an option in the OpenIL states to automagically convert palette'd images on loading, which is not used yet.
+- Commented the butt out of OpenIL.
+- Added image identification to ilLoadImage().
+- Changed comments at the beginning of some exported functions to use //! instead of just //, so if you want to create documentation with DOxygen (http://www.stack.nl/~dimitri/doxygen/download.html) if desired.
+- Added ilMirrorImage().
+- Added ilNegativeImage().
+- Changed ilutConvertToAlleg() and ilutConvertToHBitmap() of ilut to be exported.
+- Changed iSetInputFile() to use itell instead of ftell.
+- Created a new iDefaultEof() function that will work on implementations that don't have one.
+- Moved all the default file-reading functions to il.h and exported them.
+- Removed all references to fEofProc().
+- Changed ilGenImages() to use ilNewImage(1, 1, 1, 1) instead of ilNewImage(0, 0, 0, 0) to prevent division by 0 errors.
+- Added ilSetDefaultFileCallbacks().
+- Added Visual Basic stuff, thanks to Timo.
+
+
+1.4.7a
+------
+
+- Fixed a potentially fatal error in ilConvertImage if converting from a palette'd image.
+- Fixed ReadProc to take 4 parameters instead of just 3...it was causing problems with iread, which takes two size parameters instead of just one.
+- Started preliminary support for 1 and 4-bit .bmp's.
+- Fixed 8-bit .bmp loading.
+- Rewrote iFreeMem() and a little of ilDeleteImages() in istack.c to fix a rare but very harmful bug when an image isn't loaded completely.
+- Added support for more palettes in ilConvertPal().
+- Updated png.c to use the new cross-language file-reading.  This is the only lib that I could get to use the cross-language stuff for operating on already-opened files.
+
+
+1.4.6a
+------
+
+- Updated openil.def to include ilSetFileCallbacks, ilRegisterFormat and ilRemoveFormat.
+- Changed all the new portable file functions to use the __stdcall convention (ILAPIENTRY) and created default functions that use __stdcall, as the stdio.h file functions use __cdecl.
+
+
+1.4.5a
+------
+
+- Changed ilut's DllMain().
+- Added support for the .jpeg and .jpe extensions instead of just .jpg.
+- Fixed iSeekFile().
+- Added complete support for using your own file routines (so other languages can use the ilLoadxxxF file routines).
+- Added register.c and register.h in and appropriate typedefs and function declarations in il.h.
+- Removed the "else" in front of all the tests in ilLoadImage and ilSaveImage...they were unnecessary.
+- Rewrote ilutOglScreen() to not close the current image.
+- Rewrote ilConvertImage() to not close the current image.
+- Updated djgpp.mak to use register.c.
+
+
+
+1.4.2a
+------
+
+- Moved all il*.h out of /OpenIL* and into /include/il.
+- Changed ABee's e-mail address where relevant.
+- Updated the openil.def file, which didn't include the jpeg functions.
+- Updated the Delphi headers to use the correct default IL_NO_XXX #define's.
+- #define'd _IL_BUILD_LIBRARY in the internal.h files of ilu and ilut.  I'm so surprised this warning didn't pop up earlier, but oh well, it's a Microsoft product I'm compiling with. ;-)
+- Updated the out of date djgpp.mak (not tested).
+
+
+1.4.1a
+------
+
+- Changed png.h to png_.h
+- Added internal but exported functions to the .def files.
+- Better Delphi support from Alexander Blach, plus a lovely test app in the /Delphi/Test folder.
+- Changed the readme.txt file some.
+
+
+1.4.0a
+------
+
+New goodies, mostly thanks to Alexander Blach (ABee).
+- Delphi headers in the /Delphi directory created by ABee.
+- .Def files in the /Def directory created by ABee.
+- .Def files added to the projects.
+
+
+1.3.6a
+------
+
+Not really much in this release...just trying to make the library more bearable to use.
+- Several fixes in the project files
+- Changes to the readme.
+- Fixed the icons, which got corrupted in previous releases without my knowledge.
+- Replaced the #flipCode logo, which had gotten corrupted, too.
+
+
+1.3.5a
+------
+
+Just bugfixes mostly.
+- ilutStartup() doesn't call ilutOglInit() anymore, due to problems with OpenGL not being initialized beforehand.
+- If image loading doesn't succeed, a future call to ilDeleteImages should not fail anymore.
+
+
+1.3.4a
+------
+
+- Changed targa.c in iReadUnmapTga() by commenting-out the line that used GL_UNSIGNED_SHORT_5_5_5_1_EXT.  It required glext.h.
+- Restructured project files from Lightman.
+- Cpp wrapper compiles into a .lib.
+
+
+1.3.3a
+------
+
+- Added IL_IMAGE_DATA, IL_PALETTE_BPP and IL_PALETTE_NUM_COLS to il.h and used them in states.c.
+- Updated the extremely out-of-date readme.txt.
+- Changed all the local variables in iConvertImage to static.
+- Started on converting from GL_COLOR_INDEX in iConvertImage().
+- In ilConvertPal(), if the dest and src format are the same, it now returns GL_TRUE instead  of erroring.
+- Modified ilut's MakeGLCompliant() to use il's ilConvertImage().
+- Shortened all source filenames to 8.3 character format for systems without long filenames.
+- Moved the globals from istack.c to istack.h.
+- Added image validation for targas to tga.c.
+- Combined BMPHEAD and BMPINFO together in bmp.h and bmp.c as BMPHEAD.
+- Added image validation for bitmaps to bmp.c.
+- Created ilSaveJascPal().
+- Added all the IL_NO_* #define's to il.h and commented them out (except for IL_NO_GIF).
+- Started on ilSavePcx() - doesn't work yet.
+- Fixed ilSaveSgi() to save in rgb(a) format instead of bgr(a) format.
+- Added IL_VERSION_1_3_3 to il.h
+
+
+1.3.1a
+------
+
+- Completely rewrote rle.c and added it back into the project.
+- ilRleCompress() added to rle.c.
+- Changed targa.c to utilize rle compression.
+- Started ilSaveSgi() in sgi.c.
+- Changed all the SaveLittle* and SaveBig* functions in endianness.c where I had copied them from LoadLittle* and LoadBig*, respectively, so they were not swapping the right value.
+- sgi.c's ilSaveSgi() works, except for saving rle-compressed files.
+- Changed .jpg's origin to upper-left.
+- Changed .pcx's origin to upper-left.
+- Edited bmp.c to read in a pad pixel instead of just a pad byte when the image's width is of an uneven dimension.
+- Implemented ilSaveBitmap() in bmp.c in its entirety.
+
+
+1.2.8a
+------
+
+- Finished the majority of the Cpp Wrapper project.
+- Found out how to initialize OpenIL at startup in gcc at http://gcc.gnu.org/ml/gcc-help/1999-11n/msg00029.html, so changed main.c of each lib.
+- Actually got Allegro to utilize OpenIL with some minor reworking.  This should be automagic in the next version.
+
+
+1.2.7a
+------
+
+- Got rid of the TARGA struct in targa.h since it wasn't being used and modified function parameters accordingly.
+- Added several functions to endianness.c and started using them.  I won't be able to read whole structs from files at once anymore so that I can support both little and big endian processors.  Oh well, that's the price I pay for portability. =/  I didn't change pal.c, because it doesn't use iread yet...will be changed in the next release.  I can't answer for libs I am utilizing, but OpenIL should be fairly portable to big-endian systems now.
+- Added support for saving .png files.
+
+
+1.2.6a
+------
+
+- Added preliminary support for DirectX (ack) in ilut's directx.c (and .h).
+- Did everything in mipmap.c from scratch.
+- Changed iCurrentImage to iCurImage...just nicer-looking and easier to type. =]
+- Changed the Next and Mipmaps data members of ILimage to be of type ILimage...a whole lot easier to use than having to cast GLvoid*.  Also added NumNext and NumMips members - not sure if they are necessary though.  They may just add bloat to an already large struct.  Also added SizeOfPlane to the struct (will help with 3d texture volumes).
+- Streamlined ilReadUncompBmp() in bmp.c a lot.
+- The targa functions now skip over the image id instead of allocating memory for it, reading it, then immediately freeing the memory.
+- Implemented ilTexImage2D and ilTexSubImage2D functions.
+- Changed all loading functions and functions that update iCurImage.  The snippet of code that did this previously was like this:
+ 	Image = ilNewImage(Width, Height, Depth, Bpp);
+	if (Image == NULL) {
+		ilSetError(IL_OUT_OF_MEMORY);
+		return GL_FALSE;
+	}
+	ilCloseImage(iCurImage);
+	ilSetCurImage(Image);
+Now the code is like:
+	if (!ilTexImage2D(Width, Height, Depth, Bpp, GL_RGB, NULL)) {
+		ilSetError(IL_OUT_OF_MEMORY);
+		return GL_FALSE;
+	}
+- Fixed .bmp support to correctly skip padding.
+- Found out .pcx support is pretty shoddy...I will rewrite it soon.
+  - Rewrote the .pcx reading function iUncompressPcx from scratch...works perfectly. =]  Sometimes it's just best to give something a fresh approach.
+- Added .pcx validity test functions.
+- Changed .raw functions to take Depth as an parameter.
+- Changed from absolute to relative paths for the test .exe's in the MSVC++ project settings.
+- Added back in MakeGLCompliant() to opengl.c of ilut.  Finally got WindowTest to display images with dimensions that are not powers of 2, as MakeGLCompliant() automagically converts the texture to the appropriate dimensions.  The only foreseeable problem is if the texture is greater than 256x256, because the VooDoo series of cards may choke and die.  Is there an elegant way around this?  Maybe I could introduce a new ilDisable/ilEnable() enum.  I'm using glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTexW); as a temporary hack right now.
+- Worked some more on iConvertImage() and performed the first test - converting from rgb to luminance, and it works. =]  The values I used for converting are based on the NTSC values for television and were obtained from http://www.opengl.org/Coding/KilgardTechniques/oglpitfall/oglpitfall.html, section 6.
+- Changed the #define IL_ILLEGAL_PARAM to IL_INVALID_PARAM.  Maybe I should just use IL_INVALID_VALUE?
+- Added #pragma comment(linker, "/NODEFAULTLIB:libc") to openil\internal.h to get rid of that damn warning.
+- Cleaned-up openilut\opengl.c a little bit and got rid of all those erraneous commented-out functions.  Also wrapped wglGetProcAddress() in an #ifdef _WIN32/#endif pair.  Also flips the texture if the origin is different than the current OpenIL origin to match (will if the user sets it correctly) OpenGL's origin.
+- Added ilGetPalBaseType() in utility.c.
+- Added support for Dr. Halo palettes (always output with .cut files).
+- Added back in png.c and png.h to the project.
+- Changed dll.c to main.c and wrapped the DllMain in an #ifdef/#endif pair.
+- Made a makefile for Djgpp.  It's missing the .c files that require an external library to operate, but they can be added back in easily (not using dos edit!).  It has been tested to create appropriate output, but has yet to be tested in an actual program.
+- Added an \objs folder for each OpenIL* dir for Djgpp compile.
+- Found out IL_PACKSTRUCT needs to come before the name of the struct instead of after...changed it in all files that use IL_PACKSTRUCT. =]
+- Fixed an extremely harmful memory problem in sgi.c in iReadRleSgi() where I was malloc'ing only Head->ZSize instead of Head->ZSize * sizeof(GLubyte*).  Took me a few hours to find that one...the VC++ debugger didn't help much at all. =/  Rewrote iGetScanLine() to not use iExpandScanLine() and got rid of iExpandScanLine().
+- Started on iff.c, my new image format (oh gawd, not another one =), but then I found out later that .iff is already a graphics format from the Amiga.  Need to find a new extension...
+- Changed png.c to use libpng's png_set_read_fn().  Added validity-checking functions for png's.
+
+
+1.1.9a
+------
+
+- Changed the screenshot functions in ilut.
+- Changed the WindowTest around some.
+
+
+1.1.8a
+------
+
+- Added back a few loading formats that were inadvertedly removed in the 1.01a release.
+- Worked some on the empty iConvertImage function and wrote an ilConvertImage function.  There's a lot more work to do on iConvertImage.
+- Replaced false and true with GL_FALSE and GL_TRUE, respectively.
+- Added back in .jpg support.
+- Added in .tif support with the help of libtiff.
+- Added in .col support.
+- Improved .ppm and .pgm support considerably - also added .pbm support (btw, psp4 does not output proper binary .pbm files, so I couldn't test it well =/ ).
+- ilSaveImage added.
+- .pic, .pcd and .cut loading added.
+- Changed .pcx to be in rgb order (had it as bgr for the palette).
+- Added utility.cpp and functions in it.
+- Updated ilu's error strings.
+- Updated ilCloseImage to take heed of mipmaps, extra and chained images (none of which are used yet but may be soon enough...).
+
+
+1.0.1a
+------
+
+Restructured lots of the library so that it now uses an image stack (in imagestack.*).  Now images have to be bound before being used.  All loading functions now load directly into the stack.
+
+
+0.0.1a - First release
+---------------------
+
+Released in sorta bad condition with little documentation.

@@ -1,0 +1,20 @@
+# Microsoft Developer Studio Generated Dependency File, included by WindowsTest.mak
+
+.\BatchConv.cpp : \
+	"..\..\..\vc98\include\basetsd.h"\
+	{$(INCLUDE)}"il\il.h"\
+	
+
+.\WindowsTest.cpp : \
+	"..\..\..\msvc\directx sdk\include\d3d8.h"\
+	"..\..\..\msvc\directx sdk\include\d3d8caps.h"\
+	"..\..\..\msvc\directx sdk\include\d3d8types.h"\
+	"..\..\..\vc98\include\basetsd.h"\
+	"..\..\include\il\ilu.h"\
+	"..\..\include\il\ilut.h"\
+	{$(INCLUDE)}"il\il.h"\
+	
+
+.\WindowsTest.rc : \
+	".\resources\OpenIL.ico"\
+	

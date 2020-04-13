@@ -1,0 +1,11 @@
+Custom modules for libraries which cmake doesn't have out-of-the-box
+support for.
+
+FindNVTT and FindOpenEXR are from OpenSceneGraph (OSG):
+
+http://trac.openscenegraph.org/projects/osg/browser/OpenSceneGraph/trunk/CMakeModules
+
+OSG is under a modified LGPL license.
+
+FindLCMS is from KDE (kdelibs/cmake/modules/)
+

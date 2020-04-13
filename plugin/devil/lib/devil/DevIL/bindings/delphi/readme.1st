@@ -1,0 +1,3 @@
+To debug Delphi apps with DevIL, you must define OPENIL_DEBUG and rebuild your project.  Do not define OPENIL_DEBUG for release builds.  Sorry for the inconvenience.
+
+- Denton Woods and Alexander Blach

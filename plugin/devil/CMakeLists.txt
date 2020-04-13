@@ -10,69 +10,21 @@ if (ANDROID OR IOS)
     return()
 endif ()
 
-file (
-    GLOB_RECURSE
-    ${PROJECT_NAME}_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.c"
-)
+### Loads 3rdParty libraries.
+add_subdirectory(lib)
 
-file (
-    GLOB
-    ${PROJECT_NAME}_EXCLUDES
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-ILU/ilur/ilur.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/src/il_main.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/wrjpgcom.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/jpegtran.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/djpeg.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/cjpeg.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/ckconfig.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/example.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/rdjpgcom.c"
-)
+minko_add_library (${PROJECT_NAME} STATIC
+    src/minko/file/DevILParser.cpp
+    src/minko/file/DevILWriter.cpp)
 
-file (
-    GLOB
-    ${PROJECT_NAME}_INCLUDE
-    "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-ILU/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-ILUT/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libtiff"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libpng"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjasper/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/lcms/include"
-)
+### Includes directories within/for the plugin.
+target_include_directories(${PROJECT_NAME}
+    PUBLIC include
+    PRIVATE lib/devil/DevIL/include #[[Needed because DevIL's targets does not include their directory within.]])
 
-foreach (OBJ ${${PROJECT_NAME}_EXCLUDES})
-    list(REMOVE_ITEM ${PROJECT_NAME}_SRC ${OBJ})
-endforeach ()
-
-minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")
-target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
+### Links IL, ILU and ILUT (DevIL targets) to the plugin.
+target_link_libraries(${PROJECT_NAME} IL ILU ILUT)
 
 minko_enable_plugin_zlib (${PROJECT_NAME})
 
 target_compile_options (${PROJECT_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS -DIL_STATIC_LIB)
-
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR APPLE OR EMSCRIPTEN)
-    target_compile_options (
-        ${PROJECT_NAME} PRIVATE
-        -Wno-implicit-function-declaration
-        -Wno-format
-        -Wno-int-to-void-pointer-cast
-        -Wno-incompatible-pointer-types
-        -Wno-unused-value
-        -Wno-sizeof-pointer-memaccess
-        -Wno-tautological-constant-out-of-range-compare
-        -Wno-deprecated-declarations
-    )
-endif()
-
-# generate config.h
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/include/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/include/config.h)

@@ -1,0 +1,27 @@
+
+	** BINDING MANUAL **
+
+
+DevIL library can be binded to many other languages then C using the swig binding interface builder.
+In the source distribution in the include/IL directory there are 2 script (build-python and build-lua) used to assist the developer on the building of the bindings for these 2 languages.
+The swig interface file is include/IL/DevIL.i
+The script have 2 common varibles IL_INCLUDE_PATH and IL_LIB_PATH that must be modified to reflect your installation.
+
+
+*** build-python
+
+The build-python script builds a python module. To do so it needs that the PYTHON_INCLUDE_PATH and PYTHON_LIB_PATH variables to be set correctly. Remember to se the LD_LIBRARY_PATH (or DYLD_LIBRARY_PATH on OSX) to reflect the location of the library when using the module and the library in not in the default search path.
+
+
+*** build-lua
+
+The lua build scripts compile a complete lua interpreter with the DevIL commands embedded in it.
+It uses the luadevil.c source code which is a copy of lua.c interpreter source code (found in the source distribution of Lua) with 2 little modification (just to print that it has embedded python and to import the code).
+This script needs that the LUA_INCLUDE_PATH and the LUA_LIB_PATH to be set correctly.
+The script can be configured to build the module for OS X (which requires some changes to be done)
+
+
+Other bindings are supported using the swig utility!
+
+Dario Meloni
+11/02/2007

@@ -1,0 +1,266 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""resource.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG_ABOUT DIALOG DISCARDABLE  0, 0, 278, 220
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About OpenIL"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,113,198,50,14
+    GROUPBOX        "Info",IDC_STATIC,7,7,264,69
+    GROUPBOX        "Errors",IDC_STATIC,7,86,264,76
+    LTEXT           "Vendor:",IDC_STATIC,27,22,27,8
+    LTEXT           "Version:",IDC_STATIC,26,35,26,8
+    CTEXT           "",IDC_ERROR1,40,98,79,8
+    LTEXT           "Vendor",IDC_ABOUT_VENDOR,66,22,126,8
+    LTEXT           "Version String",IDC_ABOUT_VER_STRING,68,35,125,8
+    LTEXT           "Version Num",IDC_ABOUT_VER_NUM,68,46,38,8
+    CTEXT           "",IDC_ERROR4,158,98,79,8
+    CTEXT           "",IDC_ERROR6,158,142,79,8
+    CTEXT           "",IDC_ERROR2,40,119,79,8
+    CTEXT           "",IDC_ERROR5,158,120,79,8
+    CTEXT           "",IDC_ERROR3,40,142,79,8
+    LTEXT           "Visit the OpenIL website at http://www.openil.org",
+                    IDC_OPENIL_LINK,61,182,156,8
+    ICON            172,IDC_STATIC,243,15,21,20,SS_REALSIZEIMAGE
+END
+
+IDD_DIALOG_FILTER DIALOG DISCARDABLE  0, 0, 186, 95
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog Options"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,14,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,31,50,14
+    LTEXT           "Enter number of iterations, monkey foo!",
+                    IDC_FILTER_DESC_TEXT,21,14,95,31
+    EDITTEXT        IDC_FILTER_EDIT,13,54,160,14,ES_AUTOHSCROLL
+END
+
+IDD_DIALOG_RESIZE DIALOG DISCARDABLE  0, 0, 266, 95
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Resize Options"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,77,65,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,137,65,50,14
+    LTEXT           "Enter new image size:",IDC_STATIC,97,15,70,8
+    EDITTEXT        IDC_EDIT_RESIZE_X,33,36,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_RESIZE_Y,109,36,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_RESIZE_Z,187,37,40,14,ES_AUTOHSCROLL
+    LTEXT           "X:",IDC_STATIC,20,39,8,8
+    LTEXT           "Y:",IDC_STATIC,96,38,8,8
+    LTEXT           "Z:",IDC_STATIC,173,39,8,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_LOAD
+        MENUITEM "Open &URL...\tCtrl+U",        ID_FILE_OPENURL
+        MENUITEM "&Save...\tCtrl+S",            ID_FILE_SAVE
+        MENUITEM "&Print",                      ID_FILE_PRINT
+        MENUITEM "E&xit\tEsc",                  ID_FILE_EXIT
+    END
+    POPUP "&Convert"
+    BEGIN
+        MENUITEM "&Colour Indexed",             ID_CONVERT_PALETTE
+        MENUITEM "&Luminance",                  ID_CONVERT_LUMINANCE
+        MENUITEM "&Rgb",                        ID_CONVERT_RGB
+        MENUITEM "Rgba",                        ID_CONVERT_RGBA
+        MENUITEM "&Bgr",                        ID_CONVERT_BGR
+        MENUITEM "Bgra",                        ID_CONVERT_BGRA
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo",                       ID_EDIT_UNDO
+        MENUITEM "Undo &Level",                 ID_EDIT_UNDOLEVEL
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM "View ImageNum",               ID_EDIT_VIEWIMAGENUM
+        MENUITEM "View Mipmap",                 ID_EDIT_VIEWMIPMAP
+    END
+    POPUP "Effe&cts"
+    BEGIN
+        MENUITEM "&Count Colors",               ID_EFFECTS_COUNTCOLORS
+        POPUP "&Filters"
+        BEGIN
+            MENUITEM "&Alienify",                   ID_FILTER_ALIENIFY
+            POPUP "&Bit Filters"
+            BEGIN
+                MENUITEM "Bit Filter &1",               ID_FILTER_BITFILTER1
+                MENUITEM "Bit Filter &2",               ID_FILTER_BITFILTER2
+                MENUITEM "Bit Filter &3",               ID_FILTER_BITFILTER3
+            END
+            POPUP "Blur"
+            BEGIN
+                MENUITEM "&Average",                    ID_FILTERS_BLUR_AVERAGE
+
+                MENUITEM "&Gaussian",                   ID_FILTERS_BLUR_GAUSSIAN
+
+            END
+            POPUP "Ed&ge Detect"
+            BEGIN
+                MENUITEM "&Emboss",                     ID_EFFECTS_FILTERS_EDGEDETECT_EMBOSS
+
+                MENUITEM "Prewitt",                     ID_EFFECTS_FILTERS_EDGEDETECT_PREWITT
+
+                MENUITEM "Sobel",                       ID_EFFECTS_FILTERS_EDGEDETECT_SOBEL
+
+            END
+            MENUITEM "&Emboss",                     ID_FILTER_EMBOSS
+            MENUITEM "&Gamma Correct",              ID_FILTER_GAMMACORRECT
+            MENUITEM "&Negative",                   ID_FILTER_NEGATIVE
+            MENUITEM "N&oise",                      ID_FILTER_NOISE
+            MENUITEM "&Pixelize",                   ID_FILTER_PIXELIZE
+            MENUITEM "&Sharpen",                    ID_FILTER_SHARPEN
+        END
+        MENUITEM "Fli&p",                       ID_EFFECTS_FLIP
+        MENUITEM "&Mirror",                     ID_EFFECTS_MIRROR
+        MENUITEM "&Rotate",                     ID_EFFECTS_FILTERS_ROTATE
+        MENUITEM "&Scale",                      ID_EFFECTS_FILTERS_SCALE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About",                      ID_HELP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DIALOG_ABOUT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 271
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 212
+    END
+
+    IDD_DIALOG_FILTER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+
+    IDD_DIALOG_RESIZE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 259
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MENU1 ACCELERATORS DISCARDABLE 
+BEGIN
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_LOAD,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    "U",            ID_FILE_OPENURL,        VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON    DISCARDABLE     "resources\\OpenIL Logo.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

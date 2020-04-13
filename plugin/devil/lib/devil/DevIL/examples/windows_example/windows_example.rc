@@ -1,0 +1,212 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU 
+BEGIN
+    POPUP "File"
+    BEGIN
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN40001
+        MENUITEM "Open &URL...",                ID_FILE_OPENURL
+        MENUITEM "&Save...",                    ID_FILE_SAVE40003
+        MENUITEM "&Image Properties",           ID_FILE_IMAGEPROPERTIES
+        MENUITEM "&Print",                      ID_FILE_PRINT
+        MENUITEM "E&xit",                       ID_FILE_EXIT
+    END
+    POPUP "Edit"
+    BEGIN
+        MENUITEM "&Undo (Ctrl+Z)",              ID_EDIT_UNDO40007
+        MENUITEM "Undo &Level",                 ID_EDIT_UNDOLEVEL
+        MENUITEM "&Copy (Ctrl+C)",              ID_EDIT_COPY40054
+        MENUITEM "&Paste (Ctrl+V)",             ID_EDIT_PASTE40010
+        MENUITEM SEPARATOR
+        MENUITEM "View Mipmap",                 ID_EDIT_VIEWMIPMAP
+        MENUITEM "View Face",                   ID_EDIT_VIEWFACE
+        MENUITEM SEPARATOR
+        MENUITEM "View Image Number",           ID_EDIT_VIEWIMAGENUMBER
+        MENUITEM "Next Image (+)",              ID_EDIT_NEXTIMAGE
+        MENUITEM "Previous Image (-)",          ID_EDIT_PREVIOUSIMAGE
+        MENUITEM SEPARATOR
+        MENUITEM "View Base Image",             ID_EDIT_VIEWBASEIMAGE
+    END
+    POPUP "Convert"
+    BEGIN
+        MENUITEM "&Color Indexed",              ID_CONVERT_COLORINDEXED
+        MENUITEM "&Luminance",                  ID_CONVERT_LUMINANCE
+        MENUITEM "L&uminance Alpha",            ID_CONVERT_LUMINANCEALPHA
+        MENUITEM "&Rgb",                        ID_CONVERT_RGB
+        MENUITEM "Rgba",                        ID_CONVERT_RGBA
+        MENUITEM "&Bgr",                        ID_CONVERT_BGR
+        MENUITEM "Bgra",                        ID_CONVERT_BGRA
+        MENUITEM "&Alpha",                      ID_CONVERT_ALPHA
+        MENUITEM SEPARATOR
+        MENUITEM "Unsigned Byte",               ID_CONVERT_UNSIGNEDBYTE
+        MENUITEM "Unsigned Short",              ID_CONVERT_UNSIGNEDSHORT
+        MENUITEM "Unsigned Int",                ID_CONVERT_UNSIGNEDINT
+        MENUITEM "Half",                        ID_CONVERT_HALF
+        MENUITEM "Float",                       ID_CONVERT_FLOAT
+        MENUITEM "Double",                      ID_CONVERT_DOUBLE
+        MENUITEM SEPARATOR
+        MENUITEM "Batch Convert",               ID_CONVERT_BATCHCONVERT
+    END
+    POPUP "Tools"
+    BEGIN
+        MENUITEM "&Count Colors",               ID_TOOLS_COUNTCOLORS
+        MENUITEM "&Background Color",           ID_TOOLS_BACKGROUNDCOLOR
+        POPUP "&Filters"
+        BEGIN
+            MENUITEM "&Alienify",                   ID_FILTERS_ALIENIFY
+            MENUITEM "Apply &Wave",                 ID_FILTERS_APPLYWAVE
+            MENUITEM "Blur Average",                ID_FILTERS_BLURAVERAGE
+            MENUITEM "Blur Gaussian",               ID_FILTERS_BLURGAUSSIAN
+            POPUP "Ed&ge Detect"
+            BEGIN
+                MENUITEM "&Emboss",                     ID_EDGEDETECT_EMBOSS
+                MENUITEM "&Sobel",                      ID_EDGEDETECT_SOBEL, MENUBARBREAK
+                MENUITEM "&Prewitt",                    ID_EDGEDETECT_PREWITT
+            END
+            MENUITEM "&Emboss",                     ID_FILTERS_EMBOSS
+            MENUITEM "E&qualize",                   ID_FILTERS_EQUALIZE
+            MENUITEM "&Gamma Correct",              ID_FILTERS_GAMMACORRECT
+            MENUITEM "&Negative",                   ID_FILTERS_NEGATIVE
+            MENUITEM "N&oise",                      ID_FILTERS_NOISE
+            MENUITEM "&Pixelize",                   ID_FILTERS_PIXELIZE
+            MENUITEM "&Sharpen",                    ID_FILTERS_SHARPEN
+        END
+        MENUITEM "Fli&p",                       ID_TOOLS_FLIP
+        MENUITEM "&Mirror",                     ID_TOOLS_MIRROR
+        MENUITEM "&Rotate",                     ID_TOOLS_ROTATE
+        MENUITEM "&Scale",                      ID_TOOLS_SCALE
+        MENUITEM "&Scale Box",                  ID_TOOLS_SCALEBOX
+    END
+    POPUP "Help"
+    BEGIN
+        MENUITEM "&About",                      ID_HELP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON                    "resources\\DevIL Logo.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MENU1 ACCELERATORS 
+BEGIN
+    "C",            ID_EDIT_COPY40054,      VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE40010,     VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN40001,      VIRTKEY, CONTROL, NOINVERT
+    "U",            ID_FILE_OPENURL,        VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE40003,      VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG_FILTER DIALOGEX 0, 0, 183, 79
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,39,46,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,95,46,50,14
+    EDITTEXT        IDC_FILTER_EDIT,19,28,147,12,ES_AUTOHSCROLL
+    LTEXT           "Enter number of iterations.",IDC_FILTER_DESC_TEXT,40,15,88,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DIALOG_FILTER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 176
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 72
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
