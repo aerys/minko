@@ -1,0 +1,3 @@
+IL.pc.cmake.in is the template file for building IL.pc, which
+provides pkg-config support for IL.
+
