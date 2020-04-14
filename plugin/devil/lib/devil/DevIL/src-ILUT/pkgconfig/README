@@ -1,0 +1,3 @@
+ILU.pc.cmake.in is the template file for building ILU.pc, which
+provides pkg-config support for ILU.
+
