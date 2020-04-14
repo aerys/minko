@@ -343,7 +343,7 @@ Geometry::computeCenterPosition()
 
     const auto& xyzAttr = xyzBuffer->attribute("position");
     const unsigned int xyzOffset = xyzAttr.offset;
-    const unsigned int xyzSize = std::max(0u, std::min(3u, xyzAttr.size));
+    const unsigned int xyzSize = std::min(3u, xyzAttr.size);
     const std::vector<float>& xyzData = xyzBuffer->data();
 
     float minXYZ[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
