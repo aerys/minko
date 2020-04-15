@@ -134,7 +134,7 @@ function (minko_add_executable target_name sources)
         "${MINKO_HOME}/framework/include"
         "${MINKO_HOME}/framework/lib/glm"
         "${MINKO_HOME}/framework/lib/sparsehash/src"
-        "${MINKO_HOME}/framework/lib/jsonmoderncpp"
+        "${MINKO_HOME}/framework/lib/jsoncpp/src"
     )
 
     if (WIN32)
