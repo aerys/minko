@@ -7,23 +7,23 @@ function (minko_enable_plugin_devil target)
     get_target_property(TARGET_TYPE ${target} TYPE)
     get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
 
-    if ((LINUX OR WIN32) AND BITNESS EQUAL 64)
+    if (TARGET_TYPE STREQUAL "EXECUTABLE" AND (LINUX OR WIN32) AND BITNESS EQUAL 64)
         if (WIN32)
-            set (DEVIL_SHARED_LIBRARIES_LOCATION "${MINKO_HOME}/plugin/devil/lib/devil/DevIL/lib/x64/*.dll")
+            set (DEVIL_LIBS "${MINKO_HOME}/plugin/devil/lib/devil/DevIL/lib/x64/*.lib")
+            set (DEVIL_SHARED_LIBS "${MINKO_HOME}/plugin/devil/lib/devil/DevIL/lib/x64/*.dll")
         endif ()
         if (LINUX)
-            set (DEVIL_SHARED_LIBRARIES_LOCATION "${MINKO_HOME}/plugin/devil/lib/devil/DevIL/lib/x64/*.so")
+            set (DEVIL_LIBS "${MINKO_HOME}/plugin/devil/lib/devil/DevIL/lib/x64/*.so")
+            set (DEVIL_SHARED_LIBS "${MINKO_HOME}/plugin/devil/lib/devil/DevIL/lib/x64/*.so")
         endif ()
-        if (TARGET_TYPE STREQUAL "EXECUTABLE")
-            file (GLOB DEVIL_SHARED_LIBRARIES ${DEVIL_SHARED_LIBRARIES_LOCATION})
-            file (COPY ${DEVIL_SHARED_LIBRARIES} DESTINATION ${OUTPUT_PATH})
-        endif ()
+        file (GLOB DEVIL_LIBS ${DEVIL_LIBS})
+        file (GLOB DEVIL_SHARED_LIBS ${DEVIL_SHARED_LIBS})
+        file (COPY ${DEVIL_SHARED_LIBS} DESTINATION ${OUTPUT_PATH})
+        target_link_libraries(
+            ${target}
+            ${DEVIL_LIBS}
+        )
     endif ()
-
-    target_link_libraries(
-        ${target}
-        ${DEVIL_SHARED_LIBRARIES}
-    )
 
     # Enabling zlib by default my cause multiple definition linking errors.
     # So the app CMakeLists.txt must enable the zlib plugin on a case-by-case basis.
