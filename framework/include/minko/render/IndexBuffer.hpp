@@ -176,7 +176,7 @@ namespace minko
 						const std::vector<unsigned short>&	data) :
 				AbstractResource(context),
 				_data(data),
-				_numIndices(data.size()),
+				_numIndices(static_cast<unsigned int>(data.size())),
 				_changed(Signal<IndexBuffer::Ptr>::create())
 			{
 			}
@@ -186,7 +186,7 @@ namespace minko
 						const std::vector<unsigned int>&	data) :
 				AbstractResource(context),
 				_data(data),
-				_numIndices(data.size()),
+				_numIndices(static_cast<unsigned int>(data.size())),
 				_changed(Signal<IndexBuffer::Ptr>::create())
 			{
 			}
