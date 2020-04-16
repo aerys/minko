@@ -132,7 +132,7 @@ namespace minko
 			uint
 			numVertices() const
 			{
-				return _vertexSize > 0 ? _data.size() / _vertexSize : 0;
+				return static_cast<uint>(_vertexSize > 0 ? _data.size() / _vertexSize : 0);
 			}
 
 			inline
