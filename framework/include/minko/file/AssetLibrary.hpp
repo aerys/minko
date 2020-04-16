@@ -99,7 +99,7 @@ namespace minko
             uint
             numMaterials()
             {
-                return _materials.size();
+                return static_cast<uint>(_materials.size());
             }
 
             inline
