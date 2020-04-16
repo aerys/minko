@@ -81,7 +81,7 @@ namespace minko
             int
             numTouches()
             {
-                return _identifiers.size();
+                return static_cast<int>(_identifiers.size());
             }
 
             inline
