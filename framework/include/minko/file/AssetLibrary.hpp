@@ -92,7 +92,7 @@ namespace minko
             uint
             numGeometries()
             {
-                return _geometries.size();
+                return static_cast<uint>(_geometries.size());
             }
 
             inline
