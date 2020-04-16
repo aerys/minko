@@ -117,7 +117,7 @@ namespace minko
 			unsigned int
 			numFrames() const
 			{
-				return _boneMatricesPerFrame.size();
+				return static_cast<unsigned int>(_boneMatricesPerFrame.size());
 			}
 
 			inline
@@ -148,7 +148,7 @@ namespace minko
 			unsigned int
 			numVertices() const
 			{
-				return _numVertexBones.size();
+				return static_cast<unsigned int>(_numVertexBones.size());
 			}
 
 			inline
