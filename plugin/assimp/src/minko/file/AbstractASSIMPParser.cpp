@@ -149,7 +149,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
     logger->attachStream(new minko::file::Logger(minko::log::Logger::Error), Assimp::Logger::Err);
 #endif
 
-	int pos = resolvedFilename.find_last_of("\\/");
+	auto pos = resolvedFilename.find_last_of("\\/");
 
     options = options->clone();
 
@@ -962,7 +962,7 @@ AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 		}
 	}
 
-	_numDependencies = _textureFilenameToAssetName.size();
+	_numDependencies = static_cast<unsigned int>(_textureFilenameToAssetName.size());
 
 	for (auto& filenameToAssetNamePair : _textureFilenameToAssetName)
 		loadTexture(filenameToAssetNamePair.first, filenameToAssetNamePair.second, _options, scene);
@@ -1048,7 +1048,7 @@ AbstractASSIMPParser::getSkinNumFrames(const aiMesh* aimesh) const
 
 			if (_nameToAnimMatrices.count(currentNode->name()) > 0)
 			{
-				const unsigned int numNodeFrames = _nameToAnimMatrices.find(currentNode->name())->second.size();
+				const auto numNodeFrames = _nameToAnimMatrices.find(currentNode->name())->second.size();
 				assert(numNodeFrames > 0);
 
 				if (numFrames == 0)
