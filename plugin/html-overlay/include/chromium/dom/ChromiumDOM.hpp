@@ -160,7 +160,7 @@ namespace chromium
 			fileName()
 			{
 				std::string url = fullUrl();
-				int i = url.find_last_of('/');
+				auto i = url.find_last_of('/');
 
 				std::string fileName = url.substr(i + 1);
 				return fileName;
