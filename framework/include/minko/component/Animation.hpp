@@ -66,7 +66,7 @@ namespace minko
 			uint
 			numTimelines() const
 			{
-				return _timelines.size();
+				return static_cast<uint>(_timelines.size());
 			}
 
 			inline
