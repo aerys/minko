@@ -106,7 +106,7 @@ namespace minko
             uint
 			numEffects()
 			{
-				return _effects.size();
+				return static_cast<uint>(_effects.size());
 			}
 
 			inline
