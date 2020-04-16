@@ -113,7 +113,7 @@ namespace minko
 			uint
             numTextures()
             {
-                return _textures.size();
+                return static_cast<uint>(_textures.size());
             }
 
             inline
