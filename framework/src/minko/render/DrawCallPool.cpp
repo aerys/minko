@@ -770,7 +770,7 @@ DrawCallPool::numDrawCalls() const
     {
         for (const auto& drawCalls : sortPropertiesToDrawCalls.second)
         {
-            numDrawCalls += drawCalls.size();
+            numDrawCalls += static_cast<unsigned int>(drawCalls.size());
         }
     }
 
