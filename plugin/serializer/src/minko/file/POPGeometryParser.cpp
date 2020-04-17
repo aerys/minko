@@ -208,7 +208,7 @@ POPGeometryParser::createPOPGeometry(AssetLibrary::Ptr      assetLibrary,
 
     auto vertexBuffers = std::vector<VertexBuffer::Ptr>(_numVertexBuffers);
 
-    for (auto i = 0u; i < _numVertexBuffers; ++i)
+    for (int i = 0; i < _numVertexBuffers; ++i)
     {
         vertexBuffers[i] = VertexBuffer::create(options->context());
     }
