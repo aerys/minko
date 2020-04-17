@@ -191,7 +191,7 @@ Geometry::computeNormals()
         (*normalsData)[index + 2] = 0.f;
     }
 
-	for (auto i = decltype(numFaces) { 0 }, offset = 0; i < numFaces; ++i)
+	for (std::remove_const<decltype(numFaces)>::type i = 0, offset = 0; i < numFaces; ++i)
 	{
 		for (unsigned int k = 0; k < 3; ++k)
 		{
@@ -279,7 +279,7 @@ Geometry::computeTangentSpace(bool doNormals)
 
 	std::vector<float> tangentsData(3 * numVertices, 0.0f);
 
-	for (auto i = decltype(numFaces) { 0 }, offset = 0; i < numFaces; ++i)
+	for (std::remove_const<decltype(numFaces)>::type i = 0, offset = 0; i < numFaces; ++i)
 	{
 		for (unsigned int k = 0; k < 3; ++k)
 		{
