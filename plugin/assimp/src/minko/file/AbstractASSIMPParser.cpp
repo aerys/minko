@@ -1036,7 +1036,7 @@ AbstractASSIMPParser::getSkinNumFrames(const aiMesh* aimesh) const
 	const auto	meshNode	= minkoMesh->parent();
 	assert(meshNode);
 
-	unsigned int numFrames = 0;
+	std::size_t numFrames = 0;
 
 	for (unsigned int boneId = 0; boneId < aimesh->mNumBones; ++boneId)
 	{
