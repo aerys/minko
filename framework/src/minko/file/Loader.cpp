@@ -71,7 +71,7 @@ Loader::load()
         return;
     }
 
-    _numFiles = _filesQueue.size();
+    _numFiles = static_cast<int>(_filesQueue.size());
     _protocolToProgress.clear();
 
     auto queue = _filesQueue;
