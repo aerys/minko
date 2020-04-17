@@ -154,7 +154,7 @@ Geometry::computeNormals()
     const auto ushortIndices = indices()->dataPointer<unsigned short>();
     const auto uintIndices = indices()->dataPointer<unsigned int>();
 
-	const unsigned int numFaces = (ushortIndices ? ushortIndices->size() : uintIndices->size()) / 3u;
+	const auto numFaces = (ushortIndices ? ushortIndices->size() : uintIndices->size()) / 3u;
 
 	unsigned int vertexIds[3] = { 0, 0, 0 };
 	std::vector<math::vec3> xyz(3);
@@ -191,7 +191,7 @@ Geometry::computeNormals()
         (*normalsData)[index + 2] = 0.f;
     }
 
-	for (unsigned int i = 0, offset = 0; i < numFaces; ++i)
+	for (decltype(numFaces) i = 0, offset = 0; i < numFaces; ++i)
 	{
 		for (unsigned int k = 0; k < 3; ++k)
 		{
@@ -263,7 +263,7 @@ Geometry::computeTangentSpace(bool doNormals)
     const auto ushortIndices = indices()->dataPointer<unsigned short>();
     const auto uintIndices = indices()->dataPointer<unsigned int>();
 
-	const unsigned int numFaces = (ushortIndices ? ushortIndices->size() : uintIndices->size()) / 3u;
+	const auto numFaces = (ushortIndices ? ushortIndices->size() : uintIndices->size()) / 3u;
 
 	unsigned int vertexIds[3] = { 0, 0, 0 };
 	std::vector<math::vec3> xyz(3);
@@ -279,7 +279,7 @@ Geometry::computeTangentSpace(bool doNormals)
 
 	std::vector<float> tangentsData(3 * numVertices, 0.0f);
 
-	for (unsigned int i = 0, offset = 0; i < numFaces; ++i)
+	for (decltype(numFaces) i = 0, offset = 0; i < numFaces; ++i)
 	{
 		for (unsigned int k = 0; k < 3; ++k)
 		{
