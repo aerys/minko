@@ -1064,7 +1064,7 @@ AbstractASSIMPParser::getSkinNumFrames(const aiMesh* aimesh) const
 		while (currentNode != meshNode);
 	}
 
-	return numFrames;
+	return static_cast<unsigned int>(numFrames);
 }
 
 void
@@ -1308,7 +1308,7 @@ AbstractASSIMPParser::getBoneCommonAncestor(const aiMesh* aimesh) const
 			std::reverse(bonePath.back().begin(), bonePath.back().end());
 
 			if (bonePath.back().size() < minDepth)
-				minDepth = bonePath.back().size();
+				minDepth = static_cast<uint>(bonePath.back().size());
 		}
 
 		if (bonePath.empty())
@@ -1373,7 +1373,7 @@ AbstractASSIMPParser::precomputeModelToRootMatrices(Node::Ptr			node,
 	while(currentNode != root); // the transform of the root is not accounted for!
 
 	// collapse transform from node to root for each frame of the animation
-	const uint numFrames = modelToRootMatrices.size();
+	const uint numFrames = static_cast<uint>(modelToRootMatrices.size());
 
 	for (uint frameId = 0; frameId < numFrames; ++frameId)
 	{
@@ -1525,7 +1525,7 @@ AbstractASSIMPParser::sample(const aiVectorKey*	        keys,
 					         float						time)
 {
     auto output = math::vec3();
-	const unsigned int	numKeys	= keyTimeFactors.size();
+	const unsigned int	numKeys	= static_cast<unsigned int>(keyTimeFactors.size());
 	const unsigned int	id		= getIndexForTime(numKeys, keys, time);
 	const aiVector3D&	value0	= keys[id].mValue;
 
@@ -1554,7 +1554,7 @@ AbstractASSIMPParser::sample(const aiQuatKey*			keys,
 					         float						time)
 {
     auto output = math::quat();
-	const unsigned int	numKeys	= keyTimeFactors.size();
+	const unsigned int	numKeys	= static_cast<unsigned int>(keyTimeFactors.size());
 	const unsigned int	id		= getIndexForTime(numKeys, keys, time);
 	const aiQuaternion&	value0	= keys[id].mValue;
 
@@ -2066,7 +2066,7 @@ AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 
         nodeToTimelines[node].push_back(animation::Matrix4x4Timeline::create(
             PNAME_TRANSFORM,
-            duration,
+            static_cast<uint>(duration),
             timetable,
             matrices,
             interpolate
