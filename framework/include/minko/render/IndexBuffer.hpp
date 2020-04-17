@@ -197,7 +197,7 @@ namespace minko
 						T*				end) :
 				AbstractResource(context),
 				_data(std::vector<T>(begin, end)),
-				_numIndices(dataPointer<T>()->size()),
+				_numIndices(static_cast<unsigned int>(dataPointer<T>()->size())),
 				_changed(Signal<Ptr>::create())
 			{
 			}
