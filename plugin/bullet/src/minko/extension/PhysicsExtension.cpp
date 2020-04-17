@@ -133,10 +133,10 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
         
         const float* data = reinterpret_cast<const float*>(serializedPointsString.data());
 
-        int numPoints = serializedPointsString.length() / (3 * sizeof(float));
+        auto numPoints = serializedPointsString.length() / (3 * sizeof(float));
 
         auto btShape = std::shared_ptr<btConvexHullShape>(new btConvexHullShape());
-        for (uint i = 0; i < numPoints; i++)
+        for (decltype(numPoints) i = 0; i < numPoints; i++)
         {
             float x = data[i*3 + 0];
             float y = data[i*3 + 1];
