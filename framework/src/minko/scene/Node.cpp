@@ -216,9 +216,9 @@ Node::removeChild(Node::Ptr child)
 Node::Ptr
 Node::removeChildren()
 {
-	int numChildren = _children.size();
+	auto numChildren = _children.size();
 
-	for (int i = numChildren - 1; i >= 0; --i)
+	for (auto i = numChildren - 1; i >= 0; --i)
 		removeChild(_children[i]);
 
 	return shared_from_this();
