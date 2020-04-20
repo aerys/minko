@@ -463,24 +463,19 @@ TextureLodScheduler::computeLodPriority(const TextureResourceInfo& 	resource,
 										int 						activeLod,
                                         float                       time)
 {
-    if (activeLod >= requiredLod)
-        return 0.f;
-
     const auto& lodPriorityFunction = masterLodScheduler()->streamingOptions()->streamedTextureLodPriorityFunction();
 
-    if (lodPriorityFunction)
-    {
-        return lodPriorityFunction(
-            activeLod,
-            requiredLod,
-            surface,
-            surface ? surface->target()->data() : target()->data(),
-            _sceneManager->target()->data(),
-            _renderer->target()->data()
-        );
-    }
+    if (!lodPriorityFunction)
+        throw std::runtime_error("streamedTextureLodPriorityFunction not specified.");
 
-    return requiredLod - activeLod;
+    return lodPriorityFunction(
+        activeLod,
+        requiredLod,
+        surface,
+        surface ? surface->target()->data() : target()->data(),
+        _sceneManager->target()->data(),
+        _renderer ? &_renderer->target()->data() : nullptr
+    );
 }
 
 float
