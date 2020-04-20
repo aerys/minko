@@ -716,7 +716,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     unsigned char lastAlphaValue = 0;
     auto elementsToRemove = map<scene::Node::Ptr, std::set<unsigned char>>();
 
-    for (unsigned int i = 0; i < selectAreaPixelBuffer.size(); i += pixelSize)
+    for (int i = 0; i < static_cast<int>(selectAreaPixelBuffer.size()); i += pixelSize)
     {
         auto currentPixel = &selectAreaPixelBuffer[i];
         uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
