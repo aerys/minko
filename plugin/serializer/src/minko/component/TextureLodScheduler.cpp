@@ -239,7 +239,7 @@ TextureLodScheduler::textureReady(TextureResourceInfo&                      reso
             resource.propertyChangedSlots.insert(std::make_pair(
                 surfaceTarget,
                 surfaceTarget->data().propertyChanged(propertyName).connect(
-                    [=](Store&          	store,
+                    [=](Store&              store,
                         Provider::Ptr       provider,
                         const data::Provider::PropertyName&)
                     {
@@ -443,7 +443,7 @@ TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
 
 int
 TextureLodScheduler::computeRequiredLod(const TextureResourceInfo&  resource,
-										Surface::Ptr 				surface)
+                                        Surface::Ptr                 surface)
 {
     return masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()
         ? masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()(
@@ -457,10 +457,10 @@ TextureLodScheduler::computeRequiredLod(const TextureResourceInfo&  resource,
 }
 
 float
-TextureLodScheduler::computeLodPriority(const TextureResourceInfo& 	resource,
+TextureLodScheduler::computeLodPriority(const TextureResourceInfo&     resource,
                                         Surface::Ptr                surface,
-										int 						requiredLod,
-										int 						activeLod,
+                                        int                         requiredLod,
+                                        int                         activeLod,
                                         float                       time)
 {
     const auto& lodPriorityFunction = masterLodScheduler()->streamingOptions()->streamedTextureLodPriorityFunction();
