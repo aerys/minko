@@ -337,7 +337,7 @@ PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 
                 indexData = *u32IndexData;
 
             vertexData.resize(vertexBuffer->numVertices() * 3);
-            for (auto i = 0; i < vertexBuffer->numVertices(); ++i)
+            for (auto i = 0u; i < vertexBuffer->numVertices(); ++i)
                 for (auto j = 0; j < 3; ++j)
                     vertexData[i * 3 + j] = vertexBufferData[i * *positionAttribute.vertexSize + positionAttribute.offset + j];
         }
