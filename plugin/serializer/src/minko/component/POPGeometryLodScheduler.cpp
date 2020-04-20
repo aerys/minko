@@ -238,6 +238,14 @@ POPGeometryLodScheduler::surfaceRemoved(Surface::Ptr surface)
             return surfaceInfo.surface == surface;
         }), resource.surfaceInfoCollection.end()
     );
+
+    // In theory 1 Surface == 1 Geometry == 1 Resource,
+    // so we must remove any resource that doesn't refer to any surface.
+    if (resource.surfaceInfoCollection.size() == 0)
+    {
+        this->unregisterResource(resourceIt->second.base->uuid());
+        _popGeometryResources.erase(resourceIt);
+    }
 }
 
 void
@@ -467,7 +475,7 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
     const auto& requiredLod = precisionLevelToClosestLod(resource, ceiledRequiredPrecisionLevel);
 
     return masterLodScheduler()->streamingOptions()->popGeometryLodFunction()
-        ? masterLodScheduler()->streamingOptions()->popGeometryLodFunction()(
+        ? masterLodScheduler()->streamingOptions()->popGeometryLodFunction() (
             requiredLod._level,
             resource.maxLod,
             resource.fullPrecisionLod,
@@ -484,24 +492,19 @@ POPGeometryLodScheduler::computeLodPriority(const POPGeometryResourceInfo& 	reso
 											int 							activeLod,
                                             float                           time)
 {
-    if (activeLod >=  requiredLod)
-        return 0.f;
-
     const auto& lodPriorityFunction = masterLodScheduler()->streamingOptions()->popGeometryLodPriorityFunction();
 
-    if (lodPriorityFunction)
-    {
-        return lodPriorityFunction(
-            activeLod,
-            requiredLod,
-            surfaceInfo.surface,
-            surfaceInfo.surface->target()->data(),
-            _sceneManager->target()->data(),
-            _renderer->target()->data()
-        );
-    }
+    if (!lodPriorityFunction)
+        throw std::runtime_error("popGeometryLodPriorityFunction not specified.");
 
-    return requiredLod - activeLod;
+    return lodPriorityFunction(
+        activeLod,
+        requiredLod,
+        surfaceInfo.surface,
+        surfaceInfo.surface->target()->data(),
+        _sceneManager->target()->data(),
+        _renderer ? &_renderer->target()->data() : nullptr
+    );
 }
 
 bool

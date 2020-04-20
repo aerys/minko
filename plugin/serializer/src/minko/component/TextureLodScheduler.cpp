@@ -239,7 +239,7 @@ TextureLodScheduler::textureReady(TextureResourceInfo&                      reso
             resource.propertyChangedSlots.insert(std::make_pair(
                 surfaceTarget,
                 surfaceTarget->data().propertyChanged(propertyName).connect(
-                    [=](Store&          	store,
+                    [=](Store&              store,
                         Provider::Ptr       provider,
                         const data::Provider::PropertyName&)
                     {
@@ -443,7 +443,7 @@ TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
 
 int
 TextureLodScheduler::computeRequiredLod(const TextureResourceInfo&  resource,
-										Surface::Ptr 				surface)
+                                        Surface::Ptr                 surface)
 {
     return masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()
         ? masterLodScheduler()->streamingOptions()->streamedTextureLodFunction()(
@@ -457,30 +457,25 @@ TextureLodScheduler::computeRequiredLod(const TextureResourceInfo&  resource,
 }
 
 float
-TextureLodScheduler::computeLodPriority(const TextureResourceInfo& 	resource,
+TextureLodScheduler::computeLodPriority(const TextureResourceInfo&     resource,
                                         Surface::Ptr                surface,
-										int 						requiredLod,
-										int 						activeLod,
+                                        int                         requiredLod,
+                                        int                         activeLod,
                                         float                       time)
 {
-    if (activeLod >= requiredLod)
-        return 0.f;
-
     const auto& lodPriorityFunction = masterLodScheduler()->streamingOptions()->streamedTextureLodPriorityFunction();
 
-    if (lodPriorityFunction)
-    {
-        return lodPriorityFunction(
-            activeLod,
-            requiredLod,
-            surface,
-            surface ? surface->target()->data() : target()->data(),
-            _sceneManager->target()->data(),
-            _renderer->target()->data()
-        );
-    }
+    if (!lodPriorityFunction)
+        throw std::runtime_error("streamedTextureLodPriorityFunction not specified.");
 
-    return requiredLod - activeLod;
+    return lodPriorityFunction(
+        activeLod,
+        requiredLod,
+        surface,
+        surface ? surface->target()->data() : target()->data(),
+        _sceneManager->target()->data(),
+        _renderer ? &_renderer->target()->data() : nullptr
+    );
 }
 
 float
