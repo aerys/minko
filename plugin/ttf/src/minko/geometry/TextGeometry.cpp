@@ -372,11 +372,11 @@ getCharacterBox(const Font&     font,
     {
         const auto& fontCharacter = *it;
 
-        boxMin.x += fontCharacter.bearing.x * scale;
-        boxMax.x = boxMin.x + fontCharacter.size.x * scale;
+        boxMin.x += static_cast<int>(fontCharacter.bearing.x * scale);
+        boxMax.x = static_cast<int>(boxMin.x + fontCharacter.size.x * scale);
 
-        boxMin.y = -fontCharacter.bearing.y * scale;
-        boxMax.y = boxMin.y + fontCharacter.size.y * scale;
+        boxMin.y = static_cast<int>(-fontCharacter.bearing.y * scale);
+        boxMax.y = static_cast<int>(boxMin.y + fontCharacter.size.y * scale);
     }
 }
 #endif
