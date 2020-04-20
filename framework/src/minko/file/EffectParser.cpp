@@ -164,7 +164,7 @@ EffectParser::parse(const std::string&				    filename,
     parsed = JSON::json::parse(replaceBreakLine(tempData));
     _options = options->clone()->loadAsynchronously(false);
 
-    int pos	= resolvedFilename.find_last_of("/\\");
+    const auto pos	= resolvedFilename.find_last_of("/\\");
     if (pos != std::string::npos)
     {
         _options = _options->clone();
@@ -240,7 +240,7 @@ EffectParser::parseConfiguration(const JSON::json& node)
 void
 EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
 {
-    int numPasses = passes.size();
+    int numPasses = static_cast<int>(passes.size());
     if (numPasses == 1 && passes[0]->states().priority() == UNSET_PRIORITY_VALUE)
     {
         passes[0]->states().priority(States::DEFAULT_PRIORITY);
@@ -1510,11 +1510,11 @@ EffectParser::parseGLSL(const std::string&      glsl,
                 insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd, i - lastBlockEnd)));
             insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::FILE, filename));
 
-            lastBlockEnd = i + line.size() + 1;
+            lastBlockEnd = i + static_cast<int>(line.size()) + 1;
 
             ++numIncludes;
         }
-        i += line.size() + 1;
+        i += static_cast<int>(line.size()) + 1;
     }
 
     if (i != lastBlockEnd)
