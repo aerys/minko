@@ -245,7 +245,7 @@ namespace minko
         uint
         numJoysticks() override
         {
-            return _joysticks.size();
+            return static_cast<uint>(_joysticks.size());
         }
 
         inline
