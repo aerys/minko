@@ -262,7 +262,7 @@ HTTPProtocol::load()
         _workerSlots.push_back(worker->message()->connect([=](Worker::Ptr, Worker::Message message) {
             if (message.type == "complete")
             {
-                completeHandler(&*message.data.begin(), message.data.size());
+                completeHandler(&*message.data.begin(), static_cast<unsigned>(message.data.size()));
             }
             else if (message.type == "progress")
             {
@@ -275,7 +275,7 @@ HTTPProtocol::load()
             }
             else if (message.type == "buffer")
             {
-                bufferHandler(message.data.data(), message.data.size());
+                bufferHandler(message.data.data(), static_cast<unsigned>(message.data.size()));
             }
         }));
 
@@ -287,8 +287,8 @@ HTTPProtocol::load()
         const auto& resolvedFilename = this->resolvedFilename();
         const int resolvedFilenameSize = static_cast<int>(resolvedFilename.size());
 
-        const int usernameSize = username.size();
-        const int passwordSize = password.size();
+        const int usernameSize = static_cast<int>(username.size());
+        const int passwordSize = static_cast<int>(password.size());
 
         const int numAdditionalHeaders = additionalHeaders.size();
         const int postFieldsSize = postFields.size();
@@ -328,7 +328,7 @@ HTTPProtocol::load()
         inputStream.write(reinterpret_cast<const char*>(&buffered), 1);
 
         inputStream.write(reinterpret_cast<const char*>(&postFieldsSize), 4);
-        if (postFieldsSize> 0)
+        if (postFieldsSize > 0)
             inputStream.write(postFields.data(), postFieldsSize);
 
         auto inputString = inputStream.str();
@@ -356,7 +356,7 @@ HTTPProtocol::load()
         });
 
         auto bufferSlot = request.bufferSignal()->connect([&](const std::vector<char>& buffer) {
-            bufferHandler(buffer.data(), buffer.size());
+            bufferHandler(buffer.data(), static_cast<unsigned>(buffer.size()));
         });
 
         request.run();
@@ -365,7 +365,7 @@ HTTPProtocol::load()
         {
             std::vector<char>& output = request.output();
 
-            completeHandler(&*output.begin(), output.size());
+            completeHandler(&*output.begin(), static_cast<unsigned>(output.size()));
         }
     }
 #endif
