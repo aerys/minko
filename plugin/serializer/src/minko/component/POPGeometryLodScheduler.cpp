@@ -243,7 +243,6 @@ POPGeometryLodScheduler::surfaceRemoved(Surface::Ptr surface)
     // so we must remove any resource that doesn't refer to any surface.
     if (resource.surfaceInfoCollection.size() == 0)
     {
-        std::cout << "Removing resource that doesn't point to any surface." << std::endl;
         this->unregisterResource(resourceIt->second.base->uuid());
         _popGeometryResources.erase(resourceIt);
     }
