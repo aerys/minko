@@ -722,7 +722,7 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
         uint pickedSurfaceId = (currentPixel[0] << 16) + (currentPixel[1] << 8) + currentPixel[2];
         auto alpha = currentPixel[3];
 
-        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || (fullyInside && !singleClick)) && pickedSurfaceId <= maxSurfaceId)
+        if ((lastPickedSurfaceId != pickedSurfaceId || lastAlphaValue != alpha || (fullyInside && !singleClick)) && static_cast<int>(pickedSurfaceId) <= maxSurfaceId)
         {
             lastPickedSurfaceId = pickedSurfaceId;
             lastAlphaValue = alpha;
