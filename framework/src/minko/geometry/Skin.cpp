@@ -109,7 +109,7 @@ Skin::reorganizeByVertices()
 	
 				const unsigned int		index	= vertexArraysIndex(vId, j);
 				
-				_vertexBones[index]				= boneId;
+				_vertexBones[index]				= static_cast<unsigned>(boneId);
 				_vertexBoneWeights[index]		= vertexWeights[i];
 			}
 	}
