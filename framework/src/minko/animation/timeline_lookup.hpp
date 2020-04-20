@@ -32,7 +32,7 @@ namespace minko
     uint
     animation::getIndexForTime(uint time, const std::vector<std::pair<uint,T>>& timetable)
     {
-        const uint numKeys = timetable.size();
+        const uint numKeys = static_cast<uint>(timetable.size());
         if (numKeys == 0)
             return 0;
 
