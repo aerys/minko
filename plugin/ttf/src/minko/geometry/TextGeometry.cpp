@@ -202,7 +202,7 @@ loadFont(render::AbstractContext::Ptr context, const std::string& fontFilename, 
         return false;
 
     FT_Face face;
-    if (FT_New_Memory_Face(ft, fontData.data(), fontData.size(), 0, &face))
+    if (FT_New_Memory_Face(ft, fontData.data(), static_cast<FT_Long>(fontData.size()), 0, &face))
         return false;
 
     FT_Set_Pixel_Sizes(face, 0, 48);
