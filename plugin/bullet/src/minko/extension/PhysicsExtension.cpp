@@ -164,7 +164,7 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
         const auto numIndices = triangleMeshShape->indexData().size();
 
         btTriangleIndexVertexArray* btTriangleMesh = new ::btTriangleIndexVertexArray(
-            numIndices / 3,
+            static_cast<int>(numIndices) / 3,
             const_cast<int*> (reinterpret_cast<const int*> (triangleMeshShape->indexData().data())),
             3 * sizeof (int),
             numVertices,
