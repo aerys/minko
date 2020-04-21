@@ -37,3 +37,10 @@ file (
 
 minko_add_library (${PROJECT_NAME} "STATIC" "${${PROJECT_NAME}_SRC}")
 target_include_directories(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
+    CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
+    CMAKE_CXX_COMPILER_ID MATCHES "AppleClang" OR
+    EMSCRIPTEN)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -Wno-invalid-noreturn)
+endif ()
