@@ -290,8 +290,8 @@ HTTPProtocol::load()
         const int usernameSize = static_cast<int>(username.size());
         const int passwordSize = static_cast<int>(password.size());
 
-        const int numAdditionalHeaders = additionalHeaders.size();
-        const int postFieldsSize = postFields.size();
+        const int numAdditionalHeaders = static_cast<int>(additionalHeaders.size());
+        const int postFieldsSize = static_cast<int>(postFields.size());
 
         inputStream.write(reinterpret_cast<const char*>(&resolvedFilenameSize), 4);
         if (resolvedFilenameSize > 0)
