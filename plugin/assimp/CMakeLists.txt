@@ -197,4 +197,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
     EMSCRIPTEN)
     target_compile_options(${PROJECT_NAME} PRIVATE
         -Wno-deprecated-declarations)
+    target_compile_options(assimp PRIVATE
+        -Wno-deprecated-declarations)
 endif ()
