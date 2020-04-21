@@ -499,7 +499,7 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
         // In other words, the value targeted by "material[1].diffuseMap" will be different and thus
         // we should trigger the "property changed" signal for each property of each provider which is
         // "after" the one being removed from the collection.
-        for (auto i = providerIndex; i < collection->items().size(); ++i)
+        for (auto i = providerIndex; i < static_cast<unsigned long>(collection->items().size()); ++i)
         {
             const auto& provider = collection->items()[i];
 
