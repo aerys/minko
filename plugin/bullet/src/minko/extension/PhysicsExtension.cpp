@@ -369,7 +369,7 @@ PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 
         isdynamic,
         true,
         0,
-        collider->layoutMask(),
+        static_cast<uint>(collider->layoutMask()),
         serializedPointsString,
         serializedIndicesString
     );
