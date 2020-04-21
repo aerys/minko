@@ -61,7 +61,7 @@ namespace minko
             typedef std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>  LoaderCompleteSlotMap;
             typedef std::unordered_map<LoaderPtr, LoaderErrorSlot>          LoaderErrorSlotMap;
 
-            typedef minko::file::JSON::json                              JSONValue;
+            typedef minko::file::JSON::Value                                JSONValue;
 
             enum class GLSLBlockType
             {
@@ -419,12 +419,6 @@ namespace minko
 
             ShaderPtr
             parseShader(const JSONValue& node, const Scope& scope, render::Shader::Type type);
-
-            std::vector<unsigned char>
-            replaceBreakLine(std::vector<unsigned char> &data);
-
-            std::string
-            undoBreakLine(const std::string &node);
 
             void
             parseGLSL(const std::string&        glsl,

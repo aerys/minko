@@ -151,20 +151,30 @@ EffectParser::parse(const std::string&				    filename,
 				    const std::vector<unsigned char>&	data,
 				    std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
-	JSON::json parsed;
+	JSON::Value root;
+	JSON::Reader reader;
 
+    // Add a line ending to avoid JSON parsing error
     auto tempData = data;
     tempData.push_back('\n');
-    
-    /* 
-        We do replace every \n with a DEL character from tempData before giving it to the JSON parser,
-       JSON specification forbid line return or any other break inside a string value,
-       find the full discussion about it here : https://git.aerys.in/aerys/smartshape-engine/issues/193 
-    */
-    parsed = JSON::json::parse(replaceBreakLine(tempData));
-    _options = options->clone()->loadAsynchronously(false);
 
-    const auto pos	= resolvedFilename.find_last_of("/\\");
+    auto parseSuccess = reader.parse(
+        reinterpret_cast<const char*>(&tempData[0]),
+        reinterpret_cast<const char*>(&tempData[tempData.size() - 1]), root, false
+    );
+
+    if (!parseSuccess)
+    {
+        _error->execute(
+            shared_from_this(), 
+            file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages())
+        );
+    }
+
+    _options = options->clone()
+        ->loadAsynchronously(false);
+
+    int pos	= resolvedFilename.find_last_of("/\\");
     if (pos != std::string::npos)
     {
         _options = _options->clone();
@@ -175,15 +185,17 @@ EffectParser::parse(const std::string&				    filename,
 	_filename = filename;
 	_resolvedFilename = resolvedFilename;
 	_assetLibrary = assetLibrary;
-    _effectName = parsed.value("name", filename);
-    parseGlobalScope(parsed, _globalScope);
+	_effectName	= root.get("name", filename).asString();
+
+    parseGlobalScope(root, _globalScope);
+
     _effect = render::Effect::create(_effectName);
     if (_numDependencies == _numLoadedDependencies)
         finalize();
 }
 
 void
-EffectParser::parseGlobalScope(const JSON::json& node, Scope& scope)
+EffectParser::parseGlobalScope(const JSON::Value& node, Scope& scope)
 {
     parseAttributes(node, scope, scope.attributeBlock);
     parseUniforms(node, scope, scope.uniformBlock);
@@ -194,35 +206,35 @@ EffectParser::parseGlobalScope(const JSON::json& node, Scope& scope)
 }
 
 bool
-EffectParser::parseConfiguration(const JSON::json& node)
+EffectParser::parseConfiguration(const JSON::Value& node)
 {
-    auto confValue = node.value("configuration", JSON::json());
+    auto confValue = node.get("configuration", 0);
     auto platforms = _options->platforms();
     auto userFlags = _options->userFlags();
     auto r = false;
 
-    if (confValue.is_array())
+    if (confValue.isArray())
     {
         for (auto value : confValue)
         {
             // if the config. token is a string and we can find it in the list of platforms,
             // then the configuration is ok and we return true
-            if (value.is_string() &&
-                (std::find(platforms.begin(), platforms.end(), value.get<std::string>()) != platforms.end() ||
-                std::find(userFlags.begin(), userFlags.end(), value.get<std::string>()) != userFlags.end()))
+            if (value.isString() &&
+                (std::find(platforms.begin(), platforms.end(), value.asString()) != platforms.end() ||
+                std::find(userFlags.begin(), userFlags.end(), value.asString()) != userFlags.end()))
             {
                 return true;
             }
-            else if (value.is_array())
+            else if (value.isArray())
             {
                 // if the config. token is an array, we check that *all* the string tokens are in
                 // the platforms list; if a single of them is not there then the config. token
                 // is considered to be false
                 for (auto str : value)
                 {
-                        if (str.is_string() &&
-                            (std::find(platforms.begin(), platforms.end(), str.get<std::string>()) == platforms.end() ||
-                            std::find(userFlags.begin(), userFlags.end(), str.get<std::string>()) != userFlags.end()))
+                        if (str.isString() &&
+                            (std::find(platforms.begin(), platforms.end(), str.asString()) == platforms.end() ||
+                            std::find(userFlags.begin(), userFlags.end(), str.asString()) != userFlags.end()))
                     {
                         r = r || false;
                         break;
@@ -240,7 +252,8 @@ EffectParser::parseConfiguration(const JSON::json& node)
 void
 EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
 {
-    int numPasses = static_cast<int>(passes.size());
+    int numPasses = passes.size();
+
     if (numPasses == 1 && passes[0]->states().priority() == UNSET_PRIORITY_VALUE)
     {
         passes[0]->states().priority(States::DEFAULT_PRIORITY);
@@ -275,22 +288,21 @@ EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
 }
 
 void
-EffectParser::parseTechniques(const JSON::json& node, Scope& scope, Techniques& techniques)
+EffectParser::parseTechniques(const JSON::Value& node, Scope& scope, Techniques& techniques)
 {
-    auto techniquesNode = node.value("techniques", JSON::json());
-    
-    if (techniquesNode.is_array())
+    auto techniquesNode = node.get("techniques", 0);
+
+    if (techniquesNode.isArray())
     {
         for (auto techniqueNode : techniquesNode)
         {
             // FIXME: switch to fallback instead of ignoring
-            if (!parseConfiguration(techniqueNode)) {
+            if (!parseConfiguration(techniqueNode))
                 continue;
-            }
 
-            auto techniqueNameNode = techniqueNode.value("name", JSON::json());
-            auto techniqueName = (techniqueNameNode.is_string())
-                ? techniqueNameNode.get<std::string>()
+            auto techniqueNameNode = techniqueNode.get("name", 0);
+            auto techniqueName = techniqueNameNode.isString()
+                ? techniqueNameNode.asString()
                 : techniquesNode.size() == 1
                     ? "default"
                     : _effectName + "-technique-" + std::to_string(techniques.size());
@@ -310,16 +322,16 @@ EffectParser::parseTechniques(const JSON::json& node, Scope& scope, Techniques& 
 }
 
 void
-EffectParser::parsePasses(const JSON::json& node, Scope& scope, std::vector<PassPtr>& passes)
+EffectParser::parsePasses(const JSON::Value& node, Scope& scope, std::vector<PassPtr>& passes)
 {
-    auto passesNode = node.value("passes", JSON::json());
-    
-    if (passesNode.is_array())
+    auto passesNode = node.get("passes", 0);
+
+    if (passesNode.isArray())
     {
         for (auto passNode : passesNode)
         {
             // FIXME: switch to fallback instead of ignoring
-            if (passNode.is_object() && !parseConfiguration(passNode))
+            if (passNode.isObject() && !parseConfiguration(passNode))
                 continue;
 
             parsePass(passNode, scope, passes);
@@ -354,14 +366,14 @@ EffectParser::findPassFromEffectFilename(const std::string& effectFilename,
 }
 
 render::Pass::Ptr
-EffectParser::getPassToExtend(const JSON::json& extendNode)
+EffectParser::getPassToExtend(const JSON::Value& extendNode)
 {
     render::Pass::Ptr pass;
     std::string passName;
 
-    if (extendNode.is_string())
+    if (extendNode.isString())
     {
-        passName = extendNode.get<std::string>();
+        passName = extendNode.asString();
 
         // if the "extends" node is just a string, we're extending a "free" pass
         // thus we have to look into the root scope
@@ -373,11 +385,12 @@ EffectParser::getPassToExtend(const JSON::json& extendNode)
         if (passIt != _globalScope.passes.end())
             pass = *passIt;
     }
-    else if (extendNode.is_object())
+    else if (extendNode.isObject())
     {
-        passName = extendNode["pass"].get<std::string>();
-        auto techniqueName = extendNode["technique"].get<std::string>();
-        auto effectFilename = extendNode["effect"].get<std::string>();
+        passName = extendNode["pass"].asString();
+
+        auto techniqueName = extendNode["technique"].asString();
+        auto effectFilename = extendNode["effect"].asString();
 
         if (techniqueName == "")
             techniqueName = "default";
@@ -394,41 +407,45 @@ EffectParser::getPassToExtend(const JSON::json& extendNode)
             {
                 pass = findPassFromEffectFilename(effectFilename, techniqueName, passName);
             });
-            loader->load();            
+            loader->load();
         }
         else
         {
             pass = findPassFromEffectFilename(effectFilename, techniqueName, passName);
         }
     }
-    else 
+    else
         throw;
 
     if (pass == nullptr)
         throw std::runtime_error("Undefined base pass with name '" + passName + "'.");
+
     return pass;
 }
 
 void
-EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPtr>& passes)
+EffectParser::parsePass(const JSON::Value& node, Scope& scope, std::vector<PassPtr>& passes)
 {
-    if (node.is_string())
+    if (node.isString())
     {
         passes.push_back(Pass::create(getPassToExtend(node), false));
     }
-    else if (node.is_object())
+    else if (node.isObject())
     {
         // If the pass is an actual pass object, we parse all its data, create the corresponding
         // Pass object and add it to the vector.
+
         Scope passScope(scope, scope);
+
 		render::Shader::Ptr vertexShader;
 		render::Shader::Ptr fragmentShader;
         auto passName = _effectName + "-pass" + std::to_string(scope.passes.size());
-        auto nameNode = node.value("name", JSON::json());
+        auto nameNode = node.get("name", 0);
 		auto isForward = true;
-		if (!node.value("extends", JSON::json()).is_null())
+
+		if (node.isMember("extends"))
 		{
-			auto extendNode = node.value("extends", JSON::json());
+			auto extendNode = node.get("extends", 0);
             render::Pass::Ptr pass = getPassToExtend(extendNode);
 
 			// If a pass "extends" another pass, then we have to merge its properties with the already existing ones
@@ -437,7 +454,7 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
             passScope.macroBlock.bindingMap.bindings.insert(pass->macroBindings().bindings.begin(), pass->macroBindings().bindings.end());
             passScope.macroBlock.bindingMap.types.insert(pass->macroBindings().types.begin(), pass->macroBindings().types.end());
             passScope.stateBlock.bindingMap.bindings.insert(pass->stateBindings().bindings.begin(), pass->stateBindings().bindings.end());
-            
+
             if (pass->attributeBindings().defaultValues.providers().size() > 0)
             {
                 if (passScope.attributeBlock.bindingMap.defaultValues.providers().size() == 0)
@@ -474,31 +491,33 @@ EffectParser::parsePass(const JSON::json& node, Scope& scope, std::vector<PassPt
             isForward = pass->isForward();
             passName = pass->name();
 		}
-        if (nameNode.is_string()) {
-            passName = nameNode.get<std::string>();
-        }
+
+        if (nameNode.isString())
+            passName = nameNode.asString();
         // FIXME: throw otherwise
 
         parseAttributes(node, passScope, passScope.attributeBlock);
         parseUniforms(node, passScope, passScope.uniformBlock);
         parseMacros(node, passScope, passScope.macroBlock);
         parseStates(node, passScope, passScope.stateBlock);
-		if (!node.value("vertexShader", JSON::json()).empty()) {
-        	vertexShader = parseShader(node.value("vertexShader", JSON::json()), passScope, Shader::Type::VERTEX_SHADER);
-        }
-        else if (!vertexShader) {
+
+		if (node.isMember("vertexShader"))
+        	vertexShader = parseShader(node.get("vertexShader", 0), passScope, Shader::Type::VERTEX_SHADER);
+		else if (!vertexShader)
 			throw std::runtime_error("Missing vertex shader for pass \"" + passName + "\"");
-        }
-		if (!node.value("fragmentShader", JSON::json()).empty()) {
-        	fragmentShader = parseShader(node.value("fragmentShader", JSON::json()), passScope, Shader::Type::FRAGMENT_SHADER);
-        }
-		else if (!fragmentShader) {
+
+		if (node.isMember("fragmentShader"))
+        	fragmentShader = parseShader(node.get("fragmentShader", 0), passScope, Shader::Type::FRAGMENT_SHADER);
+		else if (!fragmentShader)
 			throw std::runtime_error("Missing fragment shader for pass \"" + passName + "\"");
-        }
-		isForward = node.value("forward", isForward);
+
+		if (node.isMember("forward"))
+			isForward = node.get("forward", true).asBool();
+
         if (!isForward)
             checkDeferredPassBindings(passScope);
-            passes.push_back(Pass::create(
+
+        passes.push_back(Pass::create(
             passName,
 			isForward,
             Program::create(passName, _options->context(), vertexShader, fragmentShader),
@@ -531,95 +550,93 @@ EffectParser::checkDeferredPassBindings(const Scope& passScope)
 }
 
 void
-EffectParser::parseDefaultValue(const JSON::json&  node,
+EffectParser::parseDefaultValue(const JSON::Value&  node,
                                 const Scope&        scope,
                                 const std::string&  valueName,
                                 data::Provider::Ptr defaultValues)
 {
-    if (!node.is_object())
+    if (!node.isObject())
         return;
-    if (node.find("default") == node.end()) {
+
+    auto memberNames = node.getMemberNames();
+    if (std::find(memberNames.begin(), memberNames.end(), "default") == memberNames.end())
         return;
-    }
-    auto defaultValueNode = node.value("default", JSON::json());
-    if (defaultValueNode.is_object()) {
+
+    auto defaultValueNode = node.get("default", 0);
+
+    if (defaultValueNode.isObject())
         parseDefaultValueVectorObject(defaultValueNode, scope, valueName, defaultValues);
-    }
-    else if (defaultValueNode.is_array())
+    else if (defaultValueNode.isArray())
     {
-        if (defaultValueNode.size() == 1 && defaultValueNode[0].is_array())
+        if (defaultValueNode.size() == 1 && defaultValueNode[0].isArray())
             parseDefaultValueVectorArray(defaultValueNode[0], scope, valueName, defaultValues);
         else
             throw; // FIXME: support array default values
     }
-    else if (defaultValueNode.is_boolean()) {
-        defaultValues->set(valueName, defaultValueNode.get<bool>() ? 1 : 0);
-    }
-    else if (defaultValueNode.is_number_integer()) {
-        defaultValues->set(valueName, defaultValueNode.get<int>());
-    }
-    else if (defaultValueNode.is_number_float()) {
-        defaultValues->set(valueName, defaultValueNode.get<float>());
-    }
-    else if (defaultValueNode.is_string()) {
-        loadTexture(defaultValueNode.get<std::string>(), valueName, defaultValues);
-    }
+    else if (defaultValueNode.isBool())
+        defaultValues->set(valueName, defaultValueNode.asBool() ? 1 : 0);
+    else if (defaultValueNode.isInt())
+        defaultValues->set(valueName, defaultValueNode.asInt());
+    else if (defaultValueNode.isDouble())
+        defaultValues->set(valueName, defaultValueNode.asFloat());
+    else if (defaultValueNode.isString())
+        loadTexture(defaultValueNode.asString(), valueName, defaultValues);
 }
 
 template<typename T>
 void
-EffectParser::parseDefaultValueSamplerStates(const JSON::json&    node,
+EffectParser::parseDefaultValueSamplerStates(const JSON::Value&    node,
                                              const Scope&          scope,
                                              const std::string&    valueName,
                                              data::Provider::Ptr   defaultValues)
 {
-    if (!node.is_object())
+    if (!node.isObject())
         return;
 
-    if (node.find("default") == node.end()) {
+    auto memberNames = node.getMemberNames();
+    if (std::find(memberNames.begin(), memberNames.end(), "default") == memberNames.end())
         return;
-    }
 
-    auto defaultValueNode = node.value("default", JSON::json());
+    auto defaultValueNode = node.get("default", 0);
 
-    if (defaultValueNode.is_string())
+    if (defaultValueNode.isString())
     {
         if (typeid(T) == typeid(WrapMode))
-            defaultValues->set(valueName, SamplerStates::stringToWrapMode(defaultValueNode.get<std::string>()));
+            defaultValues->set(valueName, SamplerStates::stringToWrapMode(defaultValueNode.asString()));
         else if (typeid(T) == typeid(TextureFilter))
-            defaultValues->set(valueName, SamplerStates::stringToTextureFilter(defaultValueNode.get<std::string>()));
+            defaultValues->set(valueName, SamplerStates::stringToTextureFilter(defaultValueNode.asString()));
         else if (typeid(T) == typeid(MipFilter))
-            defaultValues->set(valueName, SamplerStates::stringToMipFilter(defaultValueNode.get<std::string>()));
+            defaultValues->set(valueName, SamplerStates::stringToMipFilter(defaultValueNode.asString()));
     }
 }
 
 void
-EffectParser::parseDefaultValueStates(const JSON::json&    node,
+EffectParser::parseDefaultValueStates(const JSON::Value&    node,
                                       const Scope&          scope,
                                       const std::string&    stateName,
                                       data::Provider::Ptr   defaultValues)
 {
-    if (!node.is_object())
+    if (!node.isObject())
         return;
 
-    
-    if (node.find("default") == node.end())
+    auto memberNames = node.getMemberNames();
+    if (std::find(memberNames.begin(), memberNames.end(), "default") == memberNames.end())
         return;
 
-    auto defaultValueNode = node.value("default", JSON::json());
+    auto defaultValueNode = node.get("default", 0);
 
-    if (defaultValueNode.is_boolean())
-        defaultValues->set(stateName, defaultValueNode.get<bool>());
-    else if (defaultValueNode.is_number_integer())
-        defaultValues->set(stateName, defaultValueNode.get<int>());
-    else if (defaultValueNode.is_number_float())
-        defaultValues->set(stateName, defaultValueNode.get<float>());
-    else if (defaultValueNode.is_string())
-        defaultValues->set(stateName, defaultValueNode.get<std::string>());
-    else if (defaultValueNode.is_array())
+    if (defaultValueNode.isBool())
+        defaultValues->set(stateName, defaultValueNode.asBool() ? 1 : 0);
+    else if (defaultValueNode.isInt())
+        defaultValues->set(stateName, defaultValueNode.asInt());
+    else if (defaultValueNode.isDouble())
+        defaultValues->set(stateName, defaultValueNode.asFloat());
+    else if (defaultValueNode.isString())
+        defaultValues->set(stateName, defaultValueNode.asString());
+    else if (defaultValueNode.isArray())
     {
-        if (stateName == States::PROPERTY_PRIORITY && node[0].is_string() && node[1].is_number_float())
-            defaultValues->set(stateName, getPriorityValue(node[0].get<std::string>()) + node[1].get<float>());
+        if (stateName == States::PROPERTY_PRIORITY && node[0].isString() && node[1].isDouble())
+            defaultValues->set(stateName, getPriorityValue(node[0].asString()) + (float)node[1].asDouble());
         else
             throw; // FIXME: support array default values
     }
@@ -627,18 +644,19 @@ EffectParser::parseDefaultValueStates(const JSON::json&    node,
 }
 
 void
-EffectParser::parseDefaultValueVectorArray(const JSON::json&    defaultValueNode,
+EffectParser::parseDefaultValueVectorArray(const JSON::Value&    defaultValueNode,
                                            const Scope&          scope,
                                            const std::string&    valueName,
                                            data::Provider::Ptr   defaultValues)
 {
     auto size = defaultValueNode.size();
-   
-    if (defaultValueNode[0].is_number_integer())
+    auto type = defaultValueNode[0].type();
+
+    if (type == JSON::ValueType::intValue)
     {
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[i].get<int>();
+            value[i] = defaultValueNode[i].asInt();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -646,27 +664,26 @@ EffectParser::parseDefaultValueVectorArray(const JSON::json&    defaultValueNode
         else if (size == 4)
             defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
     }
-    else if (defaultValueNode[0].is_number_float())
+    else if (type == JSON::ValueType::realValue)
     {
         std::vector<float> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[i].get<float>();
+            value[i] = defaultValueNode[i].asFloat();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<float>(&value[0]));
         else if (size == 3)
             defaultValues->set(valueName, math::make_vec3<float>(&value[0]));
-        else if (size == 4) {
+        else if (size == 4)
             defaultValues->set(valueName, math::make_vec4<float>(&value[0]));
-        }
     }
-    else if (defaultValueNode[0].is_boolean())
+    else if (type == JSON::ValueType::booleanValue)
     {
         // GLSL bool uniforms are set using integers, thus even if the default value is written
         // using boolean values, we store it as integers
         // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[i].get<bool>() ? 1 : 0;
+            value[i] = defaultValueNode[i].asBool() ? 1 : 0;
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -677,19 +694,21 @@ EffectParser::parseDefaultValueVectorArray(const JSON::json&    defaultValueNode
 }
 
 void
-EffectParser::parseDefaultValueVectorObject(const JSON::json&    defaultValueNode,
+EffectParser::parseDefaultValueVectorObject(const JSON::Value&    defaultValueNode,
                                             const Scope&          scope,
                                             const std::string&    valueName,
                                             data::Provider::Ptr   defaultValues)
 {
-    auto size = defaultValueNode.size();
+    auto memberNames = defaultValueNode.getMemberNames();
+    auto size = memberNames.size();
+    auto type = defaultValueNode[memberNames[0]].type();
     std::vector<std::string> offsets = { "x", "y", "z", "w" };
 
-    if (defaultValueNode.is_number_integer())
+    if (type == JSON::ValueType::intValue)
     {
-        std::vector<int> value(defaultValueNode.size());
+        std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[offsets[i]].get<int>();
+            value[i] = defaultValueNode[offsets[i]].asInt();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -697,11 +716,11 @@ EffectParser::parseDefaultValueVectorObject(const JSON::json&    defaultValueNod
         else if (size == 4)
             defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
     }
-    else if (defaultValueNode.is_number_float())
+    else if (type == JSON::ValueType::realValue)
     {
         std::vector<float> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[offsets[i]].get<float>();
+            value[i] = defaultValueNode[offsets[i]].asFloat();
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<float>(&value[0]));
         else if (size == 3)
@@ -709,14 +728,14 @@ EffectParser::parseDefaultValueVectorObject(const JSON::json&    defaultValueNod
         else if (size == 4)
             defaultValues->set(valueName, math::make_vec4<float>(&value[0]));
     }
-    else if (defaultValueNode.is_boolean())
+    else if (type == JSON::ValueType::booleanValue)
     {
         // GLSL bool uniforms are set using integers, thus even if the default value is written
         // using boolean values, we store it as integers
         // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
         std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[offsets[i]].get<bool>() ? 1 : 0;
+            value[i] = defaultValueNode[offsets[i]].asBool() ? 1 : 0;
         if (size == 2)
             defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
@@ -727,21 +746,23 @@ EffectParser::parseDefaultValueVectorObject(const JSON::json&    defaultValueNod
 }
 
 void
-EffectParser::parseAttributes(const JSON::json& node, const Scope& scope, AttributeBlock& attributes)
+EffectParser::parseAttributes(const JSON::Value& node, const Scope& scope, AttributeBlock& attributes)
 {
-    auto attributesNode = node.value("attributes", JSON::json());
+    auto attributesNode = node.get("attributes", 0);
 
-    if (attributesNode.is_object())
+    if (attributesNode.isObject())
     {
         auto defaultValuesProvider = data::Provider::create();
+
         attributes.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 
-        for (auto& item : attributesNode.items())
+        for (auto attributeName : attributesNode.getMemberNames())
         {
-            auto attribute = attributesNode[item.key()];
+            auto attributeNode = attributesNode[attributeName];
+
 			data::Binding binding;
-            if (parseBinding(item.value(), scope, binding))
-				attributes.bindingMap.bindings[item.key()] = binding;
+            if (parseBinding(attributeNode, scope, binding))
+				attributes.bindingMap.bindings[attributeName] = binding;
 
             /*if (!attributeNode.get("default", 0).empty())
                 throw ParserError("Default values are not yet supported for attributes.");*/
@@ -762,44 +783,49 @@ EffectParser::parseAttributes(const JSON::json& node, const Scope& scope, Attrib
 }
 
 void
-EffectParser::parseUniforms(const JSON::json& node, const Scope& scope, UniformBlock& uniforms)
+EffectParser::parseUniforms(const JSON::Value& node, const Scope& scope, UniformBlock& uniforms)
 {
-    auto uniformsNode = node.value("uniforms", JSON::json());
+    auto uniformsNode = node.get("uniforms", 0);
 
-    if (uniformsNode.is_object() && uniformsNode != node)
+    if (uniformsNode.isObject())
     {
         data::Provider::Ptr defaultValuesProvider;
-		if (uniforms.bindingMap.defaultValues.providers().size() != 0) {
+
+		if (uniforms.bindingMap.defaultValues.providers().size() != 0)
 			defaultValuesProvider = uniforms.bindingMap.defaultValues.providers().front();
-        }
 		else
 		{
 			defaultValuesProvider = data::Provider::create();
         	uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 		}
-        for (auto& item : uniformsNode.items())
+
+        for (auto uniformName : uniformsNode.getMemberNames())
         {
-            auto uniformNode = uniformsNode[item.key()];
+            auto uniformNode = uniformsNode[uniformName];
+
 			data::Binding binding;
-            if (parseBinding(uniformNode, scope, binding)) {
-				uniforms.bindingMap.bindings[item.key()] = binding;
-            }
-            parseSamplerStates(uniformNode, scope, item.key(), defaultValuesProvider, uniforms.bindingMap);
-            parseDefaultValue(uniformNode, scope, item.key(), defaultValuesProvider);
+            if (parseBinding(uniformNode, scope, binding))
+				uniforms.bindingMap.bindings[uniformName] = binding;
+
+            parseSamplerStates(uniformNode, scope, uniformName, defaultValuesProvider, uniforms.bindingMap);
+
+            parseDefaultValue(uniformNode, scope, uniformName, defaultValuesProvider);
         }
     }
     // FIXME: throw otherwise
 }
 
 void
-EffectParser::parseSamplerStates(const JSON::json& node, const Scope& scope, const std::string uniformName, data::Provider::Ptr defaultValues, data::BindingMap& bindingMap)
+EffectParser::parseSamplerStates(const JSON::Value& node, const Scope& scope, const std::string uniformName, data::Provider::Ptr defaultValues, data::BindingMap& bindingMap)
 {
-    if (node.is_object())
+    if (node.isObject())
     {
-        auto wrapModeNode = node.value(SamplerStates::PROPERTY_WRAP_MODE, JSON::json());
-        if (wrapModeNode.is_string())
+        auto wrapModeNode = node.get(SamplerStates::PROPERTY_WRAP_MODE, 0);
+
+        if (wrapModeNode.isString())
         {
-            auto wrapModeStr = wrapModeNode.get<std::string>();
+            auto wrapModeStr = wrapModeNode.asString();
+
             auto wrapMode = SamplerStates::stringToWrapMode(wrapModeStr);
 
             defaultValues->set(
@@ -810,7 +836,7 @@ EffectParser::parseSamplerStates(const JSON::json& node, const Scope& scope, con
                 wrapMode
             );
         }
-        else if (wrapModeNode.is_object())
+        else if (wrapModeNode.isObject())
         {
             auto uniformWrapModeBindingName = SamplerStates::uniformNameToSamplerStateName(
                 uniformName,
@@ -826,11 +852,11 @@ EffectParser::parseSamplerStates(const JSON::json& node, const Scope& scope, con
             parseDefaultValueSamplerStates<WrapMode>(wrapModeNode, scope, uniformWrapModeBindingName, defaultValues);
         }
 
-        auto textureFilterNode = node.value(SamplerStates::PROPERTY_TEXTURE_FILTER, JSON::json());
+        auto textureFilterNode = node.get(SamplerStates::PROPERTY_TEXTURE_FILTER, 0);
 
-        if (textureFilterNode.is_string())
+        if (textureFilterNode.isString())
         {
-            auto textureFilterStr = textureFilterNode.get<std::string>();
+            auto textureFilterStr = textureFilterNode.asString();
 
             auto textureFilter = SamplerStates::stringToTextureFilter(textureFilterStr);
 
@@ -842,7 +868,7 @@ EffectParser::parseSamplerStates(const JSON::json& node, const Scope& scope, con
                 textureFilter
             );
         }
-        else if (textureFilterNode.is_object())
+        else if (textureFilterNode.isObject())
         {
             auto uniformTextureFilterBindingName = SamplerStates::uniformNameToSamplerStateName(
                 uniformName,
@@ -858,11 +884,11 @@ EffectParser::parseSamplerStates(const JSON::json& node, const Scope& scope, con
             parseDefaultValueSamplerStates<TextureFilter>(textureFilterNode, scope, uniformTextureFilterBindingName, defaultValues);
         }
 
-        auto mipFilterNode = node.value(SamplerStates::PROPERTY_MIP_FILTER, JSON::json());
+        auto mipFilterNode = node.get(SamplerStates::PROPERTY_MIP_FILTER, 0);
 
-        if (mipFilterNode.is_string())
+        if (mipFilterNode.isString())
         {
-            auto mipFilterStr = mipFilterNode.get<std::string>();
+            auto mipFilterStr = mipFilterNode.asString();
 
             auto mipFilter = SamplerStates::stringToMipFilter(mipFilterStr);
 
@@ -874,7 +900,7 @@ EffectParser::parseSamplerStates(const JSON::json& node, const Scope& scope, con
                 mipFilter
             );
         }
-        else if (mipFilterNode.is_object())
+        else if (mipFilterNode.isObject())
         {
             auto uniformMipFilterBindingName = SamplerStates::uniformNameToSamplerStateName(
                 uniformName,
@@ -893,41 +919,41 @@ EffectParser::parseSamplerStates(const JSON::json& node, const Scope& scope, con
 }
 
 void
-EffectParser::parseMacros(const JSON::json& node, const Scope& scope, MacroBlock& macros)
+EffectParser::parseMacros(const JSON::Value& node, const Scope& scope, MacroBlock& macros)
 {
-    auto macrosNode = node.value("macros", JSON::json());
+    auto macrosNode = node.get("macros", 0);
 
-    if (macrosNode.is_object())
+    if (macrosNode.isObject())
     {
         data::Provider::Ptr defaultValuesProvider;
 
-		if (macros.bindingMap.defaultValues.providers().size() != 0) {
+		if (macros.bindingMap.defaultValues.providers().size() != 0)
 			defaultValuesProvider = macros.bindingMap.defaultValues.providers().front();
-        }
 		else
 		{
 			defaultValuesProvider = data::Provider::create();
 			macros.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 		}
 
-        for (const auto& item : macrosNode.items())
+        for (auto macroName : macrosNode.getMemberNames())
         {
-            auto macroNode = macrosNode[item.key()];
+            auto macroNode = macrosNode[macroName];
+
 			data::MacroBinding binding;
 			if (parseBinding(macroNode, scope, binding))
 			{
             	parseMacroBinding(macroNode, scope, binding);
-				macros.bindingMap.bindings[item.key()] = binding;
+				macros.bindingMap.bindings[macroName] = binding;
 			}
-            parseDefaultValue(macroNode, scope, item.key(), defaultValuesProvider);
 
-			macros.bindingMap.types[item.key()] = MacroBindingMap::MacroType::UNSET;
-			if (macroNode.is_object())
+            parseDefaultValue(macroNode, scope, macroName, defaultValuesProvider);
+
+			macros.bindingMap.types[macroName] = MacroBindingMap::MacroType::UNSET;
+			if (macroNode.isObject())
 			{
-			    auto typeNode = macroNode.value("type", JSON::json());
-			    if (typeNode.is_string()) {
-					macros.bindingMap.types[item.key()] = MacroBindingMap::stringToMacroType(typeNode.get<std::string>());
-                }
+			    auto typeNode = macroNode.get("type", 0);
+			    if (typeNode.isString())
+					macros.bindingMap.types[macroName] = MacroBindingMap::stringToMacroType(typeNode.asString());
 			}
         }
     }
@@ -935,60 +961,59 @@ EffectParser::parseMacros(const JSON::json& node, const Scope& scope, MacroBlock
 }
 
 void
-EffectParser::parseStates(const JSON::json& node, const Scope& scope, StateBlock& stateBlock)
+EffectParser::parseStates(const JSON::Value& node, const Scope& scope, StateBlock& stateBlock)
 {
-    auto statesNode = node.value("states", JSON::json());
+    auto statesNode = node.get("states", 0);
 
-    if (statesNode.is_object())
+    if (statesNode.isObject())
     {
-        for (auto item : statesNode.items())
+        for (auto stateName : statesNode.getMemberNames())
         {
-            if (std::find(States::PROPERTY_NAMES.begin(), States::PROPERTY_NAMES.end(), item.key()) != States::PROPERTY_NAMES.end())
+            if (std::find(States::PROPERTY_NAMES.begin(), States::PROPERTY_NAMES.end(), stateName) != States::PROPERTY_NAMES.end())
             {
                 // Parse states
-                if (statesNode[item.key()].is_object())
+                if (statesNode[stateName].isObject())
                 {
                     data::Binding binding;
-                    if (parseBinding(statesNode[item.key()], scope, binding)) {
-                        stateBlock.bindingMap.bindings[item.key()] = binding;
-                    }
-                    else {
-                        parseState(statesNode[item.key()], scope, stateBlock, item.key());
-                    }
+                    if (parseBinding(statesNode[stateName], scope, binding))
+                        stateBlock.bindingMap.bindings[stateName] = binding;
+                    else
+                        parseState(statesNode[stateName], scope, stateBlock, stateName);
+
                     // Don't forget to parse default value, even if there is no binding
-                    if (statesNode[item.key()].find("default") != statesNode[item.key()].end())
+                    if (statesNode[stateName].isMember("default"))
                     {
-                        auto defaultValueNode = statesNode[item.key()].value("default", JSON::json());
-                        parseState(defaultValueNode, scope, stateBlock, item.key());
+                        auto defaultValueNode = statesNode[stateName].get("default", 0);
+                        parseState(defaultValueNode, scope, stateBlock, stateName);
                     }
                 }
                 else
                 {
-                    parseState(statesNode[item.key()], scope, stateBlock, item.key());
+                    parseState(statesNode[stateName], scope, stateBlock, stateName);
                 }
             }
-            else if (std::find(_extraStateNames.begin(), _extraStateNames.end(), item.key()) != _extraStateNames.end())
+            else if (std::find(_extraStateNames.begin(), _extraStateNames.end(), stateName) != _extraStateNames.end())
             {
                 // Parse extra states
-                if (item.key() == EXTRA_PROPERTY_BLENDING_MODE)
+                if (stateName == EXTRA_PROPERTY_BLENDING_MODE)
                 {
-                    parseBlendingMode(statesNode[item.key()], scope, stateBlock);
+                    parseBlendingMode(statesNode[stateName], scope, stateBlock);
                 }
-                else if (item.key() == EXTRA_PROPERTY_STENCIL_TEST)
+                else if (stateName == EXTRA_PROPERTY_STENCIL_TEST)
                 {
-                    parseStencilState(statesNode[item.key()], scope, stateBlock);
+                    parseStencilState(statesNode[stateName], scope, stateBlock);
                 }
             }
             else
             {
-                //throw; // FIXME: log warning because the state name does not match any known state
+                throw; // FIXME: log warning because the state name does not match any known state
             }
         }
     }
 }
 
 void
-EffectParser::parseState(const JSON::json& node,
+EffectParser::parseState(const JSON::Value& node,
                          const Scope&       scope,
                          StateBlock&        stateBlock,
                          const std::string& stateProperty)
@@ -998,7 +1023,7 @@ EffectParser::parseState(const JSON::json& node,
     else if (stateProperty == _extraStateNames[0])
         parseBlendingMode(node, scope, stateBlock);
     else if (stateProperty == States::PROPERTY_BLENDING_SOURCE)
-        parseBlendingSource(node, scope, stateBlock);   
+        parseBlendingSource(node, scope, stateBlock);
     else if (stateProperty == States::PROPERTY_BLENDING_DESTINATION)
         parseBlendingDestination(node, scope, stateBlock);
     else if (stateProperty == States::PROPERTY_ZSORTED)
@@ -1032,24 +1057,24 @@ EffectParser::parseState(const JSON::json& node,
 }
 
 void
-EffectParser::parsePriority(const JSON::json&	node,
+EffectParser::parsePriority(const JSON::Value&	node,
                             const Scope&        scope,
                             StateBlock&         stateBlock)
 {
-    if (!node.is_null())
+    if (!node.isNull())
     {
         float priority = 0.f;
 
-        if (node.is_number_integer())
-            priority = (float)node.get<int>();
-        else if (node.is_number_float())
-            priority = node.get<float>();
-        else if (node.is_string())
-            priority = getPriorityValue(node.get<std::string>());
-        else if (node.is_array())
+        if (node.isInt())
+            priority = (float)node.asInt();
+        else if (node.isDouble())
+            priority = (float)node.asDouble();
+        else if (node.isString())
+            priority = getPriorityValue(node.asString());
+        else if (node.isArray())
         {
-            if (node[0].is_string() && node[1].is_number_float())
-                priority = getPriorityValue(node[0].get<std::string>()) + node[1].get<float>();
+            if (node[0].isString() && node[1].isDouble())
+                priority = getPriorityValue(node[0].asString()) + (float)node[1].asDouble();
         }
 
         stateBlock.states.priority(priority);
@@ -1057,23 +1082,24 @@ EffectParser::parsePriority(const JSON::json&	node,
 }
 
 void
-EffectParser::parseBlendingMode(const JSON::json&	node,
+EffectParser::parseBlendingMode(const JSON::Value&	node,
                                 const Scope&        scope,
                                 StateBlock&         stateBlock)
 {
-    if (node.is_array())
+    if (node.isArray())
     {
-        auto blendingSrcString = node[0].get<std::string>();
+        auto blendingSrcString = node[0].asString();
         if (_blendingSourceMap.count(blendingSrcString))
             stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(_blendingSourceMap.at(blendingSrcString)));
 
-        auto blendingDstString = node[1].get<std::string>();
+        auto blendingDstString = node[1].asString();
         if (_blendingDestinationMap.count(blendingDstString))
             stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(_blendingDestinationMap.at(blendingDstString)));
     }
-    else if (node.is_string())
+    else if (node.isString())
     {
-        auto blendingModeString = node.get<std::string>();
+        auto blendingModeString = node.asString();
+
         if (_blendingModeMap.count(blendingModeString))
         {
             auto blendingMode = _blendingModeMap.at(blendingModeString);
@@ -1085,66 +1111,66 @@ EffectParser::parseBlendingMode(const JSON::json&	node,
 }
 
 void
-EffectParser::parseBlendingSource(const JSON::json&    node,
+EffectParser::parseBlendingSource(const JSON::Value&    node,
                                   const Scope&          scope,
                                   StateBlock&           stateBlock)
 {
-    if (node.is_string())
+    if (node.isString())
     {
-        auto blendingSourceString = _blendingSourceMap.at(node.get<std::string>());
+        auto blendingSourceString = _blendingSourceMap.at(node.asString());
 
         stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(blendingSourceString));
     }
 }
 
 void
-EffectParser::parseBlendingDestination(const JSON::json&   node,
+EffectParser::parseBlendingDestination(const JSON::Value&   node,
                                        const Scope&         scope,
                                        StateBlock&          stateBlock)
 {
-    if (node.is_string())
+    if (node.isString())
     {
-        auto blendingDestination = _blendingDestinationMap.at(node.get<std::string>());
+        auto blendingDestination = _blendingDestinationMap.at(node.asString());
 
         stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(blendingDestination));
     }
 }
 
 void
-EffectParser::parseZSort(const JSON::json&	node,
+EffectParser::parseZSort(const JSON::Value&	node,
                          const Scope&       scope,
                          StateBlock&        stateBlock)
 {
-    if (node.is_boolean())
-        stateBlock.states.zSorted(node.get<bool>());
+    if (node.isBool())
+        stateBlock.states.zSorted(node.asBool());
 }
 
 void
-EffectParser::parseColorMask(const JSON::json&	node,
+EffectParser::parseColorMask(const JSON::Value&	node,
                              const Scope&       scope,
                              StateBlock&        stateBlock) const
 {
-    if (node.is_boolean())
-        stateBlock.states.colorMask(node.get<bool>());
+    if (node.isBool())
+        stateBlock.states.colorMask(node.asBool());
 }
 
 void
-EffectParser::parseDepthMask(const JSON::json&	    node,
+EffectParser::parseDepthMask(const JSON::Value&	    node,
                              const Scope&           scope,
                              StateBlock&            stateBlock)
 {
-    if (node.is_boolean())
-        stateBlock.states.depthMask(node.get<bool>());
+    if (node.isBool())
+        stateBlock.states.depthMask(node.asBool());
 }
 
 void
-EffectParser::parseDepthFunction(const JSON::json&	node,
+EffectParser::parseDepthFunction(const JSON::Value&	node,
 			                     const Scope&       scope,
                                  StateBlock&        stateBlock)
 {
-    if (node.is_string())
+    if (node.isString())
     {
-        auto compareModeString = node.get<std::string>();
+        auto compareModeString = node.asString();
         auto exist = _compareFuncMap.find(compareModeString) != _compareFuncMap.end();
 
         if (exist)
@@ -1153,13 +1179,13 @@ EffectParser::parseDepthFunction(const JSON::json&	node,
 }
 
 void
-EffectParser::parseTriangleCulling(const JSON::json&   node,
+EffectParser::parseTriangleCulling(const JSON::Value&   node,
                                    const Scope&         scope,
                                    StateBlock&          stateBlock)
 {
-    if (node.is_string())
+    if (node.isString())
     {
-        auto triangleCullingString = node.get<std::string>();
+        auto triangleCullingString = node.asString();
         auto exist = _triangleCullingMap.find(triangleCullingString) != _triangleCullingMap.end();
 
         if (exist)
@@ -1168,16 +1194,16 @@ EffectParser::parseTriangleCulling(const JSON::json&   node,
 }
 
 void
-EffectParser::parseStencilState(const JSON::json&  node,
+EffectParser::parseStencilState(const JSON::Value&  node,
                                 const Scope&        scope,
                                 StateBlock&         stateBlock)
 {
-	if (node.is_object())
+	if (node.isObject())
 	{
-        auto stencilFuncValue = node.value(States::PROPERTY_STENCIL_FUNCTION, JSON::json());
-        auto stencilRefValue = node.value(States::PROPERTY_STENCIL_REFERENCE, JSON::json());
-        auto stencilMaskValue = node.value(States::PROPERTY_STENCIL_MASK, JSON::json());
-        auto stencilOpsValue = node.value(EXTRA_PROPERTY_STENCIL_OPS, JSON::json());
+        auto stencilFuncValue = node.get(States::PROPERTY_STENCIL_FUNCTION, 0);
+        auto stencilRefValue = node.get(States::PROPERTY_STENCIL_REFERENCE, 0);
+        auto stencilMaskValue = node.get(States::PROPERTY_STENCIL_MASK, 0);
+        auto stencilOpsValue = node.get(EXTRA_PROPERTY_STENCIL_OPS, 0);
 
         parseStencilFunction(stencilFuncValue, scope, stateBlock);
         parseStencilReference(stencilRefValue, scope, stateBlock);
@@ -1185,7 +1211,7 @@ EffectParser::parseStencilState(const JSON::json&  node,
 
         parseStencilOperations(stencilOpsValue, scope, stateBlock);
 	}
-    else if (node.is_array())
+    else if (node.isArray())
     {
         parseStencilFunction(node[0], scope, stateBlock);
         parseStencilReference(node[1], scope, stateBlock);
@@ -1196,139 +1222,138 @@ EffectParser::parseStencilState(const JSON::json&  node,
 }
 
 void
-EffectParser::parseStencilFunction(const JSON::json&  node,
+EffectParser::parseStencilFunction(const JSON::Value&  node,
                                    const Scope&        scope,
                                    StateBlock&         stateBlock)
 {
-    if (node.is_string())
-        stateBlock.states.stencilFunction(_compareFuncMap.at(node.get<std::string>()));
+    if (node.isString())
+        stateBlock.states.stencilFunction(_compareFuncMap.at(node.asString()));
 }
 
 void
-EffectParser::parseStencilReference(const JSON::json&  node,
+EffectParser::parseStencilReference(const JSON::Value&  node,
                                     const Scope&        scope,
                                     StateBlock&         stateBlock)
 {
-    if (node.is_number_integer())
-        stateBlock.states.stencilReference(node.get<int>());
+    if (node.isInt())
+        stateBlock.states.stencilReference(node.asInt());
 }
 
 void
-EffectParser::parseStencilMask(const JSON::json&  node,
+EffectParser::parseStencilMask(const JSON::Value&  node,
                                const Scope&        scope,
                                StateBlock&         stateBlock)
 {
-    if (node.is_number_integer())
-        stateBlock.states.stencilMask((unsigned int) node.get<int>());
+    if (node.isInt())
+        stateBlock.states.stencilMask(node.asUInt());
 }
 
 void
-EffectParser::parseStencilOperations(const JSON::json& node,
+EffectParser::parseStencilOperations(const JSON::Value& node,
                                      const Scope&       scope,
                                      StateBlock&        stateBlock)
 {
-    if (node.is_array())
+    if (node.isArray())
     {
-        if (node[0].is_string())
-            stateBlock.states.stencilFailOperation(_stencilOpMap.at(node[0].get<std::string>()));
-        if (node[1].is_string())
-            stateBlock.states.stencilZFailOperation(_stencilOpMap.at(node[1].get<std::string>()));
-        if (node[2].is_string())
-            stateBlock.states.stencilZPassOperation(_stencilOpMap.at(node[2].get<std::string>()));
+        if (node[0].isString())
+            stateBlock.states.stencilFailOperation(_stencilOpMap.at(node[0].asString()));
+        if (node[1].isString())
+            stateBlock.states.stencilZFailOperation(_stencilOpMap.at(node[1].asString()));
+        if (node[2].isString())
+            stateBlock.states.stencilZPassOperation(_stencilOpMap.at(node[2].asString()));
     }
     else
     {
-        parseStencilFailOperation(node.value(EXTRA_PROPERTY_STENCIL_FAIL_OP, JSON::json()), scope, stateBlock);
-        parseStencilZFailOperation(node.value(EXTRA_PROPERTY_STENCIL_Z_FAIL_OP, JSON::json()), scope, stateBlock);
-        parseStencilZPassOperation(node.value(EXTRA_PROPERTY_STENCIL_Z_PASS_OP, JSON::json()), scope, stateBlock);
+        parseStencilFailOperation(node.get(EXTRA_PROPERTY_STENCIL_FAIL_OP, 0), scope, stateBlock);
+        parseStencilZFailOperation(node.get(EXTRA_PROPERTY_STENCIL_Z_FAIL_OP, 0), scope, stateBlock);
+        parseStencilZPassOperation(node.get(EXTRA_PROPERTY_STENCIL_Z_PASS_OP, 0), scope, stateBlock);
     }
 }
 
 void
-EffectParser::parseStencilFailOperation(const JSON::json& node,
+EffectParser::parseStencilFailOperation(const JSON::Value& node,
                                         const Scope&       scope,
                                         StateBlock&        stateBlock)
 {
-    if (node.is_string())
-        stateBlock.states.stencilFailOperation(_stencilOpMap.at(node.get<std::string>()));
+    if (node.isString())
+        stateBlock.states.stencilFailOperation(_stencilOpMap.at(node.asString()));
 }
 
 void
-EffectParser::parseStencilZFailOperation(const JSON::json& node,
+EffectParser::parseStencilZFailOperation(const JSON::Value& node,
                                          const Scope&       scope,
                                          StateBlock&        stateBlock)
 {
-    if (node.is_string())
-        stateBlock.states.stencilZFailOperation(_stencilOpMap.at(node.get<std::string>()));
+    if (node.isString())
+        stateBlock.states.stencilZFailOperation(_stencilOpMap.at(node.asString()));
 }
 
 void
-EffectParser::parseStencilZPassOperation(const JSON::json& node,
+EffectParser::parseStencilZPassOperation(const JSON::Value& node,
                                          const Scope&       scope,
                                          StateBlock&        stateBlock)
 {
-    if (node.is_string())
-        stateBlock.states.stencilZPassOperation(_stencilOpMap.at(node.get<std::string>()));
+    if (node.isString())
+        stateBlock.states.stencilZPassOperation(_stencilOpMap.at(node.asString()));
 }
 
 void
-EffectParser::parseScissorTest(const JSON::json& node,
+EffectParser::parseScissorTest(const JSON::Value& node,
                                const Scope&       scope,
                                StateBlock&        stateBlock)
 {
-    if (!node.is_null() && node.is_boolean())
-        stateBlock.states.scissorTest(node.get<bool>());
+    if (!node.isNull() && node.isBool())
+        stateBlock.states.scissorTest(node.asBool());
 }
 
 void
-EffectParser::parseScissorBox(const JSON::json& node,
+EffectParser::parseScissorBox(const JSON::Value& node,
                               const Scope&       scope,
                               StateBlock&        stateBlock)
 {
-    if (!node.is_null() && node.is_array())
+    if (!node.isNull() && node.isArray())
     {
         auto scissorBox = math::ivec4();
 
-        if (node[0].is_number_integer())
-            scissorBox.x = node[0].get<int>();
-        if (node[1].is_number_integer())
-            scissorBox.y = node[1].get<int>();
-        if (node[2].is_number_integer())
-            scissorBox.z = node[2].get<int>();
-        if (node[3].is_number_integer())
-            scissorBox.w = node[3].get<int>();
+        if (node[0].isInt())
+            scissorBox.x = node[0].asInt();
+        if (node[1].isInt())
+            scissorBox.y = node[1].asInt();
+        if (node[2].isInt())
+            scissorBox.z = node[2].asInt();
+        if (node[3].isInt())
+            scissorBox.w = node[3].asInt();
 
         stateBlock.states.scissorBox(scissorBox);
     }
 }
 
 void
-EffectParser::parseTarget(const JSON::json&    node,
+EffectParser::parseTarget(const JSON::Value&    node,
                           const Scope&          scope,
                           StateBlock&           stateBlock)
 {
     AbstractTexture::Ptr target = nullptr;
     std::string	targetName;
 
-    if (node.is_object())
+    if (node.isObject())
     {
-        auto nameValue = node.value("name", JSON::json());
+        auto nameValue = node.get("name", 0);
 
-        if (nameValue.is_string())
-            targetName = nameValue.get<std::string>();
+        if (nameValue.isString())
+            targetName = nameValue.asString();
 
-        if (node.find("size") == node.end() && node.find("width") == node.end() && node.find("height") == node.end())
+        if (!node.isMember("size") && !(node.isMember("width") && node.isMember("height")))
             return;
 
         auto width = 0;
         auto height = 0;
 
-        if (node.find("size") != node.end()) {
-            width = height = (unsigned int)node.value("size", JSON::json()).get<int>();
-        }
+        if (node.isMember("size"))
+            width = height = node.get("size", 0).asUInt();
         else
         {
-            if (node.find("width") == node.end() || node.find("height") == node.end())
+            if (!node.isMember("width") || !node.isMember("height"))
             {
                 _error->execute(
                     shared_from_this(),
@@ -1338,11 +1363,14 @@ EffectParser::parseTarget(const JSON::json&    node,
                     )
                 );
             }
-            width = (unsigned int)node.value("width", JSON::json()).get<int>();
-            height = (unsigned int)node.value("height", JSON::json()).get<int>();
+
+            width = node.get("width", 0).asUInt();
+            height = node.get("height", 0).asUInt();
         }
 
-        const bool isCubeTexture = node.value("isCube", false);
+        const bool isCubeTexture = node.get("isCube", 0).isBool()
+            ? node.get("isCube", 0).asBool()
+            : false;
 
         if (isCubeTexture)
         {
@@ -1362,9 +1390,9 @@ EffectParser::parseTarget(const JSON::json&    node,
         target->upload();
         _effectData->set(targetName, target->sampler());
     }
-    else if (node.is_string())
+    else if (node.isString())
     {
-        targetName = node.get<std::string>();
+        targetName = node.asString();
         target = _assetLibrary->texture(targetName);
         if (target == nullptr)
             throw;
@@ -1377,34 +1405,38 @@ EffectParser::parseTarget(const JSON::json&    node,
 }
 
 bool
-EffectParser::parseBinding(const JSON::json& node, const Scope& scope, Binding& binding)
+EffectParser::parseBinding(const JSON::Value& node, const Scope& scope, Binding& binding)
 {
     binding.source = Binding::Source::TARGET;
-    if (node.is_string())
+
+    if (node.isString())
     {
-        binding.propertyName = node.get<std::string>();
+        binding.propertyName = node.asString();
+
 		return true;
     }
     else
     {
-        auto bindingNode = node.value("binding", JSON::json());
-        if (bindingNode.is_string())
+        auto bindingNode = node.get("binding", 0);
+
+        if (bindingNode.isString())
         {
-            binding.propertyName = bindingNode.get<std::string>();
+            binding.propertyName = bindingNode.asString();
+
 			return true;
         }
-        else if (bindingNode.is_object())
+        else if (bindingNode.isObject())
         {
-            auto propertyNode = bindingNode.value("property", JSON::json());
-            auto sourceNode = bindingNode.value("source", JSON::json());
+            auto propertyNode = bindingNode.get("property", 0);
+            auto sourceNode = bindingNode.get("source", 0);
 
-            if (propertyNode.is_string())
-                binding.propertyName = propertyNode.get<std::string>();
+            if (propertyNode.isString())
+                binding.propertyName = propertyNode.asString();
             // FIXME: throw otherwise
 
-            if (sourceNode.is_string())
+            if (sourceNode.isString())
             {
-                auto sourceStr = sourceNode.get<std::string>();
+                auto sourceStr = sourceNode.asString();
 
                 if (sourceStr == "target")
                     binding.source = Binding::Source::TARGET;
@@ -1418,71 +1450,48 @@ EffectParser::parseBinding(const JSON::json& node, const Scope& scope, Binding& 
 			return true;
         }
     }
+
 	return false;
 }
 
 void
-EffectParser::parseMacroBinding(const JSON::json& node, const Scope& scope, MacroBinding& binding)
+EffectParser::parseMacroBinding(const JSON::Value& node, const Scope& scope, MacroBinding& binding)
 {
-    if (!node.is_object())
+    if (!node.isObject())
         return;
 
-    auto bindingNode = node.value("binding", JSON::json());
-    if (!bindingNode.is_object())
+    auto bindingNode = node.get("binding", 0);
+
+    if (!bindingNode.isObject())
     	return;
 
-    auto minNode = bindingNode.value("min", JSON::json());
-    if (minNode.is_number_integer())
-        binding.minValue = minNode.get<int>();
+    auto minNode = bindingNode.get("min", "");
+    if (minNode.isInt())
+        binding.minValue = minNode.asInt();
     // FIXME: throw otherwise
 
-    auto maxNode = bindingNode.value("max", JSON::json());
-    if (maxNode.is_number_integer())
-        binding.maxValue = maxNode.get<int>();
+    auto maxNode = bindingNode.get("max", "");
+    if (maxNode.isInt())
+        binding.maxValue = maxNode.asInt();
     // FIXME: throw otherwise
 }
 
 render::Shader::Ptr
-EffectParser::parseShader(const JSON::json& node, const Scope& scope, render::Shader::Type type)
+EffectParser::parseShader(const JSON::Value& node, const Scope& scope, render::Shader::Type type)
 {
-    /*
-        Undo the breakLine replacement made for the JSON parser,
-        for the compilation of the shaders and glsl code,
-        find the full discussion about it : https://git.aerys.in/aerys/smartshape-engine/issues/193
-    */
-    std::string glsl = undoBreakLine(node.get<std::string>());
+    if (!node.isString())
+        throw;
+
+    std::string glsl = node.asString();
+
     auto shader = Shader::create(_options->context(), type, glsl);
     auto blocks = std::shared_ptr<GLSLBlockList>(new GLSLBlockList());
+
     blocks->push_front(GLSLBlock(GLSLBlockType::TEXT, ""));
     _shaderToGLSL[shader] = blocks;
     parseGLSL(glsl, _options, blocks, blocks->begin());
+
     return shader;
-}
-
-std::vector<unsigned char>
-EffectParser::replaceBreakLine(std::vector<unsigned char> &data)
-{
-    size_t quote = 0;
-    
-    for (size_t i = 0; data[i] != '\0'; i++) {
-        if (i > 0 && data[i] == '"' && data[i - 1] != '\\')
-            quote++;
-        if (data[i] == '\n' && quote % 2 == 1)
-            data[i] = 127; // 127 stand for DEL char in ASCII table for 1 Byte
-    }
-    return data;
-}
-
-std::string
-EffectParser::undoBreakLine(const std::string &node)
-{
-    std::string stringNode(node);
-
-    for (size_t i = 0; stringNode[i] != '\0'; i++) {
-        if (stringNode[i] == 127)
-            stringNode[i] = '\n';
-    }
-    return stringNode;
 }
 
 void
@@ -1699,7 +1708,7 @@ void
 EffectParser::finalize()
 {
     for (auto& technique : _globalScope.techniques)
-    {        
+    {
         _effect->addTechnique(technique.first, technique.second);
 
         for (auto pass : technique.second)
