@@ -36,6 +36,20 @@ StreamingOptions::StreamingOptions() :
     _popGeometryErrorToleranceThreshold(3),
     _popGeometryLodFunction(),
     _streamedTextureLodFunction([](int, int, int, float, std::shared_ptr<Surface>) -> int { return MAX_LOD; }),
+    _popGeometryLodPriorityFunction([](int activeLod, int requiredLod, SurfacePtr, const data::Store&,const data::Store&, const data::Store*) -> float
+    {
+        if (activeLod >= requiredLod)
+            return 0.f;
+        else
+            return requiredLod - activeLod;
+    }),
+    _streamedTextureLodPriorityFunction([](int activeLod, int requiredLod, SurfacePtr, const data::Store&,const data::Store&, const data::Store*) -> float
+    {
+        if (activeLod >= requiredLod)
+            return 0.f;
+        else
+            return requiredLod - activeLod;
+    }),
     _meshPartitionerOptions(),
     _popGeometryPriorityFactor(1.f),
     _streamedTexturePriorityFactor(1.f),

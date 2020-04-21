@@ -58,7 +58,7 @@ namespace minko
                 SurfacePtr,
                 const data::Store&,
                 const data::Store&,
-                const data::Store&
+                const data::Store*
             )>                                                      LodPriorityFunction;
 
             typedef std::function<float(
