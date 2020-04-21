@@ -93,7 +93,7 @@ minko::math::decomposeQR(const minko::math::mat4& matA)
     {
         // jth column
         jColumn = matA[j];
-        accProj = { 0.f, 0.f, 0.f, 0.f };
+        accProj = { 0., 0., 0., 0. };
 
         for (unsigned int i = 0; i < j; ++i)
         {
