@@ -82,13 +82,13 @@ Skin::reorganizeByVertices()
 
 	const unsigned int lastId		= lastVertexId();
 	const unsigned int numVertices	= lastId + 1;
-	const auto numBones		= _bones.size();
+	const std::size_t numBones		= _bones.size();
 
 	_numVertexBones		.resize(numVertices,			0);
 	_vertexBones		.resize(numVertices * numBones, 0);
 	_vertexBoneWeights	.resize(numVertices * numBones, 0.0f);
 
-	for (std::remove_const<decltype(numBones)>::type boneId = 0; boneId < numBones; ++boneId)
+	for (std::size_t boneId = 0; boneId < numBones; ++boneId)
 	{
 		auto bone = _bones[boneId];
 
