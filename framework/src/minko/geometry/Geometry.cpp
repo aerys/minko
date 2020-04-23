@@ -191,7 +191,7 @@ Geometry::computeNormals()
         (*normalsData)[index + 2] = 0.f;
     }
 
-	for (std::remove_const<decltype(numFaces)>::type i = 0, offset = 0; i < numFaces; ++i)
+	for (std::size_t i = 0, offset = 0; i < numFaces; ++i)
 	{
 		for (unsigned int k = 0; k < 3; ++k)
 		{
