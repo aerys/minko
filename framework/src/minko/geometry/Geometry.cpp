@@ -279,7 +279,7 @@ Geometry::computeTangentSpace(bool doNormals)
 
 	std::vector<float> tangentsData(3 * numVertices, 0.0f);
 
-	for (std::remove_const<decltype(numFaces)>::type i = 0, offset = 0; i < numFaces; ++i)
+	for (std::size_t i = 0, offset = 0; i < numFaces; ++i)
 	{
 		for (unsigned int k = 0; k < 3; ++k)
 		{
