@@ -198,6 +198,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
     target_compile_options(${PROJECT_NAME} PRIVATE
         -Wno-deprecated-declarations)
     target_compile_options("assimp" PRIVATE
-        -Wno-deprecated-declarations
+        -Wno-deprecated-declarations)
+endif ()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR "AppleClang")
+    target_compile_options("assimp" PRIVATE  
         -Waddress-of-packed-member)
 endif ()
