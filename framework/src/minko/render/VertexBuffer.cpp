@@ -87,12 +87,12 @@ VertexBuffer::upload(uint offset, uint numVertices)
 		return;
 
     if (_id == -1)
-    	_id = _context->createVertexBuffer(_data.size());
+    	_id = _context->createVertexBuffer(static_cast<uint>(_data.size()));
 
     _context->uploadVertexBufferData(
     	_id,
     	offset * _vertexSize,
-    	numVertices == 0 ? _data.size() : numVertices * _vertexSize,
+    	numVertices == 0 ? static_cast<uint>(_data.size()) : numVertices * _vertexSize,
     	&_data[offset * _vertexSize]
     );
 
@@ -106,12 +106,12 @@ VertexBuffer::upload(uint offset, uint numVertices, const std::vector<float>& da
         return;
 
     if (_id == -1)
-        _id = _context->createVertexBuffer(data.size());
+        _id = _context->createVertexBuffer(static_cast<uint>(data.size()));
 
     _context->uploadVertexBufferData(
         _id,
         offset * _vertexSize,
-        numVertices == 0 ? data.size() : numVertices * _vertexSize,
+        numVertices == 0 ? static_cast<uint>(data.size()) : numVertices * _vertexSize,
         const_cast<float*>(data.data())
     );
 }

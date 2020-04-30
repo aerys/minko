@@ -114,7 +114,7 @@ namespace minko
 }
 
 // From http://stackoverflow.com/questions/8337300/c11-how-do-i-implement-convenient-logging-without-a-singleton
-#define LOG(Logger_, Message_, Level_)                      \
+#define SMARTSHAPE_LOG(Logger_, Message_, Level_)                      \
     do                                                      \
     {                                                       \
         Logger_(                                            \
@@ -132,9 +132,9 @@ namespace minko
 #ifdef NDEBUG
 # define LOG_DEBUG(_) do {} while (0)
 #else
-# define LOG_DEBUG(Message_) LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Debug)
+# define LOG_DEBUG(Message_) SMARTSHAPE_LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Debug)
 #endif
 
-#define LOG_INFO(Message_) LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Info)
-#define LOG_WARNING(Message_) LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Warning)
-#define LOG_ERROR(Message_) LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Error)
+#define LOG_INFO(Message_) SMARTSHAPE_LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Info)
+#define LOG_WARNING(Message_) SMARTSHAPE_LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Warning)
+#define LOG_ERROR(Message_) SMARTSHAPE_LOG((*minko::log::Logger::defaultLogger()), Message_, minko::log::Logger::Level::Error)

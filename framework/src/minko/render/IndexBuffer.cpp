@@ -45,10 +45,10 @@ IndexBuffer::upload(uint	offset,
 	assert(count <= (int)data().size());
 
 	if (_id == -1)
-    	_id = _context->createIndexBuffer(data().size());
+    	_id = _context->createIndexBuffer(static_cast<uint>(data().size()));
 
 	const auto oldNumIndices	= _numIndices;
-	_numIndices					= count > 0 ? count : data().size();
+	_numIndices					= count > 0 ? count : static_cast<unsigned int>(data().size());
 
 	_context->uploadIndexBufferData(
 		_id,
@@ -72,9 +72,9 @@ IndexBuffer::upload(uint                                offset,
     assert(count <= (int)data.size());
 
     if (_id == -1)
-        _id = _context->createIndexBuffer(data.size());
+        _id = _context->createIndexBuffer(static_cast<unsigned int>(data.size()));
 
-    const auto numIndices = count > 0 ? count : data.size();
+    const auto numIndices = count > 0 ? count : static_cast<unsigned int>(data.size());
     _numIndices = numIndices;
 
     _context->uploadIndexBufferData(

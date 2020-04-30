@@ -324,7 +324,7 @@ MeshPartitioner::surfaceBucketIsValid(const std::vector<SurfacePtr>& surfaceBuck
     if (surfaceBucket.size() > _options.maxNumSurfacesPerSurfaceBucket)
         return false;
 
-    auto numTriangles = 0u;
+    auto numTriangles = 0;
 
     for (auto surface : surfaceBucket)
     {

@@ -154,7 +154,7 @@ AbstractTexture::numMipMaps(unsigned int width, unsigned int height, unsigned in
         math::max(static_cast<float>(height), static_cast<float>(depth))
     );
 
-    return 1 + math::floor(math::log2(maxExtent));
+    return static_cast<int>(1 + math::floor(math::log2(maxExtent)));
 }
 
 void

@@ -136,7 +136,7 @@ Texture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
         const auto mipMapDataEnd = mipMapDataBegin + TextureFormatInfo::textureSize(_format, mipMapPreviousWidth, mipMapPreviousHeight);
         auto mipMapData = std::vector<unsigned char>(mipMapDataBegin, mipMapDataEnd);
 
-        dataOffset += mipMapData.size();
+        dataOffset += static_cast<unsigned int>(mipMapData.size());
 
         auto newMipMapData = std::vector<unsigned char>();
 
@@ -198,7 +198,7 @@ Texture::upload()
                 _format,
                 _widthGPU,
                 _heightGPU,
-                _data.size(),
+                static_cast<unsigned int>(_data.size()),
                 0,
                 _data.data()
             );

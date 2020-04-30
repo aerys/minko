@@ -313,7 +313,7 @@ Skinning::performSoftwareSkinning(const VertexAttribute&		 attr,
 
 	const unsigned int vertexSize = vertexBuffer->vertexSize();
 	std::vector<float>&	outputData = vertexBuffer->data();
-	const unsigned int numVertices = outputData.size() / vertexSize;
+	const unsigned int numVertices = static_cast<unsigned>(outputData.size() / vertexSize);
 	
 #ifdef DEBUG_SKINNING
 	assert(numVertices == _skin->numVertices());

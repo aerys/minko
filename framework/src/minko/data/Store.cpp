@@ -448,7 +448,7 @@ Store::updateCollectionLength(data::Collection::Ptr collection)
         doAddProvider(_lengthProvider);
     }
 
-    _lengthProvider->set<int>(*collection->name() + ".length", collection->items().size());
+    _lengthProvider->set<int>(*collection->name() + ".length", static_cast<int>(collection->items().size()));
 }
 
 void
@@ -481,7 +481,7 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
     }
     else
     {
-        int providerIndex = std::find(collection->items().begin(), collection->items().end(), provider)
+        const auto providerIndex = std::find(collection->items().begin(), collection->items().end(), provider)
             - collection->items().begin();
         auto prefix = *collection->name() + "[" + std::to_string(providerIndex) + "].";
 
@@ -499,7 +499,7 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
         // In other words, the value targeted by "material[1].diffuseMap" will be different and thus
         // we should trigger the "property changed" signal for each property of each provider which is
         // "after" the one being removed from the collection.
-        for (uint i = providerIndex; i < collection->items().size(); ++i)
+        for (auto i = providerIndex; i < static_cast<unsigned long>(collection->items().size()); ++i)
         {
             const auto& provider = collection->items()[i];
 

@@ -66,7 +66,7 @@ Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 		timetabl
 	if (timetable.size() != matrices.size())
 		throw std::logic_error("The number of keys must match in both the 'timetable' and 'matrices' parameters.");
 
-	const uint numKeys = timetable.size();
+	const uint numKeys = static_cast<uint>(timetable.size());
 
 	_matrices.clear();
 	_matrices.resize(numKeys);

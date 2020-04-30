@@ -169,7 +169,7 @@ namespace minko
 			uint
 			numLabels() const
 			{
-				return _labels.size();
+				return static_cast<uint>(_labels.size());
 			}
 
 			const std::string&

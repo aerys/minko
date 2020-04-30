@@ -133,10 +133,10 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
         
         const float* data = reinterpret_cast<const float*>(serializedPointsString.data());
 
-        int numPoints = serializedPointsString.length() / (3 * sizeof(float));
+        std::size_t numPoints = serializedPointsString.length() / (3 * sizeof(float));
 
         auto btShape = std::shared_ptr<btConvexHullShape>(new btConvexHullShape());
-        for (uint i = 0; i < numPoints; i++)
+        for (std::size_t i = 0; i < numPoints; i++)
         {
             float x = data[i*3 + 0];
             float y = data[i*3 + 1];
@@ -164,7 +164,7 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
         const auto numIndices = triangleMeshShape->indexData().size();
 
         btTriangleIndexVertexArray* btTriangleMesh = new ::btTriangleIndexVertexArray(
-            numIndices / 3,
+            static_cast<int>(numIndices) / 3,
             const_cast<int*> (reinterpret_cast<const int*> (triangleMeshShape->indexData().data())),
             3 * sizeof (int),
             numVertices,
@@ -337,7 +337,7 @@ PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 
                 indexData = *u32IndexData;
 
             vertexData.resize(vertexBuffer->numVertices() * 3);
-            for (auto i = 0; i < vertexBuffer->numVertices(); ++i)
+            for (auto i = 0u; i < vertexBuffer->numVertices(); ++i)
                 for (auto j = 0; j < 3; ++j)
                     vertexData[i * 3 + j] = vertexBufferData[i * *positionAttribute.vertexSize + positionAttribute.offset + j];
         }
@@ -369,7 +369,7 @@ PhysicsExtension::serializePhysics(std::shared_ptr<scene::Node>                 
         isdynamic,
         true,
         0,
-        collider->layoutMask(),
+        static_cast<uint>(collider->layoutMask()),
         serializedPointsString,
         serializedIndicesString
     );

@@ -92,28 +92,28 @@ namespace minko
             uint
             numGeometries()
             {
-                return _geometries.size();
+                return static_cast<uint>(_geometries.size());
             }
 
             inline
             uint
             numMaterials()
             {
-                return _materials.size();
+                return static_cast<uint>(_materials.size());
             }
 
             inline
             uint
 			numEffects()
 			{
-				return _effects.size();
+				return static_cast<uint>(_effects.size());
 			}
 
 			inline
 			uint
             numTextures()
             {
-                return _textures.size();
+                return static_cast<uint>(_textures.size());
             }
 
             inline

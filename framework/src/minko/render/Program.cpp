@@ -74,7 +74,7 @@ Program::setUniform(const std::string& name, AbstractTexture::Ptr texture)
     {
         auto oldProgram = _context->currentProgram();
 
-        _context->setTextureAt(_setTextures.size(), texture->id(), it->location);
+        _context->setTextureAt(static_cast<uint>(_setTextures.size()), texture->id(), it->location);
         _context->setProgram(oldProgram);
 
         _setTextures.insert(name);

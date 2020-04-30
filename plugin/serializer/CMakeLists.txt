@@ -56,6 +56,7 @@ if (LINUX)
     target_compile_options (${PROJECT_NAME} PRIVATE
         -D__STDC_FORMAT_MACROS
         "-Wno-deprecated-declarations"
+        "-Wno-deprecated"
     )
 endif ()
 

@@ -163,7 +163,7 @@ geometry::Geometry::Ptr
 FrustumDisplay::initializeFrustumGeometry(const std::vector<math::vec3>&            vertices,
                                           std::shared_ptr<render::AbstractContext>  context)
 {
-    auto vb = render::VertexBuffer::create(context, math::value_ptr(vertices[0]), vertices.size() * 3);
+    auto vb = render::VertexBuffer::create(context, math::value_ptr(vertices[0]), static_cast<unsigned>(vertices.size()) * 3);
     vb->addAttribute("position", 3);
     vb->upload();
 

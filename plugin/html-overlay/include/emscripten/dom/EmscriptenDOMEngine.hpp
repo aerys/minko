@@ -48,41 +48,41 @@ namespace emscripten
 			void
 			enterFrame();
 
-			minko::dom::AbstractDOM::Ptr
-			load(std::string uri);
+            minko::dom::AbstractDOM::Ptr
+            load(std::string uri) override;
 
-			static
+            static
 			Ptr
 			create();
 
-			void
-			clear();
+            void
+            clear() override;
 
-			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
-			onload();
+            minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
+            onload() override;
 
-			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
-			onmessage();
+            minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
+            onmessage() override;
 
-			minko::dom::AbstractDOM::Ptr
-			mainDOM();
+            minko::dom::AbstractDOM::Ptr
+            mainDOM() override;
 
-			void
-			visible(bool);
+            void
+            visible(bool) override;
 
-			bool
-			visible();
+            bool
+            visible() override;
 
             inline
             void
-            pollRate(int rate)
+            pollRate(int rate) override
             {
                 //Not implemented yet
             }
 
             inline
             void
-            updateNextFrame()
+            updateNextFrame()override
             {
                 //Not implemented yet
             }

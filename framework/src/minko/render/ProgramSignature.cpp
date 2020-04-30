@@ -174,6 +174,8 @@ ProgramSignature::operator==(const ProgramSignature& x) const
                 break;
             case MacroBindingMap::MacroType::UNSET:
                 throw;
+            default:
+                break;
             }
 
             ++j;
@@ -235,6 +237,8 @@ ProgramSignature::updateProgram(Program& program) const
                 case MacroBindingMap::MacroType::FLOAT4:
                     program.define(*_macros[macroIndex], Any::unsafe_cast<math::vec4>(_values[valueIndex++]));
                     break;
+                default:
+                    break;
             }
 
             ++typeIndex;
@@ -276,6 +280,8 @@ ProgramSignature::getValueFromStore(const data::Store&                  store,
         return store.get<math::vec4>(propertyName);
     case MacroBindingMap::MacroType::UNSET:
         throw;
+    default:
+        break;
     }
 
     throw;

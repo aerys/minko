@@ -263,7 +263,7 @@ AbstractAnimation::addLabel(const std::string& name, uint time)
 	if (hasLabel(name))
 		throw std::logic_error("A label called '" + name + "' already exists.");
 
-	_labelNameToIndex[name] = _labels.size();
+	_labelNameToIndex[name] = static_cast<uint>(_labels.size());
 	_labels.push_back(Label(name, time));
 
     updateNextLabelIds(_currentTime);

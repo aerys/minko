@@ -189,3 +189,19 @@ if (ANDROID)
         -Wno-attributes
     )
 endif ()
+
+### Silents some warnings when building assimp library.
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
+    CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
+    CMAKE_CXX_COMPILER_ID MATCHES "AppleClang" OR
+    EMSCRIPTEN)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -Wno-deprecated-declarations)
+    target_compile_options("assimp" PRIVATE
+        -Wno-deprecated-declarations)
+endif ()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR "AppleClang")
+    target_compile_options("assimp" PRIVATE  
+        -Waddress-of-packed-member)
+endif ()

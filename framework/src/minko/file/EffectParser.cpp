@@ -1519,11 +1519,11 @@ EffectParser::parseGLSL(const std::string&      glsl,
                 insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd, i - lastBlockEnd)));
             insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::FILE, filename));
 
-            lastBlockEnd = i + line.size() + 1;
+            lastBlockEnd = i + static_cast<int>(line.size()) + 1;
 
             ++numIncludes;
         }
-        i += line.size() + 1;
+        i += static_cast<int>(line.size()) + 1;
     }
 
     if (i != lastBlockEnd)

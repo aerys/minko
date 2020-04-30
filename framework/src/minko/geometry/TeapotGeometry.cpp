@@ -196,7 +196,7 @@ TeapotGeometry::initialize(std::shared_ptr<render::AbstractContext> context, con
 
 	// this is slow and memory consuming and could be avoided by non duplicating all border
 	// vertices on genPatchVertexData and genPatchIndexData...
-	removeDuplicatedVertices(indicesData, vertices, vertices[0].size() / 3);
+	removeDuplicatedVertices(indicesData, vertices, static_cast<uint>(vertices[0].size() / 3));
 
 	auto vb = render::VertexBuffer::create(context, vertices[0]);
 

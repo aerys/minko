@@ -54,7 +54,7 @@ namespace minko
 
             virtual
             bool
-            isSupported() = 0;
+            isSupported() override = 0 ;
         };
     }
 }

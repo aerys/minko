@@ -90,7 +90,7 @@ namespace minko
             int
             size() const
             {
-                return _nodes.size();
+                return static_cast<uint>(_nodes.size());
             }
 
 			Ptr

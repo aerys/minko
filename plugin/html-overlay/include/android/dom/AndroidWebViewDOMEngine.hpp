@@ -52,29 +52,29 @@ namespace android
                   enterFrame(float);
 
                   minko::dom::AbstractDOM::Ptr
-                  load(std::string uri);
+                  load(std::string uri) override;
 
                   static
                   Ptr
                   create();
 
                   void
-                  clear();
+                  clear() override;
 
                   minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
-                  onload();
+                  onload() override;
 
                   minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
-                  onmessage();
+                  onmessage() override;
 
                   minko::dom::AbstractDOM::Ptr
-                  mainDOM();
+                  mainDOM() override;
 
                   void
-                  visible(bool);
+                  visible(bool) override;
 
                   bool
-                  visible();
+                  visible() override;
 
                   inline
                   AndroidWebViewDOM::Ptr
@@ -95,14 +95,14 @@ namespace android
 
                   inline
                   void
-                  updateNextFrame()
+                  updateNextFrame() override
                   {
                       _updateNextFrame = true;
                   }
 
                   inline
                   void
-                  pollRate(int rate)
+                  pollRate(int rate) override
                   {
                       _pollRate = rate;
                   }

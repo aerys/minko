@@ -231,29 +231,30 @@ SceneWriter::writeNode(std::shared_ptr<scene::Node>		node,
 
  	std::vector<uint>	componentsId;
 	int					componentIndex = 0;
-	AbstractComponentPtr		currentComponent = node->component<component::AbstractComponent>(0);
+	AbstractComponentPtr		currentComponentPtr = node->component<component::AbstractComponent>(0);
 
-	while (currentComponent != nullptr)
+	while (currentComponentPtr != nullptr)
 	{
 		int index = -1;
 
-		if (controllerMap.find(currentComponent) != controllerMap.end())
-			index = controllerMap[currentComponent];
+		if (controllerMap.find(currentComponentPtr) != controllerMap.end())
+			index = controllerMap[currentComponentPtr];
 		else
 		{
-			const std::type_info* currentComponentType = &typeid(*currentComponent);
+		    auto& currentComponent = *currentComponentPtr;
+			const std::type_info* currentComponentType = &typeid(currentComponent);
 
 			if (_componentIdToWriteFunction.find(currentComponentType) != _componentIdToWriteFunction.end())
 			{
 				index = serializedControllerList.size();
-				serializedControllerList.push_back(_componentIdToWriteFunction[currentComponentType](node, currentComponent, assetLibrary, dependency));
+				serializedControllerList.push_back(_componentIdToWriteFunction[currentComponentType](node, currentComponentPtr, assetLibrary, dependency));
 			}
 		}
 
 		if (index != -1)
 			componentsId.push_back(index);
-
-		currentComponent = node->component<component::AbstractComponent>(++componentIndex);
+        
+        currentComponentPtr = node->component<component::AbstractComponent>(++componentIndex);
 	}
 
 	SerializedNode res(node->name(), node->layout(), node->children().size(), componentsId, node->uuid());

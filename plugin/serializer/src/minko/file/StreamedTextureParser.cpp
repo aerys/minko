@@ -143,8 +143,10 @@ StreamedTextureParser::createTexture(AssetLibrary::Ptr     assetLibrary,
         break;
     }
     case TextureType::CubeTexture:
-
         return nullptr;
+        
+    default:
+        break;
     }
 
     return _texture;
@@ -246,8 +248,7 @@ StreamedTextureParser::lodParsed(int                                 previousLod
 
             break;
         }
-        case TextureType::CubeTexture:
-
+        default:
             break;
         }
     }

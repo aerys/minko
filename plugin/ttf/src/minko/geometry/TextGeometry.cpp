@@ -202,7 +202,7 @@ loadFont(render::AbstractContext::Ptr context, const std::string& fontFilename, 
         return false;
 
     FT_Face face;
-    if (FT_New_Memory_Face(ft, fontData.data(), fontData.size(), 0, &face))
+    if (FT_New_Memory_Face(ft, fontData.data(), static_cast<FT_Long>(fontData.size()), 0, &face))
         return false;
 
     FT_Set_Pixel_Sizes(face, 0, 48);
@@ -372,11 +372,11 @@ getCharacterBox(const Font&     font,
     {
         const auto& fontCharacter = *it;
 
-        boxMin.x += fontCharacter.bearing.x * scale;
-        boxMax.x = boxMin.x + fontCharacter.size.x * scale;
+        boxMin.x += static_cast<int>(fontCharacter.bearing.x * scale);
+        boxMax.x = static_cast<int>(boxMin.x + fontCharacter.size.x * scale);
 
-        boxMin.y = -fontCharacter.bearing.y * scale;
-        boxMax.y = boxMin.y + fontCharacter.size.y * scale;
+        boxMin.y = static_cast<int>(-fontCharacter.bearing.y * scale);
+        boxMax.y = static_cast<int>(boxMin.y + fontCharacter.size.y * scale);
     }
 }
 #endif

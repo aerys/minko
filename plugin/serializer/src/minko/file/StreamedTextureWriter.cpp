@@ -185,7 +185,7 @@ StreamedTextureWriter::writeMipLevels(TextureFormat                             
     auto dataOffset = 0;
     auto serializedDataOffset = blob.size();
 
-    for (auto i = 0u; i < numMipMaps; ++i)
+    for (auto i = 0u; i < static_cast<unsigned>(numMipMaps); ++i)
     {
         const auto previousBlobSize = blob.size();
 
@@ -247,7 +247,7 @@ StreamedTextureWriter::writeRGBATexture(AbstractTexture::Ptr                    
 
     auto serializedDataOffset = blob.size();
 
-    for (auto i = 0u; i < numMipLevels; ++i)
+    for (auto i = 0u; i < static_cast<unsigned>(numMipLevels); ++i)
     {
         const auto previousBlobSize = blob.size();
 

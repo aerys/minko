@@ -76,8 +76,8 @@ VRCamera::~VRCamera()
 void
 VRCamera::updateViewport(int viewportWidth, int viewportHeight)
 {
-    _viewportWidth = viewportWidth;
-    _viewportHeight = viewportHeight;
+    _viewportWidth = static_cast<float>(viewportWidth);
+    _viewportHeight = static_cast<float>(viewportHeight);
 
     _leftRenderer->viewport(math::ivec4(0, 0, viewportWidth / 2, viewportHeight));
     _rightRenderer->viewport(math::ivec4(viewportWidth / 2, 0, viewportWidth / 2, viewportHeight));

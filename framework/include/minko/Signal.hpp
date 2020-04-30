@@ -93,7 +93,7 @@ namespace minko
 		uint
 		numCallbacks() const
 		{
-			return _callbacks.size();
+			return static_cast<uint>(_callbacks.size());
 		}
 
 		Slot

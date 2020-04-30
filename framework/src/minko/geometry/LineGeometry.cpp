@@ -91,8 +91,8 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 		return moveTo(x, y, z);
 
 	const uint vertexSize = _vertexBuffer->vertexSize();
-    const unsigned int oldVertexDataSize = _vertexBuffer->data().size();
-    const unsigned int oldIndexDataSize = _indexBuffer->data().size();
+    const auto oldVertexDataSize = _vertexBuffer->data().size();
+    const auto oldIndexDataSize = _indexBuffer->data().size();
 
     auto& vertexData = _vertexBuffer->data();
     auto& indexData = _indexBuffer->data();
@@ -106,8 +106,8 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 	const float stepZ = (z - _currentZ) * invNumSegments;
 	// Dashes are only used with 2D lines
     const float segmentLength = math::length(math::vec2(stepX, stepY) * _viewport);
-	unsigned int vid = oldVertexDataSize;
-	unsigned int iid = oldIndexDataSize;
+	auto vid = oldVertexDataSize;
+	auto iid = oldIndexDataSize;
 
 	for (unsigned int segmentId = 0; segmentId < numSegments; ++segmentId)
 	{

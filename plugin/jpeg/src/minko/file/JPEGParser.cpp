@@ -46,7 +46,7 @@ JPEGParser::parse(const std::string&                filename,
     // On return, width/height will be set to the image's dimensions, and actual_comps will be set
     // to either 1 (grayscale) or 3 (RGB).
     auto bmpData = jpgd::decompress_jpeg_image_from_memory(
-        (const unsigned char*)&data[0], data.size(), &width, &height, &comps, 3
+        (const unsigned char*)&data[0], static_cast<int>(data.size()), &width, &height, &comps, 3
     );
 
     if (bmpData == nullptr)

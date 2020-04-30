@@ -46,7 +46,7 @@ DevILParser::parse(const std::string&                 filename,
     ilGenImages(1, &devilID);
     ilBindImage(devilID);
 
-    ilLoadL(IL_TYPE_UNKNOWN, &data[0], data.size());
+    ilLoadL(IL_TYPE_UNKNOWN, &data[0], static_cast<ILuint>(data.size()));
     checkError();
 
     int format = ilGetInteger(IL_IMAGE_FORMAT);
