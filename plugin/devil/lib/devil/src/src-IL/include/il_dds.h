@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // ImageLib Sources
-// Copyright (C) 2000-2008 by Denton Woods
+// Copyright (C) 2000-2017 by Denton Woods
 // Last modified: 12/27/2008
 //
 // Filename: src-IL/include/il_dds.h
@@ -167,6 +167,10 @@ enum PixFormat
 
 #define CUBEMAP_SIDES 6
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Internal functions
 ILboolean	iLoadDdsInternal(void);
 ILboolean	iIsValidDds(void);
@@ -176,7 +180,7 @@ ILboolean	ReadData();
 ILboolean	AllocImage(ILuint CompFormat);
 ILboolean	DdsDecompress(ILuint CompFormat);
 ILboolean	ReadMipmaps(ILuint CompFormat);
-ILuint		DecodePixelFormat();
+ILuint		DecodePixelFormat(ILuint *CompFormat);
 void		DxtcReadColor(ILushort Data, Color8888* Out);
 void		DxtcReadColors(const ILubyte* Data, Color8888* Out);
 ILboolean	DecompressARGB(ILuint CompFormat);
@@ -217,5 +221,8 @@ void		PreMult(ILushort *Data, ILubyte *Alpha);
 
 extern ILuint CubemapDirections[CUBEMAP_SIDES];
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif//DDS_H

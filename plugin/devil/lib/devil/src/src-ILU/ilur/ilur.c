@@ -1,8 +1,6 @@
 #include <string.h>
 #include <stdio.h>
-#if !defined(__APPLE__)
-#include <malloc.h>
-#endif
+#include <stdlib.h>
 
 #include <IL/il.h>
 #include <IL/ilu.h>
@@ -44,7 +42,7 @@ enum {ILU_ALIENIFY, ILU_BLURAVG, ILU_BLURGAUSSIAN, ILU_BUILDMIPMAPS, ILU_COMPARE
 #define short_strlen 32
 #define long_strlen 128
 
-char program_name[short_strlen]; /**< How is our executable called? */
+char program_name[long_strlen]; /**< How is our executable called? */
 Ilu_function ilu_functions[ILU_FUN_COUNT]; /**< What functions are we dealing with? */
 
 /** Just dump infos about functions to the structures so we can somehow automate the processing of user input later...
@@ -513,7 +511,7 @@ int do_stuff(const Params * parameters)
 int main(int argc, const char * argv[])
 {
 	/* Name our little program */
-	strncpy(program_name, argv[0], short_strlen);
+	strncpy(program_name, argv[0], long_strlen);
 	/* Prepare ilu functions "database" */ 
 	init_strings();
 	/* initialize DevIL in order to get defined behavior of the app */

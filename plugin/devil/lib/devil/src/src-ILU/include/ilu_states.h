@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // ImageLib Utility Sources
-// Copyright (C) 2000-2002 by Denton Woods
+// Copyright (C) 2000-2017 by Denton Woods
 // Last modified: 05/28/2001 <--Y2K Compliant! =]
 //
 // Filename: src-ILU/include/ilu_states.h

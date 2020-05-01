@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // ImageLib Sources
-// Copyright (C) 2000-2002 by Denton Woods
+// Copyright (C) 2000-2017 by Denton Woods
 // Last modified: 05/02/2002 <--Y2K Compliant! =]
 //
 // Filename: src-IL/include/il_psp.h
