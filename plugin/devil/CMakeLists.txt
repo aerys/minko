@@ -66,7 +66,6 @@ target_compile_options (${PROJECT_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS -DIL_S
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR APPLE OR EMSCRIPTEN)
     target_compile_options (
         ${PROJECT_NAME} PRIVATE
-        -DNOINLINE
         -Wno-implicit-function-declaration
         -Wno-format
         -Wno-int-to-void-pointer-cast
