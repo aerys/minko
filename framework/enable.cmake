@@ -35,16 +35,16 @@ function (minko_enable_framework target)
     target_include_directories (${target} PRIVATE "${FRAMEWORK_INCLUDES}")
 
     if (WIN32)
-        target_include_directories (${target}
+        target_include_directories (${target_name}
             PUBLIC 
             "${MINKO_HOME}/framework/lib/sparsehash/include/windows"
             "${MINKO_HOME}/framework/lib/glew/include"
         )
-        target_compile_options (${target} PUBLIC "/wd4996")
+        target_compile_options (${target_name} PUBLIC "/wd4996")
 
         find_library (GLEW32_LIB glew32 HINTS "${MINKO_HOME}/framework/lib/glew/lib/windows${BITNESS}")
         target_link_libraries (
-            ${target}
+            ${target_name}
             "OpenGL32"
             ${GLEW32_LIB}
         )
@@ -54,7 +54,7 @@ function (minko_enable_framework target)
             "${MINKO_HOME}/framework/lib/glew/lib/windows${BITNESS}/*.dll"
         )
         target_include_directories (
-            ${target}
+            ${target_name}
             PUBLIC
             "${MINKO_HOME}/framework/lib/glew/include"
         )
@@ -68,6 +68,6 @@ function (minko_enable_framework target)
             endforeach ()
         endif ()
     else ()
-        target_include_directories (${target} PUBLIC "/framework/lib/sparsehash/include")
+        target_include_directories (${target_name} PUBLIC "/framework/lib/sparsehash/include")
     endif ()
 endfunction()
