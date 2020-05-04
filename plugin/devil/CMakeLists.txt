@@ -28,6 +28,7 @@ file (
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-ILU/ilur/ilur.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/src/il_main.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/src/il_exr.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/src/il_exr.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/wrjpgcom.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/jpegtran.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/djpeg.c"
