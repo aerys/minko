@@ -65,6 +65,8 @@ minko_enable_plugin_zlib (${PROJECT_NAME})
 
 target_compile_options (${PROJECT_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS -DIL_STATIC_LIB)
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE IL_NO_MNG)
+
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR APPLE OR EMSCRIPTEN)
     target_compile_options (
         ${PROJECT_NAME} PRIVATE
