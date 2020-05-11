@@ -27,8 +27,6 @@ file (
     ${PROJECT_NAME}_EXCLUDES
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-ILU/ilur/ilur.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/src/il_main.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/src/il_exr.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/src/il_exr.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/src/il_utx.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/wrjpgcom.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/jpegtran.c"
@@ -66,7 +64,7 @@ minko_enable_plugin_zlib (${PROJECT_NAME})
 
 target_compile_options (${PROJECT_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS -DIL_STATIC_LIB)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE IL_NO_MNG IL_NO_WDP)
+target_compile_definitions(${PROJECT_NAME} PRIVATE IL_NO_MNG IL_NO_WDP IL_NO_EXR)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR APPLE OR EMSCRIPTEN)
     target_compile_options (
