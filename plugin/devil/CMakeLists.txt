@@ -79,5 +79,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "Clang"
         -Wno-sizeof-pointer-memaccess
         -Wno-tautological-constant-out-of-range-compare
         -Wno-deprecated-declarations
+        -Wno-invalid-source-encoding
+        -Wno-deprecated-register
+        -Wno-address-of-packed-member
     )
 endif()
