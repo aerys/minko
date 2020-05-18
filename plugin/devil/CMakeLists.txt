@@ -10,6 +10,9 @@ if (ANDROID OR IOS)
     return()
 endif ()
 
+# Generates DevIl's config.h
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/include/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/include/config.h)
+
 file (
     GLOB_RECURSE
     ${PROJECT_NAME}_SRC
@@ -24,6 +27,7 @@ file (
     ${PROJECT_NAME}_EXCLUDES
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-ILU/ilur/ilur.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/src/il_main.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/src/src-IL/src/il_utx.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/wrjpgcom.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/jpegtran.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/devil/lib/libjpeg/djpeg.c"
@@ -60,14 +64,11 @@ minko_enable_plugin_zlib (${PROJECT_NAME})
 
 target_compile_options (${PROJECT_NAME} PRIVATE -D_CRT_SECURE_NO_WARNINGS -DIL_STATIC_LIB)
 
-if (UNIX AND NOT ANDROID)
-    target_compile_definitions (${PROJECT_NAME} PRIVATE "NOINLINE")
-endif ()
+target_compile_definitions(${PROJECT_NAME} PRIVATE IL_NO_MNG IL_NO_WDP IL_NO_EXR)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR APPLE OR EMSCRIPTEN)
     target_compile_options (
         ${PROJECT_NAME} PRIVATE
-        -DNOINLINE
         -Wno-implicit-function-declaration
         -Wno-format
         -Wno-int-to-void-pointer-cast
@@ -76,5 +77,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "Clang"
         -Wno-sizeof-pointer-memaccess
         -Wno-tautological-constant-out-of-range-compare
         -Wno-deprecated-declarations
+        -Wno-invalid-source-encoding
+        -Wno-deprecated-register
+        -Wno-address-of-packed-member
     )
 endif()

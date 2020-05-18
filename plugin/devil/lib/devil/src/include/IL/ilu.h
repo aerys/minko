@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // ImageLib Utility Sources
-// Copyright (C) 2000-2009 by Denton Woods
+// Copyright (C) 2000-2017 by Denton Woods
 // Last modified: 03/07/2009
 //
 // Filename: IL/ilu.h
@@ -21,7 +21,7 @@
 #define __ilu_h_
 #define __ILU_H__
 
-#include "il.h"
+#include <IL/il.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,8 +37,8 @@ extern "C" {
 #endif
 
 
-#define ILU_VERSION_1_7_8 1
-#define ILU_VERSION       178
+#define ILU_VERSION_1_8_0 1
+#define ILU_VERSION       180
 
 
 #define ILU_FILTER         0x2600
@@ -83,6 +83,7 @@ extern "C" {
 #define ILU_SPANISH            0x0804
 #define ILU_GERMAN             0x0805
 #define ILU_FRENCH             0x0806
+#define ILU_ITALIAN            0x0807
 
 
 // Filters
@@ -150,6 +151,7 @@ ILAPI ILboolean      ILAPIENTRY iluEmboss(void);
 ILAPI ILboolean      ILAPIENTRY iluEnlargeCanvas(ILuint Width, ILuint Height, ILuint Depth);
 ILAPI ILboolean      ILAPIENTRY iluEnlargeImage(ILfloat XDim, ILfloat YDim, ILfloat ZDim);
 ILAPI ILboolean      ILAPIENTRY iluEqualize(void);
+ILAPI ILboolean      ILAPIENTRY iluEqualize2(void);
 ILAPI ILconst_string 		 ILAPIENTRY iluErrorString(ILenum Error);
 ILAPI ILboolean      ILAPIENTRY iluConvolution(ILint *matrix, ILint scale, ILint bias);
 ILAPI ILboolean      ILAPIENTRY iluFlipImage(void);
@@ -177,6 +179,7 @@ ILAPI ILboolean      ILAPIENTRY iluSaturate4f(ILfloat r, ILfloat g, ILfloat b, I
 ILAPI ILboolean      ILAPIENTRY iluScale(ILuint Width, ILuint Height, ILuint Depth);
 ILAPI ILboolean      ILAPIENTRY iluScaleAlpha(ILfloat scale);
 ILAPI ILboolean      ILAPIENTRY iluScaleColours(ILfloat r, ILfloat g, ILfloat b);
+ILAPI ILboolean      ILAPIENTRY iluSepia(void);
 ILAPI ILboolean      ILAPIENTRY iluSetLanguage(ILenum Language);
 ILAPI ILboolean      ILAPIENTRY iluSharpen(ILfloat Factor, ILuint Iter);
 ILAPI ILboolean      ILAPIENTRY iluSwapColours(void);
