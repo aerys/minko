@@ -82,6 +82,7 @@ const float StreamingExtension::_parserSchedulerDefaultPriority = 10.f;
 StreamingExtension::StreamingExtension() :
     AbstractExtension(),
     _sceneStreamingComplete(Signal<Ptr>::create()),
+    _sceneStreamingError(Signal<Ptr, const minko::file::Error&>::create()),
     _sceneStreamingProgress(Signal<Ptr, float>::create()),
     _sceneStreamingActive(Signal<Ptr>::create()),
     _sceneStreamingInactive(Signal<Ptr>::create()),
@@ -694,6 +695,14 @@ StreamingExtension::registerParser(AbstractStreamedAssetParser::Ptr parser)
             }
         }
     ));
+
+    parserEntry.errorSlot = parser->AbstractParser::error()->connect(
+        [this](AbstractParser::Ptr parserThis, const minko::file::Error& error) -> void
+        {
+            _parsers.erase(std::static_pointer_cast<AbstractStreamedAssetParser>(parserThis));
+            sceneStreamingError()->execute(std::static_pointer_cast<StreamingExtension>(shared_from_this()), error);
+        }
+    );
 
     parserEntry.progressSlot = parser->progress()->connect(
         [this](AbstractStreamedAssetParser::Ptr parserThis, float progressRate) -> void

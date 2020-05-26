@@ -47,6 +47,10 @@ namespace minko
             struct ParserEntry
             {
                 Signal<std::shared_ptr<file::AbstractStreamedAssetParser>>::Slot          readySlot;
+                Signal<
+                    std::shared_ptr<file::AbstractParser>,
+                    const minko::file::Error&
+                >::Slot                                                                   errorSlot;
                 std::list<Signal<std::shared_ptr<file::AbstractParser>>::Slot>            completeSlots;
                 Signal<std::shared_ptr<file::AbstractStreamedAssetParser>, float>::Slot   progressSlot;
 
@@ -67,6 +71,7 @@ namespace minko
             std::shared_ptr<file::StreamingOptions>                             _streamingOptions;
 
             Signal<Ptr>::Ptr                                                    _sceneStreamingComplete;
+            Signal<Ptr, const minko::file::Error&>::Ptr                         _sceneStreamingError;
             Signal<Ptr, float>::Ptr                                             _sceneStreamingProgress;
             Signal<Ptr>::Ptr                                                    _sceneStreamingActive;
             Signal<Ptr>::Ptr                                                    _sceneStreamingInactive;
@@ -115,6 +120,13 @@ namespace minko
             sceneStreamingComplete()
             {
                 return _sceneStreamingComplete;
+            }
+
+            inline
+            Signal<Ptr, const minko::file::Error&>::Ptr
+            sceneStreamingError()
+            {
+                return _sceneStreamingError;
             }
 
             inline
