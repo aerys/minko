@@ -210,6 +210,16 @@ StreamingExtension::pauseStreaming()
 }
 
 void
+StreamingExtension::stopStreaming()
+{
+    // "entry" refers to an entry into the `_parsers` unordered_map.
+    for (auto parserEntry : _parsers)
+    {
+        _parserScheduler->removeParser(parserEntry.first);
+    }
+}
+
+void
 StreamingExtension::resumeStreaming()
 {
     if (_parserScheduler)

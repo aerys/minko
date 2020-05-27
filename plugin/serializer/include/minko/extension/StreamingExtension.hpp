@@ -103,6 +103,9 @@ namespace minko
             pauseStreaming();
 
             void
+            stopStreaming();
+
+            void
             resumeStreaming();
 
 			static
