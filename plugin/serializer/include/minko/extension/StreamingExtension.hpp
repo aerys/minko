@@ -102,6 +102,11 @@ namespace minko
             void
             pauseStreaming();
 
+            /**
+             * Remove every parsers from the scheduler.
+             *
+             * Ongoing requests will finish.
+             */
             void
             stopStreaming();
 
