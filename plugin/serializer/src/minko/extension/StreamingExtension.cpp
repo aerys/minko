@@ -217,6 +217,8 @@ StreamingExtension::stopStreaming()
     {
         _parserScheduler->removeParser(parserEntry.first);
     }
+
+    _parsers.clear();
 }
 
 void
