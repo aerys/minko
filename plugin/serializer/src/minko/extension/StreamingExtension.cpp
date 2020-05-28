@@ -212,13 +212,16 @@ StreamingExtension::pauseStreaming()
 void
 StreamingExtension::stopStreaming()
 {
-    // "entry" refers to an entry into the `_parsers` unordered_map.
+    // "entry" here refers to an entry into the `_parsers` unordered_map.
+    // (as opposed to a `ParserEntry` struct)
     for (auto parserEntry : _parsers)
     {
         _parserScheduler->removeParser(parserEntry.first);
     }
 
-    _parsers.clear();
+    // Don't clear _parsers so that:
+    // - Existing parsers can continue to report their progress.
+    // - `sceneStreamingComplete` is not executed if not all parsers have effectively completed.
 }
 
 void
