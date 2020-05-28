@@ -82,6 +82,7 @@ const float StreamingExtension::_parserSchedulerDefaultPriority = 10.f;
 StreamingExtension::StreamingExtension() :
     AbstractExtension(),
     _sceneStreamingComplete(Signal<Ptr>::create()),
+    _sceneStreamingError(Signal<Ptr, const minko::file::Error&>::create()),
     _sceneStreamingProgress(Signal<Ptr, float>::create()),
     _sceneStreamingActive(Signal<Ptr>::create()),
     _sceneStreamingInactive(Signal<Ptr>::create()),
@@ -206,6 +207,21 @@ StreamingExtension::pauseStreaming()
 {
     if (_parserScheduler)
         _parserScheduler->priority(0.f);
+}
+
+void
+StreamingExtension::stopStreaming()
+{
+    // "entry" here refers to an entry into the `_parsers` unordered_map.
+    // (as opposed to a `ParserEntry` struct)
+    for (auto parserEntry : _parsers)
+    {
+        _parserScheduler->removeParser(parserEntry.first);
+    }
+
+    // Don't clear _parsers so that:
+    // - Existing parsers can continue to report their progress.
+    // - `sceneStreamingComplete` is not executed if not all parsers have effectively completed.
 }
 
 void
@@ -694,6 +710,14 @@ StreamingExtension::registerParser(AbstractStreamedAssetParser::Ptr parser)
             }
         }
     ));
+
+    parserEntry.errorSlot = parser->AbstractParser::error()->connect(
+        [this](AbstractParser::Ptr parserThis, const minko::file::Error& error) -> void
+        {
+            _parsers.erase(std::static_pointer_cast<AbstractStreamedAssetParser>(parserThis));
+            sceneStreamingError()->execute(std::static_pointer_cast<StreamingExtension>(shared_from_this()), error);
+        }
+    );
 
     parserEntry.progressSlot = parser->progress()->connect(
         [this](AbstractStreamedAssetParser::Ptr parserThis, float progressRate) -> void
