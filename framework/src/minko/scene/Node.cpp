@@ -216,12 +216,14 @@ Node::removeChild(Node::Ptr child)
 Node::Ptr
 Node::removeChildren()
 {
-	auto numChildren = _children.size();
+    auto i = _children.size();
+    while (i > 0)
+    {
+        --i;
+        removeChild(_children[i]);
+    }
 
-	for (auto i = numChildren - 1; i >= 0; --i)
-		removeChild(_children[i]);
-
-	return shared_from_this();
+    return shared_from_this();
 }
 
 bool
