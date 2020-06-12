@@ -216,12 +216,18 @@ Node::removeChild(Node::Ptr child)
 Node::Ptr
 Node::removeChildren()
 {
-	auto numChildren = _children.size();
+    // This loop iterates in reverse order because 'removeChild' calls 'erase'
+    // on the vector '_children' and erasing elements in positions other than
+    // the vector end causes the container to relocate all the elements after
+    // the segment erased to their new positions.
+    auto i = _children.size();
+    while (i > 0)
+    {
+        --i;
+        removeChild(_children[i]);
+    }
 
-	for (auto i = numChildren - 1; i >= 0; --i)
-		removeChild(_children[i]);
-
-	return shared_from_this();
+    return shared_from_this();
 }
 
 bool
