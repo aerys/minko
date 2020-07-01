@@ -102,8 +102,8 @@ function (minko_add_executable target_name sources)
 
     add_executable (${target_name} "${sources}")
 
-    minko_enable_framework(${target_name})
     minko_configure_target_flags (${target_name})
+    minko_enable_framework(${target_name})
 
     if (WITH_OFFSCREEN STREQUAL "ON" OR WITH_OFFSCREEN STREQUAL "ON")
         minko_enable_plugin_offscreen (${target_name})
