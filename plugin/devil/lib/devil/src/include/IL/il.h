@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // ImageLib Sources
-// Copyright (C) 2000-2009 by Denton Woods
+// Copyright (C) 2000-2017 by Denton Woods
 // Last modified: 03/07/2009
 //
 // Filename: IL/il.h
@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-//this define controls if floats and doubles are clampled to [0..1]
+//this define controls if floats and doubles are clamped to [0..1]
 //during conversion. It takes a little more time, but it is the correct
 //way of doing this. If you are sure your floats are always valid,
 //you can undefine this value...
@@ -63,7 +63,7 @@ extern "C" {
 	#endif
 #endif
 
-#ifdef RESTRICT_KEYWORD
+#if defined(RESTRICT_KEYWORD) && !defined(__cplusplus)
 #define RESTRICT restrict
 #define CONST_RESTRICT const restrict
 #else
@@ -161,8 +161,8 @@ typedef long long unsigned int ILuint64;
 // IL-specific #define's
 //
 
-#define IL_VERSION_1_7_8 1
-#define IL_VERSION       178
+#define IL_VERSION_1_8_0 1
+#define IL_VERSION       180
 
 
 // Attribute Bits
@@ -241,6 +241,7 @@ typedef long long unsigned int ILuint64;
 #define IL_DPX			0x0450  //!< Digital Picture Exchange - .dpx extension
 #define IL_UTX			0x0451  //!< Unreal (and Unreal Tournament) Texture - .utx extension
 #define IL_MP3			0x0452  //!< MPEG-1 Audio Layer 3 - .mp3 extension
+#define IL_KTX			0x0453  //!< Khronos Texture - .ktx extension
 
 
 #define IL_JASC_PAL     0x0475  //!< PaintShop Pro Palette
@@ -374,7 +375,7 @@ typedef long long unsigned int ILuint64;
 #define IL_JPG_SAVE_FORMAT         0x0721
 #define IL_CHEAD_HEADER_STRING     0x0722
 #define IL_PCD_PICNUM              0x0723
-#define IL_PNG_ALPHA_INDEX 0x0724 //XIX : ILint : the color in the palette at this index value (0-255) is considered transparent, -1 for no trasparent color
+#define IL_PNG_ALPHA_INDEX 0x0724 // currently has no effect!
 #define IL_JPG_PROGRESSIVE         0x0725
 #define IL_VTF_COMP                0x0726
 
@@ -482,7 +483,7 @@ typedef long long unsigned int ILuint64;
 		#ifdef _IL_BUILD_LIBRARY
 			#define ILAPI __declspec(dllexport)
 		#else
-			#define ILAPI 
+			#define ILAPI __declspec(dllimport)
 		#endif
 	#endif
 #elif __APPLE__

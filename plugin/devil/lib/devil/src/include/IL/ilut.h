@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // ImageLib Utility Toolkit Sources
-// Copyright (C) 2000-2009 by Denton Woods
+// Copyright (C) 2000-2017 by Denton Woods
 // Last modified: 03/07/2009
 //
 // Filename: IL/ilut.h
@@ -29,8 +29,8 @@
 // Defines
 //-----------------------------------------------------------------------------
 
-#define ILUT_VERSION_1_7_8 1
-#define ILUT_VERSION       178
+#define ILUT_VERSION_1_8_0 1
+#define ILUT_VERSION       180
 
 
 // Attribute Bits
@@ -89,40 +89,6 @@
 #define ILUT_X11        5
 #define	ILUT_DIRECT3D10 6
 
-/*
-// Includes specific config
-#ifdef DJGPP
-	#define ILUT_USE_ALLEGRO
-#elif _WIN32_WCE
-	#define ILUT_USE_WIN32
-#elif _WIN32
-	//#ifdef __GNUC__ //__CYGWIN32__ (Cygwin seems to not define this with DevIL builds)
-        #define ILUT_USE_WIN32
-		#include "IL/config.h"
-
-		// Temporary fix for the SDL main() linker bug.
-		//#ifdef  ILUT_USE_SDL
-		//#undef  ILUT_USE_SDL
-		//#endif//ILUT_USE_SDL
-
-	//#else
-	//  	#define ILUT_USE_WIN32
-	//	#define ILUT_USE_OPENGL
-	//	#define ILUT_USE_SDL
-	//	#define ILUT_USE_DIRECTX8
-	//#endif
-#elif BEOS  // Don't know the #define
-	#define ILUT_USE_BEOS
-	#define ILUT_USE_OPENGL
-#elif MACOSX
-	#define ILUT_USE_OPENGL
-#else
-
-	// We are surely using a *nix so the configure script
-	// may have written the configured config.h header
-	#include "IL/config.h"
-#endif
-*/
 
 #if (defined(_WIN32) || defined(_WIN64))
 	#if (defined(IL_USE_PRAGMA_LIBS)) && (!defined(_IL_BUILD_LIBRARY))
@@ -136,8 +102,6 @@
 
 
 
-//this should remain private and hidden
-//#include "IL/config.h" 
  
 //////////////
 // OpenGL

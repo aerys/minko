@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // ImageLib Utility Toolkit Sources
-// Copyright (C) 2000-2002 by Denton Woods
+// Copyright (C) 2000-2017 by Denton Woods
 // Last modified: 02/07/2002 <--Y2K Compliant! =]
 //
 // Filename: src-ILUT/include/ilut_internal.h
@@ -19,16 +19,6 @@
 #define _ILUT_BUILD_LIBRARY
 
 //#define	WIN32_LEAN_AND_MEAN
-
-/*#if defined(_WIN32) && !defined(HAVE_CONFIG_H)
-#define HAVE_CONFIG_H
-#endif*/
-
-#ifdef HAVE_CONFIG_H //if we use autotools, we have HAVE_CONFIG_H defined and we have to look for it like that
-#include <config.h>
-#else // if we don't use autotools, we have to point to (possibly different) config.h than in the opposite case
-#include <IL/config.h>
-#endif
 
 #include <string.h>
 

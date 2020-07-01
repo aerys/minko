@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------
 //
 // ImageLib Sources
-// Copyright (C) 2000-2002 by Denton Woods
+// Copyright (C) 2000-2017 by Denton Woods
 // Last modified: 09/01/2003 <--Y2K Compliant! =]
 //
 // Filename: src-IL/include/il_bmp.h
