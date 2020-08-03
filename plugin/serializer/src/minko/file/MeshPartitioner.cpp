@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/StreamingOptions.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/material/Material.hpp"
-#include "minko/math/SpatialIndex.hpp"
+#include "minko/math/UnorderedSpatialIndex.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/scene/Node.hpp"
@@ -491,7 +491,7 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
         auto partitionInfo = PartitionInfo();
 
-        partitionInfo.mergedIndices = math::SpatialIndex<std::unordered_set<unsigned int>>::create();
+        partitionInfo.mergedIndices = math::UnorderedSpatialIndex<std::unordered_set<unsigned int>>::create();
 
         for (auto surface : surfaceBucket)
         {

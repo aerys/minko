@@ -27,21 +27,42 @@ namespace minko
     namespace math
     {
         template <typename T>
-        class SpatialIndex
+        class UnorderedSpatialIndex
         {
         public:
-            typedef std::shared_ptr<SpatialIndex>   Ptr;
+            typedef std::shared_ptr<UnorderedSpatialIndex>   Ptr;
 
         private:
-            struct                                  CompareVec3;
+            struct                                  IndexHash;
+            struct                                  IndexEqual;
 
-            typedef std::map<
+            typedef std::unordered_map<
                 math::vec3,
                 T,
-                CompareVec3
+                IndexHash,
+                IndexEqual
             >                                       Index;
 
-            struct CompareVec3
+            struct IndexHash
+            {
+                float precision;
+
+                std::size_t
+                operator()(const math::vec3& position) const
+                {
+                    return minko::Hash<math::vec3>()(
+                        math::floor(position * precision + math::vec3(0.5f)) / precision
+                    );
+                }
+
+                explicit
+                IndexHash(float epsilon) :
+                    precision(1.f / epsilon)
+                {
+                }
+            };
+
+            struct IndexEqual
             {
                 float epsilon;
 
@@ -50,17 +71,11 @@ namespace minko
                 {
                     const auto epsilonEqual = math::epsilonEqual(lhs, rhs, epsilon);
 
-                    if (!epsilonEqual.x)
-                        return lhs.x < rhs.x;
-
-                    if (!epsilonEqual.y)
-                        return lhs.y < rhs.y;
-
-                    return !epsilonEqual.z && lhs.z < rhs.z;
+                    return epsilonEqual.x && epsilonEqual.y && epsilonEqual.z;
                 }
 
                 explicit
-                CompareVec3(float epsilon) :
+                IndexEqual(float epsilon) :
                     epsilon(epsilon)
                 {
                 }
@@ -74,7 +89,7 @@ namespace minko
             Ptr
             create(float epsilon = 1e-5f)
             {
-                auto instance = Ptr(new SpatialIndex<T>(epsilon));
+                auto instance = Ptr(new UnorderedSpatialIndex<T>(epsilon));
 
                 return instance;
             }
@@ -153,8 +168,8 @@ namespace minko
 
         private:
             explicit
-            SpatialIndex(float epsilon) :
-                _index(CompareVec3(epsilon))
+            UnorderedSpatialIndex(float epsilon) :
+                _index(0u, IndexHash(epsilon), IndexEqual(epsilon))
             {
             }
         };

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/VertexWelder.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/log/Logger.hpp"
-#include "minko/math/SpatialIndex.hpp"
+#include "minko/math/UnorderedSpatialIndex.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 
@@ -97,7 +97,7 @@ void
 VertexWelder::weldSurfaceGeometry(Surface::Ptr surface, AssetLibrary::Ptr assetLibrary)
 {
     auto geometry = surface->geometry();
-    auto spatialIndex = math::SpatialIndex<std::vector<unsigned int>>::create(_epsilon);
+    auto spatialIndex = math::UnorderedSpatialIndex<std::vector<unsigned int>>::create(_epsilon);
 
     buildSpatialIndex(geometry, spatialIndex);
 
@@ -433,7 +433,7 @@ VertexWelder::createIndexBuffer(const std::vector<unsigned int>&    indices,
 }
 
 void
-VertexWelder::buildSpatialIndex(Geometry::Ptr geometry, math::SpatialIndex<std::vector<unsigned int>>::Ptr index)
+VertexWelder::buildSpatialIndex(Geometry::Ptr geometry, math::UnorderedSpatialIndex<std::vector<unsigned int>>::Ptr index)
 {
     auto positionVertexBuffer = geometry->vertexBuffer("position");
     const auto& positionAttribute = positionVertexBuffer->attribute("position");

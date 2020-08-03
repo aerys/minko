@@ -62,6 +62,8 @@ namespace minko
     {
         template <typename T>
         class SpatialIndex;
+        template <typename T>
+        class UnorderedSpatialIndex;
     }
 
 	namespace serialize

@@ -155,7 +155,7 @@ namespace minko
                 >                           protectedIndices;
 
                 std::shared_ptr<
-                    math::SpatialIndex<std::unordered_set<unsigned int>>
+                    math::UnorderedSpatialIndex<std::unordered_set<unsigned int>>
                 >                           mergedIndices;
                 std::unordered_set<
                     unsigned int
