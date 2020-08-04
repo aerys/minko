@@ -191,8 +191,8 @@ namespace minko
             weldSurfaceGeometry(SurfacePtr surface, AssetLibraryPtr assetLibrary);
 
             void
-            buildSpatialIndex(GeometryPtr                                                       geometry,
-                              std::shared_ptr<math::SpatialIndex<std::vector<unsigned int>>>    index);
+            buildSpatialIndex(GeometryPtr                                                               geometry,
+                              std::shared_ptr<math::UnorderedSpatialIndex<std::vector<unsigned int>>>   index);
 
             bool
             canWeldVertices(GeometryPtr                         geometry,
