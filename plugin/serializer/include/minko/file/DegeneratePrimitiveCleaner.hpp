@@ -47,7 +47,7 @@ namespace minko
             typedef std::shared_ptr<scene::Node>                                NodePtr;
 
             template <typename T>
-            using SpatialIndexPtr = std::shared_ptr<math::SpatialIndex<T>>;
+            using UnorderedSpatialIndexPtr = std::shared_ptr<math::UnorderedSpatialIndex<T>>;
 
             struct Options
             {
@@ -56,12 +56,12 @@ namespace minko
             };
 
         private:
-            StatusChangedSignal::Ptr            _statusChanged;
-            float                               _progressRate;
+            StatusChangedSignal::Ptr                _statusChanged;
+            float                                   _progressRate;
 
-            Options                             _options;
+            Options                                 _options;
 
-            SpatialIndexPtr<unsigned int>       _spatialIndex;
+            UnorderedSpatialIndexPtr<unsigned int>  _spatialIndex;
 
         public:
             ~DegeneratePrimitiveCleaner() = default;

@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/DegeneratePrimitiveCleaner.hpp"
 #include "minko/geometry/Geometry.hpp"
-#include "minko/math/SpatialIndex.hpp"
+#include "minko/math/UnorderedSpatialIndex.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -72,7 +72,7 @@ DegeneratePrimitiveCleaner::process(Node::Ptr& node, AssetLibrary::Ptr assetLibr
 
     if (!geometrySet.empty())
     {
-        _spatialIndex = math::SpatialIndex<unsigned int>::create(_options.vertexMinPrecision);
+        _spatialIndex = math::UnorderedSpatialIndex<unsigned int>::create(_options.vertexMinPrecision);
 
         auto geometryIndex = 0;
 
