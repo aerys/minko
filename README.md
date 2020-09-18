@@ -1,102 +1,109 @@
-![logo](http://i.stack.imgur.com/gLloD.png)
+# smartshape-engine
+	
+[[_TOC_]]
 
-Minko
-=====
-
-3D. Everywhere.
-
-Minko is a technology to develop and design rich, interactive and universal 3D applications targeting computers, web browsers and mobile platforms.
-
-It provides a powerful editor on top of a robust, extensible and fully documented open source core framework, and is created and maintained by [Aerys](http://aerys.in/).
-
-The repository hosts the source code of ***Minko 3***. Looking for Minko 2? We've moved the [repository](http://github.com/aerys/minko-as3).
+## Build the engine
+### 1. Prerequisites
+   - The following software are installed:
+      - Docker CE 17+
+   - Being logged on to GitLab's Container Registry to be able to pull the docker images (see this [README](https://git.aerys.in/aerys/smartshape-docker/-/blob/master/README.md))
+   - Clone the repository [**smartshape-engine**](https://git.aerys.in/aerys/smartshape-engine)
+   - Go into the root directory of **smartshape-engine**.
 
 
-Resources
----------
-* [Official website](https://minko.io/ "Website")
-* [Documentation](doc "Documentation")
-* [Community](https://minko.io/community/ "Community")
+### 2. Build starting from **smartshape-engine@10.2.0**
+#### 2.1 Android
+```bash
+./script/build.sh android release
+```
 
-Get started
-===========
+#### 2.2 HTML5
+```bash
+./script/build.sh html5 release
+```
 
-For more detailed instructions, please follow our [Getting started with Minko 3](doc/tutorial/Getting_started_with_Minko_3.md) tutorial.
+#### 2.3 Linux64
+```bash
+./script/build.sh linux64 release
+```
 
-### Windows
-* Set the `MINKO_HOME` environment variable to the root of the SDK.
-* Open the explorer in `script`
-* Run `solution_vs2015_full.bat`
-* Open `minko.sln` at the root of the SDK
+#### 2.4 More options
+There are more ways to build the engine. Here is the detailed usage of the building script
+```bash
+Usage: ./script/build.sh <target> <build-type> [--cmake '<cmake-args>']
 
-### OS X
-* Make sure you have a recent compiler (tested with GCC 4.8 and Clang 3.3)
-* Set the `MINKO_HOME` environment variable to the root of the SDK
-* Open a command prompt
-* `cd <minko>`
-* `script/solution_gmake_full.sh`
-* `make config=release config=osx64_release`
-* `cd example/cube/bin/osx64/release && ./minko-example-cube`
+<target>      The target platform of the build. Available targets are:
+                  * android
+                  * html5
+                  * linux64
 
-### Linux
-* Make sure you have a recent compiler (tested with GCC 4.9 and Clang 3.4)
-* Set the `MINKO_HOME` environment variable to the root of the SDK
-* Open a terminal
-* `cd <minko>`
-* `tool/lin/script/solution_gmake_gcc.sh` (or `solution_gmake_clang.sh`)
-* `make config=release config=linux64_release`
-* `cd example/cube/bin/linux64/release && ./minko-example-cube`
+<build-type>  The type of build to perform. Available types are:
+                  * debug
+                  * release
 
-### iOS / Android / HTML5
-* [Getting started with Minko 3](doc/tutorial/Getting_started_with_Minko_3.md)
+ENVIRONMENT VARIABLES
+              The following environment variables can customize the build:
 
-Contents
-========
-Framework
----------
+              MAKE_ARGS
+                  Arguments to pass to the make program. Default value: -j8.
+```
 
-Sources for the Minko framework.
+### 3. Build before **smartshape-engine@10.2.0**
+#### 3.1 Android
+```bash
+docker run -it --rm \
+   -v ${PWD}:${PWD} -w ${PWD} \
+    -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
+   registry.aerys.in/aerys/smartshape-docker/android:{TAG} \
+   bash -c "
+        mkdir -p build && cd build
+        cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DWITH_EXAMPLES=OFF \
+            -DWITH_PLUGINS=ON \
+            -DWITH_NODEJS_WORKER=ON \
+            -DCMAKE_TOOLCHAIN_FILE=/opt/android-ndk-linux/build/cmake/android.toolchain.cmake
+        make
+    "
+```
 
-Example
--------
+#### 3.2 HTML5
+```bash
+docker run -it --rm \
+   -v ${PWD}:${PWD} -w ${PWD} \
+   -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
+   registry.aerys.in/aerys/smartshape-docker/html5:{TAG} \
+    bash -c "
+        mkdir -p build && cd build
+        cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DWITH_EXAMPLES=OFF \
+            -DWITH_PLUGINS=ON \
+            -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/sdk/cmake/Modules/Platform/Emscripten.cmake
+        make
+    "
+```
 
-Example applications created with the Minko framework and its plugins.
+#### 3.3 Linux64
+```bash
+docker run -it --rm \
+   -v ${PWD}:${PWD} -w ${PWD} \
+   -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
+   registry.aerys.in/aerys/smartshape-docker/linux64:{TAG} \
+   bash -c "
+        mkdir -p build && cd build
+        cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DWITH_EXAMPLES=OFF \
+            -DWITH_PLUGINS=ON && \
+        make
+   "
+```
 
-Template
---------
+## Run
 
-This folder contains templates you can use to ease the development of the Minko framework, plugins
-or applications.
+The **smartshape-engine** doesn't have to be run. It is used by the other part of smartshape as a base.
 
-Plugin
-------
+### Develop
 
-Sources for Minko's plugins.
-
-Available plugins are:
-* angle
-* assimp
-* bullet
-* debug
-* devil
-* fx
-* html-overlay
-* http-loader
-* http-worker
-* jpeg
-* leap
-* lua
-* oculus
-* offscreen
-* particles
-* png
-* sdl
-* sensors
-* serializer
-* video-camera
-* vr
-* zlib
-
-Contribute
-----------
-`minko` is MIT-licensed. Please contribute!
+When modifying the **smartshape-engine** code, you have to build the engine again once your modifications are done.
