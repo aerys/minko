@@ -1,34 +1,41 @@
-# smartshape-engine
-	
+# SmartShape Engine
+
 [[_TOC_]]
 
-## Build the engine
-### 1. Prerequisites
-   - The following software are installed:
-      - Docker CE 17+
-   - Being logged on to GitLab's Container Registry to be able to pull the docker images (see this [README](https://git.aerys.in/aerys/smartshape-docker/-/blob/master/README.md))
-   - Clone the repository [**smartshape-engine**](https://git.aerys.in/aerys/smartshape-engine)
-   - Go into the root directory of **smartshape-engine**.
+## 1. Build the engine
 
+### 1.1. Prerequisites
 
-### 2. Build starting from **smartshape-engine@10.2.0**
-#### 2.1 Android
+- The following software are installed:
+  - Docker CE 17+
+- Being logged on to GitLab's Container Registry to be able to pull the docker images (see this [README](https://git.aerys.in/aerys/smartshape-docker/-/blob/master/README.md))
+- Clone the repository [**smartshape-engine**](https://git.aerys.in/aerys/smartshape-engine)
+- Go into the root directory of **smartshape-engine**.
+
+### 1.2. Build starting from **smartshape-engine@10.2.0**
+
+#### 1.2.1. Android
+
 ```bash
 ./script/build.sh android release
 ```
 
-#### 2.2 HTML5
+#### 1.2.2. HTML5
+
 ```bash
 ./script/build.sh html5 release
 ```
 
-#### 2.3 Linux64
+#### 1.2.3. Linux64
+
 ```bash
 ./script/build.sh linux64 release
 ```
 
-#### 2.4 More options
+#### 1.2.4. More options
+
 There are more ways to build the engine. Here is the detailed usage of the building script
+
 ```bash
 Usage: ./script/build.sh <target> <build-type> [--cmake '<cmake-args>']
 
@@ -48,8 +55,10 @@ ENVIRONMENT VARIABLES
                   Arguments to pass to the make program. Default value: -j8.
 ```
 
-### 3. Build before **smartshape-engine@10.2.0**
-#### 3.1 Android
+### 1.3. Build before **smartshape-engine@10.2.0**
+
+#### 1.3.1. Android
+
 ```bash
 docker run -it --rm \
    -v ${PWD}:${PWD} -w ${PWD} \
@@ -67,7 +76,8 @@ docker run -it --rm \
     "
 ```
 
-#### 3.2 HTML5
+#### 1.3.2. HTML5
+
 ```bash
 docker run -it --rm \
    -v ${PWD}:${PWD} -w ${PWD} \
@@ -84,7 +94,8 @@ docker run -it --rm \
     "
 ```
 
-#### 3.3 Linux64
+#### 1.3.3. Linux64
+
 ```bash
 docker run -it --rm \
    -v ${PWD}:${PWD} -w ${PWD} \
@@ -100,10 +111,10 @@ docker run -it --rm \
    "
 ```
 
-## Run
+## 2. Run
 
 The **smartshape-engine** doesn't have to be run. It is used by the other part of smartshape as a base.
 
-### Develop
+### 2.1. Develop
 
 When modifying the **smartshape-engine** code, you have to build the engine again once your modifications are done.
