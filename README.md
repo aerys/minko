@@ -114,7 +114,7 @@ docker run -it --rm \
 
 ## 2. Run
 
-The **smartshape-engine** doesn't have to be run. It is used by the other part of smartshape as a base.
+**smartshape-engine** doesn't have to be run. It is used by the other parts of SmartShape as a base.
 
 ## 3. Develop
 
