@@ -1,5 +1,6 @@
 # SmartShape Engine
 
+
 [[_TOC_]]
 
 ## 1. Build the engine
@@ -115,6 +116,51 @@ docker run -it --rm \
 
 The **smartshape-engine** doesn't have to be run. It is used by the other part of smartshape as a base.
 
-### 2.1. Develop
+## 3. Develop
 
 When modifying the **smartshape-engine** code, you have to build the engine again once your modifications are done.
+
+
+## 4. Contents
+
+### 4.1 Framework
+---------
+
+Sources for the Minko framework.
+
+### 4.2 Example
+
+Example applications created with the Minko framework and its plugins.
+
+### 4.3 Template
+
+This folder contains templates you can use to ease the development of the Minko framework, plugins
+or applications.
+
+### 4.4 Plugin
+
+Sources for Minko's plugins.
+
+Available plugins are:
+* angle
+* assimp
+* bullet
+* debug
+* devil
+* fx
+* html-overlay
+* http-loader
+* http-worker
+* jpeg
+* leap
+* lua
+* oculus
+* offscreen
+* particles
+* png
+* sdl
+* sensors
+* serializer
+* video-camera
+* vr
+* zlib
