@@ -1,26 +1,25 @@
 # SmartShape Engine
 
-<!-- TOC -->
+<!-- TOC depthFrom:2 -->
 
-- [SmartShape Engine](#smartshape-engine)
-    - [1. Build the engine](#1-build-the-engine)
-        - [1.1. Prerequisites](#11-prerequisites)
-        - [1.2. Build starting from **smartshape-engine@10.2.0**](#12-build-starting-from-smartshape-engine1020)
-            - [1.2.1. Android](#121-android)
-            - [1.2.2. HTML5](#122-html5)
-            - [1.2.3. Linux64](#123-linux64)
-            - [1.2.4. More options](#124-more-options)
-        - [1.3. Build before **smartshape-engine@10.2.0**](#13-build-before-smartshape-engine1020)
-            - [1.3.1. Android](#131-android)
-            - [1.3.2. HTML5](#132-html5)
-            - [1.3.3. Linux64](#133-linux64)
-    - [2. Run](#2-run)
-    - [3. Develop](#3-develop)
-    - [4. Contents](#4-contents)
-        - [4.1 Framework](#41-framework)
-        - [4.2 Example](#42-example)
-        - [4.3 Template](#43-template)
-        - [4.4 Plugin](#44-plugin)
+- [1. Build the engine](#1-build-the-engine)
+    - [1.1. Prerequisites](#11-prerequisites)
+    - [1.2. Build starting from **smartshape-engine@10.2.0**](#12-build-starting-from-smartshape-engine1020)
+        - [1.2.1. Android](#121-android)
+        - [1.2.2. HTML5](#122-html5)
+        - [1.2.3. Linux64](#123-linux64)
+        - [1.2.4. More options](#124-more-options)
+    - [1.3. Build before **smartshape-engine@10.2.0**](#13-build-before-smartshape-engine1020)
+        - [1.3.1. Android](#131-android)
+        - [1.3.2. HTML5](#132-html5)
+        - [1.3.3. Linux64](#133-linux64)
+- [2. Run](#2-run)
+- [3. Develop](#3-develop)
+- [4. Contents](#4-contents)
+    - [4.1 Framework](#41-framework)
+    - [4.2 Example](#42-example)
+    - [4.3 Template](#43-template)
+    - [4.4 Plugin](#44-plugin)
 
 <!-- /TOC -->
 
