@@ -17,7 +17,7 @@ minko_enable_plugin_serializer (${PROJECT_NAME})
 minko_enable_plugin_websocket (${PROJECT_NAME})
 minko_enable_plugin_http_loader (${PROJECT_NAME})
 minko_enable_plugin_ssl (${PROJECT_NAME})
-if (WITH_OFFSCREN STREQUAL "ON" OR WITH_OFFSCREN STREQUAL "ON")
+if (WITH_OFFSCREEN STREQUAL "ON" OR WITH_OFFSCREEN STREQUAL "ON")
     minko_enable_plugin_offscreen (${PROJECT_NAME})
 endif ()
 
@@ -52,3 +52,4 @@ minko_package_assets (
 )
 
 target_include_directories (${PROJECT_NAME} PRIVATE "${EMSCRIPTEN}/system/lib/libcxxabi/include")
+
