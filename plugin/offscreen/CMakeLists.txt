@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.5.1)
 file (RELATIVE_PATH RELATIVE_LIBRARY_PATH ${MINKO_HOME}/../ ${CMAKE_CURRENT_SOURCE_DIR})
 file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/enable.cmake DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
 file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH})
-file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib/osmesa DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH}/lib)
 
 set (PROJECT_NAME "minko-plugin-offscreen")
 
@@ -26,11 +25,11 @@ if (UNIX OR APPLE AND NOT IOS)
         ${PROJECT_NAME}_INCLUDE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
         "${MINKO_HOME}/plugin/sdl/include"
-        "${CMAKE_CURRENT_SOURCE_DIR}/lib/osmesa/linux/include"
     )
 endif ()
 
 if (WIN32)
+    file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/lib/osmesa DESTINATION ${MINKO_HOME}/${RELATIVE_LIBRARY_PATH}/lib)
     file (GLOB
         ${PROJECT_NAME}_INCLUDE
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -42,3 +41,4 @@ endif ()
 
 minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")
 target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
+
