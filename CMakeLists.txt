@@ -97,7 +97,7 @@ list (
     #keyboard #(-lgl flag should be at the the end of the linkage line)
     light #(light display is under the ground)
     line-geometry #can't see the stars
-    #offscreen #(canvas->quit() has been removed)
+    offscreen
     pbr #error execution (error: DrawCall.cpp:305 bindUniform(): Program "skybox-pass0": the uniform "uAspectRatio" is bound to the "aspectRatio" property but it's not defined and no default value was provided.)
     physics
     sensors #segfault
@@ -173,3 +173,4 @@ endif ()
 if (WITH_TESTS)
     add_subdirectory ("test")
 endif ()
+
