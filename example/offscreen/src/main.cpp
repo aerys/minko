@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     {
         auto root   = scene::Node::create("root");
         auto camera = scene::Node::create("camera");
-        
+
         root->addComponent(sceneManager);
 
         root->addComponent(AmbientLight::create());
@@ -42,7 +42,7 @@ int main(int argc, char** argv)
         // setup camera
         camera->addComponent(Renderer::create(0x7F7F7FFF));
         camera->addComponent(Transform::create());
-        camera->component<Transform>()->matrix(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0, 1, 0)));
+        camera->component<Transform>()->matrix(math::lookAt(math::vec3(0.f, 0.f, -3.f), math::vec3(), math::vec3(0, 1, 0)));
         camera->addComponent(Camera::create(math::perspective(.785f, canvas->aspectRatio(), 0.1f, 1000.f)));
         root->addChild(camera);
 
@@ -65,21 +65,21 @@ int main(int argc, char** argv)
 
     auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime, bool shouldRender)
     {
-        //mesh->component<Transform>()->matrix()->prependRotationY(.01f);
         mesh->component<Transform>()->matrix(
-		    mesh->component<Transform>()->matrix() * math::rotate(0.01f, math::vec3(0, 1, 0))
+            mesh->component<Transform>()->matrix()
+            * math::rotate(0.01f, math::vec3(0, 1, 0))
+            * math::rotate(0.01f, math::vec3(1, 0, 0))
         );
-        
-        static int lastTime = 0;
 
-        if (time - lastTime > 1000)
+        static float lastTime = 0.0f;
+
+        if (time - lastTime > 1000.0f)
         {
             std::cout << "Taking screenshot (screenshot.png)." << std::endl;
             lastTime = time;
             canvas->context()->readPixels(&*buffer->begin());
-            writer->write("C:\\Users\\TEST\\screenshot.png", *buffer, canvas->width(), canvas->height());
-            canvas->quit();
-            //std::static_pointer_cast<Canvas>(canvas)->quit(); this should be the fix!
+            writer->write("screenshot.png", *buffer, canvas->width(), canvas->height());
+            std::static_pointer_cast<Canvas>(canvas)->quit();
         }
 
         sceneManager->nextFrame(time, deltaTime, shouldRender);
