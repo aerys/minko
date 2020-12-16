@@ -296,6 +296,8 @@ function (minko_add_executable target_name sources)
                 COMMAND python
                     ${MINKO_HOME}/cmake/empkg.py
                     ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.data
+
+                COMMAND rm ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.bc
             )
         endif ()
     endif ()
