@@ -296,6 +296,10 @@ function (minko_add_executable target_name sources)
                 COMMAND python
                     ${MINKO_HOME}/cmake/empkg.py
                     ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.data
+
+                # This file is an intermediate bytecode we don't need once the project is built.
+                # This is why, after the build is finished, we delete it.
+                COMMAND rm ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.bc
             )
         endif ()
     endif ()
