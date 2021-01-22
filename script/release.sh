@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if ! [ -x "$(command -v git)" ]; then
   echo "error: git is not installed" >&2
   exit 1
