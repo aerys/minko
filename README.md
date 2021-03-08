@@ -57,7 +57,7 @@
 #### 1.2.4. Windows64
 
 ```bash
-bash plugin\serializer\script\download_dependencies.sh .
+bash plugin/serializer/script/download_dependencies.sh .
 mkdir build-windows64-release
 cd build-windows64-release
 cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
