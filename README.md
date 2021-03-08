@@ -9,7 +9,7 @@
         - [1.2.2. HTML5](#122-html5)
         - [1.2.3. Linux64](#123-linux64)
 	- [1.2.4. Windows64](#124-windows64)
-        - [1.2.5. More options](#124-more-options)
+        - [1.2.5. More options](#125-more-options)
     - [1.3. Build before **smartshape-engine@10.2.0**](#13-build-before-smartshape-engine1020)
         - [1.3.1. Android](#131-android)
         - [1.3.2. HTML5](#132-html5)
