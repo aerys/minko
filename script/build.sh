@@ -23,6 +23,7 @@ usage_and_exit() {
     echo "                  * android" 1>&2
     echo "                  * html5" 1>&2
     echo "                  * linux64" 1>&2
+    echo "                  * windows64" 1>&2
     echo "" 1>&2
     echo "<build-type>  The type of build to perform. Available types are:" 1>&2
     echo "                  * debug" 1>&2
@@ -164,7 +165,7 @@ build_windows64_release() {
     cd build-windows64-release
     cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
     msbuild.exe Project.sln //property:Configuration=Release //property:Platform=x64 //m:4
-	
+
     show_notification "Build finished: smartshape-engine windows64 release"
 }
 
@@ -174,7 +175,7 @@ build_windows64_debug() {
     cd build-windows64-debug
     cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
     msbuild.exe Project.sln //property:Configuration=Debug //property:Platform=x64 //m:4
-	
+
     show_notification "Build finished: smartshape-engine windows64 debug"
 }
 
