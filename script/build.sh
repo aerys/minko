@@ -158,6 +158,26 @@ build_android_debug() {
     show_notification "Build finished: smartshape-engine android debug"
 }
 
+build_windows64_release() {
+    bash plugin/serializer/script/download_dependencies.sh .
+    mkdir build-windows64-release
+    cd build-windows64-release
+    cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
+    msbuild.exe Project.sln //property:Configuration=Release //property:Platform=x64 //m:4
+	
+    show_notification "Build finished: smartshape-engine windows64 release"
+}
+
+build_windows64_debug() {
+    bash plugin/serializer/script/download_dependencies.sh .
+    mkdir build-windows64-debug
+    cd build-windows64-debug
+    cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
+    msbuild.exe Project.sln //property:Configuration=Debug //property:Platform=x64 //m:4
+	
+    show_notification "Build finished: smartshape-engine windows64 debug"
+}
+
 # Decode arguments.
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -184,7 +204,7 @@ BUILD_TYPE=$2
 
 # Check mandatory parameters.
 case $TARGET in
-    android|html5|linux64)
+    android|html5|linux64|windows64)
     ;;
     *)
     echo "Unknown target or no target specified. Aborting."
