@@ -44,7 +44,6 @@ show_notification() {
     fi
 }
 
-# Outside of the function, so we can do this only once instead of in each function.
 if [ "$OSTYPE" == "msys" ]
 then
     export MSYS_NO_PATHCONV=1
