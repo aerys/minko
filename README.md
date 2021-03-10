@@ -30,6 +30,8 @@
 
 - The following software are installed:
   - Docker CE 17+
+  - Visual Studio 2017
+  - CMake
 - Being logged on to GitLab's Container Registry to be able to pull the docker images (see this [README](https://git.aerys.in/aerys/smartshape-docker/-/blob/master/README.md))
 - Clone the repository [**smartshape-engine**](https://git.aerys.in/aerys/smartshape-engine)
 - Go into the root directory of **smartshape-engine**.
