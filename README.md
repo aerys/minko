@@ -65,7 +65,7 @@
 If the final command (msbuild) fails, you might have to change the VCTargetsPath and add the path of msbuild.exe (for example "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin") to the PATH environment variable.
 To change the VCTargetsPath (for example):
 ```bash
-$ SET VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets
+SET VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets
 ```
 
 #### 1.2.5. More options
