@@ -8,7 +8,8 @@
         - [1.2.1. Android](#121-android)
         - [1.2.2. HTML5](#122-html5)
         - [1.2.3. Linux64](#123-linux64)
-        - [1.2.4. More options](#124-more-options)
+        - [1.2.4. Windows64](#124-windows64)
+        - [1.2.5. More options](#125-more-options)
     - [1.3. Build before **smartshape-engine@10.2.0**](#13-build-before-smartshape-engine1020)
         - [1.3.1. Android](#131-android)
         - [1.3.2. HTML5](#132-html5)
@@ -29,6 +30,8 @@
 
 - The following software are installed:
   - Docker CE 17+
+  - Visual Studio 2017
+  - CMake
 - Being logged on to GitLab's Container Registry to be able to pull the docker images (see this [README](https://git.aerys.in/aerys/smartshape-docker/-/blob/master/README.md))
 - Clone the repository [**smartshape-engine**](https://git.aerys.in/aerys/smartshape-engine)
 - Go into the root directory of **smartshape-engine**.
@@ -53,7 +56,19 @@
 ./script/build.sh linux64 release
 ```
 
-#### 1.2.4. More options
+#### 1.2.4. Windows64
+
+```bash
+./script/build.sh windows64 release
+```
+
+If the final command (msbuild) fails, you might have to change the VCTargetsPath and add the path of msbuild.exe (for example "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin") to the PATH environment variable.
+To change the VCTargetsPath (for example):
+```bash
+SET VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets
+```
+
+#### 1.2.5. More options
 
 There are more ways to build the engine. Here is the detailed usage of the building script
 
