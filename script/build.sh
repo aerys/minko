@@ -44,10 +44,10 @@ show_notification() {
     fi
 }
 
-# Check which operating system's shell is being used.
-if [ "$OSTYPE" == "msys" ]    # msys is a lightweight shell for Windows (part of MinGW)
+# Check which shell is being used.
+if [ "$OSTYPE" == "msys" ]    # `msys` is an environment that provides `bash` on Windows. It's automatically installed with Git for Windows.
 then
-    export MSYS_NO_PATHCONV=1 # Stops the msys from converting paths to the DOS path format
+    export MSYS_NO_PATHCONV=1 # Prevent `msys` from converting paths to the DOS path format.
     ADDITIONAL_DOCKER_ARGS=""
 else
     ADDITIONAL_DOCKER_ARGS="-t -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER)"
