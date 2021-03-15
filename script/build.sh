@@ -11,9 +11,9 @@ ERROR_MISSING_REQUIRED_BIN=2
 
 # Global variables.
 GITLAB_CI_YML_PATH=".gitlab-ci.yml"
-HTML5_DOCKER_TAG=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*registry.aerys.in/aerys/smartshape-docker/html5:\(.*\)$#\1#p' | head -1)
-ANDROID_DOCKER_TAG=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*registry.aerys.in/aerys/smartshape-docker/android:\(.*\)$#\1#p' | head -1)
-LINUX64_DOCKER_TAG=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*registry.aerys.in/aerys/smartshape-docker/linux64:\(.*\)$#\1#p' | head -1)
+HTML5_DOCKER_TAG=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*registry.aerys.in/aerys/smartshape-docker/html5:\([0-9a-zA-Z\-\_]*\).*$#\1#p' | head -1)
+ANDROID_DOCKER_TAG=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*registry.aerys.in/aerys/smartshape-docker/android:\([0-9a-zA-Z\-\_]*\).*$#\1#p' | head -1)
+LINUX64_DOCKER_TAG=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*registry.aerys.in/aerys/smartshape-docker/linux64:\([0-9a-zA-Z\-\_]*\).*$#\1#p' | head -1)
 MAKE_ARGS="${MAKE_ARGS:-'-j$(nproc)'}"
 
 usage_and_exit() {
@@ -45,10 +45,20 @@ show_notification() {
     fi
 }
 
+# Check which shell is being used.
+if [ "$OSTYPE" == "msys" ]    # `msys` is an environment that provides `bash` on Windows. It's automatically installed with Git for Windows.
+then
+    export MSYS_NO_PATHCONV=1 # Prevent `msys` from converting paths to the DOS path format.
+    ADDITIONAL_DOCKER_ARGS=""
+else
+    ADDITIONAL_DOCKER_ARGS="-t -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER)"
+fi
+
+
 build_html5_release() {
-    docker run -it --rm \
+    docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
-        -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
+        $ADDITIONAL_DOCKER_ARGS \
         registry.aerys.in/aerys/smartshape-docker/html5:$HTML5_DOCKER_TAG \
         bash -c "
             mkdir -p build-html5-release && cd build-html5-release
@@ -65,9 +75,9 @@ build_html5_release() {
 }
 
 build_html5_debug() {
-    docker run -it --rm \
+    docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
-        -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
+        $ADDITIONAL_DOCKER_ARGS \
         registry.aerys.in/aerys/smartshape-docker/html5:$HTML5_DOCKER_TAG \
         bash -c "
             mkdir -p build-html5-debug && cd build-html5-debug
@@ -84,9 +94,9 @@ build_html5_debug() {
 }
 
 build_linux64_release() {
-    docker run -it --rm \
+    docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
-        -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
+        $ADDITIONAL_DOCKER_ARGS \
         registry.aerys.in/aerys/smartshape-docker/linux64:$LINUX64_DOCKER_TAG \
         bash -c "
             mkdir -p build-linux64-release && cd build-linux64-release
@@ -102,9 +112,9 @@ build_linux64_release() {
 }
 
 build_linux64_debug() {
-    docker run -it --rm \
+    docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
-        -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
+        $ADDITIONAL_DOCKER_ARGS \
         registry.aerys.in/aerys/smartshape-docker/linux64:$LINUX64_DOCKER_TAG \
         bash -c "
             mkdir -p build-linux64-debug && cd build-linux64-debug
@@ -120,9 +130,9 @@ build_linux64_debug() {
 }
 
 build_android_release() {
-    docker run -it --rm \
+    docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
-        -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
+        $ADDITIONAL_DOCKER_ARGS \
         registry.aerys.in/aerys/smartshape-docker/android:$ANDROID_DOCKER_TAG \
         bash -c "
             mkdir -p build-android-release && cd build-android-release
@@ -140,9 +150,9 @@ build_android_release() {
 }
 
 build_android_debug() {
-    docker run -it --rm \
+    docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
-        -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
+        $ADDITIONAL_DOCKER_ARGS \
         registry.aerys.in/aerys/smartshape-docker/android:$ANDROID_DOCKER_TAG \
         bash -c "
             mkdir -p build-android-debug && cd build-android-debug
