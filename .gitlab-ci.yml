@@ -135,7 +135,10 @@ test:linux_offscreen:
     paths:
       - build/test
   script:
-    - cd ./build/test/bin
+    - cd ./test/websocket-server
+    - pip install -r requirements.txt
+    - python index.py &
+    - cd ../../build/test/bin
     - ./minko-test
 
 archive:linux_offscreen:
