@@ -136,8 +136,8 @@ test:linux_offscreen:
       - build/test
   script:
     - cd ./test/websocket-server
-    - pip install -r requirements.txt
-    - python index.py &
+    - pip3 install -r requirements.txt
+    - python3 index.py &
     - cd ../../build/test/bin
     - ./minko-test
 
