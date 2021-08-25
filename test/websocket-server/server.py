@@ -12,7 +12,7 @@ async def echo(websocket, path):
     async for message in websocket:
         await websocket.send(message)
 
-start_server = websockets.serve(echo, "localhost", 8765)
+start_server = websockets.serve(echo, "127.0.0.1", 8765)
 
 signal.signal(signal.SIGINT, quit_gracefully)
 
