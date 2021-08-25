@@ -137,9 +137,15 @@ test:linux_offscreen:
   script:
     - cd ./test/websocket-server
     - pip3 install -r requirements.txt
-    - python3 index.py &
+    - python3 server.py &
+    - WS_SERVER_PID=$!
+    - python3 tls_server.py &
+    - WSS_SERVER_PID=$!
     - cd ../../build/test/bin
     - ./minko-test
+    - kill -SIGINT ${WS_SERVER_PID}
+    - kill -SIGINT ${WSS_SERVER_PID}
+    - wait
 
 archive:linux_offscreen:
   <<: *archive_template
