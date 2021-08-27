@@ -19,7 +19,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "json/json.h"
+#include <string> //> std::string.
+
+#include "nlohmann/json.hpp"
 
 namespace minko
 {
@@ -27,7 +29,20 @@ namespace minko
     {
         namespace JSON
         {
-            using namespace Json;
+            /// \brief  Escapes newline characters in every multiline strings of a JSON.
+            ///
+            /// \param  json    A string representing JSON data.
+            void escapeNewlinesInStrings(std::string& json);
+
+            using namespace nlohmann;
+
+            json get(const json& object, const std::string& attribute);
+            std::string as_string(const json& object);
+            int as_int(const json& object);
+            float as_float(const json& object);
+            bool as_bool(const json& object);
+
+            using Json = json;
         }
     }
 }

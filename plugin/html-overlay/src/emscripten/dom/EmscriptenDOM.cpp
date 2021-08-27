@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "emscripten/dom/EmscriptenDOM.hpp"
 #include "emscripten/emscripten.h"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::dom;
@@ -44,6 +45,7 @@ EmscriptenDOM::create(const std::string& jsAccessor)
 void
 EmscriptenDOM::sendMessage(const std::string& message, bool async)
 {
+    LOG_INFO(message);
 	std::string s = message;
 	s = std::replaceAll(s, "\\", "\\\\");
 	s = std::replaceAll(s, "'", "\\'");

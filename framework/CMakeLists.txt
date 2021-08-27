@@ -18,11 +18,8 @@ file (GLOB_RECURSE FRAMEWORK_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/asset/*"
 )
 
-file (GLOB_RECURSE JSON_CPP_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/jsoncpp/src/*.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/jsoncpp/src/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/jsoncpp/src/*.h"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/jsoncpp/src/*.c"
+file (GLOB_RECURSE NLOHMANN_JSON_SRC
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/json/include/*.hpp"
 )
 
 file (GLOB_RECURSE GLM_SRC
@@ -63,7 +60,7 @@ endif ()
 
 list (APPEND
     COMMON_SOURCES
-    ${JSON_CPP_SRC}
+    ${NLOHMANN_JSON_SRC}
     ${GLM_SRC}
     ${FRAMEWORK_SRC}
     ${GLEW_SRC}
@@ -87,7 +84,7 @@ target_include_directories (minko-framework
     PUBLIC
     "include"
     "src"
-    "lib/jsoncpp/src"
+    "lib/json/include"
     "lib/glm"
     "lib/sparsehash/src"
 )
