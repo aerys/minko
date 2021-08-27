@@ -269,7 +269,7 @@ function (minko_add_executable target_name sources)
                     -O3
                     --js-library ${MINKO_HOME}/cmake/library.js
                     --memory-init-file 1
-                    -s DISABLE_EXCEPTION_CATCHING=1
+                    -s DISABLE_EXCEPTION_CATCHING=0
                     -s NO_EXIT_RUNTIME=1
                     -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\"
                     -s EXPORTED_RUNTIME_METHODS="[\'FS_createPath\',\'FS_createDataFile\',\'addRunDependency\',\'removeRunDependency\',\'getMemory\',\'cwrap\']"
@@ -282,7 +282,7 @@ function (minko_add_executable target_name sources)
                     -O3
                     --js-library ${MINKO_HOME}/cmake/library.js
                     --memory-init-file 1
-                    -s DISABLE_EXCEPTION_CATCHING=1
+                    -s DISABLE_EXCEPTION_CATCHING=0
                     -s NO_EXIT_RUNTIME=1
                     -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\"
                     -s EXPORTED_RUNTIME_METHODS="[\'FS_createPath\',\'FS_createDataFile\',\'addRunDependency\',\'removeRunDependency\',\'getMemory\',\'cwrap\']"

@@ -896,6 +896,7 @@ Canvas::step()
 #endif // MINKO_PLATFORM_HTML5
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+        LOG_INFO("CANVAS STEP 2");
         case SDL_VIDEORESIZE:
         {
             width(event.resize.w);
@@ -1005,18 +1006,14 @@ Canvas::step()
     for (auto worker : _activeWorkers)
         worker->poll();
 #endif
-
     auto absoluteTime = std::chrono::high_resolution_clock::now();
 	_relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
     _deltaTime = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
     _deltaRenderTime  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - _previousRenderTime).count(); // in milliseconds
     _previousTime = absoluteTime;
-
     auto shouldRender = _desiredFramerateChanged || (_desiredEventrate == _desiredFramerate) || _deltaRenderTime >= (1000.f / _desiredFramerate);
-
     if (shouldRender)
         _previousRenderTime = absoluteTime;
-
     if (_enableRendering)
     {
         _enterFrame->execute(that, _relativeTime, _deltaTime, shouldRender);
@@ -1024,14 +1021,13 @@ Canvas::step()
         if (_swapBuffersAtEnterFrame && shouldRender)
             swapBuffers();
     }
-
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - absoluteTime).count(); // in milliseconds
 
     // framerate in seconds
     _framerate = 1000.f / _frameDuration;
 
     auto remainingTime = (1000.f / _desiredEventrate) - _frameDuration;
-
+  
     if (remainingTime > 0)
     {
         _backend->wait(that, uint(remainingTime));
