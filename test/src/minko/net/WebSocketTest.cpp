@@ -39,7 +39,7 @@ TEST_F(WebSocketTest, Connect)
         connected = true;
     });
 
-    ws->connect("ws://echo.websocket.org");
+    ws->connect("ws://localhost:8765");
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
     ws->poll();
@@ -57,7 +57,7 @@ TEST_F(WebSocketTest, TLSConnect)
         connected = true;
     });
 
-    ws->connect("wss://echo.websocket.org");
+    ws->connect("wss://localhost:8766");
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
     ws->poll();
@@ -80,7 +80,7 @@ TEST_F(WebSocketTest, Disconnect)
         disconnected = true;
     });
 
-    ws->connect("ws://echo.websocket.org");
+    ws->connect("ws://localhost:8765");
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
     ws->poll();
@@ -109,7 +109,7 @@ TEST_F(WebSocketTest, SendMessage)
         received = std::string((char*)&msg[0], msg.size());
     });
 
-    ws->connect("ws://echo.websocket.org");
+    ws->connect("ws://localhost:8765");
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
     ws->poll();
@@ -134,7 +134,7 @@ TEST_F(WebSocketTest, TLSSendMessage)
         received = std::string((char*)&msg[0], msg.size());
     });
 
-    ws->connect("wss://echo.websocket.org");
+    ws->connect("wss://localhost:8766");
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
     ws->poll();
