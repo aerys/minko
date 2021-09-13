@@ -896,7 +896,6 @@ Canvas::step()
 #endif // MINKO_PLATFORM_HTML5
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-        LOG_INFO("CANVAS STEP 2");
         case SDL_VIDEORESIZE:
         {
             width(event.resize.w);
