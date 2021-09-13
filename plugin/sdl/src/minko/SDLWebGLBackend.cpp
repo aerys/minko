@@ -50,9 +50,7 @@ emscriptenMainLoop()
 		return;
 
 	previousFrameTime = t;
-    LOG_INFO("emscripten main loop before step");
     currentCanvas->step();
-    LOG_INFO("emscripten main loop after step");
 }
 
 EM_BOOL emscriptenVisibilityChangeHandler(int eventType, const EmscriptenVisibilityChangeEvent *e, void *userData)
@@ -97,15 +95,10 @@ SDLWebGLBackend::run(std::shared_ptr<Canvas> canvas)
 {
     currentCanvas = canvas;
 
-    LOG_INFO("canvas run 1");
     emscripten_set_visibilitychange_callback(0, false, emscriptenVisibilityChangeHandler);
-    LOG_INFO("canvas run 2");
     emscripten_set_focus_callback("#window", 0, false, emscriptenFocusBlurHandler);
-    LOG_INFO("canvas run 3");
     emscripten_set_blur_callback("#window", 0, false, emscriptenFocusBlurHandler);
-    LOG_INFO("canvas run 4");
     emscripten_set_main_loop(emscriptenMainLoop, 0, 1);
-    LOG_INFO("canvas run 5");
 }
 
 void

@@ -45,7 +45,6 @@ EmscriptenDOM::create(const std::string& jsAccessor)
 void
 EmscriptenDOM::sendMessage(const std::string& message, bool async)
 {
-    LOG_INFO(message);
 	std::string s = message;
 	s = std::replaceAll(s, "\\", "\\\\");
 	s = std::replaceAll(s, "'", "\\'");
