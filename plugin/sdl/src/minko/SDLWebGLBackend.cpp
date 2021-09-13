@@ -50,9 +50,7 @@ emscriptenMainLoop()
 		return;
 
 	previousFrameTime = t;
-    LOG_INFO("emscripten main loop before step");
     currentCanvas->step();
-    LOG_INFO("emscripten main loop after step");
 }
 
 EM_BOOL emscriptenVisibilityChangeHandler(int eventType, const EmscriptenVisibilityChangeEvent *e, void *userData)
