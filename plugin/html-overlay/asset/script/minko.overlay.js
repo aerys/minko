@@ -77,7 +77,6 @@ Minko.loadedHandler = function(event)
 
         Minko.sendMessage = function(message)
         {
-            console.log("Sending message to player", message);
             Minko.messagesToSend.push(message);
         }
     }
