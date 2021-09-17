@@ -69,7 +69,6 @@ DrawCall::DrawCall(uint                   batchId,
     _worldToScreenMatrixPropertyRemovedSlot(nullptr),
     _vertexAttribArray(0)
 {
-    LOG_DEBUG("DrawCall constructor called.");
     _batchIDs = { batchId };
 
     // For Z-sorting
@@ -78,15 +77,12 @@ DrawCall::DrawCall(uint                   batchId,
 
 DrawCall::~DrawCall()
 {
-    LOG_DEBUG("DrawCall destructor called.");
-
     if (_program)
     {
         auto context = _program->context();
 
         if (_vertexAttribArray > 0)
         {
-            LOG_DEBUG("deleteVertexAttributeArray called.");
             context->deleteVertexAttributeArray(_vertexAttribArray);
             _vertexAttribArray = 0;
         }
@@ -826,7 +822,6 @@ DrawCall::render(AbstractContext::Ptr   context,
 
     if (_vertexAttribArray == 0)
     {
-        LOG_DEBUG("createVertexAttributeArray called.");
         _vertexAttribArray = context->createVertexAttributeArray();
 
         if (_vertexAttribArray != -1)

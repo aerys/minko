@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "sparsehash/sparse_hash_map"
 #endif
 
-#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -101,17 +100,12 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
                            data::Store&             rendererData,
                            data::Store&             targetData)
 {
-    LOG_DEBUG("addDrawCalls called");
-
     const auto& technique = effect->technique(techniqueName);
-
-    LOG_DEBUG("technique size: " << technique.size());
 
     _batchId++;
     for (const auto& pass : technique)
     {
         DrawCall* drawCall = new DrawCall(_batchId, pass, variables, rootData, rendererData, targetData);
-        LOG_DEBUG("drawcall new called");
 
         initializeDrawCall(*drawCall);
 
@@ -142,12 +136,9 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
                     unbindDrawCall(*drawCall);
                 }
                 delete drawCall;
-                LOG_DEBUG("delete drawcall called");
-
                 continue;
             }
         }
-        LOG_DEBUG("addDrawCallToSortedBucket called");
         addDrawCallToSortedBucket(drawCall);
     }
 
@@ -157,7 +148,6 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
 void
 DrawCallPool::removeDrawCalls(uint batchId)
 {
-    LOG_DEBUG("removeDrawCalls called");
     for (auto& priorityAndTargetIdToDrawCalls : _drawCalls)
     {
         for (auto& drawCalls : priorityAndTargetIdToDrawCalls.second)
@@ -173,8 +163,6 @@ DrawCallPool::removeDrawCalls(uint batchId)
                     if (it != batchIDs.end())
                     {
                         batchIDs.erase(it);
-
-                        LOG_DEBUG("batchIDs size: " << batchIDs.size());
 
                         if (batchIDs.size() != 0)
                             return false;
@@ -192,8 +180,6 @@ DrawCallPool::removeDrawCalls(uint batchId)
                         _drawCallsToBeSorted.erase(drawCall);
 
                         delete drawCall;
-
-                        LOG_DEBUG("delete drawcall called");
 
                         assert(_drawCallToPropRebindFuncs->count(drawCall) == 0);
                         for (auto it = _propChangedSlot->begin(); it != _propChangedSlot->end(); ++it)
@@ -732,6 +718,7 @@ DrawCallPool::addDrawCallToSortedBucket(DrawCall* drawCall)
     const auto zSortedIndex = drawCall->zSorted() ? 1u : 0u;
 
     _drawCalls[SortPropertyTuple(priority, targetId)][zSortedIndex].push_back(drawCall);
+    LOG_DEBUG("addDrawCallToSortedBucket _drawCalls size: " << _drawCalls.size());
 }
 
 void

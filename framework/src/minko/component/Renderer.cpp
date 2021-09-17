@@ -392,8 +392,6 @@ Renderer::addSurface(Surface::Ptr surface)
 	    if (!checkSurfaceLayout(surface))
 		    return;
 
-		LOG_DEBUG("addSurface called.");
-
         render::EffectVariables variables = _variables;
 
 	    variables.push_back({ "surfaceUuid", surface->uuid() });
@@ -430,7 +428,6 @@ Renderer::addSurface(Surface::Ptr surface)
 void
 Renderer::removeSurface(Surface::Ptr surface)
 {
-	LOG_DEBUG("removesurface called");
     if (_toCollect.erase(surface) == 0)
     {
 		if (_surfaceToDrawCallIterator.count(surface) != 0)
