@@ -674,6 +674,12 @@ DrawCallPool::invalidateDrawCalls(uint batchId, const EffectVariables& variables
 void
 DrawCallPool::clear()
 {
+    foreachDrawCall(
+        [&](DrawCall* drawCall)
+        {
+            delete drawCall;
+        }
+    );
     _drawCalls.clear();
     _macroToDrawCalls->clear();
 #ifdef MINKO_USE_SPARSE_HASH_MAP
