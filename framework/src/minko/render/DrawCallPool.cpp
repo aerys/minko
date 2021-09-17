@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "sparsehash/sparse_hash_map"
 #endif
 
-
 using namespace minko;
 using namespace minko::render;
 
@@ -139,6 +138,7 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
                 continue;
             }
         }
+
         addDrawCallToSortedBucket(drawCall);
     }
 
@@ -675,7 +675,7 @@ void
 DrawCallPool::clear()
 {
     foreachDrawCall(
-    [&](DrawCall* drawCall)
+        [&](DrawCall* drawCall)
         {
             delete drawCall;
         }
