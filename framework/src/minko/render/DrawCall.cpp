@@ -116,7 +116,6 @@ DrawCall::reset()
 
         if (_vertexAttribArray > 0)
         {
-            LOG_DEBUG("deleteVertexAttributeArray called.");
             context->deleteVertexAttributeArray(_vertexAttribArray);
         }
     }
