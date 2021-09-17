@@ -678,7 +678,6 @@ DrawCallPool::clear()
     [&](DrawCall* drawCall)
         {
             delete drawCall;
-            LOG_DEBUG("delete drawcall called");
         }
     );
     _drawCalls.clear();
@@ -718,7 +717,6 @@ DrawCallPool::addDrawCallToSortedBucket(DrawCall* drawCall)
     const auto zSortedIndex = drawCall->zSorted() ? 1u : 0u;
 
     _drawCalls[SortPropertyTuple(priority, targetId)][zSortedIndex].push_back(drawCall);
-    LOG_DEBUG("addDrawCallToSortedBucket _drawCalls size: " << _drawCalls.size());
 }
 
 void
