@@ -197,7 +197,7 @@ archive:windows64_offscreen:
 
 release:
   stage: release
-  image: registry.aerys.in/aerys/gitlab-flow-release:latest
+  image: registry.aerys.in/aerys/gitlab-flow-release:0.4.1
   only:
     - tags
   variables:
