@@ -37,12 +37,6 @@ Minko.loadedHandler = function(event)
     {
         Minko.window = event.currentTarget.contentWindow;
         Minko.document = event.currentTarget.contentDocument;
-
-        Minko.document.addEventListener('touchmove', function(event)
-        {
-            if (!event.dontPreventDefault)
-                event.preventDefault();
-        });
     }
     else
     {
