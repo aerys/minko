@@ -374,6 +374,7 @@ Minko.redispatchTouchEvent = function(event) //EMSCRIPTEN
     if (event.ignoreOnMinko)
         return;
 
+    // Prevent Google Chrome from cancelling subsequent `touchmove` events.
     if (!event.dontPreventDefault && (event.type == "touchstart" || event.type == "touchend"))
         event.preventDefault();
 
@@ -396,7 +397,7 @@ Minko.redispatchTouchEvent = function(event) //EMSCRIPTEN
 Minko.redispatchPointerEvent = function(event) //EMSCRIPTEN
 {
     // Some browsers send both `pointer` and `touch` events upon `touch` inputs.
-    // Since we already have `redispatchTouchEvent`.
+    // This function only handles `pointer` events.
     if (event.ignoreOnMinko || event.pointerType == "touch")
         return;
 
