@@ -238,14 +238,6 @@ POPGeometryLodScheduler::surfaceRemoved(Surface::Ptr surface)
             return surfaceInfo.surface == surface;
         }), resource.surfaceInfoCollection.end()
     );
-
-    // In theory 1 Surface == 1 Geometry == 1 Resource,
-    // so we must remove any resource that doesn't refer to any surface.
-    if (resource.surfaceInfoCollection.size() == 0)
-    {
-        this->unregisterResource(resourceIt->second.base->uuid());
-        _popGeometryResources.erase(resourceIt);
-    }
 }
 
 void
