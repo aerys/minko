@@ -206,6 +206,7 @@ release:
 
 trigger:
   stage: trigger
+  image: curlimages/curl:7.79.1
   variables:
     GIT_STRATEGY: none
   dependencies: []
