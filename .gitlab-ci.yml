@@ -154,13 +154,6 @@ test:trigger:
   variables:
     GIT_STRATEGY: none
   dependencies: []
-  only:
-      - master
-      - dev
-      - /^client\/.*$/
-      - /^feature\/.*$/
-      - /^fix\/.*$/
-      - tags
   script:
     - curl https://git.aerys.in
 
