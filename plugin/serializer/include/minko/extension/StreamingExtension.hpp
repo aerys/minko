@@ -245,6 +245,9 @@ namespace minko
                                    bool&                                hasHeader,
                                    int&                                 streamedAssetHeaderSize,
                                    std::shared_ptr<file::LinkedAsset>&  linkedAsset);
+
+            bool
+            isSceneStreamingComplete();
 		};
 	}
 }
