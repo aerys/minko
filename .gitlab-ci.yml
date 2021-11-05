@@ -206,17 +206,18 @@ release:
 
 trigger:
   stage: trigger
-  image: curlimages/curl:7.79.1
+  tags:
+    - virtualbox
   variables:
     GIT_STRATEGY: none
   dependencies: []
   only:
-      - master
-      - dev
-      - /^client\/.*$/
-      - /^feature\/.*$/
-      - /^fix\/.*$/
-      - tags
+    - master
+    - dev
+    - /^client\/.*$/
+    - /^feature\/.*$/
+    - /^fix\/.*$/
+    - tags
   script:
     - curl --request POST --form "token=${SMARTSHAPE_CONVERTER_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://git.aerys.in/api/v4/projects/17/trigger/pipeline
     - curl --request POST --form "token=${SMARTSHAPE_APP_TRIGGER}" --form "ref=${CI_COMMIT_REF_NAME}" https://git.aerys.in/api/v4/projects/15/trigger/pipeline
