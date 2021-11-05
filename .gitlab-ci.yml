@@ -147,6 +147,23 @@ test:linux_offscreen:
     - kill -SIGINT ${WSS_SERVER_PID}
     - wait
 
+test:trigger:
+  stage: test
+  tags:
+    - virtualbox
+  variables:
+    GIT_STRATEGY: none
+  dependencies: []
+  only:
+      - master
+      - dev
+      - /^client\/.*$/
+      - /^feature\/.*$/
+      - /^fix\/.*$/
+      - tags
+  script:
+    - curl https://git.aerys.in
+
 archive:linux_offscreen:
   <<: *archive_template
   variables:
