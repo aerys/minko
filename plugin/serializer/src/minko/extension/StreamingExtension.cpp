@@ -843,8 +843,8 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
 bool
 StreamingExtension::isSceneStreamingComplete()
 {
-    // Scene streaming is complete when there are no more parsers remaining
-    // or when all remaining parsers have priorities 0.
+    // Scene streaming is complete when the scene has been fully loaded (no more parsers remaining) or
+    // when the Surfaces of the enabled Layers have been loaded (when all remaining parsers have priorities 0).
 
     if(_parsers.empty())
         return true;
