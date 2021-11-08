@@ -704,7 +704,9 @@ StreamingExtension::registerParser(AbstractStreamedAssetParser::Ptr parser)
         {
             _parsers.erase(std::static_pointer_cast<AbstractStreamedAssetParser>(parserThis));
 
-            if (_parsers.empty())
+            auto streamingComplete = this->isSceneStreamingComplete();
+
+            if (streamingComplete)
             {
                 sceneStreamingComplete()->execute(std::static_pointer_cast<StreamingExtension>(shared_from_this()));
             }
@@ -836,4 +838,26 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
     linkedAsset->offset(linkedAsset->offset() + streamedAssetHeaderSize + STREAMED_ASSET_HEADER_SIZE_BYTE_SIZE);
 
     return true;
+}
+
+bool
+StreamingExtension::isSceneStreamingComplete()
+{
+    // Scene streaming is complete when the scene has been fully loaded (no more parsers remaining) or
+    // when the Surfaces of the enabled Layers have been loaded (when all remaining parsers have priorities 0).
+
+    if(_parsers.empty())
+        return true;
+    else
+    {
+        for (auto parser : _parsers)
+        {
+            if (parser.first->priority() > 0.f)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }    
 }
