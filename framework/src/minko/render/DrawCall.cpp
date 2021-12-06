@@ -110,6 +110,17 @@ DrawCall::getStore(data::Binding::Source source)
 void
 DrawCall::reset()
 {
+    if (_program)
+    {
+        auto context = _program->context();
+
+        if (_vertexAttribArray > 0)
+        {
+            context->deleteVertexAttributeArray(_vertexAttribArray);
+        }
+    }
+    _vertexAttribArray = 0;
+
     _program = nullptr;
     _indexBuffer = nullptr;
     _firstIndex = nullptr;
@@ -119,7 +130,6 @@ DrawCall::reset()
     _uniformBool.clear();
     _samplers.clear();
     _attributes.clear();
-    _vertexAttribArray = 0;
 }
 
 void

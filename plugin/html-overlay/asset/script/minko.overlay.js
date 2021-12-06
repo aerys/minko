@@ -37,12 +37,6 @@ Minko.loadedHandler = function(event)
     {
         Minko.window = event.currentTarget.contentWindow;
         Minko.document = event.currentTarget.contentDocument;
-
-        Minko.document.addEventListener('touchmove', function(event)
-        {
-            if (!event.dontPreventDefault)
-                event.preventDefault();
-        });
     }
     else
     {
@@ -380,6 +374,10 @@ Minko.redispatchTouchEvent = function(event) //EMSCRIPTEN
     if (event.ignoreOnMinko)
         return;
 
+    // Prevent Google Chrome from cancelling subsequent `touchmove` events.
+    if (!event.dontPreventDefault && (event.type == "touchstart" || event.type == "touchend"))
+        event.preventDefault();
+
     var eventCopy = document.createEvent('Event');
 
     eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
@@ -396,13 +394,25 @@ Minko.redispatchTouchEvent = function(event) //EMSCRIPTEN
     Minko.canvas.dispatchEvent(eventCopy);
 }
 
-Minko.generateTouchList = function(event) //EMSCRIPTEN
+Minko.redispatchPointerEvent = function(event) //EMSCRIPTEN
 {
-    var result = [];
+    // Some browsers send both `pointer` and `touch` events upon `touch` inputs.
+    // This function only handles `pointer` events.
+    if (event.ignoreOnMinko || event.pointerType == "touch")
+        return;
 
-    var copiedTouch = {};
+    var eventCopy = document.createEvent('Event');
 
-    copiedTouch.identifier = Minko.getTouchId(event.pointerId);
+    var type = event.type;
+
+    if (type == "pointerdown")
+        type = "mousedown";
+    else if (type == "pointerup")
+        type = "mouseup";
+    else if (type == "pointermove")
+        type = "mousemove";
+    else if (type == "pointercancel")
+        return;
 
     var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (event.pageX || event.layerX);
     var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (event.pageY || event.layerY);
@@ -410,107 +420,20 @@ Minko.generateTouchList = function(event) //EMSCRIPTEN
     var screenX = pageX - document.body.scrollLeft;
     var screenY = pageY - document.body.scrollTop;
 
-    copiedTouch.pageX = pageX;
-    copiedTouch.pageY = pageY;
-    copiedTouch.screenX = screenX;
-    copiedTouch.screenY = screenY;
-    copiedTouch.clientX = screenX;
-    copiedTouch.clientY = screenY;
+    var eventCopy = document.createEvent('MouseEvents');
 
-    result.push(copiedTouch);
-
-    return result;
-}
-
-Minko.pointerTouches = [];
-
-Minko.removePointerTouch = function(id)
-{
-    var pointerTouches = [];
-
-    for(var i = 0; i < Minko.pointerTouches.length; ++i)
-    {
-        if (Minko.pointerTouches[i].identifier == id)
-            continue;
-
-        pointerTouches.push(Minko.pointerTouches[i]);
-    }
-
-    Minko.pointerTouches = pointerTouches;
-}
-
-Minko.redispatchPointerEvent = function(event) //EMSCRIPTEN
-{
-    if (event.ignoreOnMinko)
-        return;
-
-    var eventCopy = document.createEvent('Event');
-
-    var type = event.type;
-
-    if (event.pointerType == "touch")
-    {
-        if (type == "pointerdown")
-            type = "touchstart";
-        else if (type == "pointerup")
-            type = "touchend";
-        else if (type == "pointermove")
-            type = "touchmove";
-        else if (type == "pointercancel")
-            type = "touchcancel";
-
-        eventCopy.initEvent(type, event.bubbles, event.cancelable);
-
-        var copiedProperties = ['bubbles', 'cancelable', 'view'];
-
-        for (var k in copiedProperties)
-            eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
-
-        eventCopy.changedTouches = Minko.generateTouchList(event);
-
-        if (type == "touchend" || type == "touchmove")
-        {
-            Minko.removePointerTouch(eventCopy.changedTouches[0].identifier);
-        }
-        if (type == "touchstart" || type == "touchmove")
-        {
-            Minko.pointerTouches.push(eventCopy.changedTouches[0]);
-        }
-
-        eventCopy.touches = Minko.pointerTouches.concat();
-    }
-    else
-    {
-        if (type == "pointerdown")
-            type = "mousedown";
-        else if (type == "pointerup")
-            type = "mouseup";
-        else if (type == "pointermove")
-            type = "mousemove";
-        else if (type == "pointercancel")
-            return;
-
-        var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (event.pageX || event.layerX);
-        var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (event.pageY || event.layerY);
-
-        var screenX = pageX - document.body.scrollLeft;
-        var screenY = pageY - document.body.scrollTop;
-
-        var eventCopy = document.createEvent('MouseEvents');
-
-        eventCopy.initMouseEvent(
-            type, event.bubbles, event.cancelable, event.view, event.detail,
-            pageX, pageY, screenX, screenY,
-            event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget
-        );
-    }
+    eventCopy.initMouseEvent(
+        type, event.bubbles, event.cancelable, event.view, event.detail,
+        pageX, pageY, screenX, screenY,
+        event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget
+    );
 
     Minko.canvas.dispatchEvent(eventCopy);
 }
 
 Minko.bindRedispatchEvents = function() //EMSCRIPTEN
 {
-    var touchEventsSupported = 'ontouchstart' in window;
+    var touchEventsSupported = 'TouchEvent' in window;
     var pointerEventsSupported = 'PointerEvent' in window;
 
     if (!pointerEventsSupported)
@@ -533,12 +456,13 @@ Minko.bindRedispatchEvents = function() //EMSCRIPTEN
         for (var k in a)
             Minko.window.addEventListener(a[k], Minko.redispatchPointerEvent);
     }
-    else if (touchEventsSupported)
+
+    if (touchEventsSupported)
     {
         a = ['touchstart', 'touchend', 'touchmove', 'touchcancel']
 
         for (var k in a)
-            Minko.window.addEventListener(a[k], Minko.redispatchTouchEvent);
+            Minko.window.addEventListener(a[k], Minko.redispatchTouchEvent, { passive: false });
     }
 
     a = ['keydown', 'keyup', 'keypress'];
