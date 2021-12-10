@@ -33,7 +33,7 @@ stages:
 
 .archive_template: &archive_template
   stage: archive
-  image: registry.aerys.in/aerys/smartshape-docker/archive:2221
+  image: registry.aerys.in/aerys/smartshape-docker/archive:26975
   except:
     - master
   script:
