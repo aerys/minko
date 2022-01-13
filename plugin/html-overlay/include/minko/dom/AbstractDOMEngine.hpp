@@ -82,12 +82,12 @@ namespace minko
             void
             disableRenderToTexture() = 0;
 
-			// Set the origins allowed for the overlays.
-			virtual
+            // Set the origins allowed for the overlays.
+            virtual
 			void
             setOverlayAllowedOrigins(const std::vector<std::string>& allowedOrigins)
-			{
-			}
+            {
+            }
 		};
 	}
 }
