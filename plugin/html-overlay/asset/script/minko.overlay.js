@@ -77,6 +77,7 @@ Minko.loadedHandler = function(event)
         Minko.messagesToSend = [];
 
         // FIXME: Remove the old messaging logic once every platform uses `window.postMessage`.
+        // See https://git.aerys.in/aerys/smartshape-engine/-/issues/278.
         Minko.sendMessage = function(message)
         {
             Minko.messagesToSend.push(message);
@@ -161,6 +162,7 @@ Minko.dispatchEvent = function(event)
 Minko.dispatchMessage = function(message)
 {
     // FIXME: Remove the old messaging logic once every platform uses `window.postMessage`.
+    // See https://git.aerys.in/aerys/smartshape-engine/-/issues/278.
     var event = document.createEvent("Event");
     event.initEvent("message", true, true);
     event.message = message;
@@ -256,6 +258,7 @@ Minko.setWindowPostMessageListener = function()
     }
 
     // FIXME: Implement `window.postMessage` for all the supported platforms.
+    // See https://git.aerys.in/aerys/smartshape-engine/-/issues/278.
 }
 
 Minko.getOffsetTop = function(element) //EMSCRIPTEN
