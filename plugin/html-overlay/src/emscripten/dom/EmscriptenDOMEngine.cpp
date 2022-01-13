@@ -247,7 +247,7 @@ void
 EmscriptenDOMEngine::setOverlayAllowedOrigins(const std::vector<std::string>& allowedOrigins)
 {
     std::string eval = "Minko.setOverlayAllowedOrigins([";
-    for (std::size_t i = 0; i < allowedOrigins.size(); i++)
+    for (std::size_t i = 0; i < allowedOrigins.size(); ++i)
     {
         eval += "'" + allowedOrigins[i] + "'";
 
