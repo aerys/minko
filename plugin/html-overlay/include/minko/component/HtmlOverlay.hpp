@@ -131,6 +131,10 @@ namespace minko
             void
             disableRenderToTexture();
 
+			// Set the origins allowed for the overlays.
+			void
+            setAllowedOrigins(const std::vector<std::string>& allowedOrigins);
+
         private:
 
 			minko::dom::AbstractDOMEngine::Ptr

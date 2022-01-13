@@ -244,6 +244,21 @@ EmscriptenDOMEngine::onmessage()
 }
 
 void
+EmscriptenDOMEngine::setOverlayAllowedOrigins(const std::vector<std::string>& allowedOrigins)
+{
+	std::string eval = "Minko.setOverlayAllowedOrigins([";
+ 	for (std::size_t i = 0; i < allowedOrigins.size(); i++)
+	{
+		eval += "'" + allowedOrigins[i] + "'";
+
+		if (i < allowedOrigins.size() - 1)
+			eval += ", ";
+	}
+	eval += "]);";
+	emscripten_run_script(eval.c_str());
+}
+
+void
 EmscriptenDOMEngine::visible(bool value)
 {
 	if (_canvas != nullptr)
