@@ -117,3 +117,9 @@ HtmlOverlay::disableRenderToTexture()
 {
     _domEngine->disableRenderToTexture();
 }
+
+void
+HtmlOverlay::setAllowedOrigins(const std::vector<std::string>& allowedOrigins)
+{
+    _domEngine->setOverlayAllowedOrigins(allowedOrigins);
+}

@@ -99,6 +99,9 @@ namespace emscripten
                 throw std::runtime_error("Not implemented");
             }
 
+            void
+            setOverlayAllowedOrigins(const std::vector<std::string>& allowedOrigins) override;
+
 		private:
 
 			void

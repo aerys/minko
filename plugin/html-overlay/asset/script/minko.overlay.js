@@ -9,6 +9,13 @@ Minko.bridge = null;
 Minko.loaded = 0;
 Minko.ready = false;
 
+// Origins of the overlays allowed to send messages to the player.
+Minko.overlayAllowedOrigins = [];
+// Mapping between the origin of the overlay and the actual reference to the overlay.
+// An entry is added only when an allowed overlay sends a message.
+// Used to send messages to the overlays.
+Minko.overlaySources = {};
+
 Minko.bindJsErrors = function()
 {
     Minko.window.onerror = function (message, url, linenumber)
@@ -69,10 +76,14 @@ Minko.loadedHandler = function(event)
     {
         Minko.messagesToSend = [];
 
+        // FIXME: Remove the old messaging logic once every platform uses `window.postMessage`.
+        // See https://git.aerys.in/aerys/smartshape-engine/-/issues/278.
         Minko.sendMessage = function(message)
         {
             Minko.messagesToSend.push(message);
         }
+
+        Minko.setWindowPostMessageListener();
     }
 
     if (Minko.platform == "emscripten")
@@ -150,12 +161,18 @@ Minko.dispatchEvent = function(event)
 
 Minko.dispatchMessage = function(message)
 {
+    // FIXME: Remove the old messaging logic once every platform uses `window.postMessage`.
+    // See https://git.aerys.in/aerys/smartshape-engine/-/issues/278.
     var event = document.createEvent("Event");
     event.initEvent("message", true, true);
     event.message = message;
 
     Minko.dispatchEvent(event);
     Minko.onmessage(message);
+
+    // Send the message to all the allowed overlays that have already sent a message.
+    for (var origin in Minko.overlaySources)
+        Minko.overlaySources[origin].postMessage(message, origin);
 };
 
 /*
@@ -205,6 +222,43 @@ Minko.loadUrlEmscripten = function(url) //EMSCRIPTEN
 {
     Minko.iframe.src = url;
     Minko.loaded = 0;
+}
+
+/**
+ * Set the origins of the overlays allowed to communicate with the player.
+ */
+Minko.setOverlayAllowedOrigins = function(allowedOrigins)
+{
+    Minko.overlayAllowedOrigins = allowedOrigins;
+    Minko.overlaySources = {};
+}
+
+/**
+ * Listen to messages coming from allowed overlays.
+ * The overlays must use the standard `postMessage` method to send messages this way.
+ */
+Minko.setWindowPostMessageListener = function()
+{
+    if (Minko.platform == "emscripten")
+    {
+        window.addEventListener("message", (event) => {
+            if (!Minko.overlayAllowedOrigins || !Array.isArray(Minko.overlayAllowedOrigins) || Minko.overlayAllowedOrigins.length <= 0)
+                return;
+
+            if (Minko.overlayAllowedOrigins.indexOf(event.origin) == -1)
+                return;
+
+            Minko.messagesToSend.push(event.data);
+
+            if (!(event.origin in Minko.overlaySources))
+            {
+                Minko.overlaySources[event.origin] = event.source;
+            }
+        }, false);
+    }
+
+    // FIXME: Implement `window.postMessage` for all the supported platforms.
+    // See https://git.aerys.in/aerys/smartshape-engine/-/issues/278.
 }
 
 Minko.getOffsetTop = function(element) //EMSCRIPTEN
@@ -599,6 +653,7 @@ Minko.init = function(platform)
     }
     else if (platform == "androidWebView")
     {
+        // FIXME: Remove the old messaging logic once every platform uses `window.postMessage`.
         Minko.sendMessage = function(message)
         {
             MinkoNativeInterface.onMessage(message);
