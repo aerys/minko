@@ -148,3 +148,10 @@ TEST_F(BasicMaterialTest, StencilZPassOperationDefaultValue)
     ASSERT_EQ(mat->stencilZPassOperation(), States::DEFAULT_STENCIL_ZPASS_OPERATION);
     ASSERT_EQ(mat->data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OPERATION), States::DEFAULT_STENCIL_ZPASS_OPERATION);
 }
+
+TEST_F(BasicMaterialTest, NoTargetProperty)
+{
+    auto mat = BasicMaterial::create();
+
+    ASSERT_FALSE(mat->data()->hasProperty(States::PROPERTY_TARGET));
+}
