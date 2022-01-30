@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2022 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -355,7 +355,7 @@ TEST_F(DrawCallTest, RenderTargetDefaultValue)
 
     drawCall.bindStates(std::unordered_map<std::string, data::Binding>{}, defaultValues);
 
-    ASSERT_EQ(drawCall.target(), States::DEFAULT_TARGET);
+    ASSERT_EQ(drawCall.target(), States::targetDefaultValue());
 }
 
 TEST_F(DrawCallTest, RenderTargetFromDefaultValues)
@@ -376,7 +376,7 @@ TEST_F(DrawCallTest, RenderTargetFromDefaultValues)
 
     drawCall.bindStates(std::unordered_map<std::string, data::Binding>{}, defaultValues);
 
-    ASSERT_NE(drawCall.target(), States::DEFAULT_TARGET);
+    ASSERT_NE(drawCall.target(), States::targetDefaultValue());
     ASSERT_EQ(drawCall.target(), texture->sampler());
     ASSERT_GT(*drawCall.target().id, 0);
 }
@@ -392,15 +392,18 @@ TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
     auto p = data::Provider::create();
 
     texture->upload();
-    p->set(States::PROPERTY_TARGET, texture->sampler());
+    p->set(States::targetPropertyName(), texture->sampler());
     targetData.addProvider(p);
 
-    std::unordered_map<std::string, data::Binding> bindings = { { States::PROPERTY_TARGET, { States::PROPERTY_TARGET, data::Binding::Source::TARGET } } };
+    std::unordered_map<std::string, data::Binding> bindings = { {
+        States::targetPropertyName(),
+        { States::targetPropertyName(), data::Binding::Source::TARGET }
+    } };
     DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
 
     drawCall.bindStates(bindings, defaultValues);
 
-    ASSERT_NE(drawCall.target(), States::DEFAULT_TARGET);
+    ASSERT_NE(drawCall.target(), States::targetDefaultValue());
     ASSERT_EQ(drawCall.target(), texture->sampler());
     ASSERT_GT(*drawCall.target().id, 0);
 }

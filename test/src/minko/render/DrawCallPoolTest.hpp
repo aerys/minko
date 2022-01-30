@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2022 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -138,7 +138,7 @@ namespace minko
                 auto states = drawCall->pass()->states();
 
                 ASSERT_EQ(drawCall->target(), stateDefaultValues.get<TextureSampler>(stateName));
-                ASSERT_NE(states.target(), States::DEFAULT_TARGET);
+                ASSERT_NE(states.target(), States::targetDefaultValue());
                 ASSERT_EQ(states.target(), assets->texture(renderTargetName)->sampler());
                 ASSERT_NE(assets->texture(renderTargetName), nullptr);
                 ASSERT_EQ(assets->texture(renderTargetName)->width(), renderTargetSize[0]);

@@ -565,8 +565,8 @@ TEST_F(EffectParserTest, StatesBlendingModeDefault)
     auto fx = loadEffect("effect/state/default-value/blending-mode/StatesBlendingModeDefault.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ZERO);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::ONE);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::ZERO);
 }
 
 TEST_F(EffectParserTest, StatesBlendingModeAdditive)
@@ -574,8 +574,8 @@ TEST_F(EffectParserTest, StatesBlendingModeAdditive)
     auto fx = loadEffect("effect/state/default-value/blending-mode/StatesBlendingModeAdditive.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_ALPHA);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::SRC_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::ONE);
 }
 
 TEST_F(EffectParserTest, StatesBlendingModeAlpha)
@@ -583,8 +583,8 @@ TEST_F(EffectParserTest, StatesBlendingModeAlpha)
     auto fx = loadEffect("effect/state/default-value/blending-mode/StatesBlendingModeAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_ALPHA);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE_MINUS_SRC_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::SRC_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::ONE_MINUS_SRC_ALPHA);
 }
 
 TEST_F(EffectParserTest, StatesBlendingModeArray)
@@ -592,8 +592,8 @@ TEST_F(EffectParserTest, StatesBlendingModeArray)
     auto fx = loadEffect("effect/state/default-value/blending-mode/StatesBlendingModeArray.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_COLOR);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::SRC_ALPHA_SATURATE);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::SRC_COLOR);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::SRC_ALPHA_SATURATE);
 }
 
 /* Blending Source */
@@ -603,7 +603,7 @@ TEST_F(EffectParserTest, StatesBlendingSourceZero)
     auto fx = loadEffect("effect/state/default-value/blending-source/StatesBlendingSourceZero.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ZERO);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::ZERO);
 }
 
 TEST_F(EffectParserTest, StatesBlendingSourceOne)
@@ -611,7 +611,7 @@ TEST_F(EffectParserTest, StatesBlendingSourceOne)
     auto fx = loadEffect("effect/state/default-value/blending-source/StatesBlendingSourceOne.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::ONE);
 }
 
 TEST_F(EffectParserTest, StatesBlendingSourceSrcColor)
@@ -619,7 +619,7 @@ TEST_F(EffectParserTest, StatesBlendingSourceSrcColor)
     auto fx = loadEffect("effect/state/default-value/blending-source/StatesBlendingSourceSrcColor.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_COLOR);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::SRC_COLOR);
 }
 
 TEST_F(EffectParserTest, StatesBlendingSourceOneMinusSrcColor)
@@ -627,7 +627,7 @@ TEST_F(EffectParserTest, StatesBlendingSourceOneMinusSrcColor)
     auto fx = loadEffect("effect/state/default-value/blending-source/StatesBlendingSourceOneMinusSrcColor.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE_MINUS_SRC_COLOR);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::ONE_MINUS_SRC_COLOR);
 }
 
 TEST_F(EffectParserTest, StatesBlendingSourceSrcAlpha)
@@ -635,7 +635,7 @@ TEST_F(EffectParserTest, StatesBlendingSourceSrcAlpha)
     auto fx = loadEffect("effect/state/default-value/blending-source/StatesBlendingSourceSrcAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::SRC_ALPHA);
 }
 
 TEST_F(EffectParserTest, StatesBlendingSourceOneMinusSrcAlpha)
@@ -643,7 +643,7 @@ TEST_F(EffectParserTest, StatesBlendingSourceOneMinusSrcAlpha)
     auto fx = loadEffect("effect/state/default-value/blending-source/StatesBlendingSourceOneMinusSrcAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE_MINUS_SRC_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::ONE_MINUS_SRC_ALPHA);
 }
 
 TEST_F(EffectParserTest, StatesBlendingSourceDstAlpha)
@@ -651,7 +651,7 @@ TEST_F(EffectParserTest, StatesBlendingSourceDstAlpha)
     auto fx = loadEffect("effect/state/default-value/blending-source/StatesBlendingSourceDstAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::DST_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::DST_ALPHA);
 }
 
 TEST_F(EffectParserTest, StatesBlendingSourceOneMinusDstAlpha)
@@ -659,7 +659,7 @@ TEST_F(EffectParserTest, StatesBlendingSourceOneMinusDstAlpha)
     auto fx = loadEffect("effect/state/default-value/blending-source/StatesBlendingSourceOneMinusDstAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE_MINUS_DST_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSource(), Blending::Source::ONE_MINUS_DST_ALPHA);
 }
 
 /* Blending destination */
@@ -669,7 +669,7 @@ TEST_F(EffectParserTest, StatesBlendingDestinationZero)
     auto fx = loadEffect("effect/state/default-value/blending-destination/StatesBlendingDestinationZero.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ZERO);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::ZERO);
 }
 
 TEST_F(EffectParserTest, StatesBlendingDestinationOne)
@@ -677,7 +677,7 @@ TEST_F(EffectParserTest, StatesBlendingDestinationOne)
     auto fx = loadEffect("effect/state/default-value/blending-destination/StatesBlendingDestinationOne.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::ONE);
 }
 
 TEST_F(EffectParserTest, StatesBlendingDestinationDstColor)
@@ -685,7 +685,7 @@ TEST_F(EffectParserTest, StatesBlendingDestinationDstColor)
     auto fx = loadEffect("effect/state/default-value/blending-destination/StatesBlendingDestinationDstColor.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::DST_COLOR);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::DST_COLOR);
 }
 
 TEST_F(EffectParserTest, StatesBlendingDestinationOneMinusDstColor)
@@ -693,7 +693,7 @@ TEST_F(EffectParserTest, StatesBlendingDestinationOneMinusDstColor)
     auto fx = loadEffect("effect/state/default-value/blending-destination/StatesBlendingDestinationOneMinusDstColor.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE_MINUS_DST_COLOR);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::ONE_MINUS_DST_COLOR);
 }
 
 TEST_F(EffectParserTest, StatesBlendingDestinationSrcAlphaSaturate)
@@ -701,7 +701,7 @@ TEST_F(EffectParserTest, StatesBlendingDestinationSrcAlphaSaturate)
     auto fx = loadEffect("effect/state/default-value/blending-destination/StatesBlendingDestinationSrcAlphaSaturate.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::SRC_ALPHA_SATURATE);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::SRC_ALPHA_SATURATE);
 }
 
 TEST_F(EffectParserTest, StatesBlendingDestinationOneMinusSrcAlpha)
@@ -709,7 +709,7 @@ TEST_F(EffectParserTest, StatesBlendingDestinationOneMinusSrcAlpha)
     auto fx = loadEffect("effect/state/default-value/blending-destination/StatesBlendingDestinationOneMinusSrcAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE_MINUS_SRC_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::ONE_MINUS_SRC_ALPHA);
 }
 
 TEST_F(EffectParserTest, StatesBlendingDestinationDstAlpha)
@@ -717,7 +717,7 @@ TEST_F(EffectParserTest, StatesBlendingDestinationDstAlpha)
     auto fx = loadEffect("effect/state/default-value/blending-destination/StatesBlendingDestinationDstAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::DST_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::DST_ALPHA);
 }
 
 TEST_F(EffectParserTest, StatesBlendingDestinationOneMinusDstAlpha)
@@ -725,7 +725,7 @@ TEST_F(EffectParserTest, StatesBlendingDestinationOneMinusDstAlpha)
     auto fx = loadEffect("effect/state/default-value/blending-destination/StatesBlendingDestinationOneMinusDstAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE_MINUS_DST_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestination(), Blending::Destination::ONE_MINUS_DST_ALPHA);
 }
 
 /* Color mask */
