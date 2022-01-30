@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2022 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -686,7 +686,7 @@ TEST_F(DirectionalLightTest, ShadowMappingEffect)
         ASSERT_TRUE(technique[0]->macroBindings().types.count("SHADOW_CASCADE_INDEX") != 0);
         ASSERT_EQ(technique[0]->macroBindings().types["SHADOW_CASCADE_INDEX"], data::MacroBindingMap::MacroType::INT);
         ASSERT_EQ(technique[0]->macroBindings().defaultValues.get<int>("SHADOW_CASCADE_INDEX"), i);
-        ASSERT_EQ(technique[0]->states().priority(), render::States::DEFAULT_PRIORITY);
+        ASSERT_EQ(technique[0]->states().priority(), render::States::priorityDefaultValue());
     }
 }
 
@@ -721,13 +721,13 @@ TEST_F(DirectionalLightTest, RenderersAndDrawCalls)
         ASSERT_TRUE(shadowMappingDepthPass->macroBindings().types.count("SHADOW_CASCADE_INDEX") != 0);
         ASSERT_EQ(shadowMappingDepthPass->macroBindings().types["SHADOW_CASCADE_INDEX"], data::MacroBindingMap::MacroType::INT);
         ASSERT_EQ(shadowMappingDepthPass->macroBindings().defaultValues.get<int>("SHADOW_CASCADE_INDEX"), rendererIndex);
-        ASSERT_EQ(shadowMappingDepthPass->states().priority(), render::States::DEFAULT_PRIORITY);
+        ASSERT_EQ(shadowMappingDepthPass->states().priority(), render::States::priorityDefaultValue());
 
         const auto& drawCalls = renderer->drawCallPool().drawCalls();
         int* depthTarget = shadowMappingDepthPass->states().target().id;
 
         ASSERT_EQ(depthTarget, nullptr);
-        ASSERT_EQ(drawCalls.count(std::tuple<float, int*>(render::States::DEFAULT_PRIORITY, depthTarget)), 1);
+        ASSERT_EQ(drawCalls.count(std::tuple<float, int*>(render::States::priorityDefaultValue(), depthTarget)), 1);
 
         ++rendererIndex;
     }

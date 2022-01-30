@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2022 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -132,12 +132,8 @@ MaterialParser::deserializeComplexProperty(MaterialPtr            material,
 	else if (type == BLENDING)
 	{
         auto blendingMode = Any::cast<render::Blending::Mode>(TypeDeserializer::deserializeBlending(serializedPropertyTuple));
-        auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
-        auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
 
-        material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
-        material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
-        material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+        material->blendingMode(blendingMode);
     }
     else if (type == TRIANGLECULLING)
     {

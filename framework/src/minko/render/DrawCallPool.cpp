@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2022 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -794,7 +794,7 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
         drawCall.bindAttribute(input, pass->attributeBindings().bindings, pass->attributeBindings().defaultValues);
 
     // bind states
-    for (const auto& stateName : States::PROPERTY_NAMES)
+    for (const auto& stateName : States::propertyNames())
         stateBindingPropertyAddedHandler(stateName, drawCall, pass->stateBindings(), forceRebind);
 
     // bind uniforms

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2022 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -261,7 +261,7 @@ EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
 
     if (numPasses == 1 && passes[0]->states().priority() == UNSET_PRIORITY_VALUE)
     {
-        passes[0]->states().priority(States::DEFAULT_PRIORITY);
+        passes[0]->states().priority(States::priorityDefaultValue());
     }
     else
     {
@@ -279,7 +279,7 @@ EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
                 }
 
                 if (nextPassWithPriority >= numPasses)
-                    pass->states().priority(States::DEFAULT_PRIORITY + (float)(numPasses - i - 1));
+                    pass->states().priority(States::priorityDefaultValue() + (float)(numPasses - i - 1));
                 else
                 {
                     pass->states().priority(
@@ -634,7 +634,7 @@ EffectParser::parseDefaultValueStates(const Json&           json,
         defaultValues->set(stateName, defaultValueNode.get<std::string>());
     else if (defaultValueNode.is_array())
     {
-        if (stateName == States::PROPERTY_PRIORITY && json[0].is_string() && json[1].is_string())
+        if (stateName == States::priorityPropertyName() && json[0].is_string() && json[1].is_string())
             defaultValues->set(stateName, getPriorityValue(json[0].get<std::string>()) + json[1].get<float>());
         else
             throw; // FIXME: support array default values
@@ -997,8 +997,9 @@ EffectParser::parseStates(const Json& json, const Scope& scope, StateBlock& stat
         {
             auto stateNode = it.value();
             const auto& stateName = it.key();
+            auto& propertyNames = States::propertyNames();
             
-            if (std::find(States::PROPERTY_NAMES.begin(), States::PROPERTY_NAMES.end(), stateName) != States::PROPERTY_NAMES.end())
+            if (std::find(propertyNames.begin(), propertyNames.end(), stateName) != propertyNames.end())
             {
                 // Parse states
                 if (stateNode.is_object())
@@ -1047,41 +1048,41 @@ EffectParser::parseState(const Json&        json,
                          StateBlock&        stateBlock,
                          const std::string& stateProperty)
 {
-    if (stateProperty == States::PROPERTY_PRIORITY)
+    if (stateProperty == States::priorityPropertyName())
         parsePriority(json, scope, stateBlock);
     else if (stateProperty == _extraStateNames[0])
         parseBlendingMode(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_BLENDING_SOURCE)
+    else if (stateProperty == States::blendingSourcePropertyName())
         parseBlendingSource(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_BLENDING_DESTINATION)
+    else if (stateProperty == States::blendingDestinationPropertyName())
         parseBlendingDestination(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_ZSORTED)
+    else if (stateProperty == States::zSortedPropertyName())
         parseZSort(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_COLOR_MASK)
+    else if (stateProperty == States::colorMaskPropertyName())
         parseColorMask(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_DEPTH_MASK)
+    else if (stateProperty == States::depthMaskPropertyName())
         parseDepthMask(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_DEPTH_FUNCTION)
+    else if (stateProperty == States::depthFunctionPropertyName())
         parseDepthFunction(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_TRIANGLE_CULLING)
+    else if (stateProperty == States::triangleCullingPropertyName())
         parseTriangleCulling(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_FUNCTION)
+    else if (stateProperty == States::stencilFunctionPropertyName())
         parseStencilFunction(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_REFERENCE)
+    else if (stateProperty == States::stencilReferencePropertyName())
         parseStencilReference(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_MASK)
+    else if (stateProperty == States::stencilMaskPropertyName())
         parseStencilMask(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_FAIL_OPERATION)
+    else if (stateProperty == States::stencilFailOperationPropertyName())
         parseStencilFailOperation(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_ZFAIL_OPERATION)
+    else if (stateProperty == States::stencilZFailOperationPropertyName())
         parseStencilZFailOperation(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_STENCIL_ZPASS_OPERATION)
+    else if (stateProperty == States::stencilZPassOperationPropertyName())
         parseStencilZPassOperation(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_SCISSOR_TEST)
+    else if (stateProperty == States::scissorTestPropertyName())
         parseScissorTest(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_SCISSOR_BOX)
+    else if (stateProperty == States::scissorBoxPropertyName())
         parseScissorBox(json, scope, stateBlock);
-    else if (stateProperty == States::PROPERTY_TARGET)
+    else if (stateProperty == States::targetPropertyName())
         parseTarget(json, scope, stateBlock);
 }
 
@@ -1119,11 +1120,11 @@ EffectParser::parseBlendingMode(const Json&	    json,
     {
         auto blendingSrcString = json[0].get<std::string>();
         if (_blendingSourceMap.count(blendingSrcString))
-            stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(_blendingSourceMap.at(blendingSrcString)));
+            stateBlock.states.blendingSource(static_cast<render::Blending::Source>(_blendingSourceMap.at(blendingSrcString)));
 
         auto blendingDstString = json[1].get<std::string>();
         if (_blendingDestinationMap.count(blendingDstString))
-            stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(_blendingDestinationMap.at(blendingDstString)));
+            stateBlock.states.blendingDestination(static_cast<render::Blending::Destination>(_blendingDestinationMap.at(blendingDstString)));
     }
     else if (json.is_string())
     {
@@ -1133,8 +1134,8 @@ EffectParser::parseBlendingMode(const Json&	    json,
         {
             auto blendingMode = _blendingModeMap.at(blendingModeString);
 
-            stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(blendingMode & 0x00ff));
-            stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(blendingMode & 0xff00));
+            stateBlock.states.blendingSource(static_cast<render::Blending::Source>(blendingMode & 0x00ff));
+            stateBlock.states.blendingDestination(static_cast<render::Blending::Destination>(blendingMode & 0xff00));
         }
     }
 }
@@ -1148,7 +1149,7 @@ EffectParser::parseBlendingSource(const Json&   json,
     {
         auto blendingSourceString = _blendingSourceMap.at(json.get<std::string>());
 
-        stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(blendingSourceString));
+        stateBlock.states.blendingSource(static_cast<render::Blending::Source>(blendingSourceString));
     }
 }
 
@@ -1161,7 +1162,7 @@ EffectParser::parseBlendingDestination(const Json&  json,
     {
         auto blendingDestination = _blendingDestinationMap.at(json.get<std::string>());
 
-        stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(blendingDestination));
+        stateBlock.states.blendingDestination(static_cast<render::Blending::Destination>(blendingDestination));
     }
 }
 
@@ -1229,9 +1230,9 @@ EffectParser::parseStencilState(const Json&     json,
 {
 	if (json.is_object())
 	{
-        auto stencilFuncValue = json[States::PROPERTY_STENCIL_FUNCTION];
-        auto stencilRefValue = json[States::PROPERTY_STENCIL_REFERENCE];
-        auto stencilMaskValue = json[States::PROPERTY_STENCIL_MASK];
+        auto stencilFuncValue = json[States::stencilFunctionPropertyName()];
+        auto stencilRefValue = json[States::stencilReferencePropertyName()];
+        auto stencilMaskValue = json[States::stencilMaskPropertyName()];
         auto stencilOpsValue = json[EXTRA_PROPERTY_STENCIL_OPS];
 
         parseStencilFunction(stencilFuncValue, scope, stateBlock);
