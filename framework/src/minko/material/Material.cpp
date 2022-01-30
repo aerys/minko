@@ -154,17 +154,17 @@ Material::stencilReference() const
 }
 
 Material::Ptr
-Material::stencilMask(uint value)
+Material::stencilMask(unsigned  int value)
 {
     _provider->set(States::stencilMaskPropertyName(), value);
 
     return shared_from_this();
 }
 
-uint
+unsigned int
 Material::stencilMask() const
 {
-    return _provider->get<uint>(States::stencilMaskPropertyName());
+    return _provider->get<unsigned int>(States::stencilMaskPropertyName());
 }
 
 Material::Ptr

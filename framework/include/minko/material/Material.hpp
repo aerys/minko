@@ -150,7 +150,7 @@ namespace minko
             Ptr
             stencilMask(uint value);
 
-            uint
+            unsigned int
             stencilMask() const;
 
             Ptr
