@@ -33,6 +33,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/render/Priority.hpp"
 #include "minko/render/States.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -207,10 +208,17 @@ MaterialParser::deserializeBasicProperty(MaterialPtr        material,
 
 	// TODO remove basic and complex property types and always specify property content type
 
-    if (serializedProperty.get<0>() == "zSorted")
-        material->data()->set<bool>("zSorted", serializedPropertyValue[0]);
+    if (serializedProperty.get<0>() == render::States::zSortedPropertyName())
+        material->zSorted(serializedPropertyValue[0]);
     else if (serializedProperty.get<0>() == "environmentMap2dType")
 		material->data()->set<int>("environmentMap2dType", int(serializedPropertyValue[0]));
-    else
+    // Material contains the render::States props by default. So we cannot blindly
+    // attempt to set the value as a float by default.
+    else if (!material->data()->hasProperty(serializedProperty.get<0>())
+             || material->data()->propertyHasType<float>(serializedProperty.get<0>()))
+    {
 	    material->data()->set<float>(serializedProperty.get<0>(), serializedPropertyValue[0]);
+    } else {
+        LOG_WARNING("material property ignored: " + serializedProperty.get<0>());
+    }
 }
