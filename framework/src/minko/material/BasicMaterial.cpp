@@ -35,6 +35,7 @@ BasicMaterial::BasicMaterial(const std::string& name):
     auto defaultStates = render::States();
 
     data()->copyFrom(defaultStates.data());
+    data()->unset(render::States::PROPERTY_TARGET);
 }
 
 BasicMaterial::Ptr
