@@ -44,6 +44,9 @@ namespace minko
 			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
 			typedef std::shared_ptr<render::States>				RenderStatesPtr;
 
+		protected:
+			static const std::shared_ptr<render::States>		_defaultStates;
+
 		public:
 			inline static
 			Ptr

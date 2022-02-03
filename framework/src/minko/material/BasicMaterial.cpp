@@ -29,12 +29,11 @@ using namespace minko;
 using namespace minko::material;
 using namespace minko::render;
 
+/*static*/ const std::shared_ptr<render::States> BasicMaterial::_defaultStates;
+
 BasicMaterial::BasicMaterial(const std::string& name):
     Material(name)
 {
-    auto defaultStates = render::States();
-
-    data()->copyFrom(defaultStates.data());
 }
 
 BasicMaterial::Ptr
@@ -193,16 +192,21 @@ BasicMaterial::blendingMode(Blending::Mode value)
 	return std::static_pointer_cast<BasicMaterial>(shared_from_this());
 }
 
+
 Blending::Source
 BasicMaterial::blendingSourceFactor() const
 {
-    return data()->get<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE);
+	return data()->hasProperty("bleblendingModendMode")
+		? Blending::Source(uint(data()->get<Blending::Mode>("blendingMode")) & 0x00ff)
+		: _defaultStates->blendingSourceFactor();
 }
 
 Blending::Destination
 BasicMaterial::blendingDestinationFactor() const
 {
-    return data()->get<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION);
+	return data()->hasProperty("blendingMode")
+		? Blending::Destination(uint(data()->get<Blending::Mode>("blendingMode")) & 0xff00)
+		: _defaultStates->blendingDestinationFactor();
 }
 
 BasicMaterial::Ptr
@@ -216,7 +220,9 @@ BasicMaterial::colorMask(bool value)
 bool
 BasicMaterial::colorMask() const
 {
-    return data()->get<bool>(States::PROPERTY_COLOR_MASK);
+    return data()->hasProperty(States::PROPERTY_COLOR_MASK)
+        ? data()->get<bool>(States::PROPERTY_COLOR_MASK)
+		: _defaultStates->colorMask();
 }
 
 BasicMaterial::Ptr
@@ -230,7 +236,9 @@ BasicMaterial::depthMask(bool value)
 bool
 BasicMaterial::depthMask() const
 {
-    return data()->get<bool>(States::PROPERTY_DEPTH_MASK);
+    return data()->hasProperty(States::PROPERTY_DEPTH_MASK)
+        ? data()->get<bool>(States::PROPERTY_DEPTH_MASK)
+		: _defaultStates->depthMask();
 }
 
 BasicMaterial::Ptr
@@ -244,7 +252,9 @@ BasicMaterial::depthFunction(CompareMode value)
 CompareMode
 BasicMaterial::depthFunction() const
 {
-    return data()->get<CompareMode>(States::PROPERTY_DEPTH_FUNCTION);
+    return data()->hasProperty(States::PROPERTY_DEPTH_FUNCTION)
+        ? data()->get<CompareMode>(States::PROPERTY_DEPTH_FUNCTION)
+		: _defaultStates->depthFunction();
 }
 
 BasicMaterial::Ptr
@@ -258,7 +268,9 @@ BasicMaterial::triangleCulling(TriangleCulling value)
 TriangleCulling
 BasicMaterial::triangleCulling() const
 {
-    return data()->get<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING);
+    return data()->hasProperty(States::PROPERTY_TRIANGLE_CULLING)
+        ? data()->get<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING)
+		: _defaultStates->triangleCulling();
 }
 
 BasicMaterial::Ptr
@@ -272,7 +284,9 @@ BasicMaterial::stencilFunction(CompareMode value)
 CompareMode
 BasicMaterial::stencilFunction() const
 {
-    return data()->get<CompareMode>(States::PROPERTY_STENCIL_FUNCTION);
+    return data()->hasProperty(States::PROPERTY_STENCIL_FUNCTION)
+        ? data()->get<CompareMode>(States::PROPERTY_STENCIL_FUNCTION)
+		: _defaultStates->stencilFunction();
 }
 
 BasicMaterial::Ptr
@@ -286,7 +300,9 @@ BasicMaterial::stencilReference(int value)
 int
 BasicMaterial::stencilReference() const
 {
-    return data()->get<int>(States::PROPERTY_STENCIL_REFERENCE);
+    return data()->hasProperty(States::PROPERTY_STENCIL_REFERENCE)
+        ? data()->get<int>(States::PROPERTY_STENCIL_REFERENCE)
+		: _defaultStates->stencilReference();
 }
 
 BasicMaterial::Ptr
@@ -300,7 +316,9 @@ BasicMaterial::stencilMask(uint value)
 uint
 BasicMaterial::stencilMask() const
 {
-    return data()->get<uint>(States::PROPERTY_STENCIL_MASK);
+    return data()->hasProperty(States::PROPERTY_STENCIL_MASK)
+        ? data()->get<uint>(States::PROPERTY_STENCIL_MASK)
+		: _defaultStates->stencilMask();
 }
 
 BasicMaterial::Ptr
@@ -314,7 +332,9 @@ BasicMaterial::stencilFailOperation(StencilOperation value)
 StencilOperation
 BasicMaterial::stencilFailOperation() const
 {
-    return data()->get<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OPERATION);
+    return data()->hasProperty(States::PROPERTY_STENCIL_FAIL_OPERATION)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OPERATION)
+		: _defaultStates->stencilFailOperation();
 }
 
 BasicMaterial::Ptr
@@ -328,7 +348,9 @@ BasicMaterial::stencilZFailOperation(StencilOperation value)
 StencilOperation
 BasicMaterial::stencilZFailOperation() const
 {
-    return data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OPERATION);
+    return data()->hasProperty(States::PROPERTY_STENCIL_ZFAIL_OPERATION)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OPERATION)
+		: _defaultStates->stencilZFailOperation();
 }
 
 BasicMaterial::Ptr
@@ -342,7 +364,9 @@ BasicMaterial::stencilZPassOperation(StencilOperation value)
 StencilOperation
 BasicMaterial::stencilZPassOperation() const
 {
-    return data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OPERATION);
+    return data()->hasProperty(States::PROPERTY_STENCIL_ZPASS_OPERATION)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OPERATION)
+		: _defaultStates->stencilZPassOperation();
 }
 
 BasicMaterial::Ptr
@@ -357,7 +381,9 @@ BasicMaterial::priority(float value)
 float
 BasicMaterial::priority() const
 {
-    return data()->get<float>(States::PROPERTY_PRIORITY);
+    return data()->hasProperty(States::PROPERTY_PRIORITY)
+        ? data()->get<float>(States::PROPERTY_PRIORITY)
+		: _defaultStates->priority();
 }
 
 BasicMaterial::Ptr
@@ -371,5 +397,7 @@ BasicMaterial::zSorted(bool value)
 bool
 BasicMaterial::zSorted() const
 {
-    return data()->get<bool>(States::PROPERTY_ZSORTED);
+    return data()->hasProperty(States::PROPERTY_ZSORTED)
+        ? data()->get<bool>(States::PROPERTY_ZSORTED)
+		: _defaultStates->zSorted();
 }
