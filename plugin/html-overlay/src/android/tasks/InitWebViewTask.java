@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Environment;
 import android.util.Log;
 import android.view.ViewGroup;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.LinearLayout;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebSettings;
+import android.webkit.DownloadListener;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
@@ -24,6 +26,10 @@ import android.view.ViewGroup.OnHierarchyChangeListener;
 import android.view.Surface;
 import org.libsdl.app.*;
 import minko.plugin.htmloverlay.MinkoWebChromeClient;
+import java.io.File;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class InitWebViewTask implements Runnable
 {
@@ -62,6 +68,44 @@ public class InitWebViewTask implements Runnable
         // Set our own WebViewClient to override some
         // methods and inject Minko overlay JS script
         _webView.setWebViewClient(new MinkoWebViewClient());
+
+        Log.i("minko-java", "[InitWebViewTask] Setting download listener.");
+
+        // Add download listener
+        _webView.setDownloadListener(new DownloadListener() {     
+
+            @Override
+            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength)
+            {
+                Log.i("minko-java", "[InitWebViewTask] onDownloadStart called.");
+                Log.i("minko-java", "[InitWebViewTask] url: " + url);
+                Log.i("minko-java", "[InitWebViewTask] userAgent: " + userAgent);
+                Log.i("minko-java", "[InitWebViewTask] contentDisposition: " + contentDisposition);
+                Log.i("minko-java", "[InitWebViewTask] mimetype: " + mimetype);
+                Log.i("minko-java", "[InitWebViewTask] contentLength: " + contentLength);
+                
+                try
+                {
+                    File outputFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "testSnippet.txt");
+                    Log.i("minko-java", "[InitWebViewTask] file initiated.");
+                    outputFile.createNewFile();
+                    Log.i("minko-java", "[InitWebViewTask] file created.");
+
+                    if(outputFile.exists())
+                    {
+                        FileOutputStream fOut = new FileOutputStream(outputFile);
+                        OutputStreamWriter osw = new OutputStreamWriter(fOut);
+                        osw.write(url);
+                        osw.close();
+                        Log.i("minko-java", "[InitWebViewTask] file written.");
+                    }
+                }
+                catch (IOException ioe) 
+                {
+                    ioe.printStackTrace();
+                }
+            }
+        });
 
         // Transparent background
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
