@@ -8,6 +8,11 @@ import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
+import java.io.IOException;
+import java.io.File;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
+import android.os.Environment;
 
 public class WebViewJSInterface
 {
@@ -63,5 +68,38 @@ public class WebViewJSInterface
 		
 		WebViewJSInterface.Result = jsResult;
 		WebViewJSInterface.ResultReady = true;
+	}
+
+	@JavascriptInterface
+	public void onSaveSnippetResult(String filename, String result)
+	{
+		Log.i("minko-java", "[WebViewJSInterface] onSaveSnippetResult: " + filename + ": " + result);
+		try
+		{
+			File outputFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), filename);
+
+			// Delete file with same name if it already exists
+			if(outputFile.exists())
+			{
+				outputFile.delete();
+			}
+
+			// Create new empty file
+			outputFile.createNewFile();
+
+			// Fill the newly created file
+			if(outputFile.exists())
+			{
+				FileOutputStream fOut = new FileOutputStream(outputFile);
+				OutputStreamWriter osw = new OutputStreamWriter(fOut);
+				osw.write(result);
+				osw.close();
+				Toast.makeText(_activity, filename + " saved in Downloads.", Toast.LENGTH_LONG).show();
+			}
+		}
+		catch (IOException ioe) 
+		{
+			ioe.printStackTrace();
+		}
 	}
 }
