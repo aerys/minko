@@ -76,25 +76,33 @@ public class WebViewJSInterface
 		Log.i("minko-java", "[WebViewJSInterface] onSaveSnippetResult: " + filename + ": " + result);
 		try
 		{
+			int num = 0;
 			File outputFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), filename);
 
-			// Delete file with same name if it already exists
-			if(outputFile.exists())
+			// Separate name from format in filename
+			int dotIndex = filename.lastIndexOf(".");
+			String name = filename.substring(0, dotIndex);
+			String format = filename.substring(dotIndex + 1);
+
+			// Append a number to the name if a file with the same name already exists
+			while (outputFile.exists())
 			{
-				outputFile.delete();
+				num++;
+				String newName = name + "(" + num + ")." + format;
+				outputFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), newName);
 			}
 
 			// Create new empty file
 			outputFile.createNewFile();
 
 			// Fill the newly created file
-			if(outputFile.exists())
+			if (outputFile.exists())
 			{
 				FileOutputStream fOut = new FileOutputStream(outputFile);
 				OutputStreamWriter osw = new OutputStreamWriter(fOut);
 				osw.write(result);
 				osw.close();
-				Toast.makeText(_activity, filename + " saved in Downloads.", Toast.LENGTH_LONG).show();
+				Toast.makeText(_activity, outputFile.getName() + " saved in Download.", Toast.LENGTH_LONG).show();
 			}
 		}
 		catch (IOException ioe) 
