@@ -76,26 +76,26 @@ public class WebViewJSInterface
 		Log.i("minko-java", "[WebViewJSInterface] onSaveSnippetResult: " + filename + ": " + result);
 		try
 		{
-			int num = 0;
 			File outputFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), filename);
 
-			// Separate name from format in filename
+			// Separate name from format in filename.
 			int dotIndex = filename.lastIndexOf(".");
 			String name = filename.substring(0, dotIndex);
 			String format = filename.substring(dotIndex + 1);
 
-			// Append a number to the name if a file with the same name already exists
+			// Append a number to the name if a file with the same name already exists.
+			unsigned int numOfFile = 0;
 			while (outputFile.exists())
 			{
-				num++;
-				String newName = name + "(" + num + ")." + format;
+				numOfFile++;
+				String newName = name + "(" + numOfFile + ")." + format;
 				outputFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), newName);
 			}
 
-			// Create new empty file
+			// Create new empty file.
 			outputFile.createNewFile();
 
-			// Fill the newly created file
+			// Fill the newly created file.
 			if (outputFile.exists())
 			{
 				FileOutputStream fOut = new FileOutputStream(outputFile);
