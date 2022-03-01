@@ -8,6 +8,11 @@ import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
+import java.io.IOException;
+import java.io.File;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
+import android.os.Environment;
 
 public class WebViewJSInterface
 {
@@ -63,5 +68,46 @@ public class WebViewJSInterface
 		
 		WebViewJSInterface.Result = jsResult;
 		WebViewJSInterface.ResultReady = true;
+	}
+
+	@JavascriptInterface
+	public void onSaveSnippetResult(String filename, String result)
+	{
+		Log.i("minko-java", "[WebViewJSInterface] onSaveSnippetResult: " + filename + ": " + result);
+		try
+		{
+			File outputFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), filename);
+
+			// Separate name from format in filename.
+			int dotIndex = filename.lastIndexOf(".");
+			String name = filename.substring(0, dotIndex);
+			String format = filename.substring(dotIndex + 1);
+
+			// Append a number to the name if a file with the same name already exists.
+			unsigned int numOfFile = 0;
+			while (outputFile.exists())
+			{
+				numOfFile++;
+				String newName = name + "(" + numOfFile + ")." + format;
+				outputFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), newName);
+			}
+
+			// Create new empty file.
+			outputFile.createNewFile();
+
+			// Fill the newly created file.
+			if (outputFile.exists())
+			{
+				FileOutputStream fOut = new FileOutputStream(outputFile);
+				OutputStreamWriter osw = new OutputStreamWriter(fOut);
+				osw.write(result);
+				osw.close();
+				Toast.makeText(_activity, outputFile.getName() + " saved in Download.", Toast.LENGTH_LONG).show();
+			}
+		}
+		catch (IOException ioe) 
+		{
+			ioe.printStackTrace();
+		}
 	}
 }
