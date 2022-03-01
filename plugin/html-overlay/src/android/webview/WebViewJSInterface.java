@@ -24,7 +24,7 @@ public class WebViewJSInterface
 	// Native functions
 	public native void minkoNativeOnMessage(String message);
 	public native void minkoNativeOnEvent(String accessor, String eventData);
-	
+
 	public WebViewJSInterface(Activity activity)
 	{
 		_activity = activity;
@@ -35,7 +35,7 @@ public class WebViewJSInterface
 	{
 		minkoNativeOnMessage(message);
 	}
-	
+
 	@JavascriptInterface
 	public void onEvent(String accessor, String eventData)
 	{
@@ -59,21 +59,21 @@ public class WebViewJSInterface
         	Toast.makeText(_activity, "Content successfully copied into clipboard.", Toast.LENGTH_LONG).show();
         }
 	}
-	
+
 	@JavascriptInterface
 	public void onNativeJSResult(String js, String jsResult)
 	{
 		Log.d("minko-java", "[WebViewJSInterface] onNativeJSResult: Get result of: \"" + js + "\"");
 		Log.d("minko-java", "[WebViewJSInterface] onNativeJSResult: Result: \"" + jsResult + "\"");
-		
+
 		WebViewJSInterface.Result = jsResult;
 		WebViewJSInterface.ResultReady = true;
 	}
 
 	@JavascriptInterface
-	public void onSaveSnippetResult(String filename, String result)
+	public void writeStringToFile(String filename, String content)
 	{
-		Log.i("minko-java", "[WebViewJSInterface] onSaveSnippetResult: " + filename + ": " + result);
+		Log.i("minko-java", "[WebViewJSInterface] writeStringToFile: " + filename + ": " + content);
 		try
 		{
 			File outputFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), filename);
@@ -100,12 +100,12 @@ public class WebViewJSInterface
 			{
 				FileOutputStream fOut = new FileOutputStream(outputFile);
 				OutputStreamWriter osw = new OutputStreamWriter(fOut);
-				osw.write(result);
+				osw.write(content);
 				osw.close();
 				Toast.makeText(_activity, outputFile.getName() + " saved in Download.", Toast.LENGTH_LONG).show();
 			}
 		}
-		catch (IOException ioe) 
+		catch (IOException ioe)
 		{
 			ioe.printStackTrace();
 		}
