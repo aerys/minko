@@ -84,7 +84,7 @@ public class WebViewJSInterface
 			String format = filename.substring(dotIndex + 1);
 
 			// Append a number to the name if a file with the same name already exists.
-			unsigned int numOfFile = 0;
+			int numOfFile = 0;
 			while (outputFile.exists())
 			{
 				numOfFile++;
