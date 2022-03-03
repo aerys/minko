@@ -23,10 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/Material.hpp"
 #include "minko/material/FogTechnique.hpp"
-#include "minko/render/Blending.hpp"
-#include "minko/render/CompareMode.hpp"
-#include "minko/render/StencilOperation.hpp"
-#include "minko/render/TriangleCulling.hpp"
 
 namespace minko
 {
