@@ -183,7 +183,7 @@ namespace minko
             const float&
             priorityDefaultValue()
             {
-                static float v = render::Priority::OPAQUE;
+                static const float v = render::Priority::OPAQUE;
                 return v;
             }
 
@@ -191,7 +191,7 @@ namespace minko
             const bool&
             zSortedDefaultValue()
             {
-                static bool v = false;
+                static const bool v = false;
                 return v;
             }
 
@@ -199,7 +199,7 @@ namespace minko
             const Blending::Source&
             blendingSourceDefaultValue()
             {
-                static Blending::Source v = render::Blending::Source::ONE;
+                static const Blending::Source v = render::Blending::Source::ONE;
                 return v;
             }
 
@@ -207,7 +207,7 @@ namespace minko
             const Blending::Destination&
             blendingDestinationDefaultValue()
             {
-                static Blending::Destination v = render::Blending::Destination::ZERO;
+                static const Blending::Destination v = render::Blending::Destination::ZERO;
                 return v;
             }
 
@@ -215,7 +215,7 @@ namespace minko
             const bool&
             colorMaskDefaultValue()
             {
-                static bool v = true;
+                static const bool v = true;
                 return v;
             }
 
@@ -223,7 +223,7 @@ namespace minko
             const bool&
             depthMaskDefaultValue()
             {
-                static bool v = true;
+                static const bool v = true;
                 return v;
             }
 
@@ -231,7 +231,7 @@ namespace minko
             const CompareMode&
             depthFunctionDefaultValue()
             {
-                static CompareMode v = render::CompareMode::LESS;
+                static const CompareMode v = render::CompareMode::LESS;
                 return v;
             }
 
@@ -239,7 +239,7 @@ namespace minko
             const TriangleCulling&
             triangleCullingDefaultValue()
             {
-                static TriangleCulling v = render::TriangleCulling::BACK;
+                static const TriangleCulling v = render::TriangleCulling::BACK;
                 return v;
             }
 
@@ -247,7 +247,7 @@ namespace minko
             const CompareMode&
             stencilFunctionDefaultValue()
             {
-                static CompareMode v = render::CompareMode::ALWAYS;
+                static const CompareMode v = render::CompareMode::ALWAYS;
                 return v;
             }
 
@@ -255,7 +255,7 @@ namespace minko
             const int&
             stencilReferenceDefaultValue()
             {
-                static int v = 0;
+                static const int v = 0;
                 return v;
             }
 
@@ -263,7 +263,7 @@ namespace minko
             const uint&
             stencilMaskDefaultValue()
             {
-                static uint v = 1;
+                static const uint v = 1;
                 return v;
             }
 
@@ -271,7 +271,7 @@ namespace minko
             const StencilOperation&
             stencilFailOperationDefaultValue()
             {
-                static StencilOperation v = render::StencilOperation::KEEP;
+                static const StencilOperation v = render::StencilOperation::KEEP;
                 return v;
             }
 
@@ -279,7 +279,7 @@ namespace minko
             const StencilOperation&
             stencilZFailOperationDefaultValue()
             {
-                static StencilOperation v = render::StencilOperation::KEEP;
+                static const StencilOperation v = render::StencilOperation::KEEP;
                 return v;
             }
 
@@ -287,7 +287,7 @@ namespace minko
             const StencilOperation&
             stencilZPassOperationDefaultValue()
             {
-                static StencilOperation v = render::StencilOperation::KEEP;
+                static const StencilOperation v = render::StencilOperation::KEEP;
                 return v;
             }
 
@@ -295,7 +295,7 @@ namespace minko
             const bool&
             scissorTestDefaultValue()
             {
-                static bool v = false;
+                static const bool v = false;
                 return v;
             }
 
@@ -303,7 +303,7 @@ namespace minko
             const math::ivec4&
             scissorBoxDefaultValue()
             {
-                static math::ivec4 v(0);
+                static const math::ivec4 v(0);
                 return v;
             }
 
@@ -311,7 +311,7 @@ namespace minko
             const TextureSampler&
             targetDefaultValue()
             {
-                static TextureSampler v("", nullptr);
+                static const TextureSampler v("", nullptr);
                 return v;
             }
 
