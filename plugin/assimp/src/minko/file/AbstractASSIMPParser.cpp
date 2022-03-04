@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2022 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -1689,26 +1689,21 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     }
 
     materialName = getMaterialName(materialName);
-
     const auto blendingMode = getBlendingMode(aiMat);
-    auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
-    auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
 
-    material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
-    material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
-    material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
-	material->data()->set("triangleCulling",	getTriangleCulling(aiMat));
-	material->data()->set("wireframe",			getWireframe(aiMat)); // bool
+	material->blendingMode(blendingMode);
+	material->triangleCulling(getTriangleCulling(aiMat));
+	material->data()->set("wireframe", getWireframe(aiMat)); // bool
 
 	if (!(blendingMode & render::Blending::Destination::ZERO))
 	{
-		material->data()->set("priority", render::Priority::TRANSPARENT);
-		material->data()->set("zSorted", true);
+		material->priority(render::Priority::TRANSPARENT);
+		material->zSorted(true);
 	}
 	else
 	{
-		material->data()->set("priority", render::Priority::OPAQUE);
-		material->data()->set("zSorted", false);
+		material->priority(render::Priority::OPAQUE);
+		material->zSorted(false);
 	}
 
 	float opacity = setScalarProperty(material, "opacity", aiMat, AI_MATKEY_OPACITY, 1.0f);
@@ -2086,16 +2081,9 @@ AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 void
 AbstractASSIMPParser::enableTransparency(material::Material::Ptr material)
 {
-	material->data()->set("priority", render::Priority::TRANSPARENT);
-	material->data()->set("zSorted", true);
-
-	auto blendingMode = render::Blending::Mode::ALPHA;
-	auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
-	auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
-
-	material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
-	material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
-	material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+	material->priority(render::Priority::TRANSPARENT);
+	material->zSorted(true);
+	material->blendingMode(render::Blending::Mode::ALPHA);
 }
 
 #include "ASSIMPParserDebug.hpp"

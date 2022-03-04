@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2022 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,6 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/Provider.hpp"
 #include "minko/Uuid.hpp"
+#include "minko/render/States.hpp"
+#include "minko/render/StencilOperation.hpp"
+#include "minko/render/CompareMode.hpp"
+#include "minko/render/TriangleCulling.hpp"
 
 namespace minko
 {
@@ -95,21 +99,92 @@ namespace minko
                 return shared_from_this();
             }
 
-		protected:
-			Material(const std::string& name) :
-                _provider(data::Provider::create())
-            {
-                _provider->set("name", name);
-                _provider->set("uuid", _provider->uuid());
-            }
+            Ptr
+            blendingMode(render::Blending::Source src, render::Blending::Destination dst);
 
-            Material(const std::string& name,
-                     const data::Provider::DefaultValueMap& values) :
-                _provider(data::Provider::create(values))
-            {
-                _provider->set("name", name);
-                _provider->set("uuid", _provider->uuid());
-            }
+            Ptr
+            blendingMode(render::Blending::Mode value);
+
+            render::Blending::Source
+            blendingSource() const;
+
+            render::Blending::Destination
+            blendingDestination() const;
+
+            Ptr
+            colorMask(bool value);
+
+            bool
+            colorMask() const;
+
+            Ptr
+            depthMask(bool value);
+
+            bool
+            depthMask() const;
+
+            Ptr
+            depthFunction(render::CompareMode value);
+
+            render::CompareMode
+            depthFunction() const;
+
+            Ptr
+            triangleCulling(render::TriangleCulling value);
+
+            render::TriangleCulling
+            triangleCulling() const;
+
+            Ptr
+            stencilFunction(render::CompareMode value);
+
+            render::CompareMode
+            stencilFunction() const;
+
+            Ptr
+            stencilReference(int value);
+
+            int
+            stencilReference() const;
+
+            Ptr
+            stencilMask(uint value);
+
+            unsigned int
+            stencilMask() const;
+
+            Ptr
+            stencilFailOperation(render::StencilOperation value);
+
+            render::StencilOperation
+            stencilFailOperation() const;
+
+            Ptr
+            stencilZFailOperation(render::StencilOperation value);
+
+            render::StencilOperation
+            stencilZFailOperation() const;
+
+            Ptr
+            stencilZPassOperation(render::StencilOperation value);
+
+            render::StencilOperation
+            stencilZPassOperation() const;
+
+            Ptr
+            priority(float value);
+
+            float
+            priority() const;
+
+            Ptr
+            zSorted(bool value);
+
+            bool
+            zSorted() const;
+
+		protected:
+			Material(const std::string& name);
 
             virtual
             void

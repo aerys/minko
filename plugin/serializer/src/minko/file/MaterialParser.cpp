@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2022 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -33,6 +33,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/render/Priority.hpp"
 #include "minko/render/States.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -132,12 +133,8 @@ MaterialParser::deserializeComplexProperty(MaterialPtr            material,
 	else if (type == BLENDING)
 	{
         auto blendingMode = Any::cast<render::Blending::Mode>(TypeDeserializer::deserializeBlending(serializedPropertyTuple));
-        auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
-        auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
 
-        material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
-        material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
-        material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+        material->blendingMode(blendingMode);
     }
     else if (type == TRIANGLECULLING)
     {
@@ -211,10 +208,17 @@ MaterialParser::deserializeBasicProperty(MaterialPtr        material,
 
 	// TODO remove basic and complex property types and always specify property content type
 
-    if (serializedProperty.get<0>() == "zSorted")
-        material->data()->set<bool>("zSorted", serializedPropertyValue[0]);
+    if (serializedProperty.get<0>() == render::States::zSortedPropertyName())
+        material->zSorted(serializedPropertyValue[0]);
     else if (serializedProperty.get<0>() == "environmentMap2dType")
 		material->data()->set<int>("environmentMap2dType", int(serializedPropertyValue[0]));
-    else
+    // Material contains the render::States props by default. So we cannot blindly
+    // attempt to set the value as a float by default.
+    else if (!material->data()->hasProperty(serializedProperty.get<0>())
+             || material->data()->propertyHasType<float>(serializedProperty.get<0>()))
+    {
 	    material->data()->set<float>(serializedProperty.get<0>(), serializedPropertyValue[0]);
+    } else {
+        LOG_WARNING("material property ignored: " + serializedProperty.get<0>());
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2022 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,10 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/Material.hpp"
 #include "minko/material/FogTechnique.hpp"
-#include "minko/render/Blending.hpp"
-#include "minko/render/CompareMode.hpp"
-#include "minko/render/StencilOperation.hpp"
-#include "minko/render/TriangleCulling.hpp"
 
 namespace minko
 {
@@ -55,6 +51,17 @@ namespace minko
 			inline static
 			Ptr
 			create(Ptr source)
+			{
+				auto pm = create(source->name());
+
+				pm->data()->copyFrom(source->data());
+
+				return pm;
+			}
+
+			inline static
+			Ptr
+			create(Material::Ptr source)
 			{
 				auto pm = create(source->name());
 
@@ -116,90 +123,6 @@ namespace minko
 
             material::FogTechnique
             fogTechnique() const;
-
-			Ptr
-			blendingMode(render::Blending::Source, render::Blending::Destination);
-
-			Ptr
-			blendingMode(render::Blending::Mode);
-
-			render::Blending::Source
-			blendingSourceFactor() const;
-
-			render::Blending::Destination
-			blendingDestinationFactor() const;
-
-			Ptr
-			colorMask(bool);
-
-			bool
-			colorMask() const;
-
-			Ptr
-			depthMask(bool);
-
-			bool
-			depthMask() const;
-
-			Ptr
-			depthFunction(render::CompareMode);
-
-			render::CompareMode
-			depthFunction() const;
-
-			Ptr
-			triangleCulling(render::TriangleCulling);
-
-			render::TriangleCulling
-			triangleCulling() const;
-
-			Ptr
-			stencilFunction(render::CompareMode);
-
-			render::CompareMode
-			stencilFunction() const;
-
-			Ptr
-			stencilReference(int);
-
-			int
-			stencilReference() const;
-
-			Ptr
-			stencilMask(uint);
-
-			uint
-			stencilMask() const;
-
-			Ptr
-			stencilFailOperation(render::StencilOperation);
-
-			render::StencilOperation
-			stencilFailOperation() const;
-
-			Ptr
-			stencilZFailOperation(render::StencilOperation);
-
-			render::StencilOperation
-			stencilZFailOperation() const;
-
-			Ptr
-			stencilZPassOperation(render::StencilOperation);
-
-			render::StencilOperation
-			stencilZPassOperation() const;
-
-			Ptr
-			priority(float);
-
-			float
-			priority() const;
-
-			Ptr
-			zSorted(bool);
-
-			bool
-			zSorted() const;
 
 		protected:
 			BasicMaterial(const std::string& name);

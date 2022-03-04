@@ -56,13 +56,15 @@ main(int argc, char** argv)
         geometry::TextGeometry::create(canvas->context())->setText(FONT_FILENAME, "Larger text in white.", .01f, true)
     };
 
-    auto defaultTextMaterial = material::Material::create()->set({
-        { "diffuseColor", math::vec4(.15f, .55f, .88f, 1.f) },
-        { "alphaMap", textGeometries.front()->atlasTexture()->sampler() },
-        { "triangleCulling", render::TriangleCulling::NONE },
-        { render::States::PROPERTY_BLENDING_SOURCE, render::Blending::Source::SRC_ALPHA },
-        { render::States::PROPERTY_BLENDING_DESTINATION, render::Blending::Destination::ONE_MINUS_SRC_ALPHA }
-    });
+    auto defaultTextMaterial = material::BasicMaterial::create()
+        ->diffuseColor(math::vec4(.15f, .55f, .88f, 1.f))
+        ->triangleCulling(render::TriangleCulling::NONE)
+        ->blendingMode(
+            render::Blending::Source::SRC_ALPHA,
+            render::Blending::Destination::ONE_MINUS_SRC_ALPHA
+        )->set({
+            { "alphaMap", textGeometries.front()->atlasTexture()->sampler() },
+        });
 
     auto textMaterials = std::vector<material::Material::Ptr>{
         defaultTextMaterial,
@@ -100,7 +102,7 @@ main(int argc, char** argv)
             ->addComponent(UTF8Text::create(
                 textGeometries.front()->atlasTexture(),
                 "UTF8Text component example",
-                material::Material::create()->set({ { "diffuseColor", math::vec4(1.f) } }),
+                material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
                 sceneManager->assets()->effect(EFFECT_FILENAME))
             )
         );
