@@ -468,8 +468,8 @@ Canvas::step()
     auto executeMouseMove = false;
     auto executePinchZoom = false;
 
-    _mouse->dX(0);
-    _mouse->dY(0);
+    // _mouse->dX(0);
+    // _mouse->dY(0);
 
     auto mouseDX = 0;
     auto mouseDY = 0;
@@ -596,239 +596,239 @@ Canvas::step()
             break;
         }
 
-        case SDL_MOUSEMOTION:
-        {
-            int windowW;
-            int windowH;
+        // case SDL_MOUSEMOTION:
+        // {
+        //     int windowW;
+        //     int windowH;
 
-            SDL_GetWindowSize(_window, &windowW, &windowH);
+        //     SDL_GetWindowSize(_window, &windowW, &windowH);
 
-            auto x = event.motion.x;
-            auto y = event.motion.y;
+        //     auto x = event.motion.x;
+        //     auto y = event.motion.y;
 
-            auto dX = event.motion.xrel;
-            auto dY = event.motion.yrel;
+        //     auto dX = event.motion.xrel;
+        //     auto dY = event.motion.yrel;
 
-            if (windowW != _width || windowH != _height)
-            {
-                x = int(float(_width) * float(x) / float(windowW));
-                y = int(float(_height) * float(y) / float(windowH));
+        //     if (windowW != _width || windowH != _height)
+        //     {
+        //         x = int(float(_width) * float(x) / float(windowW));
+        //         y = int(float(_height) * float(y) / float(windowH));
 
-                dX = int(float(_width) * float(dX) / float(windowW));
-                dY = int(float(_height) * float(dY) / float(windowH));
-            }
+        //         dX = int(float(_width) * float(dX) / float(windowW));
+        //         dY = int(float(_height) * float(dY) / float(windowH));
+        //     }
 
-            _mouse->x(x);
-            _mouse->y(y);
+        //     _mouse->x(x);
+        //     _mouse->y(y);
 
-            mouseDX += dX;
-            mouseDY += dY;
+        //     mouseDX += dX;
+        //     mouseDY += dY;
 
-            _mouse->dX(mouseDX);
-            _mouse->dY(mouseDY);
+        //     _mouse->dX(mouseDX);
+        //     _mouse->dY(mouseDY);
 
-			executeMouseMove = true;
-            break;
-        }
+		// 	executeMouseMove = true;
+        //     break;
+        // }
 
-        case SDL_MOUSEBUTTONDOWN:
-        {
-            if (enteredOrLeftThisFrame)
-                break;
+//         case SDL_MOUSEBUTTONDOWN:
+//         {
+//             if (enteredOrLeftThisFrame)
+//                 break;
 
-            switch (event.button.button)
-            {
-            case SDL_BUTTON_LEFT:
-                _mouse->leftButtonDown()->execute(_mouse);
-                break;
-            case SDL_BUTTON_RIGHT:
-                _mouse->rightButtonDown()->execute(_mouse);
-                break;
-            case SDL_BUTTON_MIDDLE:
-                _mouse->middleButtonDown()->execute(_mouse);
-                break;
-#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
-            case SDL_BUTTON_X1:
-                _mouse->wheel()->execute(_mouse, 0, 1);
-                break;
-            case SDL_BUTTON_X2:
-                _mouse->wheel()->execute(_mouse, 0, -1);
-                break;
-#endif
-            }
-            break;
-        }
+//             switch (event.button.button)
+//             {
+//             case SDL_BUTTON_LEFT:
+//                 _mouse->leftButtonDown()->execute(_mouse);
+//                 break;
+//             case SDL_BUTTON_RIGHT:
+//                 _mouse->rightButtonDown()->execute(_mouse);
+//                 break;
+//             case SDL_BUTTON_MIDDLE:
+//                 _mouse->middleButtonDown()->execute(_mouse);
+//                 break;
+// #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+//             case SDL_BUTTON_X1:
+//                 _mouse->wheel()->execute(_mouse, 0, 1);
+//                 break;
+//             case SDL_BUTTON_X2:
+//                 _mouse->wheel()->execute(_mouse, 0, -1);
+//                 break;
+// #endif
+//             }
+//             break;
+//         }
 
-        case SDL_MOUSEBUTTONUP:
-        {
-            switch (event.button.button)
-            {
-            case SDL_BUTTON_LEFT:
-                _mouse->leftButtonUp()->execute(_mouse);
-                break;
-            case SDL_BUTTON_RIGHT:
-                _mouse->rightButtonUp()->execute(_mouse);
-                break;
-            case SDL_BUTTON_MIDDLE:
-                _mouse->middleButtonUp()->execute(_mouse);
-                break;
-            }
-            break;
-        }
+        // case SDL_MOUSEBUTTONUP:
+        // {
+        //     switch (event.button.button)
+        //     {
+        //     case SDL_BUTTON_LEFT:
+        //         _mouse->leftButtonUp()->execute(_mouse);
+        //         break;
+        //     case SDL_BUTTON_RIGHT:
+        //         _mouse->rightButtonUp()->execute(_mouse);
+        //         break;
+        //     case SDL_BUTTON_MIDDLE:
+        //         _mouse->middleButtonUp()->execute(_mouse);
+        //         break;
+        //     }
+        //     break;
+        // }
 
-        case SDL_MOUSEWHEEL:
-        {
-            _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
-            break;
-        }
+        // case SDL_MOUSEWHEEL:
+        // {
+        //     _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
+        //     break;
+        // }
 
         // Touch events
-        case SDL_FINGERDOWN:
-        {
-            auto x = event.tfinger.x * _width;
-            auto y = event.tfinger.y * _height;
-            auto id = static_cast<int>(event.tfinger.fingerId);
+        // case SDL_FINGERDOWN:
+        // {
+        //     auto x = event.tfinger.x * _width;
+        //     auto y = event.tfinger.y * _height;
+        //     auto id = static_cast<int>(event.tfinger.fingerId);
 
-            _touch->addTouch(id, x, y, 0.f, 0.f);
+        //     _touch->addTouch(id, x, y, 0.f, 0.f);
 
-            _mouse->x(static_cast<int>(_touch->averageX()));
-            _mouse->y(static_cast<int>(_touch->averageY()));
+        //     _mouse->x(static_cast<int>(_touch->averageX()));
+        //     _mouse->y(static_cast<int>(_touch->averageY()));
 
-            _touch->touchDown()->execute(
-                _touch,
-                id,
-                x,
-                y
-            );
+        //     _touch->touchDown()->execute(
+        //         _touch,
+        //         id,
+        //         x,
+        //         y
+        //     );
 
-            if (_touch->numTouches() == 1)
-            {
-                _touch->lastTouchDownTime(_relativeTime);
-                _touch->lastTouchDownX(x);
-                _touch->lastTouchDownY(y);
-            }
-            else
-            {
-                _touch->lastTouchDownTime(-1.f);
-                _touch->lastTapTime(-1.f);
-            }
+        //     if (_touch->numTouches() == 1)
+        //     {
+        //         _touch->lastTouchDownTime(_relativeTime);
+        //         _touch->lastTouchDownX(x);
+        //         _touch->lastTouchDownY(y);
+        //     }
+        //     else
+        //     {
+        //         _touch->lastTouchDownTime(-1.f);
+        //         _touch->lastTapTime(-1.f);
+        //     }
 
-            break;
-        }
+        //     break;
+        // }
 
-        case SDL_FINGERUP:
-        {
-            auto x = event.tfinger.x * _width;
-            auto y = event.tfinger.y * _height;
-            auto id = static_cast<int>(event.tfinger.fingerId);
+        // case SDL_FINGERUP:
+        // {
+        //     auto x = event.tfinger.x * _width;
+        //     auto y = event.tfinger.y * _height;
+        //     auto id = static_cast<int>(event.tfinger.fingerId);
 
-            _mouse->x(static_cast<int>(_touch->averageX()));
-            _mouse->y(static_cast<int>(_touch->averageY()));
+        //     _mouse->x(static_cast<int>(_touch->averageX()));
+        //     _mouse->y(static_cast<int>(_touch->averageY()));
 
-            _touch->removeTouch(id);
+        //     _touch->removeTouch(id);
 
-            _touch->touchUp()->execute(
-                _touch,
-                id,
-                x,
-                y
-            );
+        //     _touch->touchUp()->execute(
+        //         _touch,
+        //         id,
+        //         x,
+        //         y
+        //     );
 
-            if (_touch->numTouches() == 0 && _touch->lastTouchDownTime() != -1.0f )
-            {
-                auto dX = std::abs(x - _touch->lastTouchDownX());
-                auto dY = std::abs(y - _touch->lastTouchDownY());
-                auto dT = _relativeTime - _touch->lastTouchDownTime();
+        //     if (_touch->numTouches() == 0 && _touch->lastTouchDownTime() != -1.0f )
+        //     {
+        //         auto dX = std::abs(x - _touch->lastTouchDownX());
+        //         auto dY = std::abs(y - _touch->lastTouchDownY());
+        //         auto dT = _relativeTime - _touch->lastTouchDownTime();
 
-                if (dT < input::SDLTouch::TAP_DELAY_THRESHOLD &&
-                    dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
-                    dY < input::SDLTouch::TAP_MOVE_THRESHOLD)
-                {
-                    _touch->tap()->execute(_touch, x, y);
+        //         if (dT < input::SDLTouch::TAP_DELAY_THRESHOLD &&
+        //             dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
+        //             dY < input::SDLTouch::TAP_MOVE_THRESHOLD)
+        //         {
+        //             _touch->tap()->execute(_touch, x, y);
 
-                    dX = std::abs(x - _touch->lastTapX()) * 0.75f;
-                    dY = std::abs(y - _touch->lastTapY()) * 0.75f;
-                    dT = _relativeTime - _touch->lastTapTime();
+        //             dX = std::abs(x - _touch->lastTapX()) * 0.75f;
+        //             dY = std::abs(y - _touch->lastTapY()) * 0.75f;
+        //             dT = _relativeTime - _touch->lastTapTime();
 
-                    if (_touch->lastTapTime() != -1.0f &&
-                        dT < input::SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD &&
-                        dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
-                        dY < input::SDLTouch::TAP_MOVE_THRESHOLD)
-                    {
-                        _touch->doubleTap()->execute(_touch, x, y);
-                        _touch->lastTapTime(-1.0f);
-                    }
-                    else
-                    {
-                        _touch->lastTapTime(_relativeTime);
-                    }
+        //             if (_touch->lastTapTime() != -1.0f &&
+        //                 dT < input::SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD &&
+        //                 dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
+        //                 dY < input::SDLTouch::TAP_MOVE_THRESHOLD)
+        //             {
+        //                 _touch->doubleTap()->execute(_touch, x, y);
+        //                 _touch->lastTapTime(-1.0f);
+        //             }
+        //             else
+        //             {
+        //                 _touch->lastTapTime(_relativeTime);
+        //             }
 
-                    _touch->lastTapX(x);
-                    _touch->lastTapY(y);
-                }
-            }
+        //             _touch->lastTapX(x);
+        //             _touch->lastTapY(y);
+        //         }
+        //     }
 
-            _touch->lastTouchDownTime(-1.0f);
+        //     _touch->lastTouchDownTime(-1.0f);
 
-            break;
-        }
+        //     break;
+        // }
 
-        case SDL_FINGERMOTION:
-        {
-            auto id = static_cast<int>(event.tfinger.fingerId);
+        // case SDL_FINGERMOTION:
+        // {
+        //     auto id = static_cast<int>(event.tfinger.fingerId);
 
-            auto normalizedX = event.tfinger.x;
-            auto normalizedY = event.tfinger.y;
-            auto normalizedDX = event.tfinger.dx;
-            auto normalizedDY = event.tfinger.dy;
+        //     auto normalizedX = event.tfinger.x;
+        //     auto normalizedY = event.tfinger.y;
+        //     auto normalizedDX = event.tfinger.dx;
+        //     auto normalizedDY = event.tfinger.dy;
 
-            auto x = normalizedX * _width;
-            auto y = normalizedY * _height;
-            auto dx = normalizedDX * _width;
-            auto dy = normalizedDY * _height;
+        //     auto x = normalizedX * _width;
+        //     auto y = normalizedY * _height;
+        //     auto dx = normalizedDX * _width;
+        //     auto dy = normalizedDY * _height;
 
-            if (std::abs(_touch->lastTouchDownX() - x) > input::SDLTouch::TAP_MOVE_THRESHOLD ||
-                std::abs(_touch->lastTouchDownY() - y) > input::SDLTouch::TAP_MOVE_THRESHOLD)
-            {
-                _touch->lastTouchDownTime(-1.0f);
-            }
+        //     if (std::abs(_touch->lastTouchDownX() - x) > input::SDLTouch::TAP_MOVE_THRESHOLD ||
+        //         std::abs(_touch->lastTouchDownY() - y) > input::SDLTouch::TAP_MOVE_THRESHOLD)
+        //     {
+        //         _touch->lastTouchDownTime(-1.0f);
+        //     }
 
-            _touch->updateTouch(id, x, y, dx, dy);
+        //     _touch->updateTouch(id, x, y, dx, dy);
 
-            _mouse->x(static_cast<int>(_touch->averageX()));
-            _mouse->y(static_cast<int>(_touch->averageY()));
+        //     _mouse->x(static_cast<int>(_touch->averageX()));
+        //     _mouse->y(static_cast<int>(_touch->averageY()));
 
-            _mouse->dX(static_cast<int>(_touch->averageDX()));
-            _mouse->dY(static_cast<int>(_touch->averageDY()));
+        //     _mouse->dX(static_cast<int>(_touch->averageDX()));
+        //     _mouse->dY(static_cast<int>(_touch->averageDY()));
 
-            executeMouseMove = true;
+        //     executeMouseMove = true;
 
-            _touch->touchMove()->execute(_touch, id, dx, dy);
+        //     _touch->touchMove()->execute(_touch, id, dx, dy);
 
-            // Gestures
-			if (event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
-            {
-                _touch->swipeRight()->execute(_touch);
-            }
+        //     // Gestures
+		// 	if (event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
+        //     {
+        //         _touch->swipeRight()->execute(_touch);
+        //     }
 
-            if (-event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
-            {
-                _touch->swipeLeft()->execute(_touch);
-            }
+        //     if (-event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
+        //     {
+        //         _touch->swipeLeft()->execute(_touch);
+        //     }
 
-            if (event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
-            {
-                _touch->swipeDown()->execute(_touch);
-            }
+        //     if (event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
+        //     {
+        //         _touch->swipeDown()->execute(_touch);
+        //     }
 
-            if (-event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
-            {
-                _touch->swipeUp()->execute(_touch);
-            }
+        //     if (-event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
+        //     {
+        //         _touch->swipeUp()->execute(_touch);
+        //     }
 
-            executePinchZoom = _touch->numTouches() == 2;
-            break;
-        }
+        //     executePinchZoom = _touch->numTouches() == 2;
+        //     break;
+        // }
         case SDL_JOYAXISMOTION:
         {
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
@@ -957,49 +957,49 @@ Canvas::step()
         }
     }
 
-    // Execute Pinch-Zoom event if needed.
-    if (executePinchZoom && _touch->numTouches() == 2)
-    {
-        input::Touch::TouchPoint touch1 = _touch->touch(_touch->identifiers()[0]);
-        input::Touch::TouchPoint touch2 = _touch->touch(_touch->identifiers()[1]);
+    // // Execute Pinch-Zoom event if needed.
+    // if (executePinchZoom && _touch->numTouches() == 2)
+    // {
+    //     input::Touch::TouchPoint touch1 = _touch->touch(_touch->identifiers()[0]);
+    //     input::Touch::TouchPoint touch2 = _touch->touch(_touch->identifiers()[1]);
 
-        auto normalizedPos1 = math::vec2(touch1.x / static_cast<float>(_width), touch1.y / static_cast<float>(_height));
-        auto normalizedDPos1 = math::vec2(touch1.dX / static_cast<float>(_width), touch1.dY / static_cast<float>(_height));
-        auto normalizedPos2 = math::vec2(touch2.x / static_cast<float>(_width), touch2.y / static_cast<float>(_height));
-        auto normalizedDPos2 = math::vec2(touch2.dX / static_cast<float>(_width), touch2.dY / static_cast<float>(_height));
+    //     auto normalizedPos1 = math::vec2(touch1.x / static_cast<float>(_width), touch1.y / static_cast<float>(_height));
+    //     auto normalizedDPos1 = math::vec2(touch1.dX / static_cast<float>(_width), touch1.dY / static_cast<float>(_height));
+    //     auto normalizedPos2 = math::vec2(touch2.x / static_cast<float>(_width), touch2.y / static_cast<float>(_height));
+    //     auto normalizedDPos2 = math::vec2(touch2.dX / static_cast<float>(_width), touch2.dY / static_cast<float>(_height));
 
-        auto previousDelta = (normalizedPos2 - normalizedDPos2) - (normalizedPos1 - normalizedDPos1);
-        auto currentDelta = normalizedPos2 - normalizedPos1;
+    //     auto previousDelta = (normalizedPos2 - normalizedDPos2) - (normalizedPos1 - normalizedDPos1);
+    //     auto currentDelta = normalizedPos2 - normalizedPos1;
 
-        auto previousDist = math::length(previousDelta);
-        auto currentDist = math::length(currentDelta);
+    //     auto previousDist = math::length(previousDelta);
+    //     auto currentDist = math::length(currentDelta);
 
-        auto normalizedDeltaDistance = currentDist - previousDist;
+    //     auto normalizedDeltaDistance = currentDist - previousDist;
 
-        if (normalizedDeltaDistance != 0.0)
-        {
-            // normalizedDeltaDistance is a percentage of the screen
-            auto deltaDistance = normalizedDeltaDistance * 100.f;
+    //     if (normalizedDeltaDistance != 0.0)
+    //     {
+    //         // normalizedDeltaDistance is a percentage of the screen
+    //         auto deltaDistance = normalizedDeltaDistance * 100.f;
 
-            _touch->pinchZoom()->execute(_touch, deltaDistance);
-        }
-    }
+    //         _touch->pinchZoom()->execute(_touch, deltaDistance);
+    //     }
+    // }
 
-    // Update delta mouse pos.
-    if (mouseDX != 0)
-        _mouse->dX(mouseDX);
-    if (mouseDY != 0)
-        _mouse->dY(mouseDY);
+    // // Update delta mouse pos.
+    // if (mouseDX != 0)
+    //     _mouse->dX(mouseDX);
+    // if (mouseDY != 0)
+    //     _mouse->dY(mouseDY);
 
-    // Execute mouse move event only once per frame
-    if (executeMouseMove)
-        _mouse->move()->execute(_mouse, _mouse->dX(), _mouse->dY());
+    // // Execute mouse move event only once per frame
+    // if (executeMouseMove)
+    //     _mouse->move()->execute(_mouse, _mouse->dX(), _mouse->dY());
 
-    if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
-    {
-        _touch->longHold()->execute(_touch, _touch->averageX(), _touch->averageY());
-        _touch->lastTouchDownTime(-1.0f);
-    }
+    // if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
+    // {
+    //     _touch->longHold()->execute(_touch, _touch->averageX(), _touch->averageY());
+    //     _touch->lastTouchDownTime(-1.0f);
+    // }
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
     for (auto worker : _activeWorkers)
