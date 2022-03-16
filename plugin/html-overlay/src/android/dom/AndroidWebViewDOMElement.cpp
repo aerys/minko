@@ -317,9 +317,9 @@ AndroidWebViewDOMElement::style(const std::string& name, const std::string& valu
 void
 AndroidWebViewDOMElement::addEventListener(const std::string& type)
 {
-	std::string js = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
+	// std::string js = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
 
-	_engine->eval(js);
+	// _engine->eval(js);
 }
 
 // Events
