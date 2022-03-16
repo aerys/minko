@@ -86,8 +86,8 @@ Minko.loadedHandler = function(event)
         Minko.setWindowPostMessageListener();
     }
 
-    if (Minko.platform == "emscripten")
-        Minko.bindRedispatchEvents();
+    // if (Minko.platform == "emscripten")
+    //     Minko.bindRedispatchEvents();
 
     Minko.bindJsErrors();
 
