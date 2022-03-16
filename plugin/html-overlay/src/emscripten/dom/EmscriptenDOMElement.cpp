@@ -287,9 +287,9 @@ EmscriptenDOMElement::style(const std::string& name, const std::string& value)
 void
 EmscriptenDOMElement::addEventListener(const std::string& type)
 {
-	std::string eval = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
+	// std::string eval = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
 
-	emscripten_run_script(eval.c_str());
+	// emscripten_run_script(eval.c_str());
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
