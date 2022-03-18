@@ -574,10 +574,6 @@ Minko.androidEventHandler = function(event)
     if (event.ignoreOnMinko)
         return;
 
-    // Workaround for API 19 to properly fire touchmove
-    if (!event.dontPreventDefault && (event.type == "touchstart" || event.type == "touchend"))
-        event.preventDefault();
-
     var pixelRatio = window.devicePixelRatio;
 
     eventData = {};
