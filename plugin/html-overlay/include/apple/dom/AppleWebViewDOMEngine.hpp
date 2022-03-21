@@ -183,9 +183,9 @@ namespace apple
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 
-            // minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousemoveSlot;
-            // minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousedownSlot;
-            // minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmouseupSlot;
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousemoveSlot;
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousedownSlot;
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmouseupSlot;
 
             minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchstartSlot;
             minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchendSlot;

@@ -42,12 +42,12 @@ std::map<ChromiumDOMElement::Ptr, CefRefPtr<CefV8Value>>
 ChromiumDOMElement::_elementToV8Object;
 
 ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context) :
-    // _onclickCallbackSet(false),
-    // _onmousedownCallbackSet(false),
-    // _onmousemoveCallbackSet(false),
-    // _onmouseupCallbackSet(false),
-    // _onmouseoverCallbackSet(false),
-    // _onmouseoutCallbackSet(false),
+    _onclickCallbackSet(false),
+    _onmousedownCallbackSet(false),
+    _onmousemoveCallbackSet(false),
+    _onmouseupCallbackSet(false),
+    _onmouseoverCallbackSet(false),
+    _onmouseoutCallbackSet(false),
     _onchangeCallbackSet(false),
     _oninputCallbackSet(false),
 	_cleared(false),
@@ -557,83 +557,83 @@ ChromiumDOMElement::addEventListener(std::string type)
 	}
 }
 
-// Signal<AbstractDOMMouseEvent::Ptr>::Ptr
-// ChromiumDOMElement::onclick()
-// {
-// 	if (!_onclickCallbackSet)
-// 	{
-// 		_onclick = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
-// 		addEventListener("click");
-// 		_onclickCallbackSet = true;
-// 	}
+Signal<AbstractDOMMouseEvent::Ptr>::Ptr
+ChromiumDOMElement::onclick()
+{
+	if (!_onclickCallbackSet)
+	{
+		_onclick = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
+		addEventListener("click");
+		_onclickCallbackSet = true;
+	}
 
-// 	return _onclick;
-// }
+	return _onclick;
+}
 
-// Signal<AbstractDOMMouseEvent::Ptr>::Ptr
-// ChromiumDOMElement::onmousedown()
-// {
-// 	if (!_onmousedownCallbackSet)
-// 	{
-// 		_onmousedown = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
-// 		addEventListener("mousedown");
-// 		_onmousedownCallbackSet = true;
-// 	}
+Signal<AbstractDOMMouseEvent::Ptr>::Ptr
+ChromiumDOMElement::onmousedown()
+{
+	if (!_onmousedownCallbackSet)
+	{
+		_onmousedown = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
+		addEventListener("mousedown");
+		_onmousedownCallbackSet = true;
+	}
 
-// 	return _onmousedown;
-// }
+	return _onmousedown;
+}
 
-// Signal<AbstractDOMMouseEvent::Ptr>::Ptr
-// ChromiumDOMElement::onmousemove()
-// {
-// 	if (!_onmousemoveCallbackSet)
-// 	{
-// 		_onmousemove = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
-// 		addEventListener("mousemove");
-// 		_onmousemoveCallbackSet = true;
-// 	}
+Signal<AbstractDOMMouseEvent::Ptr>::Ptr
+ChromiumDOMElement::onmousemove()
+{
+	if (!_onmousemoveCallbackSet)
+	{
+		_onmousemove = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
+		addEventListener("mousemove");
+		_onmousemoveCallbackSet = true;
+	}
 
-// 	return _onmousemove;
-// }
+	return _onmousemove;
+}
 
-// Signal<AbstractDOMMouseEvent::Ptr>::Ptr
-// ChromiumDOMElement::onmouseup()
-// {
-// 	if (!_onmouseupCallbackSet)
-// 	{
-// 		_onmouseup = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
-// 		addEventListener("mouseup");
-// 		_onmouseupCallbackSet = true;
-// 	}
+Signal<AbstractDOMMouseEvent::Ptr>::Ptr
+ChromiumDOMElement::onmouseup()
+{
+	if (!_onmouseupCallbackSet)
+	{
+		_onmouseup = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
+		addEventListener("mouseup");
+		_onmouseupCallbackSet = true;
+	}
 
-// 	return _onmouseup;
-// }
+	return _onmouseup;
+}
 
-// Signal<AbstractDOMMouseEvent::Ptr>::Ptr
-// ChromiumDOMElement::onmouseout()
-// {
-// 	if (!_onmouseoutCallbackSet)
-// 	{
-// 		_onmouseout = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
-// 		addEventListener("mouseout");
-// 		_onmouseoutCallbackSet = true;
-// 	}
+Signal<AbstractDOMMouseEvent::Ptr>::Ptr
+ChromiumDOMElement::onmouseout()
+{
+	if (!_onmouseoutCallbackSet)
+	{
+		_onmouseout = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
+		addEventListener("mouseout");
+		_onmouseoutCallbackSet = true;
+	}
 
-// 	return _onmouseout;
-// }
+	return _onmouseout;
+}
 
-// Signal<AbstractDOMMouseEvent::Ptr>::Ptr
-// ChromiumDOMElement::onmouseover()
-// {
-//     if (!_onmouseoverCallbackSet)
-//     {
-//         _onmouseover = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
-//         addEventListener("mouseover");
-//         _onmouseoverCallbackSet = true;
-//     }
+Signal<AbstractDOMMouseEvent::Ptr>::Ptr
+ChromiumDOMElement::onmouseover()
+{
+    if (!_onmouseoverCallbackSet)
+    {
+        _onmouseover = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
+        addEventListener("mouseover");
+        _onmouseoverCallbackSet = true;
+    }
 
-//     return _onmouseover;
-// }
+    return _onmouseover;
+}
 
 Signal<AbstractDOMEvent::Ptr>::Ptr
 ChromiumDOMElement::onchange()

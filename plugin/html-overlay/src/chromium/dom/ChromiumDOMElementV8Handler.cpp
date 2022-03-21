@@ -67,29 +67,29 @@ ChromiumDOMElementV8Handler::Execute(const CefString& name, CefRefPtr<CefV8Value
             }
             else
             {
-                // minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr mouseSignal;
+                minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr mouseSignal;
 
-			    // if (type == "click" && _element->onclick()->numCallbacks() > 0)
-				//     mouseSignal = _element->onclick();
-			    // else if (type == "mousedown" && _element->onmousedown()->numCallbacks() > 0)
-				//     mouseSignal = _element->onmousedown();
-			    // else if (type == "mousemove" && _element->onmousemove()->numCallbacks() > 0)
-				//     mouseSignal = _element->onmousemove();
-			    // else if (type == "mouseup" && _element->onmouseup()->numCallbacks() > 0)
-				//     mouseSignal = _element->onmouseup();
-			    // else if (type == "mouseover" && _element->onmouseover()->numCallbacks() > 0)
-				//     mouseSignal = _element->onmouseover();
-			    // else if (type == "mouseout" && _element->onmouseout()->numCallbacks() > 0)
-				//     mouseSignal = _element->onmouseout();
+			    if (type == "click" && _element->onclick()->numCallbacks() > 0)
+				    mouseSignal = _element->onclick();
+			    else if (type == "mousedown" && _element->onmousedown()->numCallbacks() > 0)
+				    mouseSignal = _element->onmousedown();
+			    else if (type == "mousemove" && _element->onmousemove()->numCallbacks() > 0)
+				    mouseSignal = _element->onmousemove();
+			    else if (type == "mouseup" && _element->onmouseup()->numCallbacks() > 0)
+				    mouseSignal = _element->onmouseup();
+			    else if (type == "mouseover" && _element->onmouseover()->numCallbacks() > 0)
+				    mouseSignal = _element->onmouseover();
+			    else if (type == "mouseout" && _element->onmouseout()->numCallbacks() > 0)
+				    mouseSignal = _element->onmouseout();
             
-			    // if (mouseSignal != nullptr)
-			    // {
-				//     ChromiumDOMMouseEvent::Ptr domMouseEvent = ChromiumDOMMouseEvent::create(event, CefV8Context::GetCurrentContext());
-				//     _element->addFunction([=]()
-				//     {
-				// 	    mouseSignal->execute(domMouseEvent);
-				//     });
-			    // }
+			    if (mouseSignal != nullptr)
+			    {
+				    ChromiumDOMMouseEvent::Ptr domMouseEvent = ChromiumDOMMouseEvent::create(event, CefV8Context::GetCurrentContext());
+				    _element->addFunction([=]()
+				    {
+					    mouseSignal->execute(domMouseEvent);
+				    });
+			    }
             }
 		}
 	}

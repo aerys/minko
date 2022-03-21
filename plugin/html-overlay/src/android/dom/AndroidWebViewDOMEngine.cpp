@@ -129,19 +129,19 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
         auto event = AndroidWebViewDOMEvent::create(type, target);
         AndroidWebViewDOMEngine::events.push_back(event);
     }
-    // else if (type.substr(0, 5) == "mouse" || type == "click")
-    // {
-    //     auto mouseEvent = AndroidWebViewDOMMouseEvent::create(type, target);
+    else if (type.substr(0, 5) == "mouse" || type == "click")
+    {
+        auto mouseEvent = AndroidWebViewDOMMouseEvent::create(type, target);
 
-    //     mouseEvent->clientX(JSON::as_int(JSON::get(json, "clientX")));
-    //     mouseEvent->clientY(JSON::as_int(JSON::get(json, "clientY")));
-    //     mouseEvent->pageX(JSON::as_int(JSON::get(json, "pageX")));
-    //     mouseEvent->pageY(JSON::as_int(JSON::get(json, "pageY")));
-    //     mouseEvent->screenX(JSON::as_int(JSON::get(json, "screenX")));
-    //     mouseEvent->screenY(JSON::as_int(JSON::get(json, "screenY")));
+        mouseEvent->clientX(JSON::as_int(JSON::get(json, "clientX")));
+        mouseEvent->clientY(JSON::as_int(JSON::get(json, "clientY")));
+        mouseEvent->pageX(JSON::as_int(JSON::get(json, "pageX")));
+        mouseEvent->pageY(JSON::as_int(JSON::get(json, "pageY")));
+        mouseEvent->screenX(JSON::as_int(JSON::get(json, "screenX")));
+        mouseEvent->screenY(JSON::as_int(JSON::get(json, "screenY")));
 
-    //     AndroidWebViewDOMEngine::events.push_back(mouseEvent);
-    // }
+        AndroidWebViewDOMEngine::events.push_back(mouseEvent);
+    }
     else if (type.substr(0, 5) == "touch")
     {
         // Parse touches
@@ -160,15 +160,15 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
 
                 AndroidWebViewDOMEngine::events.push_back(touchEvent);
 
-                // // Mouse event
-                // auto mouseEvent = AndroidWebViewDOMMouseEvent::create("mousedown", target);
+                // Mouse event
+                auto mouseEvent = AndroidWebViewDOMMouseEvent::create("mousedown", target);
 
-                // mouseEvent->clientX(touchEvent->clientX());
-                // mouseEvent->clientY(touchEvent->clientY());
-                // mouseEvent->pageX(JSON::as_int(JSON::get(json, "pageX")));
-                // mouseEvent->pageY(JSON::as_int(JSON::get(json, "pageY")));
-                // mouseEvent->screenX(JSON::as_int(JSON::get(json, "screenX")));
-                // mouseEvent->screenY(JSON::as_int(JSON::get(json, "screenY")));
+                mouseEvent->clientX(touchEvent->clientX());
+                mouseEvent->clientY(touchEvent->clientY());
+                mouseEvent->pageX(JSON::as_int(JSON::get(json, "pageX")));
+                mouseEvent->pageY(JSON::as_int(JSON::get(json, "pageY")));
+                mouseEvent->screenX(JSON::as_int(JSON::get(json, "screenX")));
+                mouseEvent->screenY(JSON::as_int(JSON::get(json, "screenY")));
 
                 if (type == "touchstart")
                 {
@@ -177,7 +177,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
                     {
                         AndroidWebViewDOMEngine::firstIdentifier = touchEvent->identifier();
 
-                        // AndroidWebViewDOMEngine::events.push_back(mouseEvent);
+                        AndroidWebViewDOMEngine::events.push_back(mouseEvent);
                     }
                 }
                 else if (type == "touchend")
@@ -188,22 +188,22 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
                     {
                         AndroidWebViewDOMEngine::firstIdentifier = -1;
 
-                        // mouseEvent->type("mouseup");
+                        mouseEvent->type("mouseup");
 
-                        // auto mouseClickEvent = AndroidWebViewDOMMouseEvent::create(mouseEvent);
-                        // mouseClickEvent->type("click");
+                        auto mouseClickEvent = AndroidWebViewDOMMouseEvent::create(mouseEvent);
+                        mouseClickEvent->type("click");
 
-                        // AndroidWebViewDOMEngine::events.push_back(mouseEvent);
-                        // AndroidWebViewDOMEngine::events.push_back(mouseClickEvent);
+                        AndroidWebViewDOMEngine::events.push_back(mouseEvent);
+                        AndroidWebViewDOMEngine::events.push_back(mouseClickEvent);
                     }
                 }
                 else if (type == "touchmove")
                 {
                     if (AndroidWebViewDOMEngine::firstIdentifier == touchEvent->identifier())
                     {
-                        // mouseEvent->type("mousemove");
+                        mouseEvent->type("mousemove");
 
-                        // AndroidWebViewDOMEngine::events.push_back(mouseEvent);
+                        AndroidWebViewDOMEngine::events.push_back(mouseEvent);
                     }
                 }
             }
@@ -427,18 +427,18 @@ AndroidWebViewDOMEngine::updateEvents()
                 target->onchange()->execute(event);
             else if (type == "input")
                 target->oninput()->execute(event);
-            // else if (type == "click")
-            //     target->onclick()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            // else if (type == "mousedown")
-            //     target->onmousedown()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            // else if (type == "mouseup")
-            //     target->onmouseup()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            // else if (type == "mousemove")
-            //     target->onmousemove()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            // else if (type == "mouseover")
-            //     target->onmouseover()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            // else if (type == "mouseout")
-            //     target->onmouseout()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "click")
+                target->onclick()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "mousedown")
+                target->onmousedown()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "mouseup")
+                target->onmouseup()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "mousemove")
+                target->onmousemove()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "mouseover")
+                target->onmouseover()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "mouseout")
+                target->onmouseout()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
             else if (type == "touchstart")
                 target->ontouchstart()->execute(std::dynamic_pointer_cast<AbstractDOMTouchEvent>(event));
             else if (type == "touchend")
@@ -534,41 +534,41 @@ AndroidWebViewDOMEngine::visible(bool value)
 void
 AndroidWebViewDOMEngine::registerDomEvents()
 {
-    // _onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
-    // {
-    //     int x = event->clientX();
-    //     int y = event->clientY();
+    _onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    {
+        int x = event->clientX();
+        int y = event->clientY();
 
-    //     _canvas->mouse()->x(x);
-    //     _canvas->mouse()->y(y);
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
 
-    //     _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
-    // });
+        _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
+    });
 
-    // _onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
-    // {
-    //     int x = event->clientX();
-    //     int y = event->clientY();
+    _onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    {
+        int x = event->clientX();
+        int y = event->clientY();
 
-    //     _canvas->mouse()->x(x);
-    //     _canvas->mouse()->y(y);
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
 
-    //     _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
-    // });
+        _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
+    });
 
-    // _onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
-    // {
-    //     int x = event->clientX();
-    //     int y = event->clientY();
+    _onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    {
+        int x = event->clientX();
+        int y = event->clientY();
 
-    //     auto oldX = _canvas->mouse()->x();
-    //     auto oldY = _canvas->mouse()->y();
+        auto oldX = _canvas->mouse()->x();
+        auto oldY = _canvas->mouse()->y();
 
-    //     _canvas->mouse()->x(x);
-    //     _canvas->mouse()->y(y);
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
 
-    //     _canvas->mouse()->move()->execute(_canvas->mouse(), x - oldX, y - oldY);
-    // });
+        _canvas->mouse()->move()->execute(_canvas->mouse(), x - oldX, y - oldY);
+    });
 
     _ontouchstartSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchstart()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {

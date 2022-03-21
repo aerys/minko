@@ -44,20 +44,20 @@ AndroidWebViewDOMElement::_accessorToElementMutex;
 
 AndroidWebViewDOMElement::AndroidWebViewDOMElement(const std::string& jsAccessor) :
 	_jsAccessor(jsAccessor),
-    // _onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-    // _onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-    // _onmousemove(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-    // _onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-    // _onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-    // _onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmousemove(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
     _oninput(Signal<AbstractDOMEvent::Ptr>::create()),
     _onchange(Signal<AbstractDOMEvent::Ptr>::create()),
-    // _onclickSet(false),
-    // _onmousedownSet(false),
-    // _onmousemoveSet(false),
-    // _onmouseupSet(false),
-    // _onmouseoverSet(false),
-    // _onmouseoutSet(false),
+    _onclickSet(false),
+    _onmousedownSet(false),
+    _onmousemoveSet(false),
+    _onmouseupSet(false),
+    _onmouseoverSet(false),
+    _onmouseoutSet(false),
     _oninputSet(false),
     _onchangeSet(false),
     _ontouchstart(Signal<AbstractDOMTouchEvent::Ptr>::create()),
@@ -348,78 +348,78 @@ AndroidWebViewDOMElement::oninput()
     return _oninput;
 }
 
-// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-// AndroidWebViewDOMElement::onclick()
-// {
-//     if (!_onclickSet)
-//     {
-//         addEventListener("click");
-//         _onclickSet = true;
-//     }
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+AndroidWebViewDOMElement::onclick()
+{
+    if (!_onclickSet)
+    {
+        addEventListener("click");
+        _onclickSet = true;
+    }
 
-//     return _onclick;
-// }
+    return _onclick;
+}
 
-// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-// AndroidWebViewDOMElement::onmousedown()
-// {
-//     if (!_onmousedownSet)
-//     {
-//         addEventListener("mousedown");
-//         _onmousedownSet = true;
-//     }
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+AndroidWebViewDOMElement::onmousedown()
+{
+    if (!_onmousedownSet)
+    {
+        addEventListener("mousedown");
+        _onmousedownSet = true;
+    }
 
-//     return _onmousedown;
-// }
+    return _onmousedown;
+}
 
-// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-// AndroidWebViewDOMElement::onmouseup()
-// {
-//     if (!_onmouseupSet)
-//     {
-//         addEventListener("mouseup");
-//         _onmouseupSet = true;
-//     }
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+AndroidWebViewDOMElement::onmouseup()
+{
+    if (!_onmouseupSet)
+    {
+        addEventListener("mouseup");
+        _onmouseupSet = true;
+    }
 
-//     return _onmouseup;
-// }
+    return _onmouseup;
+}
 
 
-// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-// AndroidWebViewDOMElement::onmousemove()
-// {
-//     if (!_onmousemoveSet)
-//     {
-//         addEventListener("mousemove");
-//         _onmousemoveSet = true;
-//     }
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+AndroidWebViewDOMElement::onmousemove()
+{
+    if (!_onmousemoveSet)
+    {
+        addEventListener("mousemove");
+        _onmousemoveSet = true;
+    }
 
-//     return _onmousemove;
-// }
+    return _onmousemove;
+}
 
-// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-// AndroidWebViewDOMElement::onmouseout()
-// {
-//     if (!_onmouseoutSet)
-//     {
-//         addEventListener("mouseout");
-//         _onmouseoutSet = true;
-//     }
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+AndroidWebViewDOMElement::onmouseout()
+{
+    if (!_onmouseoutSet)
+    {
+        addEventListener("mouseout");
+        _onmouseoutSet = true;
+    }
 
-//     return _onmouseout;
-// }
+    return _onmouseout;
+}
 
-// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-// AndroidWebViewDOMElement::onmouseover()
-// {
-//     if (!_onmouseoverSet)
-//     {
-//         addEventListener("mouseover");
-//         _onmouseoverSet = true;
-//     }
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+AndroidWebViewDOMElement::onmouseover()
+{
+    if (!_onmouseoverSet)
+    {
+        addEventListener("mouseover");
+        _onmouseoverSet = true;
+    }
 
-//     return _onmouseover;
-// }
+    return _onmouseover;
+}
 
 Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 AndroidWebViewDOMElement::ontouchstart()

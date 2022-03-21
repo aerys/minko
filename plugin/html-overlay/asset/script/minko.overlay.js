@@ -211,8 +211,8 @@ Minko.createIframe = function() //EMSCRIPTEN
 
     iframe.onload = Minko.loadedHandler;
 
-    // iframe.addEventListener('mouseover',    Minko.redispatchMouseEvent);
-    // iframe.addEventListener('mouseout',        Minko.redispatchMouseEvent);
+    iframe.addEventListener('mouseover',    Minko.redispatchMouseEvent);
+    iframe.addEventListener('mouseout',        Minko.redispatchMouseEvent);
 
     Minko.iframe = iframe;
     Minko.canvas = canvas;
@@ -326,33 +326,33 @@ Minko.redispatchBlurEvent = function(event) //EMSCRIPTEN
     window.dispatchEvent(eventCopy);
 }
 
-// Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
-// {
-//     if (event.ignoreOnMinko)
-//         return;
+Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
+{
+    if (event.ignoreOnMinko)
+        return;
 
-//     if (event.type == 'mouseout' && event.target != event.currentTarget)
-//         return;
+    if (event.type == 'mouseout' && event.target != event.currentTarget)
+        return;
 
-//     if (event.type == 'mouseover' && event.target != event.currentTarget)
-//         return;
+    if (event.type == 'mouseover' && event.target != event.currentTarget)
+        return;
 
-//     var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (event.pageX || event.layerX);
-//     var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (event.pageY || event.layerY);
+    var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (event.pageX || event.layerX);
+    var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (event.pageY || event.layerY);
 
-//     var screenX = pageX - document.body.scrollLeft;
-//     var screenY = pageY - document.body.scrollTop;
+    var screenX = pageX - document.body.scrollLeft;
+    var screenY = pageY - document.body.scrollTop;
 
-//     var eventCopy = document.createEvent('MouseEvents');
+    var eventCopy = document.createEvent('MouseEvents');
 
-//     eventCopy.initMouseEvent(
-//         event.type, event.bubbles, event.cancelable, event.view, event.detail,
-//         pageX, pageY, screenX, screenY,
-//         event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget
-//     );
+    eventCopy.initMouseEvent(
+        event.type, event.bubbles, event.cancelable, event.view, event.detail,
+        pageX, pageY, screenX, screenY,
+        event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget
+    );
 
-//     Minko.canvas.dispatchEvent(eventCopy);
-// }
+    Minko.canvas.dispatchEvent(eventCopy);
+}
 
 Minko.redispatchWheelEvent = function(event)
 {
@@ -490,18 +490,18 @@ Minko.bindRedispatchEvents = function() //EMSCRIPTEN
     var touchEventsSupported = 'TouchEvent' in window;
     var pointerEventsSupported = 'PointerEvent' in window;
 
-    // if (!pointerEventsSupported)
-    // {
-    //     var a = ['mousemove', 'mouseup', 'mousedown', 'click'];
+    if (!pointerEventsSupported)
+    {
+        var a = ['mousemove', 'mouseup', 'mousedown', 'click'];
 
-    //     for (var k in a)
-    //         Minko.window.addEventListener(a[k], Minko.redispatchMouseEvent);
-    // }
+        for (var k in a)
+            Minko.window.addEventListener(a[k], Minko.redispatchMouseEvent);
+    }
 
-    // a = ['wheel', 'mousewheel', 'DOMMouseScroll'];
+    a = ['wheel', 'mousewheel', 'DOMMouseScroll'];
 
-    // for (var k in a)
-    //     Minko.window.addEventListener(a[k], Minko.redispatchWheelEvent);
+    for (var k in a)
+        Minko.window.addEventListener(a[k], Minko.redispatchWheelEvent);
 
     if (pointerEventsSupported)
     {

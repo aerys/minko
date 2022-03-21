@@ -430,43 +430,43 @@ void AppleWebViewDOMEngine::handleJavascriptMessage(std::string type, std::strin
 void
 AppleWebViewDOMEngine::registerDomEvents()
 {
-    // _onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
-    // {
-    //     int x = event->clientX();
-    //     int y = event->clientY();
+    _onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    {
+        int x = event->clientX();
+        int y = event->clientY();
         
-    //     _canvas->mouse()->x(x);
-    //     _canvas->mouse()->y(y);
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
 
-    //     if (event->button() == 0)
-    //         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
-    // });
+        if (event->button() == 0)
+            _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
+    });
 
-    // _onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
-    // {
-    //     int x = event->clientX();
-    //     int y = event->clientY();
+    _onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    {
+        int x = event->clientX();
+        int y = event->clientY();
         
-    //     _canvas->mouse()->x(x);
-    //     _canvas->mouse()->y(y);
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
         
-    //     if (event->button() == 0)
-    //         _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
-    // });
+        if (event->button() == 0)
+            _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
+    });
 
-    // _onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
-    // {
-    //     int x = event->clientX();
-    //     int y = event->clientY();
+    _onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    {
+        int x = event->clientX();
+        int y = event->clientY();
         
-    //     auto oldX = _canvas->mouse()->x();
-    //     auto oldY = _canvas->mouse()->y();
+        auto oldX = _canvas->mouse()->x();
+        auto oldY = _canvas->mouse()->y();
 
-    //     _canvas->mouse()->x(x);
-    //     _canvas->mouse()->y(y);
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
 
-    //     _canvas->mouse()->move()->execute(_canvas->mouse(), x - oldX, y - oldY);
-    // });
+        _canvas->mouse()->move()->execute(_canvas->mouse(), x - oldX, y - oldY);
+    });
     
     _ontouchstartSlot = _currentDOM->document()->ontouchstart()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {

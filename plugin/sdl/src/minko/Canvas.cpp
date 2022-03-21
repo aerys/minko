@@ -465,14 +465,14 @@ Canvas::step()
 
     std::vector<char16_t> chars;
 
-    // auto executeMouseMove = false;
+    auto executeMouseMove = false;
     auto executePinchZoom = false;
 
-    // _mouse->dX(0);
-    // _mouse->dY(0);
+    _mouse->dX(0);
+    _mouse->dY(0);
 
-    // auto mouseDX = 0;
-    // auto mouseDY = 0;
+    auto mouseDX = 0;
+    auto mouseDY = 0;
 
     _touch->resetDeltas();
 
@@ -596,91 +596,91 @@ Canvas::step()
             break;
         }
 
-        // case SDL_MOUSEMOTION:
-        // {
-        //     int windowW;
-        //     int windowH;
+        case SDL_MOUSEMOTION:
+        {
+            int windowW;
+            int windowH;
 
-        //     SDL_GetWindowSize(_window, &windowW, &windowH);
+            SDL_GetWindowSize(_window, &windowW, &windowH);
 
-        //     auto x = event.motion.x;
-        //     auto y = event.motion.y;
+            auto x = event.motion.x;
+            auto y = event.motion.y;
 
-        //     auto dX = event.motion.xrel;
-        //     auto dY = event.motion.yrel;
+            auto dX = event.motion.xrel;
+            auto dY = event.motion.yrel;
 
-        //     if (windowW != _width || windowH != _height)
-        //     {
-        //         x = int(float(_width) * float(x) / float(windowW));
-        //         y = int(float(_height) * float(y) / float(windowH));
+            if (windowW != _width || windowH != _height)
+            {
+                x = int(float(_width) * float(x) / float(windowW));
+                y = int(float(_height) * float(y) / float(windowH));
 
-        //         dX = int(float(_width) * float(dX) / float(windowW));
-        //         dY = int(float(_height) * float(dY) / float(windowH));
-        //     }
+                dX = int(float(_width) * float(dX) / float(windowW));
+                dY = int(float(_height) * float(dY) / float(windowH));
+            }
 
-        //     _mouse->x(x);
-        //     _mouse->y(y);
+            _mouse->x(x);
+            _mouse->y(y);
 
-        //     mouseDX += dX;
-        //     mouseDY += dY;
+            mouseDX += dX;
+            mouseDY += dY;
 
-        //     _mouse->dX(mouseDX);
-        //     _mouse->dY(mouseDY);
+            _mouse->dX(mouseDX);
+            _mouse->dY(mouseDY);
 
-		// 	executeMouseMove = true;
-        //     break;
-        // }
+			executeMouseMove = true;
+            break;
+        }
 
-//         case SDL_MOUSEBUTTONDOWN:
-//         {
-//             if (enteredOrLeftThisFrame)
-//                 break;
+        case SDL_MOUSEBUTTONDOWN:
+        {
+            if (enteredOrLeftThisFrame)
+                break;
 
-//             switch (event.button.button)
-//             {
-//             case SDL_BUTTON_LEFT:
-//                 _mouse->leftButtonDown()->execute(_mouse);
-//                 break;
-//             case SDL_BUTTON_RIGHT:
-//                 _mouse->rightButtonDown()->execute(_mouse);
-//                 break;
-//             case SDL_BUTTON_MIDDLE:
-//                 _mouse->middleButtonDown()->execute(_mouse);
-//                 break;
-// #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
-//             case SDL_BUTTON_X1:
-//                 _mouse->wheel()->execute(_mouse, 0, 1);
-//                 break;
-//             case SDL_BUTTON_X2:
-//                 _mouse->wheel()->execute(_mouse, 0, -1);
-//                 break;
-// #endif
-//             }
-//             break;
-//         }
+            switch (event.button.button)
+            {
+            case SDL_BUTTON_LEFT:
+                _mouse->leftButtonDown()->execute(_mouse);
+                break;
+            case SDL_BUTTON_RIGHT:
+                _mouse->rightButtonDown()->execute(_mouse);
+                break;
+            case SDL_BUTTON_MIDDLE:
+                _mouse->middleButtonDown()->execute(_mouse);
+                break;
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+            case SDL_BUTTON_X1:
+                _mouse->wheel()->execute(_mouse, 0, 1);
+                break;
+            case SDL_BUTTON_X2:
+                _mouse->wheel()->execute(_mouse, 0, -1);
+                break;
+#endif
+            }
+            break;
+        }
 
-        // case SDL_MOUSEBUTTONUP:
-        // {
-        //     switch (event.button.button)
-        //     {
-        //     case SDL_BUTTON_LEFT:
-        //         _mouse->leftButtonUp()->execute(_mouse);
-        //         break;
-        //     case SDL_BUTTON_RIGHT:
-        //         _mouse->rightButtonUp()->execute(_mouse);
-        //         break;
-        //     case SDL_BUTTON_MIDDLE:
-        //         _mouse->middleButtonUp()->execute(_mouse);
-        //         break;
-        //     }
-        //     break;
-        // }
+        case SDL_MOUSEBUTTONUP:
+        {
+            switch (event.button.button)
+            {
+            case SDL_BUTTON_LEFT:
+                _mouse->leftButtonUp()->execute(_mouse);
+                break;
+            case SDL_BUTTON_RIGHT:
+                _mouse->rightButtonUp()->execute(_mouse);
+                break;
+            case SDL_BUTTON_MIDDLE:
+                _mouse->middleButtonUp()->execute(_mouse);
+                break;
+            }
+            break;
+        }
 
-        // case SDL_MOUSEWHEEL:
-        // {
-        //     _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
-        //     break;
-        // }
+        case SDL_MOUSEWHEEL:
+        {
+            _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
+            break;
+        }
 
         // Touch events
         case SDL_FINGERDOWN:
@@ -691,8 +691,8 @@ Canvas::step()
 
             _touch->addTouch(id, x, y, 0.f, 0.f);
 
-            // _mouse->x(static_cast<int>(_touch->averageX()));
-            // _mouse->y(static_cast<int>(_touch->averageY()));
+            _mouse->x(static_cast<int>(_touch->averageX()));
+            _mouse->y(static_cast<int>(_touch->averageY()));
 
             _touch->touchDown()->execute(
                 _touch,
@@ -722,8 +722,8 @@ Canvas::step()
             auto y = event.tfinger.y * _height;
             auto id = static_cast<int>(event.tfinger.fingerId);
 
-            // _mouse->x(static_cast<int>(_touch->averageX()));
-            // _mouse->y(static_cast<int>(_touch->averageY()));
+            _mouse->x(static_cast<int>(_touch->averageX()));
+            _mouse->y(static_cast<int>(_touch->averageY()));
 
             _touch->removeTouch(id);
 
@@ -795,13 +795,13 @@ Canvas::step()
 
             _touch->updateTouch(id, x, y, dx, dy);
 
-            // _mouse->x(static_cast<int>(_touch->averageX()));
-            // _mouse->y(static_cast<int>(_touch->averageY()));
+            _mouse->x(static_cast<int>(_touch->averageX()));
+            _mouse->y(static_cast<int>(_touch->averageY()));
 
-            // _mouse->dX(static_cast<int>(_touch->averageDX()));
-            // _mouse->dY(static_cast<int>(_touch->averageDY()));
+            _mouse->dX(static_cast<int>(_touch->averageDX()));
+            _mouse->dY(static_cast<int>(_touch->averageDY()));
 
-            // executeMouseMove = true;
+            executeMouseMove = true;
 
             _touch->touchMove()->execute(_touch, id, dx, dy);
 
@@ -957,49 +957,49 @@ Canvas::step()
         }
     }
 
-    // // Execute Pinch-Zoom event if needed.
-    // if (executePinchZoom && _touch->numTouches() == 2)
-    // {
-    //     input::Touch::TouchPoint touch1 = _touch->touch(_touch->identifiers()[0]);
-    //     input::Touch::TouchPoint touch2 = _touch->touch(_touch->identifiers()[1]);
+    // Execute Pinch-Zoom event if needed.
+    if (executePinchZoom && _touch->numTouches() == 2)
+    {
+        input::Touch::TouchPoint touch1 = _touch->touch(_touch->identifiers()[0]);
+        input::Touch::TouchPoint touch2 = _touch->touch(_touch->identifiers()[1]);
 
-    //     auto normalizedPos1 = math::vec2(touch1.x / static_cast<float>(_width), touch1.y / static_cast<float>(_height));
-    //     auto normalizedDPos1 = math::vec2(touch1.dX / static_cast<float>(_width), touch1.dY / static_cast<float>(_height));
-    //     auto normalizedPos2 = math::vec2(touch2.x / static_cast<float>(_width), touch2.y / static_cast<float>(_height));
-    //     auto normalizedDPos2 = math::vec2(touch2.dX / static_cast<float>(_width), touch2.dY / static_cast<float>(_height));
+        auto normalizedPos1 = math::vec2(touch1.x / static_cast<float>(_width), touch1.y / static_cast<float>(_height));
+        auto normalizedDPos1 = math::vec2(touch1.dX / static_cast<float>(_width), touch1.dY / static_cast<float>(_height));
+        auto normalizedPos2 = math::vec2(touch2.x / static_cast<float>(_width), touch2.y / static_cast<float>(_height));
+        auto normalizedDPos2 = math::vec2(touch2.dX / static_cast<float>(_width), touch2.dY / static_cast<float>(_height));
 
-    //     auto previousDelta = (normalizedPos2 - normalizedDPos2) - (normalizedPos1 - normalizedDPos1);
-    //     auto currentDelta = normalizedPos2 - normalizedPos1;
+        auto previousDelta = (normalizedPos2 - normalizedDPos2) - (normalizedPos1 - normalizedDPos1);
+        auto currentDelta = normalizedPos2 - normalizedPos1;
 
-    //     auto previousDist = math::length(previousDelta);
-    //     auto currentDist = math::length(currentDelta);
+        auto previousDist = math::length(previousDelta);
+        auto currentDist = math::length(currentDelta);
 
-    //     auto normalizedDeltaDistance = currentDist - previousDist;
+        auto normalizedDeltaDistance = currentDist - previousDist;
 
-    //     if (normalizedDeltaDistance != 0.0)
-    //     {
-    //         // normalizedDeltaDistance is a percentage of the screen
-    //         auto deltaDistance = normalizedDeltaDistance * 100.f;
+        if (normalizedDeltaDistance != 0.0)
+        {
+            // normalizedDeltaDistance is a percentage of the screen
+            auto deltaDistance = normalizedDeltaDistance * 100.f;
 
-    //         _touch->pinchZoom()->execute(_touch, deltaDistance);
-    //     }
-    // }
+            _touch->pinchZoom()->execute(_touch, deltaDistance);
+        }
+    }
 
-    // // Update delta mouse pos.
-    // if (mouseDX != 0)
-    //     _mouse->dX(mouseDX);
-    // if (mouseDY != 0)
-    //     _mouse->dY(mouseDY);
+    // Update delta mouse pos.
+    if (mouseDX != 0)
+        _mouse->dX(mouseDX);
+    if (mouseDY != 0)
+        _mouse->dY(mouseDY);
 
-    // // Execute mouse move event only once per frame
-    // if (executeMouseMove)
-    //     _mouse->move()->execute(_mouse, _mouse->dX(), _mouse->dY());
+    // Execute mouse move event only once per frame
+    if (executeMouseMove)
+        _mouse->move()->execute(_mouse, _mouse->dX(), _mouse->dY());
 
-    // if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
-    // {
-    //     _touch->longHold()->execute(_touch, _touch->averageX(), _touch->averageY());
-    //     _touch->lastTouchDownTime(-1.0f);
-    // }
+    if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
+    {
+        _touch->longHold()->execute(_touch, _touch->averageX(), _touch->averageY());
+        _touch->lastTouchDownTime(-1.0f);
+    }
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
     for (auto worker : _activeWorkers)
@@ -1120,13 +1120,13 @@ Canvas::resetInputs() const
         _touch->touchUp()->execute(_touch, id, x, y);
     }
 
-    // _mouse->dX(0);
-    // _mouse->dY(0);
+    _mouse->dX(0);
+    _mouse->dY(0);
 
-    // if (_mouse->leftButtonIsDown())
-    //     _mouse->leftButtonUp()->execute(_mouse);
-    // if (_mouse->rightButtonIsDown())
-    //     _mouse->rightButtonUp()->execute(_mouse);
-    // if (_mouse->middleButtonIsDown())
-    //     _mouse->middleButtonUp()->execute(_mouse);
+    if (_mouse->leftButtonIsDown())
+        _mouse->leftButtonUp()->execute(_mouse);
+    if (_mouse->rightButtonIsDown())
+        _mouse->rightButtonUp()->execute(_mouse);
+    if (_mouse->middleButtonIsDown())
+        _mouse->middleButtonUp()->execute(_mouse);
 }

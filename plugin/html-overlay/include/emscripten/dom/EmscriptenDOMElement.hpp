@@ -128,23 +128,23 @@ namespace emscripten
 			void
 			style(const std::string& name, const std::string& value);
 
-			// DOMMouseEventSignal
-			// onclick();
+			DOMMouseEventSignal
+			onclick();
 
-			// DOMMouseEventSignal
-			// onmousedown();
+			DOMMouseEventSignal
+			onmousedown();
 
-			// DOMMouseEventSignal
-			// onmousemove();
+			DOMMouseEventSignal
+			onmousemove();
 
-			// DOMMouseEventSignal
-			// onmouseup();
+			DOMMouseEventSignal
+			onmouseup();
 
-			// DOMMouseEventSignal
-			// onmouseout();
+			DOMMouseEventSignal
+			onmouseout();
 
-			// DOMMouseEventSignal
-			// onmouseover();
+			DOMMouseEventSignal
+			onmouseover();
 
             DOMEventSignal
             onchange();
@@ -185,25 +185,25 @@ namespace emscripten
             DOMEventSignal       _onchange;
             DOMEventSignal       _oninput;
 
-			// DOMMouseEventSignal  _onclick;
-			// DOMMouseEventSignal  _onmousedown;
-			// DOMMouseEventSignal  _onmousemove;
-			// DOMMouseEventSignal  _onmouseup;
+			DOMMouseEventSignal  _onclick;
+			DOMMouseEventSignal  _onmousedown;
+			DOMMouseEventSignal  _onmousemove;
+			DOMMouseEventSignal  _onmouseup;
 			
-			// DOMMouseEventSignal  _onmouseover;
-			// DOMMouseEventSignal  _onmouseout;
+			DOMMouseEventSignal  _onmouseover;
+			DOMMouseEventSignal  _onmouseout;
             
             DOMTouchEventSignal  _ontouchstart;
             DOMTouchEventSignal  _ontouchend;
             DOMTouchEventSignal  _ontouchmove;
 
-			// bool _onclickSet;
-			// bool _onmousedownSet;
-			// bool _onmousemoveSet;
-			// bool _onmouseupSet;
+			bool _onclickSet;
+			bool _onmousedownSet;
+			bool _onmousemoveSet;
+			bool _onmouseupSet;
 
-			// bool _onmouseoverSet;
-			// bool _onmouseoutSet;
+			bool _onmouseoverSet;
+			bool _onmouseoutSet;
 
 			bool _onchangeSet;
 			bool _oninputSet;

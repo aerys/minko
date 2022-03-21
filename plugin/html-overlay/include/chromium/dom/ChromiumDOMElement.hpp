@@ -234,23 +234,23 @@ namespace chromium
 			void
 			style(const std::string& name, const std::string& value);
 
-			// DOMMouseEventSignal
-			// onclick();
+			DOMMouseEventSignal
+			onclick();
 
-			// DOMMouseEventSignal
-			// onmousedown();
+			DOMMouseEventSignal
+			onmousedown();
 
-			// DOMMouseEventSignal
-			// onmousemove();
+			DOMMouseEventSignal
+			onmousemove();
 
-			// DOMMouseEventSignal
-			// onmouseup();
+			DOMMouseEventSignal
+			onmouseup();
 
-			// DOMMouseEventSignal
-			// onmouseout();
+			DOMMouseEventSignal
+			onmouseout();
 
-			// DOMMouseEventSignal
-			// onmouseover();
+			DOMMouseEventSignal
+			onmouseover();
 
             DOMEventSignal
             onchange();
@@ -291,13 +291,13 @@ namespace chromium
             DOMEventSignal       _onchange;
             DOMEventSignal       _oninput;
 
-			// DOMMouseEventSignal  _onclick;
-			// DOMMouseEventSignal  _onmousedown;
-			// DOMMouseEventSignal  _onmousemove;
-			// DOMMouseEventSignal  _onmouseup;
+			DOMMouseEventSignal  _onclick;
+			DOMMouseEventSignal  _onmousedown;
+			DOMMouseEventSignal  _onmousemove;
+			DOMMouseEventSignal  _onmouseup;
 			
-			// DOMMouseEventSignal  _onmouseover;
-			// DOMMouseEventSignal  _onmouseout;
+			DOMMouseEventSignal  _onmouseover;
+			DOMMouseEventSignal  _onmouseout;
             
             DOMTouchEventSignal  _ontouchstart;
             DOMTouchEventSignal  _ontouchend;
@@ -306,13 +306,13 @@ namespace chromium
             bool _onchangeCallbackSet;
             bool _oninputCallbackSet;
 
-			// bool _onclickCallbackSet;
-			// bool _onmousedownCallbackSet;
-			// bool _onmousemoveCallbackSet;
-			// bool _onmouseupCallbackSet;
+			bool _onclickCallbackSet;
+			bool _onmousedownCallbackSet;
+			bool _onmousemoveCallbackSet;
+			bool _onmouseupCallbackSet;
 
-			// bool _onmouseoverCallbackSet;
-			// bool _onmouseoutCallbackSet;
+			bool _onmouseoverCallbackSet;
+			bool _onmouseoutCallbackSet;
 
 			bool _ontouchstartCallbackSet;
 			bool _ontouchendCallbackSet;
