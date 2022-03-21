@@ -42,20 +42,20 @@ AppleWebViewDOMElement::_accessorToElement;
 
 AppleWebViewDOMElement::AppleWebViewDOMElement(const std::string& jsAccessor) :
     _jsAccessor(jsAccessor),
-    _onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-    _onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-    _onmousemove(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-    _onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-    _onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-    _onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    // _onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    // _onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    // _onmousemove(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    // _onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    // _onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    // _onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
     _oninput(Signal<AbstractDOMEvent::Ptr>::create()),
     _onchange(Signal<AbstractDOMEvent::Ptr>::create()),
-    _onclickSet(false),
-    _onmousedownSet(false),
-    _onmousemoveSet(false),
-    _onmouseupSet(false),
-    _onmouseoverSet(false),
-    _onmouseoutSet(false),
+    // _onclickSet(false),
+    // _onmousedownSet(false),
+    // _onmousemoveSet(false),
+    // _onmouseupSet(false),
+    // _onmouseoverSet(false),
+    // _onmouseoutSet(false),
     _oninputSet(false),
     _onchangeSet(false),
     _ontouchstart(Signal<AbstractDOMTouchEvent::Ptr>::create()),
@@ -336,78 +336,78 @@ AppleWebViewDOMElement::oninput()
     return _oninput;
 }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-AppleWebViewDOMElement::onclick()
-{
-    if (!_onclickSet)
-    {
-        addEventListener("click");
-        _onclickSet = true;
-    }
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// AppleWebViewDOMElement::onclick()
+// {
+//     if (!_onclickSet)
+//     {
+//         addEventListener("click");
+//         _onclickSet = true;
+//     }
 
-    return _onclick;
-}
+//     return _onclick;
+// }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-AppleWebViewDOMElement::onmousedown()
-{
-    if (!_onmousedownSet)
-    {
-        addEventListener("mousedown");
-        _onmousedownSet = true;
-    }
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// AppleWebViewDOMElement::onmousedown()
+// {
+//     if (!_onmousedownSet)
+//     {
+//         addEventListener("mousedown");
+//         _onmousedownSet = true;
+//     }
 
-    return _onmousedown;
-}
+//     return _onmousedown;
+// }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-AppleWebViewDOMElement::onmouseup()
-{
-    if (!_onmouseupSet)
-    {
-        addEventListener("mouseup");
-        _onmouseupSet = true;
-    }
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// AppleWebViewDOMElement::onmouseup()
+// {
+//     if (!_onmouseupSet)
+//     {
+//         addEventListener("mouseup");
+//         _onmouseupSet = true;
+//     }
 
-    return _onmouseup;
-}
+//     return _onmouseup;
+// }
 
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-AppleWebViewDOMElement::onmousemove()
-{
-    if (!_onmousemoveSet)
-    {
-        addEventListener("mousemove");
-        _onmousemoveSet = true;
-    }
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// AppleWebViewDOMElement::onmousemove()
+// {
+//     if (!_onmousemoveSet)
+//     {
+//         addEventListener("mousemove");
+//         _onmousemoveSet = true;
+//     }
 
-    return _onmousemove;
-}
+//     return _onmousemove;
+// }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-AppleWebViewDOMElement::onmouseout()
-{
-    if (!_onmouseoutSet)
-    {
-        addEventListener("mouseout");
-        _onmouseoutSet = true;
-    }
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// AppleWebViewDOMElement::onmouseout()
+// {
+//     if (!_onmouseoutSet)
+//     {
+//         addEventListener("mouseout");
+//         _onmouseoutSet = true;
+//     }
 
-    return _onmouseout;
-}
+//     return _onmouseout;
+// }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-AppleWebViewDOMElement::onmouseover()
-{
-    if (!_onmouseoverSet)
-    {
-        addEventListener("mouseover");
-        _onmouseoverSet = true;
-    }
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// AppleWebViewDOMElement::onmouseover()
+// {
+//     if (!_onmouseoverSet)
+//     {
+//         addEventListener("mouseover");
+//         _onmouseoverSet = true;
+//     }
 
-    return _onmouseover;
-}
+//     return _onmouseover;
+// }
 
 Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 AppleWebViewDOMElement::ontouchstart()
@@ -471,59 +471,59 @@ AppleWebViewDOMElement::update()
                 std::string js = eventName + ".changedTouches.length";
                 int touchNumber = atoi(_engine->eval(js).c_str());
 
-                for (auto i = 0; i < touchNumber; i++)
-                {
-                    // Create the touch event
-                    AppleWebViewDOMTouchEvent::Ptr event = AppleWebViewDOMTouchEvent::create(eventName, i, _engine);
+                // for (auto i = 0; i < touchNumber; i++)
+                // {
+                //     // Create the touch event
+                //     AppleWebViewDOMTouchEvent::Ptr event = AppleWebViewDOMTouchEvent::create(eventName, i, _engine);
 
-                    std::string type = event->type();
+                //     std::string type = event->type();
 
-                    if (type == "touchstart")
-                    {
-                        _ontouchstart->execute(event);
+                //     if (type == "touchstart")
+                //     {
+                //         _ontouchstart->execute(event);
 
-                        if (_engine->numTouches() == 0 && i == 0)
-                        {
-                            _onmousedown->execute(event);
-                        }
-                    }
-                    else if (type == "touchend")
-                    {
-                        _ontouchend->execute(event);
+                //         if (_engine->numTouches() == 0 && i == 0)
+                //         {
+                //             _onmousedown->execute(event);
+                //         }
+                //     }
+                //     else if (type == "touchend")
+                //     {
+                //         _ontouchend->execute(event);
 
-                        if (event->identifier() == _engine->firstTouchIdentifier())
-                        {
-                            _onclick->execute(event);
-                            _onmouseup->execute(event);
-                        }
-                    }
-                    else if (type == "touchmove")
-                    {
-                        _ontouchmove->execute(event);
+                //         if (event->identifier() == _engine->firstTouchIdentifier())
+                //         {
+                //             _onclick->execute(event);
+                //             _onmouseup->execute(event);
+                //         }
+                //     }
+                //     else if (type == "touchmove")
+                //     {
+                //         _ontouchmove->execute(event);
 
-                        if (_engine->numTouches() == 0 || event->identifier() == _engine->firstTouchIdentifier())
-                        {
-                            _onmousemove->execute(event);
-                        }
+                //         if (_engine->numTouches() == 0 || event->identifier() == _engine->firstTouchIdentifier())
+                //         {
+                //             _onmousemove->execute(event);
+                //         }
 
-                    }
-                }
+                //     }
+                // }
             }
 
             AppleWebViewDOMMouseEvent::Ptr event = AppleWebViewDOMMouseEvent::create(eventName, _engine);
 
-            if (type == "click")
-                _onclick->execute(event);
-            else if (type == "mousedown")
-                _onmousedown->execute(event);
-            else if (type == "mouseup")
-                _onmouseup->execute(event);
-            else if (type == "mousemove")
-                _onmousemove->execute(event);
-            else if (type == "mouseover")
-                _onmouseover->execute(event);
-            else if (type == "mouseout")
-                _onmouseout->execute(event);
+            // if (type == "click")
+            //     _onclick->execute(event);
+            // else if (type == "mousedown")
+            //     _onmousedown->execute(event);
+            // else if (type == "mouseup")
+            //     _onmouseup->execute(event);
+            // else if (type == "mousemove")
+            //     _onmousemove->execute(event);
+            // else if (type == "mouseover")
+            //     _onmouseover->execute(event);
+            // else if (type == "mouseout")
+            //     _onmouseout->execute(event);
         }
 
         js = "Minko.clearEvents(" + _jsAccessor + ");";

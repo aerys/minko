@@ -42,23 +42,23 @@ EmscriptenDOMElement::_accessorToElement;
 
 EmscriptenDOMElement::EmscriptenDOMElement(const std::string& jsAccessor) :
 	_jsAccessor(jsAccessor),
-	_onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-	_onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-	_onmousemove(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-	_onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-	_onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
-	_onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	// _onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	// _onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	// _onmousemove(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	// _onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	// _onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	// _onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
 	_oninput(Signal<AbstractDOMEvent::Ptr>::create()),
 	_onchange(Signal<AbstractDOMEvent::Ptr>::create()),
 	_ontouchstart(Signal<AbstractDOMTouchEvent::Ptr>::create()),
 	_ontouchend(Signal<AbstractDOMTouchEvent::Ptr>::create()),
 	_ontouchmove(Signal<AbstractDOMTouchEvent::Ptr>::create()),
-	_onclickSet(false),
-	_onmousedownSet(false),
-	_onmousemoveSet(false),
-	_onmouseupSet(false),
-	_onmouseoverSet(false),
-	_onmouseoutSet(false),
+	// _onclickSet(false),
+	// _onmousedownSet(false),
+	// _onmousemoveSet(false),
+	// _onmouseupSet(false),
+	// _onmouseoverSet(false),
+	// _onmouseoutSet(false),
     _onchangeSet(false),
     _oninputSet(false),
     _ontouchstartSet(false),
@@ -292,77 +292,77 @@ EmscriptenDOMElement::addEventListener(const std::string& type)
 	// emscripten_run_script(eval.c_str());
 }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-EmscriptenDOMElement::onclick()
-{
-	if (!_onclickSet)
-	{
-		addEventListener("click");
-		_onclickSet = true;
-	}
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// EmscriptenDOMElement::onclick()
+// {
+// 	if (!_onclickSet)
+// 	{
+// 		addEventListener("click");
+// 		_onclickSet = true;
+// 	}
 
-	return _onclick;
-}
+// 	return _onclick;
+// }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-EmscriptenDOMElement::onmousedown()
-{
-	if (!_onmousedownSet)
-	{
-		addEventListener("mousedown");
-		_onmousedownSet = true;
-	}
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// EmscriptenDOMElement::onmousedown()
+// {
+// 	if (!_onmousedownSet)
+// 	{
+// 		addEventListener("mousedown");
+// 		_onmousedownSet = true;
+// 	}
 
-	return _onmousedown;
-}
+// 	return _onmousedown;
+// }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-EmscriptenDOMElement::onmousemove()
-{
-	if (!_onmousemoveSet)
-	{
-		addEventListener("mousemove");
-		_onmousemoveSet = true;
-	}
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// EmscriptenDOMElement::onmousemove()
+// {
+// 	if (!_onmousemoveSet)
+// 	{
+// 		addEventListener("mousemove");
+// 		_onmousemoveSet = true;
+// 	}
 
-	return _onmousemove;
-}
+// 	return _onmousemove;
+// }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-EmscriptenDOMElement::onmouseup()
-{
-	if (!_onmouseupSet)
-	{
-		addEventListener("mouseup");
-		_onmouseupSet = true;
-	}
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// EmscriptenDOMElement::onmouseup()
+// {
+// 	if (!_onmouseupSet)
+// 	{
+// 		addEventListener("mouseup");
+// 		_onmouseupSet = true;
+// 	}
 
-	return _onmouseup;
-}
+// 	return _onmouseup;
+// }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-EmscriptenDOMElement::onmouseout()
-{
-	if (!_onmouseoutSet)
-	{
-		addEventListener("mouseout");
-		_onmouseoutSet = true;
-	}
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// EmscriptenDOMElement::onmouseout()
+// {
+// 	if (!_onmouseoutSet)
+// 	{
+// 		addEventListener("mouseout");
+// 		_onmouseoutSet = true;
+// 	}
 
-	return _onmouseout;
-}
+// 	return _onmouseout;
+// }
 
-Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
-EmscriptenDOMElement::onmouseover()
-{
-	if (!_onmouseoverSet)
-	{
-		addEventListener("mouseover");
-		_onmouseoverSet = true;
-	}
+// Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+// EmscriptenDOMElement::onmouseover()
+// {
+// 	if (!_onmouseoverSet)
+// 	{
+// 		addEventListener("mouseover");
+// 		_onmouseoverSet = true;
+// 	}
 
-	return _onmouseover;
-}
+// 	return _onmouseover;
+// }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 EmscriptenDOMElement::onchange()
@@ -444,18 +444,18 @@ EmscriptenDOMElement::update()
 			_onchange->execute(event);
 		else if (type == "input")
 			_oninput->execute(event);
-		else if (type == "click")
-			_onclick->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "mousedown")
-			_onmousedown->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "mouseup")
-			_onmouseup->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "mousemove")
-			_onmousemove->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "mouseover")
-			_onmouseover->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "mouseout")
-			_onmouseout->execute(EmscriptenDOMMouseEvent::create(eventName));
+		// else if (type == "click")
+		// 	_onclick->execute(EmscriptenDOMMouseEvent::create(eventName));
+		// else if (type == "mousedown")
+		// 	_onmousedown->execute(EmscriptenDOMMouseEvent::create(eventName));
+		// else if (type == "mouseup")
+		// 	_onmouseup->execute(EmscriptenDOMMouseEvent::create(eventName));
+		// else if (type == "mousemove")
+		// 	_onmousemove->execute(EmscriptenDOMMouseEvent::create(eventName));
+		// else if (type == "mouseover")
+		// 	_onmouseover->execute(EmscriptenDOMMouseEvent::create(eventName));
+		// else if (type == "mouseout")
+		//	_onmouseout->execute(EmscriptenDOMMouseEvent::create(eventName));
 		else if (type.substr(0, 5) == "touch")
 		{
             std::string js = eventName + ".changedTouches.length";
