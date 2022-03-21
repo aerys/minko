@@ -123,23 +123,23 @@ namespace android
 			style(const std::string& name, const std::string& value);
 
             // Events
-            // minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
-			// onclick();
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			onclick();
 
-			// minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
-			// onmousedown();
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			onmousedown();
 
-			// minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
-			// onmousemove();
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			onmousemove();
 
-			// minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
-			// onmouseup();
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			onmouseup();
 
-			// minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
-			// onmouseout();
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			onmouseout();
 
-			// minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
-			// onmouseover();
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			onmouseover();
 
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
             ontouchstart();

@@ -524,8 +524,8 @@ ChromiumDOMElement::style(const std::string& name, const std::string& value)
 void
 ChromiumDOMElement::addEventListenerWrapper(std::string* type, ChromiumDOMElement* target)
 {
-	// target->addEventListener(*type);
-	// target->_blocker.store(false);
+	target->addEventListener(*type);
+	target->_blocker.store(false);
 }
 
 void
