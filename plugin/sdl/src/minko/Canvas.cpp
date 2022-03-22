@@ -65,7 +65,7 @@ using namespace minko::component;
 using namespace minko::scene;
 using namespace minko::async;
 
-Canvas::Canvas(const std::string& name, const uint width, const uint height, int flags) :
+Canvas::Canvas(const std::string& name, const uint width, const uint height, int flags, bool disableSDLEvents) :
     _name(name),
     _flags(flags),
     _data(data::Provider::create()),
@@ -89,7 +89,8 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _x(0),
     _y(0),
     _onWindow(false),
-    _enableRendering(true)
+    _enableRendering(true),
+    _disableSDLEvents(disableSDLEvents)
 {
     _data->set("viewport", math::vec4(0.f, 0.f, (float)width, (float)height));
 }
@@ -494,6 +495,11 @@ Canvas::step()
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
+            if (_disableSDLEvents)
+            {
+                break;
+            }
+
             int i = 0;
 
             char16_t c = 0;
@@ -549,6 +555,11 @@ Canvas::step()
         }
         case SDL_KEYDOWN:
         {
+            if (_disableSDLEvents)
+            {
+                break;
+            }
+
             _keyboard->keyDown()->execute(_keyboard);
 
             auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
@@ -570,6 +581,11 @@ Canvas::step()
 
         case SDL_KEYUP:
         {
+            if (_disableSDLEvents)
+            {
+                break;
+            }
+
             _keyboard->keyUp()->execute(_keyboard);
 
             auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
