@@ -81,6 +81,10 @@ namespace minko
         std::shared_ptr<data::Provider>                                         _data;
         int                                                                     _flags;
 
+        // FIXME Once SmartShape 11 is released, _disableSDLInputEvents (and therefore the SDL Input Events in Canvas.cpp) should be removed
+        // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/295
+        bool                                                                    _disableSDLInputEvents;
+
         bool                                                                    _active;
         render::AbstractContext::Ptr                                            _context;
         std::shared_ptr<SDLBackend>                                             _backend;
@@ -132,9 +136,10 @@ namespace minko
         create(const std::string&    name,
                const uint            width      = 1280,
                const uint            height     = 720,
-               int                   flags      = RESIZABLE)
+               int                   flags      = RESIZABLE,
+               bool                  disableSDLInputEvents = false)
         {
-            auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, flags));
+            auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, flags, disableSDLInputEvents));
 
             canvas->initialize();
 
@@ -383,11 +388,24 @@ namespace minko
         void
         resetInputs() const;
 
+        void
+        setDisableSDLInputEvents(bool disable)
+        {
+            _disableSDLInputEvents = disable;
+        }
+
+        bool
+        areSDLInputEventsDisabled()
+        {
+            return _disableSDLInputEvents;
+        }
+
     private:
         Canvas(const std::string&   name,
                const uint           width,
                const uint           height,
-               int                  flags);
+               int                  flags,
+               bool                 disableSDLInputEvents = false);
 
         void
         x(uint);
