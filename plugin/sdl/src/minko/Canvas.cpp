@@ -65,7 +65,7 @@ using namespace minko::component;
 using namespace minko::scene;
 using namespace minko::async;
 
-Canvas::Canvas(const std::string& name, const uint width, const uint height, int flags) :
+Canvas::Canvas(const std::string& name, const uint width, const uint height, int flags, bool disableSDLEvents) :
     _name(name),
     _flags(flags),
     _data(data::Provider::create()),
@@ -89,7 +89,8 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _x(0),
     _y(0),
     _onWindow(false),
-    _enableRendering(true)
+    _enableRendering(true),
+    _disableSDLEvents(disableSDLEvents)
 {
     _data->set("viewport", math::vec4(0.f, 0.f, (float)width, (float)height));
 }
@@ -468,8 +469,11 @@ Canvas::step()
     auto executeMouseMove = false;
     auto executePinchZoom = false;
 
-    _mouse->dX(0);
-    _mouse->dY(0);
+    if (!_disableSDLEvents)
+    {
+        _mouse->dX(0);
+        _mouse->dY(0); 
+    }
 
     auto mouseDX = 0;
     auto mouseDY = 0;
@@ -598,6 +602,11 @@ Canvas::step()
 
         case SDL_MOUSEMOTION:
         {
+            if (_disableSDLEvents)
+            {
+                break;
+            }
+
             int windowW;
             int windowH;
 
@@ -633,6 +642,11 @@ Canvas::step()
 
         case SDL_MOUSEBUTTONDOWN:
         {
+            if (_disableSDLEvents)
+            {
+                break;
+            }
+
             if (enteredOrLeftThisFrame)
                 break;
 
@@ -661,6 +675,11 @@ Canvas::step()
 
         case SDL_MOUSEBUTTONUP:
         {
+            if (_disableSDLEvents)
+            {
+                break;
+            }
+
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
@@ -678,6 +697,11 @@ Canvas::step()
 
         case SDL_MOUSEWHEEL:
         {
+            if (_disableSDLEvents)
+            {
+                break;
+            }
+
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
             break;
         }
@@ -685,6 +709,11 @@ Canvas::step()
         // Touch events
         case SDL_FINGERDOWN:
         {
+            if (_disableSDLEvents)
+            {
+                break;
+            }
+
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
             auto id = static_cast<int>(event.tfinger.fingerId);
@@ -718,6 +747,11 @@ Canvas::step()
 
         case SDL_FINGERUP:
         {
+            if (_disableSDLEvents)
+            {
+                break;
+            }
+
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
             auto id = static_cast<int>(event.tfinger.fingerId);
@@ -775,6 +809,11 @@ Canvas::step()
 
         case SDL_FINGERMOTION:
         {
+            if (_disableSDLEvents)
+            {
+                break;
+            }
+
             auto id = static_cast<int>(event.tfinger.fingerId);
 
             auto normalizedX = event.tfinger.x;

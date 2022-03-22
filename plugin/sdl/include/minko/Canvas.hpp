@@ -80,6 +80,7 @@ namespace minko
         uint                                                                    _height;
         std::shared_ptr<data::Provider>                                         _data;
         int                                                                     _flags;
+        bool                                                                    _disableSDLEvents;
 
         bool                                                                    _active;
         render::AbstractContext::Ptr                                            _context;
@@ -132,9 +133,10 @@ namespace minko
         create(const std::string&    name,
                const uint            width      = 1280,
                const uint            height     = 720,
-               int                   flags      = RESIZABLE)
+               int                   flags      = RESIZABLE,
+               bool                  disableSDLEvents = false)
         {
-            auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, flags));
+            auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, flags, disableSDLEvents));
 
             canvas->initialize();
 
@@ -387,7 +389,8 @@ namespace minko
         Canvas(const std::string&   name,
                const uint           width,
                const uint           height,
-               int                  flags);
+               int                  flags,
+               bool                 disableSDLEvents = false);
 
         void
         x(uint);
