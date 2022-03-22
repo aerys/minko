@@ -498,8 +498,10 @@ Canvas::step()
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
-            // TODO: Use _disableSDLInputEvents to disable keyboard events in canvas
-            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
 
             int i = 0;
 
@@ -549,18 +551,12 @@ Canvas::step()
 
             break;
         }
-        case SDL_TEXTEDITING:
-        {
-            // TODO: Remove this case
-            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
-
-            //std::cout << "text editing" << std::endl;
-            break;
-        }
         case SDL_KEYDOWN:
         {
-            // TODO: Use _disableSDLInputEvents to disable keyboard events in canvas
-            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
 
             _keyboard->keyDown()->execute(_keyboard);
 
@@ -583,8 +579,10 @@ Canvas::step()
 
         case SDL_KEYUP:
         {
-            // TODO: Use _disableSDLInputEvents to disable keyboard events in canvas
-            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
 
             _keyboard->keyUp()->execute(_keyboard);
 
