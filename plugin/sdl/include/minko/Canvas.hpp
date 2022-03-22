@@ -80,7 +80,6 @@ namespace minko
         uint                                                                    _height;
         std::shared_ptr<data::Provider>                                         _data;
         int                                                                     _flags;
-        bool                                                                    _disableSDLEvents;
 
         // FIXME Once SmartShape 11 is released, _disableSDLInputEvents (and therefore the SDL Input Events in Canvas.cpp) should be removed
         // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/295
