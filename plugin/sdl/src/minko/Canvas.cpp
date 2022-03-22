@@ -65,7 +65,7 @@ using namespace minko::component;
 using namespace minko::scene;
 using namespace minko::async;
 
-Canvas::Canvas(const std::string& name, const uint width, const uint height, int flags, bool disableSDLEvents) :
+Canvas::Canvas(const std::string& name, const uint width, const uint height, int flags, bool disableSDLInputEvents) :
     _name(name),
     _flags(flags),
     _data(data::Provider::create()),
@@ -90,7 +90,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _y(0),
     _onWindow(false),
     _enableRendering(true),
-    _disableSDLEvents(disableSDLEvents)
+    _disableSDLInputEvents(disableSDLInputEvents)
 {
     _data->set("viewport", math::vec4(0.f, 0.f, (float)width, (float)height));
 }
@@ -469,8 +469,11 @@ Canvas::step()
     auto executeMouseMove = false;
     auto executePinchZoom = false;
 
-    _mouse->dX(0);
-    _mouse->dY(0);
+    if (!_disableSDLInputEvents)
+    {
+        _mouse->dX(0);
+        _mouse->dY(0); 
+    }
 
     auto mouseDX = 0;
     auto mouseDY = 0;
@@ -495,10 +498,8 @@ Canvas::step()
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
-            if (_disableSDLEvents)
-            {
-                break;
-            }
+            // TODO: Use _disableSDLInputEvents to disable keyboard events in canvas
+            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
 
             int i = 0;
 
@@ -550,15 +551,16 @@ Canvas::step()
         }
         case SDL_TEXTEDITING:
         {
+            // TODO: Remove this case
+            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
+
             //std::cout << "text editing" << std::endl;
             break;
         }
         case SDL_KEYDOWN:
         {
-            if (_disableSDLEvents)
-            {
-                break;
-            }
+            // TODO: Use _disableSDLInputEvents to disable keyboard events in canvas
+            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
 
             _keyboard->keyDown()->execute(_keyboard);
 
@@ -581,10 +583,8 @@ Canvas::step()
 
         case SDL_KEYUP:
         {
-            if (_disableSDLEvents)
-            {
-                break;
-            }
+            // TODO: Use _disableSDLInputEvents to disable keyboard events in canvas
+            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
 
             _keyboard->keyUp()->execute(_keyboard);
 
@@ -614,6 +614,11 @@ Canvas::step()
 
         case SDL_MOUSEMOTION:
         {
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
+
             int windowW;
             int windowH;
 
@@ -649,6 +654,11 @@ Canvas::step()
 
         case SDL_MOUSEBUTTONDOWN:
         {
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
+
             if (enteredOrLeftThisFrame)
                 break;
 
@@ -677,6 +687,11 @@ Canvas::step()
 
         case SDL_MOUSEBUTTONUP:
         {
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
+
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
@@ -694,6 +709,11 @@ Canvas::step()
 
         case SDL_MOUSEWHEEL:
         {
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
+
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
             break;
         }
@@ -701,6 +721,11 @@ Canvas::step()
         // Touch events
         case SDL_FINGERDOWN:
         {
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
+
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
             auto id = static_cast<int>(event.tfinger.fingerId);
@@ -734,6 +759,11 @@ Canvas::step()
 
         case SDL_FINGERUP:
         {
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
+
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
             auto id = static_cast<int>(event.tfinger.fingerId);
@@ -791,6 +821,11 @@ Canvas::step()
 
         case SDL_FINGERMOTION:
         {
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
+
             auto id = static_cast<int>(event.tfinger.fingerId);
 
             auto normalizedX = event.tfinger.x;
@@ -847,6 +882,9 @@ Canvas::step()
         }
         case SDL_JOYAXISMOTION:
         {
+            // TODO: Disable joystick events in canvas
+            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/295
+
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
                 _joysticks[event.jaxis.which], event.jaxis.which, event.jaxis.axis, event.jaxis.value
             );
@@ -855,6 +893,9 @@ Canvas::step()
 
         case SDL_JOYHATMOTION:
         {
+            // TODO: Disable joystick events in canvas
+            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/295
+
             _joysticks[event.jhat.which]->joystickHatMotion()->execute(
                 _joysticks[event.jhat.which], event.jhat.which, event.jhat.hat, event.jhat.value
             );
@@ -863,6 +904,9 @@ Canvas::step()
 
         case SDL_JOYBUTTONDOWN:
         {
+            // TODO: Disable joystick events in canvas
+            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/295
+
             input::SDLJoystick::Button button = input::SDLJoystick::button(event.jbutton.button);
 
             _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
@@ -873,6 +917,9 @@ Canvas::step()
 
         case SDL_JOYBUTTONUP:
         {
+            // TODO: Disable joystick events in canvas
+            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/295
+
             input::SDLJoystick::Button button = input::SDLJoystick::button(event.jbutton.button);
 
             _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
@@ -884,6 +931,9 @@ Canvas::step()
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_JOYDEVICEADDED:
         {
+            // TODO: Disable joystick events in canvas
+            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/295
+
             int             device = event.cdevice.which;
             auto            joystick = SDL_JoystickOpen(device);
             SDL_JoystickID  instance_id = SDL_JoystickInstanceID(joystick);
@@ -900,6 +950,9 @@ Canvas::step()
 
         case SDL_JOYDEVICEREMOVED:
         {
+            // TODO: Disable joystick events in canvas
+            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/295
+
             auto joystick = _joysticks[event.cdevice.which]->_joystick;
 
             _joystickRemoved->execute(that, _joysticks[event.cdevice.which]);
