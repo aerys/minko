@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/input/SDLKeyboard.hpp"
+#include "minko/log/Logger.hpp"
 
 #include "SDL.h"
 
@@ -237,54 +238,88 @@ const std::unordered_map<SDLKeyboard::Key, SDLKeyboard::KeyType> SDLKeyboard::ke
     { Key::SHIFT_RIGHT, KeyType::ScanCode },
 };
 
-SDLKeyboard::SDLKeyboard()
+SDLKeyboard::SDLKeyboard(bool sdlInputEventsDisabled) :
+    _SDLInputEventsDisabled(sdlInputEventsDisabled)
 {
-    _keyboardState = SDL_GetKeyboardState(NULL);
+    LOG_INFO("SDLKeyboard _SDLInputEventsDisabled " << _SDLInputEventsDisabled);
+    if (!_SDLInputEventsDisabled)
+    {
+        _keyboardState = SDL_GetKeyboardState(NULL);
+    }
 }
 
 bool SDLKeyboard::keyIsDown(input::Keyboard::Key key)
 {
-    auto keyType = keyTypeMap.find(key);
+    // if SDL Input Events are not disabled, use _keyboardState to find out if a key is down (unchanged code)
+    // else if SDL Input Events are disabled, use _pressedKeys to find out if a key is down (new code)
+    if (!_SDLInputEventsDisabled)
+    {
+        LOG_INFO("SDLKeyboard::keyIsDown old code");
+        LOG_INFO("SDLKeyboard::keyIsDown key " << key);
+        auto keyType = keyTypeMap.find(key);
 
-    // This key is not properly mapped (we don't know if it comes from a key code or a scan code)
-    if (keyType == keyTypeMap.end())
+        // This key is not properly mapped (we don't know if it comes from a key code or a scan code)
+        if (keyType == keyTypeMap.end())
+            return false;
+
+        // This key only has a key code
+        if (keyType->second == KeyType::KeyCode)
+        {
+            auto keyCode = input::KeyMap::keyToKeyCodeMap.find(key);
+
+            // This key hasn't any key -> key code mapping
+            if (keyCode == input::KeyMap::keyToKeyCodeMap.end())
+                return false;
+
+    #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+            // Note: bug in emscripten, GetKeyStates is indexed by key codes.
+            LOG_INFO("SDLKeyboard::keyIsDown keyCode->second " << static_cast<int>(keyCode->second));
+            LOG_INFO("SDLKeyboard::keyIsDown _keyboardState " << static_cast<int>(_keyboardState[static_cast<int>(keyCode->second)]));
+            return _keyboardState[static_cast<int>(keyCode->second)] != 0;
+    #else
+            // link to doc what is stored in _keyboardState are uint8*.
+            return _keyboardState[static_cast<int>(
+                getScanCodeFromKeyCode(static_cast<input::Keyboard::KeyCode>(keyCode->second)))] != 0;
+    #endif
+        }
+        // This key only has a scan code
+        else if (keyType->second == KeyType::ScanCode)
+        {
+            auto scanCode = input::KeyMap::keyToScanCodeMap.find(key);
+
+            // This key hasn't any key -> key code mapping
+            if (scanCode == input::KeyMap::keyToScanCodeMap.end())
+                return false;
+
+    #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+            LOG_INFO("SDLKeyboard::keyIsDown scanCode 270" << static_cast<int>(getKeyCodeFromScanCode(static_cast<input::Keyboard::ScanCode>(270))));
+            LOG_INFO("SDLKeyboard::keyIsDown scanCode 280" << static_cast<int>(getKeyCodeFromScanCode(static_cast<input::Keyboard::ScanCode>(280))));
+            LOG_INFO("SDLKeyboard::keyIsDown scanCode 283" << static_cast<int>(getKeyCodeFromScanCode(static_cast<input::Keyboard::ScanCode>(283))));
+            LOG_INFO("SDLKeyboard::keyIsDown scanCode 284" << static_cast<int>(getKeyCodeFromScanCode(static_cast<input::Keyboard::ScanCode>(284))));
+            LOG_INFO("SDLKeyboard::keyIsDown scanCode " << static_cast<int>(getKeyCodeFromScanCode(static_cast<input::Keyboard::ScanCode>(scanCode->second))));
+            LOG_INFO("SDLKeyboard::keyIsDown _keyboardState " << _keyboardState[static_cast<int>(getKeyCodeFromScanCode(static_cast<input::Keyboard::ScanCode>(scanCode->second)))]);
+            return _keyboardState[static_cast<int>(
+                getKeyCodeFromScanCode(static_cast<input::Keyboard::ScanCode>(scanCode->second)))] != 0;
+    #else
+            return _keyboardState[static_cast<int>(scanCode->second)] != 0;
+    #endif
+        }
+
         return false;
-
-    // This key only has a key code
-    if (keyType->second == KeyType::KeyCode)
-    {
-        auto keyCode = input::KeyMap::keyToKeyCodeMap.find(key);
-
-        // This key hasn't any key -> key code mapping
-        if (keyCode == input::KeyMap::keyToKeyCodeMap.end())
-            return false;
-
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-        // Note: bug in emscripten, GetKeyStates is indexed by key codes.
-        return _keyboardState[static_cast<int>(keyCode->second)] != 0;
-#else
-        return _keyboardState[static_cast<int>(
-            getScanCodeFromKeyCode(static_cast<input::Keyboard::KeyCode>(keyCode->second)))] != 0;
-#endif
     }
-    // This key only has a scan code
-    else if (keyType->second == KeyType::ScanCode)
+    else
     {
-        auto scanCode = input::KeyMap::keyToScanCodeMap.find(key);
-
-        // This key hasn't any key -> key code mapping
-        if (scanCode == input::KeyMap::keyToScanCodeMap.end())
+        LOG_INFO("SDLKeyboard::keyIsDown new code");
+        auto it = _pressedKeys.find(key);
+        if (it == _pressedKeys.end())
+        {
             return false;
-
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-        return _keyboardState[static_cast<int>(
-            getKeyCodeFromScanCode(static_cast<input::Keyboard::ScanCode>(scanCode->second)))] != 0;
-#else
-        return _keyboardState[static_cast<int>(scanCode->second)] != 0;
-#endif
+        }
+        else
+        {
+            return true;
+        }
     }
-
-    return false;
 }
 
 input::Keyboard::KeyCode SDLKeyboard::getKeyCodeFromScanCode(input::Keyboard::ScanCode scanCode)
@@ -295,4 +330,38 @@ input::Keyboard::KeyCode SDLKeyboard::getKeyCodeFromScanCode(input::Keyboard::Sc
 input::Keyboard::ScanCode SDLKeyboard::getScanCodeFromKeyCode(input::Keyboard::KeyCode keyCode)
 {
     return static_cast<input::Keyboard::ScanCode>(SDL_GetScancodeFromKey(static_cast<int>(keyCode)));
+}
+
+void SDLKeyboard::setSDLInputEventsDisabled(bool disable)
+{
+    _SDLInputEventsDisabled = disable;
+
+    if (_SDLInputEventsDisabled)
+    {
+        LOG_INFO("SDLKeyboard::setSDLInputEventsDisabled new code");
+        _keyboardState = nullptr;
+        _pressedKeys.clear();
+    }
+    else
+    {
+        LOG_INFO("SDLKeyboard::setSDLInputEventsDisabled old code");
+        _keyboardState = SDL_GetKeyboardState(NULL);
+        _pressedKeys.clear();
+    }
+}
+
+// void SDLKeyboard::setKeyState(std::string keyStr, bool isPressed)
+void SDLKeyboard::setKeyState(Keyboard::Key key, bool isPressed)
+{
+    LOG_INFO("SDLKeyboard::setKeyState key: " << key);
+    LOG_INFO("SDLKeyboard::setKeyState isPressed: " << isPressed);
+
+    if (isPressed)
+    {
+        _pressedKeys.insert(key);
+    }
+    else
+    {
+        _pressedKeys.erase(key);
+    }
 }

@@ -146,7 +146,7 @@ void
 Canvas::initializeInputs()
 {
     _mouse = input::SDLMouse::create(shared_from_this());
-    _keyboard = input::SDLKeyboard::create();
+    _keyboard = input::SDLKeyboard::create(_disableSDLInputEvents);
     _touch = input::SDLTouch::create(shared_from_this());
 
 #if (MINKO_PLATFORM & (MINKO_PLATFORM_LINUX | MINKO_PLATFORM_OSX | MINKO_PLATFORM_WINDOWS))
@@ -392,6 +392,19 @@ Canvas::height(uint value)
         viewport.w = (float)value;
         _data->set<math::vec4>("viewport", viewport);
     }
+}
+
+void
+Canvas::setDisableSDLInputEvents(bool disable)
+{
+    _disableSDLInputEvents = disable;
+    _keyboard->setSDLInputEventsDisabled(_disableSDLInputEvents);
+}
+
+void
+Canvas::changeSDLKeyboardState(uint key, bool isPressed)
+{
+    _keyboard->setKeyState(static_cast<input::Keyboard::Key>(key), isPressed);
 }
 
 void

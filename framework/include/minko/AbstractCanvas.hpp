@@ -72,6 +72,16 @@ namespace minko
         std::shared_ptr<input::Keyboard>
         keyboard() = 0;
 
+        // changeSDLKeyboardState is only used if SDL Input events are disabled
+        // It is called from UIEventScript.cpp in smartshape-app
+        // It has to be defined here because the attribute _canvas of the class UIEventScript is of type AbstractCanvas
+        // UIEventScript cannot directly access SDLKeyboard because _canvas->keyboard() returns a Keyboard (and not an SDLKeyboard)
+        // key is a uint because input::Keyboard::Key throws a "incomplete type named in nested name specifier" error
+        // because Keyboard is not defined at this point
+        virtual
+        void
+        changeSDLKeyboardState(uint key, bool isPressed) = 0;
+
         virtual
         std::shared_ptr<input::Touch>
         touch() = 0;
