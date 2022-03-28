@@ -36,6 +36,8 @@ namespace minko
             const unsigned char* _keyboardState; // used when SDL input events are enabled
             std::unordered_set <Keyboard::Key> _pressedKeys; // used when SDL input events are disabled
 
+            bool _SDLInputEventsDisabled;
+
         public:
             static inline
             std::shared_ptr<SDLKeyboard>
@@ -48,8 +50,6 @@ namespace minko
             setSDLInputEventsDisabled(bool disable);
 
             // setKeyState is only used when SDL input events are disabled
-            // void
-            // setKeyState(std::string key, bool isPressed);
             void
             setKeyState(Keyboard::Key key, bool isPressed);
 
@@ -89,9 +89,6 @@ namespace minko
 
             ScanCode
             getScanCodeFromKeyCode(KeyCode keyCode);
-
-            bool
-            _SDLInputEventsDisabled;
         };
     }
 }

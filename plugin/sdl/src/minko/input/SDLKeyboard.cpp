@@ -335,7 +335,6 @@ void SDLKeyboard::setSDLInputEventsDisabled(bool disable)
     }
 }
 
-// void SDLKeyboard::setKeyState(std::string keyStr, bool isPressed)
 void SDLKeyboard::setKeyState(Keyboard::Key key, bool isPressed)
 {
     if (isPressed)
