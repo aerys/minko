@@ -389,16 +389,17 @@ namespace minko
         resetInputs() const;
 
         void
-        setDisableSDLInputEvents(bool disable)
-        {
-            _disableSDLInputEvents = disable;
-        }
+        setDisableSDLInputEvents(bool disable);
 
         bool
         areSDLInputEventsDisabled()
         {
             return _disableSDLInputEvents;
         }
+
+        // changeSDLKeyboardState is only used if SDL Input events are disabled
+        void
+        changeSDLKeyboardState(uint key, bool isPressed) override;
 
     private:
         Canvas(const std::string&   name,

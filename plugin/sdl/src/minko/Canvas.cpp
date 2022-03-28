@@ -146,7 +146,7 @@ void
 Canvas::initializeInputs()
 {
     _mouse = input::SDLMouse::create(shared_from_this());
-    _keyboard = input::SDLKeyboard::create();
+    _keyboard = input::SDLKeyboard::create(_disableSDLInputEvents);
     _touch = input::SDLTouch::create(shared_from_this());
 
 #if (MINKO_PLATFORM & (MINKO_PLATFORM_LINUX | MINKO_PLATFORM_OSX | MINKO_PLATFORM_WINDOWS))
@@ -395,6 +395,19 @@ Canvas::height(uint value)
 }
 
 void
+Canvas::setDisableSDLInputEvents(bool disable)
+{
+    _disableSDLInputEvents = disable;
+    _keyboard->setSDLInputEventsDisabled(_disableSDLInputEvents);
+}
+
+void
+Canvas::changeSDLKeyboardState(uint key, bool isPressed)
+{
+    _keyboard->setKeyState(static_cast<input::Keyboard::Key>(key), isPressed);
+}
+
+void
 Canvas::step()
 {
     auto that = shared_from_this();
@@ -498,8 +511,10 @@ Canvas::step()
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
-            // TODO: Use _disableSDLInputEvents to disable keyboard events in canvas
-            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
 
             int i = 0;
 
@@ -549,18 +564,12 @@ Canvas::step()
 
             break;
         }
-        case SDL_TEXTEDITING:
-        {
-            // TODO: Remove this case
-            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
-
-            //std::cout << "text editing" << std::endl;
-            break;
-        }
         case SDL_KEYDOWN:
         {
-            // TODO: Use _disableSDLInputEvents to disable keyboard events in canvas
-            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
 
             _keyboard->keyDown()->execute(_keyboard);
 
@@ -583,8 +592,10 @@ Canvas::step()
 
         case SDL_KEYUP:
         {
-            // TODO: Use _disableSDLInputEvents to disable keyboard events in canvas
-            // Issue: https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/294
+            if (_disableSDLInputEvents)
+            {
+                break;
+            }
 
             _keyboard->keyUp()->execute(_keyboard);
 

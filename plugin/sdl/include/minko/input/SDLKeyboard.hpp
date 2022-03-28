@@ -33,15 +33,25 @@ namespace minko
             friend Canvas;
 
         private:
-            const unsigned char* _keyboardState;
+            const unsigned char* _keyboardState; // used when SDL input events are enabled
+            std::unordered_set <Keyboard::Key> _pressedKeys; // used when SDL input events are disabled
+
+            bool _SDLInputEventsDisabled;
 
         public:
             static inline
             std::shared_ptr<SDLKeyboard>
-            create()
+            create(bool sdlInputEventsDisabled = false)
             {
-                return std::shared_ptr<SDLKeyboard>(new SDLKeyboard());
+                return std::shared_ptr<SDLKeyboard>(new SDLKeyboard(sdlInputEventsDisabled));
             }
+
+            void
+            setSDLInputEventsDisabled(bool disable);
+
+            // setKeyState is only used when SDL input events are disabled
+            void
+            setKeyState(Keyboard::Key key, bool isPressed);
 
         public:
             bool
@@ -72,7 +82,7 @@ namespace minko
                 return _keyUp.count(static_cast<int>(key)) != 0;
             }
 
-            SDLKeyboard();
+            SDLKeyboard(bool sdlInputEventsDisabled = false);
 
             KeyCode
             getKeyCodeFromScanCode(ScanCode scanCode);
