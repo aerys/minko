@@ -1040,48 +1040,51 @@ Canvas::step()
         }
     }
 
-    // Execute Pinch-Zoom event if needed.
-    if (executePinchZoom && _touch->numTouches() == 2)
+    if (!_disableSDLInputEvents)
     {
-        input::Touch::TouchPoint touch1 = _touch->touch(_touch->identifiers()[0]);
-        input::Touch::TouchPoint touch2 = _touch->touch(_touch->identifiers()[1]);
-
-        auto normalizedPos1 = math::vec2(touch1.x / static_cast<float>(_width), touch1.y / static_cast<float>(_height));
-        auto normalizedDPos1 = math::vec2(touch1.dX / static_cast<float>(_width), touch1.dY / static_cast<float>(_height));
-        auto normalizedPos2 = math::vec2(touch2.x / static_cast<float>(_width), touch2.y / static_cast<float>(_height));
-        auto normalizedDPos2 = math::vec2(touch2.dX / static_cast<float>(_width), touch2.dY / static_cast<float>(_height));
-
-        auto previousDelta = (normalizedPos2 - normalizedDPos2) - (normalizedPos1 - normalizedDPos1);
-        auto currentDelta = normalizedPos2 - normalizedPos1;
-
-        auto previousDist = math::length(previousDelta);
-        auto currentDist = math::length(currentDelta);
-
-        auto normalizedDeltaDistance = currentDist - previousDist;
-
-        if (normalizedDeltaDistance != 0.0)
+        // Execute Pinch-Zoom event if needed.
+        if (executePinchZoom && _touch->numTouches() == 2)
         {
-            // normalizedDeltaDistance is a percentage of the screen
-            auto deltaDistance = normalizedDeltaDistance * 100.f;
+            input::Touch::TouchPoint touch1 = _touch->touch(_touch->identifiers()[0]);
+            input::Touch::TouchPoint touch2 = _touch->touch(_touch->identifiers()[1]);
 
-            _touch->pinchZoom()->execute(_touch, deltaDistance);
+            auto normalizedPos1 = math::vec2(touch1.x / static_cast<float>(_width), touch1.y / static_cast<float>(_height));
+            auto normalizedDPos1 = math::vec2(touch1.dX / static_cast<float>(_width), touch1.dY / static_cast<float>(_height));
+            auto normalizedPos2 = math::vec2(touch2.x / static_cast<float>(_width), touch2.y / static_cast<float>(_height));
+            auto normalizedDPos2 = math::vec2(touch2.dX / static_cast<float>(_width), touch2.dY / static_cast<float>(_height));
+
+            auto previousDelta = (normalizedPos2 - normalizedDPos2) - (normalizedPos1 - normalizedDPos1);
+            auto currentDelta = normalizedPos2 - normalizedPos1;
+
+            auto previousDist = math::length(previousDelta);
+            auto currentDist = math::length(currentDelta);
+
+            auto normalizedDeltaDistance = currentDist - previousDist;
+
+            if (normalizedDeltaDistance != 0.0)
+            {
+                // normalizedDeltaDistance is a percentage of the screen
+                auto deltaDistance = normalizedDeltaDistance * 100.f;
+
+                _touch->pinchZoom()->execute(_touch, deltaDistance);
+            }
         }
-    }
 
-    // Update delta mouse pos.
-    if (mouseDX != 0)
-        _mouse->dX(mouseDX);
-    if (mouseDY != 0)
-        _mouse->dY(mouseDY);
+        // Update delta mouse pos.
+        if (mouseDX != 0)
+            _mouse->dX(mouseDX);
+        if (mouseDY != 0)
+            _mouse->dY(mouseDY);
 
-    // Execute mouse move event only once per frame
-    if (executeMouseMove)
-        _mouse->move()->execute(_mouse, _mouse->dX(), _mouse->dY());
+        // Execute mouse move event only once per frame
+        if (executeMouseMove)
+            _mouse->move()->execute(_mouse, _mouse->dX(), _mouse->dY());
 
-    if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
-    {
-        _touch->longHold()->execute(_touch, _touch->averageX(), _touch->averageY());
-        _touch->lastTouchDownTime(-1.0f);
+        if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
+        {
+            _touch->longHold()->execute(_touch, _touch->averageX(), _touch->averageY());
+            _touch->lastTouchDownTime(-1.0f);
+        }
     }
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
