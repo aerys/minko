@@ -491,7 +491,10 @@ Canvas::step()
     auto mouseDX = 0;
     auto mouseDY = 0;
 
-    _touch->resetDeltas();
+    if (!_disableSDLInputEvents)
+    {
+        _touch->resetDeltas();
+    }
 
     while (SDL_PollEvent(&event))
     {
