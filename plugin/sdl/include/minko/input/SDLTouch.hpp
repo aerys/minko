@@ -156,11 +156,6 @@ namespace minko
         private:
             SDLTouch(std::shared_ptr<Canvas> canvas);
 
-            static const float TAP_MOVE_THRESHOLD;
-            static const float TAP_DELAY_THRESHOLD;
-            static const float DOUBLE_TAP_DELAY_THRESHOLD;
-            static const float LONG_HOLD_DELAY_THRESHOLD;
-
             float _lastTouchDownX;
             float _lastTouchDownY;
             float _lastTouchDownTime;
@@ -168,7 +163,12 @@ namespace minko
             float _lastTapX;
             float _lastTapY;
             float _lastTapTime;
+
         public:
+            static const float TAP_MOVE_THRESHOLD;
+            static const float TAP_DELAY_THRESHOLD;
+            static const float DOUBLE_TAP_DELAY_THRESHOLD;
+            static const float LONG_HOLD_DELAY_THRESHOLD;
 
             static const float SWIPE_PRECISION;
         };
