@@ -397,10 +397,6 @@ namespace minko
             return _disableSDLInputEvents;
         }
 
-        // changeSDLKeyboardState is only used if SDL Input events are disabled
-        void
-        changeSDLKeyboardState(uint key, bool isPressed) override;
-
     private:
         Canvas(const std::string&   name,
                const uint           width,

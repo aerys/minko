@@ -402,12 +402,6 @@ Canvas::setDisableSDLInputEvents(bool disable)
 }
 
 void
-Canvas::changeSDLKeyboardState(uint key, bool isPressed)
-{
-    _keyboard->setKeyState(static_cast<input::Keyboard::Key>(key), isPressed);
-}
-
-void
 Canvas::step()
 {
     auto that = shared_from_this();
@@ -485,7 +479,7 @@ Canvas::step()
     if (!_disableSDLInputEvents)
     {
         _mouse->dX(0);
-        _mouse->dY(0); 
+        _mouse->dY(0);
     }
 
     auto mouseDX = 0;
@@ -1112,7 +1106,7 @@ Canvas::step()
     _framerate = 1000.f / _frameDuration;
 
     auto remainingTime = (1000.f / _desiredEventrate) - _frameDuration;
-  
+
     if (remainingTime > 0)
     {
         _backend->wait(that, uint(remainingTime));
