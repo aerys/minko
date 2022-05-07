@@ -3,7 +3,6 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
       when: never
-    - if: '$CI_COMMIT_BRANCH'
 
 variables:
   DOCKER_BUILD_FORCE:
@@ -25,12 +24,12 @@ stages:
     - virtualbox
   rules:
     - changes:
-        - docker/$DOCKER_IMAGE_NAME/Dockerfile
+      - docker/$DOCKER_IMAGE_NAME/Dockerfile
     - if: '$DOCKER_BUILD_FORCE == "true"'
   artifacts:
-      expire_in: 1 hr
-      paths:
-        - ./docker-image.tar
+    expire_in: 1 hr
+    paths:
+      - ./docker-image.tar
   before_script:
     - docker info
   script:
