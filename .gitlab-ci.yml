@@ -6,7 +6,7 @@ workflow:
     - if: '$CI_COMMIT_BRANCH'
 
 variables:
-  DOCKER_FORCE_BUILD:
+  DOCKER_BUILD_FORCE:
     value: "false"
     description: "Force a build of the container images."
   DOCKER_PUSH_FORCE:
@@ -26,7 +26,7 @@ stages:
   rules:
     - changes:
         - docker/$DOCKER_IMAGE_NAME/Dockerfile
-    - if: '$DOCKER_FORCE_BUILD == "true"'
+    - if: '$DOCKER_BUILD_FORCE == "true"'
   artifacts:
       expire_in: 1 hr
       paths:
