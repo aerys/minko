@@ -128,7 +128,7 @@ docker_push:linux64:
 build:html5:
   <<: *build_with_artifacts_template
   stage: build
-  image: registry.aerys.in/aerys/smartshape-docker/html5:14459
+  image: registry.aerys.in/aerys/smartshape/smartshape-engine/html5:33413
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_WASM=ON -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/emscripten/sdk/cmake/Modules/Platform/Emscripten.cmake ..
@@ -137,7 +137,7 @@ build:html5:
 build:android:
   <<: *build_with_artifacts_template
   stage: build
-  image: registry.aerys.in/aerys/smartshape-docker/android:5702
+  image: registry.aerys.in/aerys/smartshape/smartshape-engine/android:33413
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_NODEJS_WORKER=ON -DCMAKE_TOOLCHAIN_FILE=/opt/android-ndk-linux/build/cmake/android.toolchain.cmake ..
@@ -146,7 +146,7 @@ build:android:
 build:linux64:
   <<: *build_with_artifacts_template
   stage: build
-  image: registry.aerys.in/aerys/smartshape-docker/linux64:8398
+  image: registry.aerys.in/aerys/smartshape/smartshape-engine/linux64:33413
   script:
     - mkdir -p build && cd build
     - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
@@ -155,7 +155,7 @@ build:linux64:
 build:linux64_offscreen:
   <<: *build_with_artifacts_template
   stage: build
-  image: registry.aerys.in/aerys/smartshape-docker/linux64:8398
+  image: registry.aerys.in/aerys/smartshape/smartshape-engine/linux64:33413
   script:
     - ./plugin/serializer/script/download_dependencies.sh .
     - mkdir -p build && cd build
@@ -207,7 +207,7 @@ build:windows64_offscreen:
 
 test:linux64_offscreen:
   stage: test
-  image: registry.aerys.in/aerys/smartshape-docker/linux64:8398
+  image: registry.aerys.in/aerys/smartshape/smartshape-engine/linux64:33413
   dependencies:
     - build:linux64_offscreen
   artifacts:
@@ -216,14 +216,16 @@ test:linux64_offscreen:
     expire_in: 1 hr
     paths:
       - build/test
-  script:
+  before_script:
+    - apt-get update && apt-get install -y python3-pip
     - cd ./test/websocket-server
     - pip3 install -r requirements.txt
     - python3 server.py &
     - WS_SERVER_PID=$!
     - python3 tls_server.py &
     - WSS_SERVER_PID=$!
-    - cd ../../build/test/bin
+  script:
+    - cd "${CI_PROJECT_DIR}/build/test/bin"
     - ./minko-test
     - kill -SIGINT ${WS_SERVER_PID}
     - kill -SIGINT ${WSS_SERVER_PID}

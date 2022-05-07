@@ -32,8 +32,8 @@
   - Docker CE 17+
   - Visual Studio 2017
   - CMake
-- Being logged on to GitLab's Container Registry to be able to pull the docker images (see this [README](https://git.aerys.in/aerys/smartshape-docker/-/blob/master/README.md))
-- Clone the repository [**smartshape-engine**](https://git.aerys.in/aerys/smartshape-engine)
+- Clone the repository [**smartshape-engine**](https://git.aerys.in/aerys/smartshape/smartshape-engine)
+- Being logged on to the Aerys container registry or build the container images in the `docker` folder manually.
 - Go into the root directory of **smartshape-engine**.
 
 ### 1.2. Build starting from **smartshape-engine@10.2.0**
@@ -99,7 +99,7 @@ ENVIRONMENT VARIABLES
 docker run -it --rm \
    -v ${PWD}:${PWD} -w ${PWD} \
     -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
-   registry.aerys.in/aerys/smartshape-docker/android:{TAG} \
+   registry.aerys.in/aerys/smartshape/smartshape-engine/android:{TAG} \
    bash -c "
         mkdir -p build && cd build
         cmake .. \
@@ -118,7 +118,7 @@ docker run -it --rm \
 docker run -it --rm \
    -v ${PWD}:${PWD} -w ${PWD} \
    -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
-   registry.aerys.in/aerys/smartshape-docker/html5:{TAG} \
+   registry.aerys.in/aerys/smartshape/smartshape-engine/html5:{TAG} \
     bash -c "
         mkdir -p build && cd build
         cmake .. \
@@ -136,7 +136,7 @@ docker run -it --rm \
 docker run -it --rm \
    -v ${PWD}:${PWD} -w ${PWD} \
    -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
-   registry.aerys.in/aerys/smartshape-docker/linux64:{TAG} \
+   registry.aerys.in/aerys/smartshape/smartshape-engine/linux64:{TAG} \
    bash -c "
         mkdir -p build && cd build
         cmake .. \
