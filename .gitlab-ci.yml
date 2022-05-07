@@ -1,8 +1,55 @@
+variables:
+  DOCKER_BUILD_FORCE:
+    value: "false"
+    description: "Force a build of the container images."
+  DOCKER_PUSH_FORCE:
+    value: "false"
+    description: "Force the container images to be pushed to the registry even if an image with the same label exists."
+
 stages:
   - build
   - test
   - archive
   - release
+
+.docker_build_template: &docker_build_template
+  stage: build
+  tags:
+    - virtualbox
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - docker/$DOCKER_IMAGE_NAME/Dockerfile
+    - if: $DOCKER_BUILD_FORCE == "true"
+  artifacts:
+    expire_in: 1 hr
+    paths:
+      - ./docker-image.tar
+  before_script:
+    - docker info
+  script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - docker build -t ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} docker/${DOCKER_IMAGE_NAME}
+    - docker save ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} -o docker-image.tar
+
+.docker_push_template: &docker_push_template
+  stage: archive
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+      changes:
+        - docker/$DOCKER_IMAGE_NAME/Dockerfile
+    - if: $DOCKER_PUSH_FORCE == "true"
+  tags:
+    - virtualbox
+  before_script:
+    - docker info
+  script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - docker load -i docker-image.tar
+    - docker tag ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:main
+    - "( [ -z $DOCKER_PUSH_FORCE ] || [ ${DOCKER_PUSH_FORCE} != true ] ) && docker manifest inspect ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} &> /dev/null && echo \"Image already exists\" && exit 1"
+    - docker push ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID}
+    - docker push ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:main
 
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
@@ -42,6 +89,42 @@ stages:
     - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
     - b2 upload_file --noProgress --info CI_PIPELINE_ID=${CI_PIPELINE_ID} --info CI_COMMIT_SHA=${CI_COMMIT_SHA} "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE_NAME}" "${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}/${ARCHIVE_NAME}"
 
+docker_build:android:
+  variables:
+    DOCKER_IMAGE_NAME: android
+  <<: *docker_build_template
+
+docker_build:html5:
+  variables:
+    DOCKER_IMAGE_NAME: html5
+  <<: *docker_build_template
+
+docker_build:linux64:
+  variables:
+    DOCKER_IMAGE_NAME: linux64
+  <<: *docker_build_template
+
+docker_push:android:
+  variables:
+    DOCKER_IMAGE_NAME: android
+  dependencies:
+    - docker_build:android
+  <<: *docker_push_template
+
+docker_push:html5:
+  variables:
+    DOCKER_IMAGE_NAME: html5
+  dependencies:
+    - docker_build:html5
+  <<: *docker_push_template
+
+docker_push:linux64:
+  variables:
+    DOCKER_IMAGE_NAME: linux64
+  dependencies:
+    - docker_build:linux64
+  <<: *docker_push_template
+
 build:html5:
   <<: *build_with_artifacts_template
   stage: build
@@ -60,7 +143,7 @@ build:android:
     - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_NODEJS_WORKER=ON -DCMAKE_TOOLCHAIN_FILE=/opt/android-ndk-linux/build/cmake/android.toolchain.cmake ..
     - make
 
-build:linux:
+build:linux64:
   <<: *build_with_artifacts_template
   stage: build
   image: registry.aerys.in/aerys/smartshape-docker/linux64:8398
@@ -69,7 +152,7 @@ build:linux:
     - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
     - make -j$(nproc)
 
-build:linux_offscreen:
+build:linux64_offscreen:
   <<: *build_with_artifacts_template
   stage: build
   image: registry.aerys.in/aerys/smartshape-docker/linux64:8398
@@ -122,11 +205,11 @@ build:windows64_offscreen:
 #     - cd .\build\test\bin
 #     - minko-test.exe
 
-test:linux_offscreen:
+test:linux64_offscreen:
   stage: test
   image: registry.aerys.in/aerys/smartshape-docker/linux64:8398
   dependencies:
-    - build:linux_offscreen
+    - build:linux64_offscreen
   artifacts:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
     when: on_failure
@@ -146,13 +229,13 @@ test:linux_offscreen:
     - kill -SIGINT ${WSS_SERVER_PID}
     - wait
 
-archive:linux_offscreen:
+archive:linux64_offscreen:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux_offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux64_offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
-    - build:linux_offscreen
+    - build:linux64_offscreen
 
 archive:android:
   <<: *archive_template
@@ -176,7 +259,7 @@ archive:linux:
     GIT_STRATEGY: none
     ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
-    - build:linux
+    - build:linux64
 
 archive:windows64:
   <<: *archive_template
