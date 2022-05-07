@@ -35,7 +35,7 @@ stages:
     - docker info
   script:
     - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
-    - docker build -t ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} ${DOCKER_IMAGE_NAME}
+    - docker build -t ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} docker/${DOCKER_IMAGE_NAME}
     - docker save ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} -o docker-image.tar
 
 .docker_push_template: &docker_push_template
