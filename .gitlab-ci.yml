@@ -1,8 +1,3 @@
-workflow:
-  rules:
-    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
-      when: never
-
 variables:
   DOCKER_BUILD_FORCE:
     value: "false"
@@ -22,10 +17,10 @@ stages:
   tags:
     - virtualbox
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: $CI_COMMIT_BRANCH
       changes:
         - docker/$DOCKER_IMAGE_NAME/Dockerfile
-    - if: '$DOCKER_BUILD_FORCE == "true"'
+    - if: $DOCKER_BUILD_FORCE == "true"
   artifacts:
     expire_in: 1 hr
     paths:
@@ -40,10 +35,10 @@ stages:
 .docker_push_template: &docker_push_template
   stage: archive
   rules:
-    - if: '$CI_COMMIT_REF_NAME == "main"'
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
       changes:
         - docker/$DOCKER_IMAGE_NAME/Dockerfile
-    - if: '$DOCKER_PUSH_FORCE == "true"'
+    - if: $DOCKER_PUSH_FORCE == "true"
   tags:
     - virtualbox
   before_script:
