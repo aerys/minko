@@ -995,6 +995,33 @@ OpenGLES2Context::uploadTexture2dData(uint 		texture,
 }
 
 void
+OpenGLES2Context::getTexture2dData(uint           texture,
+                                   unsigned int   x,
+                                   unsigned int   y,
+                                   unsigned int   width,
+                                   unsigned int   height,
+                                   unsigned char* pixels,
+                                   bool           flipV)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
+    glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    checkForErrors();
+
+    if (flipV)
+    {
+        for (unsigned int line = 0; line != height / 2; ++line)
+        {
+            std::swap_ranges(
+                pixels + 4 * width * line,
+                pixels + 4 * width * (line + 1),
+                pixels + 4 * width * (height - line - 1)
+            );
+        }
+    }
+}
+
+void
 OpenGLES2Context::uploadCubeTextureData(uint				texture,
 										CubeTexture::Face	face,
 										unsigned int 		width,
