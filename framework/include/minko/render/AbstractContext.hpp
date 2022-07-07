@@ -168,6 +168,16 @@ namespace minko
 
             virtual
             void
+            getTexture2dData(uint           texture,
+                             unsigned int   x,
+                             unsigned int   y,
+                             unsigned int   width,
+                             unsigned int   height,
+                             unsigned char* pixels,
+                             bool           flipV = false) = 0;
+
+            virtual
+            void
             uploadCubeTextureData(uint                texture,
                                   CubeTexture::Face   face,
                                   unsigned int        width,

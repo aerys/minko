@@ -256,6 +256,15 @@ namespace minko
 							    uint 	mipLevel,
 							    void*	data) override;
 
+            void
+            getTexture2dData(uint           texture,
+                             unsigned int   x,
+                             unsigned int   y,
+                             unsigned int   width,
+                             unsigned int   height,
+                             unsigned char* pixels,
+                             bool           flipV = false) override;
+
 			void
 			uploadCubeTextureData(uint				texture,
 								  CubeTexture::Face face,
