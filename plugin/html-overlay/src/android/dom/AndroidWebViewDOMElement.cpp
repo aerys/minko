@@ -327,60 +327,30 @@ AndroidWebViewDOMElement::addEventListener(const std::string& type)
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 AndroidWebViewDOMElement::onchange()
 {
-    if (!_onchangeSet)
-    {
-        addEventListener("change");
-        _onchangeSet = true;
-    }
-
     return _onchange;
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 AndroidWebViewDOMElement::oninput()
 {
-    if (!_oninputSet)
-    {
-        addEventListener("input");
-        _oninputSet = true;
-    }
-
     return _oninput;
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onclick()
 {
-    if (!_onclickSet)
-    {
-        addEventListener("click");
-        _onclickSet = true;
-    }
-
     return _onclick;
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onmousedown()
 {
-    if (!_onmousedownSet)
-    {
-        addEventListener("mousedown");
-        _onmousedownSet = true;
-    }
-
     return _onmousedown;
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onmouseup()
 {
-    if (!_onmouseupSet)
-    {
-        addEventListener("mouseup");
-        _onmouseupSet = true;
-    }
-
     return _onmouseup;
 }
 
@@ -388,72 +358,36 @@ AndroidWebViewDOMElement::onmouseup()
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onmousemove()
 {
-    if (!_onmousemoveSet)
-    {
-        addEventListener("mousemove");
-        _onmousemoveSet = true;
-    }
-
     return _onmousemove;
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onmouseout()
 {
-    if (!_onmouseoutSet)
-    {
-        addEventListener("mouseout");
-        _onmouseoutSet = true;
-    }
-
     return _onmouseout;
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onmouseover()
 {
-    if (!_onmouseoverSet)
-    {
-        addEventListener("mouseover");
-        _onmouseoverSet = true;
-    }
-
     return _onmouseover;
 }
 
 Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 AndroidWebViewDOMElement::ontouchstart()
 {
-    if (!_ontouchstartSet)
-    {
-        addEventListener("touchstart");
-        _ontouchstartSet = true;
-    }
-
     return _ontouchstart;
 }
 
 Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 AndroidWebViewDOMElement::ontouchend()
 {
-    if (!_ontouchendSet)
-    {
-        addEventListener("touchend");
-        _ontouchendSet = true;
-    }
-
     return _ontouchend;
 }
 
 Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 AndroidWebViewDOMElement::ontouchmove()
 {
-    if (!_ontouchmoveSet)
-    {
-        addEventListener("touchmove");
-        _ontouchmoveSet = true;
-    }
-
     return _ontouchmove;
 }
 

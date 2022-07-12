@@ -295,186 +295,70 @@ EmscriptenDOMElement::addEventListener(const std::string& type)
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onclick()
 {
-	if (!_onclickSet)
-	{
-		addEventListener("click");
-		_onclickSet = true;
-	}
-
 	return _onclick;
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onmousedown()
 {
-	if (!_onmousedownSet)
-	{
-		addEventListener("mousedown");
-		_onmousedownSet = true;
-	}
-
 	return _onmousedown;
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onmousemove()
 {
-	if (!_onmousemoveSet)
-	{
-		addEventListener("mousemove");
-		_onmousemoveSet = true;
-	}
-
 	return _onmousemove;
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onmouseup()
 {
-	if (!_onmouseupSet)
-	{
-		addEventListener("mouseup");
-		_onmouseupSet = true;
-	}
-
 	return _onmouseup;
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onmouseout()
 {
-	if (!_onmouseoutSet)
-	{
-		addEventListener("mouseout");
-		_onmouseoutSet = true;
-	}
-
 	return _onmouseout;
 }
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 EmscriptenDOMElement::onmouseover()
 {
-	if (!_onmouseoverSet)
-	{
-		addEventListener("mouseover");
-		_onmouseoverSet = true;
-	}
-
 	return _onmouseover;
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 EmscriptenDOMElement::onchange()
 {
-    if (!_onchangeSet)
-    {
-        addEventListener("change");
-        _onchangeSet = true;
-    }
-
     return _onchange;
 }
 
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 EmscriptenDOMElement::oninput()
 {
-    if (!_oninputSet)
-    {
-        addEventListener("input");
-        _oninputSet = true;
-    }
-
     return _oninput;
 }
 
 Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 EmscriptenDOMElement::ontouchstart()
 {
-    if (!_ontouchstartSet)
-    {
-        addEventListener("touchstart");
-        _ontouchstartSet = true;
-    }
-
     return _ontouchstart;
 }
 
 Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 EmscriptenDOMElement::ontouchend()
 {
-    if (!_ontouchendSet)
-    {
-        addEventListener("touchstart");
-        _ontouchendSet = true;
-    }
-
     return _ontouchend;
 }
 
 Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 EmscriptenDOMElement::ontouchmove()
 {
-    if (!_ontouchmoveSet)
-    {
-        addEventListener("touchmove");
-        _ontouchmoveSet = true;
-    }
-
     return _ontouchmove;
 }
 
 void
 EmscriptenDOMElement::update()
 {
-	std::string eval = "(Minko.getEventsCount(" + _jsAccessor + "))";
-	int l = emscripten_run_script_int(eval.c_str());
-
-	for(int i = 0; i < l; ++i)
-	{
-		std::string eventName = "Minko.event" + std::to_string(_elementUid++);
-		eval =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
-		emscripten_run_script(eval.c_str());
-
-		EmscriptenDOMEvent::Ptr event = EmscriptenDOMEvent::create(eventName);
-
-		std::string type = event->type();
-
-		if (type == "change")
-			_onchange->execute(event);
-		else if (type == "input")
-			_oninput->execute(event);
-		else if (type == "click")
-			_onclick->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "mousedown")
-			_onmousedown->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "mouseup")
-			_onmouseup->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "mousemove")
-			_onmousemove->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "mouseover")
-			_onmouseover->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "mouseout")
-			_onmouseout->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type.substr(0, 5) == "touch")
-		{
-            std::string js = eventName + ".changedTouches.length";
-            int l = emscripten_run_script_int(js.c_str());
-
-            for (auto i = 0; i < l; i++)
-            {
-            	auto touchEvent = EmscriptenDOMTouchEvent::create(eventName, i);
-            	
-            	if (type == "touchstart")
-					_ontouchstart->execute(touchEvent);
-				else if (type == "touchend")
-					_ontouchend->execute(touchEvent);
-				else if (type == "touchmove")
-					_ontouchmove->execute(touchEvent); 
-            }
-        }
-	}
-
-	eval = "Minko.clearEvents(" + _jsAccessor + ");";
-	emscripten_run_script(eval.c_str());
 }

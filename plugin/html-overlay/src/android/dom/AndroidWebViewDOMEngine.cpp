@@ -413,45 +413,6 @@ AndroidWebViewDOMEngine::enterFrame(float time)
 void
 AndroidWebViewDOMEngine::updateEvents()
 {
-    if (_isReady)
-    {
-        eventMutex.lock();
-
-        for (int i = 0; i < events.size(); ++i)
-        {
-            auto event = events[i];
-            auto type = event->type();
-            auto target = event->target();
-
-            if (type == "change")
-                target->onchange()->execute(event);
-            else if (type == "input")
-                target->oninput()->execute(event);
-            else if (type == "click")
-                target->onclick()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "mousedown")
-                target->onmousedown()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "mouseup")
-                target->onmouseup()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "mousemove")
-                target->onmousemove()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "mouseover")
-                target->onmouseover()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "mouseout")
-                target->onmouseout()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "touchstart")
-                target->ontouchstart()->execute(std::dynamic_pointer_cast<AbstractDOMTouchEvent>(event));
-            else if (type == "touchend")
-                target->ontouchend()->execute(std::dynamic_pointer_cast<AbstractDOMTouchEvent>(event));
-            else if (type == "touchmove")
-                target->ontouchmove()->execute(std::dynamic_pointer_cast<AbstractDOMTouchEvent>(event));
-        }
-
-        events.clear();
-        events.shrink_to_fit();
-
-        eventMutex.unlock();
-    }
 }
 
 AndroidWebViewDOMEngine::Ptr
