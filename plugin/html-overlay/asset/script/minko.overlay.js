@@ -2,7 +2,7 @@ if (!window.Minko)
     var Minko = {};
 else
     var Minko = window.Minko;
-console.log('TESTTT')
+
 window.Minko = Minko;
 
 Minko.bridge = null;
