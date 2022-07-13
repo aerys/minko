@@ -413,45 +413,6 @@ AndroidWebViewDOMEngine::enterFrame(float time)
 void
 AndroidWebViewDOMEngine::updateEvents()
 {
-    if (_isReady)
-    {
-        eventMutex.lock();
-
-        for (int i = 0; i < events.size(); ++i)
-        {
-            auto event = events[i];
-            auto type = event->type();
-            auto target = event->target();
-
-            if (type == "change")
-                target->onchange()->execute(event);
-            else if (type == "input")
-                target->oninput()->execute(event);
-            else if (type == "click")
-                target->onclick()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "mousedown")
-                target->onmousedown()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "mouseup")
-                target->onmouseup()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "mousemove")
-                target->onmousemove()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "mouseover")
-                target->onmouseover()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "mouseout")
-                target->onmouseout()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
-            else if (type == "touchstart")
-                target->ontouchstart()->execute(std::dynamic_pointer_cast<AbstractDOMTouchEvent>(event));
-            else if (type == "touchend")
-                target->ontouchend()->execute(std::dynamic_pointer_cast<AbstractDOMTouchEvent>(event));
-            else if (type == "touchmove")
-                target->ontouchmove()->execute(std::dynamic_pointer_cast<AbstractDOMTouchEvent>(event));
-        }
-
-        events.clear();
-        events.shrink_to_fit();
-
-        eventMutex.unlock();
-    }
 }
 
 AndroidWebViewDOMEngine::Ptr
@@ -536,93 +497,26 @@ AndroidWebViewDOMEngine::registerDomEvents()
 {
     _onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
-        int x = event->clientX();
-        int y = event->clientY();
-
-        _canvas->mouse()->x(x);
-        _canvas->mouse()->y(y);
-
-        _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
 
     _onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
-        int x = event->clientX();
-        int y = event->clientY();
-
-        _canvas->mouse()->x(x);
-        _canvas->mouse()->y(y);
-
-        _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
     });
 
     _onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
-        int x = event->clientX();
-        int y = event->clientY();
-
-        auto oldX = _canvas->mouse()->x();
-        auto oldY = _canvas->mouse()->y();
-
-        _canvas->mouse()->x(x);
-        _canvas->mouse()->y(y);
-
-        _canvas->mouse()->move()->execute(_canvas->mouse(), x - oldX, y - oldY);
     });
 
     _ontouchstartSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchstart()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int identifier = event->identifier();
-        float x = event->clientX();
-        float y = event->clientY();
-
-        SDL_Event sdlEvent;
-        sdlEvent.type = SDL_FINGERDOWN;
-        sdlEvent.tfinger.fingerId = identifier;
-        sdlEvent.tfinger.x =  x / _canvas->width();
-        sdlEvent.tfinger.y = y / _canvas->height();
-
-        SDL_PushEvent(&sdlEvent);
     });
 
     _ontouchendSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchend()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int identifier = event->identifier();
-        float x = event->clientX();
-        float y = event->clientY();
-
-        SDL_Event sdlEvent;
-        sdlEvent.type = SDL_FINGERUP;
-        sdlEvent.tfinger.fingerId = identifier;
-        sdlEvent.tfinger.x = x / _canvas->width();
-        sdlEvent.tfinger.y = y / _canvas->height();
-
-        SDL_PushEvent(&sdlEvent);
     });
 
     _ontouchmoveSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchmove()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int identifier = event->identifier();
-        auto identifiers = _canvas->touch()->identifiers();
-
-        if(std::find(identifiers.begin(), identifiers.end(), identifier) == identifiers.end())
-            return;
-
-        float x = event->clientX();
-        float y = event->clientY();
-
-        float oldX = _canvas->touch()->touch(identifier).x;
-        float oldY = _canvas->touch()->touch(identifier).y;
-
-        SDL_Event sdlEvent;
-        sdlEvent.type = SDL_FINGERMOTION;
-        sdlEvent.tfinger.fingerId = identifier;
-        sdlEvent.tfinger.x = x / _canvas->width();
-        sdlEvent.tfinger.y = y / _canvas->height();
-        sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
-        sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
-
-        SDL_PushEvent(&sdlEvent);
     });
 }
 

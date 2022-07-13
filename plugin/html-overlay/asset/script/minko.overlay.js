@@ -86,9 +86,6 @@ Minko.loadedHandler = function(event)
         Minko.setWindowPostMessageListener();
     }
 
-    if (Minko.platform == "emscripten")
-        Minko.bindRedispatchEvents();
-
     Minko.bindJsErrors();
 
     Minko.ready = true;
@@ -99,33 +96,6 @@ Minko.loadedHandler = function(event)
 
     Minko.window.dispatchEvent(event);
 }
-
-Minko.addListener = function(accessor, type)
-{
-    accessor.minkoEvents = accessor.minkoEvents || [];
-
-    accessor.addEventListener(type, function(event)
-    {
-        if (event.ignoreOnMinko)
-            return;
-
-        accessor.minkoEvents.push(event);
-    });
-};
-
-Minko.getEventsCount = function(accessor)
-{
-    if (accessor && accessor.minkoEvents)
-        return accessor.minkoEvents.length;
-    else
-        return 0;
-};
-
-Minko.clearEvents = function(accessor)
-{
-    if (accessor)
-        accessor.minkoEvents = [];
-};
 
 Minko.listeners = {};
 
@@ -211,9 +181,6 @@ Minko.createIframe = function() //EMSCRIPTEN
 
     iframe.onload = Minko.loadedHandler;
 
-    iframe.addEventListener('mouseover',    Minko.redispatchMouseEvent);
-    iframe.addEventListener('mouseout',        Minko.redispatchMouseEvent);
-
     Minko.iframe = iframe;
     Minko.canvas = canvas;
 }
@@ -261,290 +228,6 @@ Minko.setWindowPostMessageListener = function()
     // See https://git.aerys.in/aerys/smartshape-engine/-/issues/278.
 }
 
-Minko.getOffsetTop = function(element) //EMSCRIPTEN
-{
-    var result = 0;
-
-    while (element)
-    {
-        result += element.offsetTop;
-        element = element.offsetParent;
-    }
-
-    return result;
-};
-
-Minko.getOffsetLeft = function(element) //EMSCRIPTEN
-{
-    var result = 0;
-
-    while (element)
-    {
-        result += element.offsetLeft;
-        element = element.offsetParent;
-    }
-
-    return result;
-};
-
-Minko.redispatchKeyboardEvent = function(event) //EMSCRIPTEN
-{
-    if (event.ignoreOnMinko)
-        return;
-
-    var eventCopy = document.createEvent('Event');
-
-    eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
-
-    var copiedProperties = ['type', 'bubbles', 'cancelable', 'view',
-    'ctrlKey', 'altKey', 'shiftKey', 'metaKey', 'keyCode', 'charCode',
-    'which', 'key', 'detail'];
-
-    for (var k in copiedProperties)
-        eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
-
-    if (event.keyCode == 18 || event.keyCode == 17 || event.keyCode == 16)
-        event.preventDefault();
-
-    document.dispatchEvent(eventCopy);
-}
-
-Minko.redispatchBlurEvent = function(event) //EMSCRIPTEN
-{
-    if (event.ignoreOnMinko)
-        return;
-
-    var eventCopy = document.createEvent('Event');
-
-    eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
-
-    var copiedProperties = ['type', 'bubbles', 'cancelable'];
-
-    for (var k in copiedProperties)
-        eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
-
-    window.dispatchEvent(eventCopy);
-}
-
-Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
-{
-    if (event.ignoreOnMinko)
-        return;
-
-    if (event.type == 'mouseout' && event.target != event.currentTarget)
-        return;
-
-    if (event.type == 'mouseover' && event.target != event.currentTarget)
-        return;
-
-    var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (event.pageX || event.layerX);
-    var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (event.pageY || event.layerY);
-
-    var screenX = pageX - document.body.scrollLeft;
-    var screenY = pageY - document.body.scrollTop;
-
-    var eventCopy = document.createEvent('MouseEvents');
-
-    eventCopy.initMouseEvent(
-        event.type, event.bubbles, event.cancelable, event.view, event.detail,
-        pageX, pageY, screenX, screenY,
-        event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget
-    );
-
-    Minko.canvas.dispatchEvent(eventCopy);
-}
-
-Minko.redispatchWheelEvent = function(event)
-{
-    if (event.ignoreOnMinko)
-        return;
-
-    var eventCopy = document.createEvent('Event');
-
-    eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
-
-    var copiedProperties = [
-        'wheelDelta', 'wheelDeltaX', 'wheelDeltaY', 'wheelDeltaZ',
-        'delta', 'deltaMode', 'deltaX', 'deltaY', 'deltaZ',
-        'which', 'key', 'detail'
-    ];
-
-    for (var k in copiedProperties)
-        eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
-
-    Minko.canvas.dispatchEvent(eventCopy);
-
-    if (event.dontPreventDefault)
-        return true;
-
-    event.preventDefault();
-};
-
-Minko.identifiers = [];
-Minko.nextId = 1;
-
-Minko.getTouchId = function(identifier)
-{
-    if (!Minko.identifiers[identifier])
-        Minko.identifiers[identifier] = Minko.nextId++;
-
-    return Minko.identifiers[identifier];
-}
-
-Minko.copyTouchList = function(touches)
-{
-    var result = [];
-    var properties = ['identifier'];
-
-    for (var i = 0; i < touches.length; ++i)
-    {
-        var touch = touches[i];
-
-        var copiedTouch = {};
-
-        copiedTouch.identifier = Minko.getTouchId(touch.identifier);
-
-        var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (touch.pageX || touch.layerX);
-        var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (touch.pageY || touch.layerY);
-
-        var screenX = pageX - document.body.scrollLeft;
-        var screenY = pageY - document.body.scrollTop;
-
-        copiedTouch.pageX = pageX;
-        copiedTouch.pageY = pageY;
-        copiedTouch.screenX = screenX;
-        copiedTouch.screenY = screenY;
-        copiedTouch.clientX = screenX;
-        copiedTouch.clientY = screenY;
-
-        result.push(copiedTouch);
-    }
-
-    return result;
-}
-
-Minko.redispatchTouchEvent = function(event) //EMSCRIPTEN
-{
-    if (event.ignoreOnMinko)
-        return;
-
-    // Prevent Google Chrome from cancelling subsequent `touchmove` events.
-    if (!event.dontPreventDefault && (event.type == "touchstart" || event.type == "touchend"))
-        event.preventDefault();
-
-    var eventCopy = document.createEvent('Event');
-
-    eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
-
-    var copiedProperties = ['type', 'bubbles', 'cancelable', 'view'];
-
-    for (var k in copiedProperties)
-        eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
-
-    eventCopy.touches = Minko.copyTouchList(event.touches);
-    eventCopy.targetTouches = Minko.copyTouchList(event.targetTouches);
-    eventCopy.changedTouches = Minko.copyTouchList(event.changedTouches);
-
-    Minko.canvas.dispatchEvent(eventCopy);
-}
-
-Minko.redispatchPointerEvent = function(event) //EMSCRIPTEN
-{
-    // Some browsers send both `pointer` and `touch` events upon `touch` inputs.
-    // This function only handles `pointer` events.
-    if (event.ignoreOnMinko || event.pointerType == "touch")
-        return;
-
-    var eventCopy = document.createEvent('Event');
-
-    var type = event.type;
-
-    if (type == "pointerdown")
-        type = "mousedown";
-    else if (type == "pointerup")
-        type = "mouseup";
-    else if (type == "pointermove")
-        type = "mousemove";
-    else if (type == "pointercancel")
-        return;
-
-    var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (event.pageX || event.layerX);
-    var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (event.pageY || event.layerY);
-
-    var screenX = pageX - document.body.scrollLeft;
-    var screenY = pageY - document.body.scrollTop;
-
-    var eventCopy = document.createEvent('MouseEvents');
-
-    eventCopy.initMouseEvent(
-        type, event.bubbles, event.cancelable, event.view, event.detail,
-        pageX, pageY, screenX, screenY,
-        event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget
-    );
-
-    Minko.canvas.dispatchEvent(eventCopy);
-}
-
-Minko.bindRedispatchEvents = function() //EMSCRIPTEN
-{
-    var touchEventsSupported = 'TouchEvent' in window;
-    var pointerEventsSupported = 'PointerEvent' in window;
-
-    if (!pointerEventsSupported)
-    {
-        var a = ['mousemove', 'mouseup', 'mousedown', 'click'];
-
-        for (var k in a)
-            Minko.window.addEventListener(a[k], Minko.redispatchMouseEvent);
-    }
-
-    a = ['wheel', 'mousewheel', 'DOMMouseScroll'];
-
-    for (var k in a)
-        Minko.window.addEventListener(a[k], Minko.redispatchWheelEvent);
-
-    if (pointerEventsSupported)
-    {
-        a = ['pointerdown', 'pointerup', 'pointermove', 'pointercancel']
-
-        for (var k in a)
-            Minko.window.addEventListener(a[k], Minko.redispatchPointerEvent);
-    }
-
-    if (touchEventsSupported)
-    {
-        a = ['touchstart', 'touchend', 'touchmove', 'touchcancel']
-
-        for (var k in a)
-            Minko.window.addEventListener(a[k], Minko.redispatchTouchEvent, { passive: false });
-    }
-
-    a = ['keydown', 'keyup', 'keypress'];
-
-    for (var k in a)
-        Minko.window.addEventListener(a[k], Minko.redispatchKeyboardEvent);
-
-    a = ['blur', 'focus'];
-
-    for (var k in a)
-        Minko.window.addEventListener(a[k], Minko.redispatchBlurEvent);
-}
-
-Minko.changeViewportWidth = function(width)
-{
-    var metaElement = document.getElementById("metaViewport");
-
-    if (!metaElement)
-    {
-        metaElement = document.createElement("meta");
-        metaElement.id = "metaViewport";
-        metaElement.setAttribute("name", "viewport");
-        document.head.appendChild(metaElement);
-    }
-
-    metaElement.setAttribute("content", "width=" + width);
-};
-
 /*
 ** iOS/OSX
 */
@@ -561,66 +244,6 @@ Minko.connectWebViewJavascriptBridge = function(callback) // iOS / OSX
             callback(WebViewJavascriptBridge);
         }, false);
     }
-};
-
-/*
-** Android
-*/
-
-Minko.touchIds = [];
-
-Minko.androidEventHandler = function(event)
-{
-    if (event.ignoreOnMinko)
-        return;
-
-    var pixelRatio = window.devicePixelRatio;
-
-    eventData = {};
-    eventData.type = event.type;
-    eventData.clientX = event.clientX * pixelRatio;
-    eventData.clientY = event.clientY * pixelRatio;
-    eventData.pageX = event.pageX * pixelRatio;
-    eventData.pageY = event.pageY * pixelRatio;
-    eventData.screenX = event.screenX * pixelRatio;
-    eventData.screenY = event.screenY * pixelRatio;
-
-    if (event.type.indexOf("touch") != -1)
-    {
-        eventData.changedTouches = [];
-
-        for (var i = 0; i < event.changedTouches.length; i++)
-        {
-            var identifier = event.changedTouches[i].identifier;
-
-            if (event.type == 'touchstart')
-            {
-                if (Minko.touchIds.indexOf(identifier) != -1)
-                    continue;
-
-                Minko.touchIds.push(identifier);
-            }
-            else if (event.type == 'touchend')
-            {
-                if (Minko.touchIds.indexOf(identifier) == -1)
-                    continue;
-
-                Minko.touchIds.splice(Minko.touchIds.indexOf(identifier), 1);
-            }
-
-            eventData.changedTouches[i] = {};
-            eventData.changedTouches[i].clientX = event.changedTouches[i].clientX * pixelRatio;
-            eventData.changedTouches[i].clientY = event.changedTouches[i].clientY * pixelRatio;
-            eventData.changedTouches[i].identifier = event.changedTouches[i].identifier;
-        }
-    }
-
-    MinkoNativeInterface.onEvent(event.currentTarget.minkoName, JSON.stringify(eventData));
-}
-
-Minko.addListenerAndroid = function(accessor, type)
-{
-    accessor.addEventListener(type, Minko.androidEventHandler);
 };
 
 Minko.init = function(platform)
@@ -656,7 +279,6 @@ Minko.init = function(platform)
         }
 
         Minko.loadedHandler();
-        Minko.addListener = Minko.addListenerAndroid;
     }
 }
 
