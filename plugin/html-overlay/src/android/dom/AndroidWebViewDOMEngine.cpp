@@ -388,8 +388,6 @@ AndroidWebViewDOMEngine::enterFrame(float time)
                 _onmessage->execute(_currentDOM, message);
             }
         }
-
-
     }
 
 
