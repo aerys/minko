@@ -370,26 +370,24 @@ AndroidWebViewDOMEngine::enterFrame(float time)
 
     if (_currentDOM->initialized() && _isReady)
     {
-        messageMutex.lock();
+        std::vector<std::string> messagesToProcess;
 
-        auto l = AndroidWebViewDOMEngine::messages.size();
+        messageMutex.lock();
+        messagesToProcess.swap(AndroidWebViewDOMEngine::messages);
+        messageMutex.unlock();
+
+        auto l = messagesToProcess.size();
 
         if (l > 0)
         {
             for(int i = 0; i < l; ++i)
             {
-                auto message = AndroidWebViewDOMEngine::messages[i];
+                auto message = messagesToProcess[i];
 
                 _currentDOM->onmessage()->execute(_currentDOM, message);
                 _onmessage->execute(_currentDOM, message);
             }
-
-            // Don't forget to remove the message from the list
-            AndroidWebViewDOMEngine::messages.clear();
-            AndroidWebViewDOMEngine::messages.shrink_to_fit();
         }
-
-        messageMutex.unlock();
     }
 
 
