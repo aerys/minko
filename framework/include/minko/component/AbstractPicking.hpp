@@ -111,6 +111,10 @@ namespace minko
             pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true) = 0;
 
             virtual
+            map<SurfacePtr, std::map<unsigned char, std::vector<minko::math::vec2>>>
+            pickSurfacesInArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true) = 0;
+
+            virtual
             void
             pick(const minko::math::vec2& point, const minko::math::vec2& normalizedPoint) = 0;
 

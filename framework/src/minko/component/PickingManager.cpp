@@ -665,3 +665,34 @@ PickingManager::pickArea(const minko::math::vec2& bottomLeft, const minko::math:
 
     return result;
 }
+
+AbstractPicking::map<Surface::Ptr, std::map<unsigned char, std::vector<minko::math::vec2>>>
+PickingManager::pickSurfacesInArea(
+    const minko::math::vec2& bottomLeft,
+    const minko::math::vec2& topRight,
+    bool fullyInside)
+{
+    AbstractPicking::map<Surface::Ptr, std::map<unsigned char, std::vector<minko::math::vec2>>> result;
+    int highestPriority = std::numeric_limits<int>::min();
+
+    for (const auto& entry : _pickings)
+    {
+        if (entry.picking->enabled() &&
+            (entry.picking->priority() >= highestPriority ||
+             result.size() == 0))
+        {
+            const auto newResult = entry.picking->pickSurfacesInArea(
+                bottomLeft, topRight, fullyInside
+            );
+
+            if (newResult.size() != 0)
+            {
+                result = newResult;
+                highestPriority = entry.picking->priority();
+            }
+        }
+    }
+
+    return result;
+}
+

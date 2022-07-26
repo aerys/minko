@@ -784,6 +784,150 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     return pickedNodes;
 }
 
+AbstractPicking::map<Surface::Ptr, std::map<unsigned char, std::vector<minko::math::vec2>>>
+Picking::pickSurfacesInArea(
+    const minko::math::vec2& bottomLeft,
+    const minko::math::vec2& topRight,
+    bool fullyInside)
+{
+    auto pickedNodes = AbstractPicking::map<
+        Surface::Ptr,
+        std::map<unsigned char, std::vector<minko::math::vec2>>>();
+
+    int width = static_cast<int>(topRight.x - bottomLeft.x);
+    int height = static_cast<int>(bottomLeft.y - topRight.y);
+    bool singleClick = false;
+
+    // Handle single click.
+    if (width == 0 && height == 0)
+        singleClick = true;
+
+    // Make sure the area is not null.
+    if (width == 0)
+        width = 1;
+
+    if (height == 0)
+        height = 1;
+
+    _multiselecting = true;
+    _multiselectionStartPosition = bottomLeft;
+
+    // Change the scissor box size and make sure to update the projection.
+    _renderer->scissorBox(0, 0, width, height);
+    updatePickingProjection();
+
+    // Force picking renderer to render a frame.
+    renderPickingFrame();
+
+    // Make sure to reset the scissor box size.
+    _renderer->scissorBox(0, 0, 1, 1);
+
+    // Read and store all pixels in the selection area.
+    const int pixelSize = 4;
+    std::vector<unsigned char> selectAreaPixelBuffer(pixelSize * width * height);
+    _context->readPixels(0, 0, width, height, &selectAreaPixelBuffer[0]);
+
+    // Retrieve all surface ids in the selection area.
+    unsigned int maxSurfaceId = 0;
+
+    if (!_pickingIdToSurface.empty())
+        maxSurfaceId = _pickingIdToSurface.rbegin()->first;
+
+    auto elementsToRemove = AbstractPicking::map<Surface::Ptr, std::set<unsigned char>>();
+
+    for (int i = 0; i < static_cast<int>(selectAreaPixelBuffer.size()); i += pixelSize)
+    {
+        const auto currentPixel = &selectAreaPixelBuffer[i];
+        const unsigned int pickedSurfaceId = (currentPixel[0] << 16)
+                                           + (currentPixel[1] << 8)
+                                           +  currentPixel[2];
+        const unsigned char mergingMask = currentPixel[3];
+
+        if (pickedSurfaceId > maxSurfaceId)
+            continue;
+
+        const auto surfaceIt = _pickingIdToSurface.find(pickedSurfaceId);
+        if (surfaceIt != _pickingIdToSurface.end())
+        {
+            const auto pickedSurface = surfaceIt->second;
+            const auto uv = std::div(i / 4, width);
+            const int u = uv.rem;  // % width.
+            const int v = uv.quot; // / width.
+
+            if (fullyInside && !singleClick)
+            {
+                // Check that the read pixel is not on the edge of the picking
+                // rendering.
+                if (v == 0          || // Bottom border.
+                    v == height - 1 || // Top border.
+                    u == 0          || // Right border.
+                    u == width - 1   ) // Left border.
+                {
+                    // Store the combination node / mergingMask to remove.
+                    auto surfaceAlphaValuesToRemove = elementsToRemove.find(pickedSurface);
+                    if (surfaceAlphaValuesToRemove == elementsToRemove.end())
+                        elementsToRemove.insert(std::make_pair(
+                                pickedSurface, 
+                                std::set<unsigned char> { mergingMask }
+                        ));
+                    else
+                        surfaceAlphaValuesToRemove->second.insert(mergingMask);
+
+                    continue;
+                }
+            }
+
+            const minko::math::vec2 pos(
+                bottomLeft.x + static_cast<float>(u),
+                bottomLeft.y - static_cast<float>(v)
+            );
+            // Store the combination node / mergingMask + pos to return.
+            auto surfaceAlphaValues = pickedNodes.find(pickedSurface);
+            if (surfaceAlphaValues == pickedNodes.end())
+            {
+                pickedNodes.insert(std::make_pair(
+                        pickedSurface,
+                        std::map<unsigned char, std::vector<minko::math::vec2>>{
+                            std::make_pair(
+                                mergingMask,
+                                std::vector<minko::math::vec2>({pos})
+                            )
+                        }
+                ));
+            }
+            else
+            {
+                auto mergingMaskPos = surfaceAlphaValues->second.find(mergingMask);
+                if (mergingMaskPos == surfaceAlphaValues->second.end())
+                    surfaceAlphaValues->second.emplace(
+                        mergingMask,
+                        std::vector<minko::math::vec2>({pos})
+                    );
+                else
+                    mergingMaskPos->second.push_back(pos);
+            }
+        }
+    }
+
+    // Remove the elements to remove.
+    if (fullyInside && !singleClick)
+    {
+        for (const auto& element : elementsToRemove)
+        {
+            auto& subSurfaces = pickedNodes[element.first];
+
+            for (const auto& a : element.second)
+                subSurfaces.erase(a);
+
+            if (subSurfaces.empty())
+                pickedNodes.erase(element.first);
+        }
+    }
+
+    _multiselecting = false;
+    return pickedNodes;
+}
+
 void
 Picking::pickingLayoutChanged(scene::Layout previousValue, scene::Layout value)
 {
@@ -820,3 +964,4 @@ Picking::createPickingId(SurfacePtr surface)
 
     return std::make_pair(_pickingId, color);
 }
+
