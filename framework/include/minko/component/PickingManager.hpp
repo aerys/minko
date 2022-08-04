@@ -288,6 +288,9 @@ namespace minko
             AbstractPicking::map<NodePtr, std::set<unsigned char>>
             pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true);
 
+            AbstractPicking::map<SurfacePtr, std::map<unsigned char, std::vector<minko::math::vec2>>>
+            pickSurfacesInArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& topRight, bool fullyInside = true);
+
         protected:
 			void
 			targetAdded(NodePtr target);
