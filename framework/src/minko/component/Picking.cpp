@@ -784,6 +784,19 @@ Picking::pickArea(const minko::math::vec2& bottomLeft, const minko::math::vec2& 
     return pickedNodes;
 }
 
+/*!
+ * Get the surfaces under a picking area.
+ *
+ * This function is similar to pickArea, but returns the surfaces instead of
+ * the nodes, and the pixels corresponding to each sub-surfaces.
+ *
+ * Return:
+ * - a map of the picked surfaces to
+ *   - a map of the mergingMask (sub-surface id, same as the set<> returned by
+ *     pickArea) to:
+ *     - a vector of the pixels corresponding to the sub-surface withing the
+ *       picking area.
+ */
 AbstractPicking::map<Surface::Ptr, std::map<unsigned char, std::vector<minko::math::vec2>>>
 Picking::pickSurfacesInArea(
     const minko::math::vec2& bottomLeft,
