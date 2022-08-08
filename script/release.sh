@@ -12,7 +12,7 @@ ROOT_DIR=$(realpath "${DIR}/..")
 
 pushd $ROOT_DIR > /dev/null
 
-# Make sure to be on the master branch
+# Make sure to be on the main branch
 GIT_BRANCH=`git rev-parse --symbolic-full-name --abbrev-ref HEAD`
 
 if git status --porcelain | grep .; then
@@ -50,8 +50,8 @@ else
         exit 1
     fi
 
-    if [[ "${GIT_BRANCH}" != "master" ]]; then
-        echo "error: minor and major releases must be done on the \"master\" branch"
+    if [[ "${GIT_BRANCH}" != "main" ]]; then
+        echo "error: minor and major releases must be done on the \"main\" branch"
         exit 2;
     fi
 fi
@@ -72,7 +72,7 @@ git diff HEAD^..HEAD
 read -p "Are you sure you want to make a release with those changes? (y|n)" -n 1 -r
 echo    # (optional) move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    # Tag the master branch using the current version
+    # Tag the main branch using the current version
     git tag -a "$NEXT_VERSION" -m "Version $NEXT_VERSION"
 
     if [[ "$1" != "patch" ]]; then
@@ -80,10 +80,10 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         # Create a branch to easily add fix from this version
         git checkout -b $VERSION_BRANCH
 
-        # Go back to master branch
+        # Go back to main branch
         git checkout "$GIT_BRANCH"
 
-        echo "Release branch/tag created and ready: run 'git push origin master $VERSION_BRANCH $NEXT_VERSION' to push the release."
+        echo "Release branch/tag created and ready: run 'git push origin main $VERSION_BRANCH $NEXT_VERSION' to push the release."
     else
         echo "Release tag created and ready: run 'git push origin $GIT_BRANCH $NEXT_VERSION' to push the release."
     fi

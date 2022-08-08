@@ -82,7 +82,7 @@ stages:
   stage: archive
   image: registry.aerys.in/aerys/smartshape-docker/archive:26975
   except:
-    - master
+    - main
   script:
     - cd "${CI_PROJECT_DIR}"
     - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
