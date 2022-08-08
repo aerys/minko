@@ -82,7 +82,7 @@ stages:
   stage: archive
   image: registry.aerys.in/aerys/smartshape-docker/archive:26975
   except:
-    - master
+    - main
   script:
     - cd "${CI_PROJECT_DIR}"
     - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
@@ -281,9 +281,9 @@ archive:windows64_offscreen:
 
 release:
   stage: release
-  image: registry.aerys.in/aerys/gitlab-flow-release:0.4.1
+  image: registry.aerys.in/aerys/gitlab-flow-release:0.10.0
   only:
     - tags
   variables:
     GIT_STRATEGY: none
-  script: gitlab-flow-release --private-token "${RELEASE_PRIVATE_TOKEN}" release
+  script: gitlab-flow-release --url "${CI_SERVER_URL}" --project-id ${CI_PROJECT_ID} --private-token "${RELEASE_PRIVATE_TOKEN}" release --to-tag "${CI_COMMIT_REF_NAME}"
