@@ -286,4 +286,4 @@ release:
     - tags
   variables:
     GIT_STRATEGY: none
-  script: gitlab-flow-release --url "${CI_SERVER_URL}" --project-id ${CI_PROJECT_ID} --private-token "${RELEASE_PRIVATE_TOKEN}" release --to-tag "${CI_COMMIT_REF_NAME}"
+  script: gitlab-flow-release --branch main --url "${CI_SERVER_URL}" --project-id ${CI_PROJECT_ID} --private-token "${RELEASE_PRIVATE_TOKEN}" release --to-tag "${CI_COMMIT_REF_NAME}"
