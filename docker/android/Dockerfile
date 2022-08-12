@@ -25,7 +25,7 @@ RUN dpkg --add-architecture i386 && apt-get update
 
 # Dependencies to execute Android builds
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        openjdk-11-jdk \
+        openjdk-8-jdk \
         libc6:i386 \
         libstdc++6:i386 \
         libgcc1:i386 \
