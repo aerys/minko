@@ -25,7 +25,7 @@ RUN dpkg --add-architecture i386 && apt-get update
 
 # Dependencies to execute Android builds
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
-        openjdk-11-jdk \
+        openjdk-8-jdk \
         libc6:i386 \
         libstdc++6:i386 \
         libgcc1:i386 \
@@ -33,14 +33,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         libz1:i386 \
         net-tools
 
-# Keystore format has changed since JAVA 8 https://bugs.launchpad.net/ubuntu/+source/openjdk-9/+bug/1743139
-RUN mv /etc/ssl/certs/java/cacerts /etc/ssl/certs/java/cacerts.old \
-    && keytool -importkeystore -destkeystore /etc/ssl/certs/java/cacerts -deststoretype jks -deststorepass changeit -srckeystore /etc/ssl/certs/java/cacerts.old -srcstoretype pkcs12 -srcstorepass changeit \
-    && rm /etc/ssl/certs/java/cacerts.old
-
-# Select JAVA 11  as default
-RUN update-alternatives --set javac /usr/lib/jvm/java-11-openjdk-amd64/bin/javac
-RUN update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
 
 # Install Android Command line Tools
 RUN cd /opt \
