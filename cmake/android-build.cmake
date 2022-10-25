@@ -24,7 +24,8 @@ function (build_android target target_name)
     set (ARTIFACT_NAME ${APP_CUT})
     string (REGEX REPLACE "-" " " APP_NAME ${APP_CUT})
     string (REGEX REPLACE "lib(.*).so" "com.\\1" PACKAGE_CUT ${target_name})
-    set(PACKAGE "com.smartshape.player11")
+    string (REGEX REPLACE "-" "." PACKAGE ${PACKAGE_CUT})
+    # set(PACKAGE "com.smartshape.player11")
 
     # might need to add the rsync command (cf build_android.sh:65)
 
