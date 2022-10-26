@@ -16,17 +16,19 @@ function (build_android target target_name)
 
     get_target_property(OUTPUT_PATH ${target} LIBRARY_OUTPUT_DIRECTORY)
 
-    # define all the needed variables
-    set (VERSION "0")
-    
+    if (DEFINED ENV{ANDROID_VERSION_CODE})
+        set (VERSION_CODE $ENV{ANDROID_VERSION_CODE})
+    else ()
+        message ("Warning: Missing environment variable ANDROID_VERSION_CODE, generated APK will have the versionCode 0.")
+        set (VERSION_CODE "0")
+    endif()
+
     # use regex to get the names of the app, package and artifact
     string (REGEX REPLACE "lib(.*).so" "\\1" APP_CUT ${target_name})
     set (ARTIFACT_NAME ${APP_CUT})
     string (REGEX REPLACE "-" " " APP_NAME ${APP_CUT})
     string (REGEX REPLACE "lib(.*).so" "com.\\1" PACKAGE_CUT ${target_name})
     string (REGEX REPLACE "-" "." PACKAGE ${PACKAGE_CUT})
-
-    # might need to add the rsync command (cf build_android.sh:65)
 
     string (REGEX REPLACE "\\." "/" FORMATED_PACKAGE ${PACKAGE})
     string (TOLOWER ${CMAKE_BUILD_TYPE} BUILD)
@@ -54,7 +56,7 @@ function (build_android target target_name)
         COMMAND mv "${OUTPUT_PATH}/src/*.java" "${OUTPUT_PATH}/src/${FORMATED_PACKAGE}"
         COMMAND sed -i 's/{{APP_NAME}}/${APP_NAME}/' ${OUTPUT_PATH}/res/values/strings.xml ${OUTPUT_PATH}/build.xml
         COMMAND sed -i 's/{{PACKAGE}}/${PACKAGE}/' ${OUTPUT_PATH}/AndroidManifest.xml ${OUTPUT_PATH}/src/${FORMATED_PACKAGE}/*.java
-        COMMAND sed -i 's/{{VERSION_CODE}}/${VERSION}/' ${OUTPUT_PATH}/AndroidManifest.xml 
+        COMMAND sed -i 's/{{VERSION_CODE}}/${VERSION_CODE}/' ${OUTPUT_PATH}/AndroidManifest.xml 
         COMMAND mkdir -p ${OUTPUT_PATH}/libs/armeabi-v7a/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/armeabi-v7a/ && mv ${OUTPUT_PATH}/libs/armeabi-v7a/${target_name} ${OUTPUT_PATH}/libs/armeabi-v7a/libmain.so
         COMMAND rm -rf ${OUTPUT_PATH}/assets
         WORKING_DIRECTORY ${OUTPUT_PATH}
