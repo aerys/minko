@@ -92,6 +92,7 @@ namespace minko
             std::vector<std::string> argsVec;
 
             argsVec.push_back(binary);
+            argsVec.push_back("--inspect=0.0.0.0:8009");
             argsVec.push_back(scriptPath);
 
             std::string token = " ";
