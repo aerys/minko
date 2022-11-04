@@ -96,8 +96,6 @@ export CXX_host="clang++ -m32 -lpthread"
     --dest-cpu=arm \
     --cross-compiling \
     --dest-os=android \
-    --without-intl \
-    --without-inspector \
     --without-snapshot \
     --openssl-no-asm \
     --shared
