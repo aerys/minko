@@ -101,7 +101,9 @@ namespace minko
             std::vector<std::string> argsVec;
 
             argsVec.push_back(binary);
-            argsVec.push_back(nodeArgs);
+            if (nodeArgsSize > 0) {
+                argsVec.push_back(nodeArgs);
+            }
             argsVec.push_back(scriptPath);
 
             std::string token = " ";
