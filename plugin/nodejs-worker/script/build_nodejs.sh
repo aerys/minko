@@ -1,8 +1,5 @@
 #!/bin/bash
 
-set -e
-set -x
-
 [[ -f plugin.lua ]] || {
     echo "Script must be executed from the plugin root." > /dev/stderr
     exit 1
@@ -88,13 +85,15 @@ export CXX=${target_compilerpp}
 
 # Even the host intermediate binaries must be compiled in 32 bits.
 export CC_host="clang -m32"
-export CXX_host="clang++ -m32 -lpthread"
+export CXX_host="clang++ -m32"
 
 ./configure \
     --prefix=../install \
     --dest-cpu=arm \
     --cross-compiling \
     --dest-os=android \
+    --without-intl \
+    --without-inspector \
     --without-snapshot \
     --openssl-no-asm \
     --shared
