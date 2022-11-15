@@ -66,8 +66,17 @@ namespace minko
         {
             std::stringstream inputStream(std::string(input.begin(), input.end()));
 
-            auto pathSize = 0;
-            auto argsSize = 0;
+            auto nodeArgsSize = 0;
+            auto pathSize     = 0;
+            auto argsSize     = 0;
+
+            inputStream.read(reinterpret_cast<char*>(&nodeArgsSize), 4);
+            auto nodeArgsData = std::vector<char>(nodeArgsSize);
+
+            if (nodeArgsSize > 0)
+                inputStream.read(nodeArgsData.data(), nodeArgsSize);
+
+            const auto nodeArgs = std::string(nodeArgsData.begin(), nodeArgsData.end());
 
             inputStream.read(reinterpret_cast<char*>(&pathSize), 4);
             auto pathData = std::vector<char>(pathSize);
@@ -92,6 +101,8 @@ namespace minko
             std::vector<std::string> argsVec;
 
             argsVec.push_back(binary);
+            if (nodeArgsSize > 0)
+                argsVec.push_back(nodeArgs);
             argsVec.push_back(scriptPath);
 
             std::string token = " ";
