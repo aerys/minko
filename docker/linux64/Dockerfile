@@ -1,27 +1,25 @@
-FROM ubuntu:18.04
-
-RUN apt-get update && apt-get install -y wget
-
-RUN cd / && \
-    wget -q https://cmake.org/files/v3.9/cmake-3.9.6-Linux-x86_64.sh -O cmake.sh && \
-    chmod +x ./cmake.sh && \
-    ./cmake.sh --skip-license && \
-    rm -rf cmake.sh
+FROM amd64/gcc:9.4.0
 
 RUN apt-get update && apt-get install -y \
-    g++-7 \
-    libgl1-mesa-dev \
-    libglu1-mesa-dev \
-    libosmesa6-dev \
-    libglew-dev \
-    libsdl2-dev \
-    libgtk2.0-dev \
-    libgtk-3-dev \
-    libgtkglext1-dev \
-    libssl-dev \
-    libcurl4-openssl-dev \
+    curl \
+    jq \
+    libasound2-dev \
     libfreetype6-dev \
+    libgl1-mesa-dev \
+    libglew-dev \
+    libglu1-mesa-dev \
+    libgtk-3-dev \
+    libgtk2.0-dev \
+    libgtkglext1-dev \
     libnss3-dev \
-    curl
+    libosmesa6-dev \
+    libpulse-dev \
+    libxss-dev \
+    mesa-common-dev
 
-RUN apt-get install -y jq
+RUN mkdir -p /opt/cmake && \
+    curl -L -o /tmp/cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.24.3/cmake-3.24.3-linux-x86_64.tar.gz && \
+    tar xvzf /tmp/cmake.tar.gz --strip 1 -C /opt/cmake && \
+    rm -rf /tmp/cmake.tar.gz
+
+ENV PATH="$PATH:/opt/cmake/bin"
