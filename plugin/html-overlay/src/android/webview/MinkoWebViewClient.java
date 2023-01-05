@@ -44,7 +44,7 @@ public class MinkoWebViewClient extends WebViewClient
     @Override
     public void onPageFinished(WebView view, String url)
     {
-        if (!url.contains("#"))
+        if (!url.contains("#") && view.getProgress() == 100)
         {
             super.onPageFinished(view, url);
 
