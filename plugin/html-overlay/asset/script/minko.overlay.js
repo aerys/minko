@@ -1,5 +1,5 @@
-window.Minko = 'Minko' in window && !!window.Minko ? window.Minko : (function () {
-    return {
+window.Minko = (function () {
+    return 'Minko' in window && !!window.Minko ? window.Minko : {
         loaded: 0,
         ready: false,
         bridge: null,
@@ -246,5 +246,5 @@ window.Minko = 'Minko' in window && !!window.Minko ? window.Minko : (function ()
         }
 
     };
-})()
+})();
 
