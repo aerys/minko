@@ -136,7 +136,7 @@ docker run -it --rm \
 docker run -it --rm \
    -v ${PWD}:${PWD} -w ${PWD} \
    -v /etc/group:/etc/group:ro -v /etc/passwd:/etc/passwd:ro -u $(id -u $USER):$(id -g $USER) \
-   registry.aerys.in/aerys/smartshape/smartshape-engine/linux64:{TAG} \
+   registry.aerys.in/aerys/smartshape/vendor/gcc@sha256:d4a63069d9b69ca4233eecd17638356d7e01aeb66f447db5b3e606a75f527887 \
    bash -c "
         mkdir -p build && cd build
         cmake .. \

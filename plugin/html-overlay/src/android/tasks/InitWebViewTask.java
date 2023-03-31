@@ -44,7 +44,7 @@ public class InitWebViewTask implements Runnable
     @Override
     public void run()
     {
-        ViewGroup layout = SDLActivity.getLayout();
+        ViewGroup layout = (ViewGroup)SDLActivity.getContentView();
 
         // Create the WebView from SDLActivity context
         _webView = new MinkoWebView(SDLActivity.getContext());

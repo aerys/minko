@@ -67,6 +67,9 @@ public class AndroidUnzip
                 while ((ze = zip.getNextEntry()) != null)
                 {
                     File file = new File(targetDirectory, ze.getName());
+                    file.setReadable(true, false);
+                    file.setExecutable(true, false);
+                    file.setWritable(true, false);
                     File dir = ze.isDirectory() ? file : file.getParentFile();
 
                     if (!dir.isDirectory() && !dir.mkdirs())

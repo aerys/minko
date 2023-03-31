@@ -11,9 +11,9 @@ ERROR_MISSING_REQUIRED_BIN=2
 
 # Global variables.
 GITLAB_CI_YML_PATH=".gitlab-ci.yml"
-HTML5_DOCKER_TAG=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*registry.aerys.in/aerys/smartshape/smartshape-engine/html5:\([0-9a-zA-Z\-\_]*\).*$#\1#p' | head -1)
-ANDROID_DOCKER_TAG=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*registry.aerys.in/aerys/smartshape/smartshape-engine/android:\([0-9a-zA-Z\-\_]*\).*$#\1#p' | head -1)
-LINUX64_DOCKER_TAG=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*registry.aerys.in/aerys/smartshape/smartshape-engine/linux64:\([0-9a-zA-Z\-\_]*\).*$#\1#p' | head -1)
+HTML5_DOCKER_IMAGE=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*\(registry.aerys.in/aerys/smartshape/smartshape-engine/html5:[0-9a-zA-Z\_-]*\).*$#\1#p' | head -1)
+ANDROID_DOCKER_IMAGE=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*\(registry.aerys.in/aerys/infrastructure/vendor/android-ndk:[0-9a-zA-Z\_-]*\).*$#\1#p' | head -1)
+GCC_DOCKER_IMAGE=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*\(registry.aerys.in/aerys/smartshape/vendor/gcc@sha256:[a-f0-9]\{64\}\).*$#\1#p' | head -1)
 MAKE_ARGS="${MAKE_ARGS:-'-j$(nproc)'}"
 
 usage_and_exit() {
@@ -59,7 +59,7 @@ build_html5_release() {
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
-        registry.aerys.in/aerys/smartshape/smartshape-engine/html5:$HTML5_DOCKER_TAG \
+        $HTML5_DOCKER_IMAGE \
         bash -c "
             mkdir -p build-html5-release && cd build-html5-release
             cmake .. \
@@ -78,7 +78,7 @@ build_html5_debug() {
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
-        registry.aerys.in/aerys/smartshape/smartshape-engine/html5:$HTML5_DOCKER_TAG \
+        $HTML5_DOCKER_IMAGE \
         bash -c "
             mkdir -p build-html5-debug && cd build-html5-debug
             cmake .. \
@@ -97,7 +97,7 @@ build_linux64_release() {
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
-        registry.aerys.in/aerys/smartshape/smartshape-engine/linux64:$LINUX64_DOCKER_TAG \
+        $GCC_DOCKER_IMAGE \
         bash -c "
             mkdir -p build-linux64-release && cd build-linux64-release
             cmake .. \
@@ -115,7 +115,7 @@ build_linux64_debug() {
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
-        registry.aerys.in/aerys/smartshape/smartshape-engine/linux64:$LINUX64_DOCKER_TAG \
+        $GCC_DOCKER_IMAGE \
         bash -c "
             mkdir -p build-linux64-debug && cd build-linux64-debug
             cmake .. \
@@ -133,15 +133,17 @@ build_android_release() {
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
-        registry.aerys.in/aerys/smartshape/smartshape-engine/android:$ANDROID_DOCKER_TAG \
+        $ANDROID_DOCKER_IMAGE \
         bash -c "
             mkdir -p build-android-release && cd build-android-release
             cmake .. \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DWITH_EXAMPLES=OFF \
-            -DWITH_PLUGINS=ON \
-            -DWITH_NODEJS_WORKER=ON \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DWITH_EXAMPLES=OFF \
+                -DWITH_PLUGINS=ON \
+                -DWITH_NODEJS_WORKER=ON \
                 -DCMAKE_TOOLCHAIN_FILE=/opt/android-ndk-linux/build/cmake/android.toolchain.cmake \
+                -DANDROID_ABI=armeabi-v7a \
+                -DANDROID_PLATFORM=android-26 \
                 $CMAKE_ARGS
             make $MAKE_ARGS
         "
@@ -153,7 +155,7 @@ build_android_debug() {
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
-        registry.aerys.in/aerys/smartshape/smartshape-engine/android:$ANDROID_DOCKER_TAG \
+        $ANDROID_DOCKER_IMAGE \
         bash -c "
             mkdir -p build-android-debug && cd build-android-debug
             cmake .. \
@@ -162,6 +164,8 @@ build_android_debug() {
                 -DWITH_PLUGINS=ON \
                 -DWITH_NODEJS_WORKER=ON \
                 -DCMAKE_TOOLCHAIN_FILE=/opt/android-ndk-linux/build/cmake/android.toolchain.cmake \
+                -DANDROID_ABI=armeabi-v7a \
+                -DANDROID_PLATFORM=android-26 \
                 $CMAKE_ARGS
             make $MAKE_ARGS
         "

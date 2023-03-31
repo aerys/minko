@@ -116,7 +116,8 @@ public class MinkoWebView extends WebView
     public boolean dispatchKeyEvent(KeyEvent event)
     {
         // Dispatch the key events on the SDL canvas (including joystick buttons)
-        SurfaceView surfaceView = (SurfaceView)SDLActivity.getLayout().getChildAt(0);
+        ViewGroup layout = (ViewGroup)SDLActivity.getContentView();
+        SurfaceView surfaceView = (SurfaceView)layout.getChildAt(0);
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK)
         {
@@ -136,7 +137,8 @@ public class MinkoWebView extends WebView
     public boolean onGenericMotionEvent(MotionEvent event)
     {
         // Dispatch the motion events on the SDL canvas (including joystick axes)
-        SurfaceView surfaceView = (SurfaceView)SDLActivity.getLayout().getChildAt(0);
+        ViewGroup layout = (ViewGroup)SDLActivity.getContentView();
+        SurfaceView surfaceView = (SurfaceView)layout.getChildAt(0);
 
         return surfaceView.dispatchGenericMotionEvent(event);
     }

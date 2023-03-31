@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.net.Uri;
 import android.util.Log;
@@ -19,6 +20,15 @@ import org.libsdl.app.*;
 public class MinkoActivity extends SDLActivity
 {
 	protected static MinkoActivity _minkoActivitySingleton;
+
+    // We use the static library of SDL, so we do not need to load the shared
+    // library.
+    @Override
+    protected String[] getLibraries() {
+        return new String[] {
+            "main"
+        };
+    }
 
 	public static void initialize() {
 		Log.v("Minko/Java", "[MinkoActivity] initialize()");
@@ -45,7 +55,7 @@ public class MinkoActivity extends SDLActivity
     }
 
 	// Open an URL in the default browser
-    public void openURL(String url)
+    public static int openURL(String url)
     {
         Log.i("Minko/Java", "Open URL: "/* + url*/);
 
@@ -54,12 +64,25 @@ public class MinkoActivity extends SDLActivity
                 url = "http://" + url;
             }
 
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, "No application can handle this request."
+            // Code from SDLActivity.java
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+
+            int flags = Intent.FLAG_ACTIVITY_NO_HISTORY | Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
+            if (Build.VERSION.SDK_INT >= 21) {
+                flags |= Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
+            } else {
+                flags |= Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET;
+            }
+            i.addFlags(flags);
+
+            mSingleton.startActivity(i);
+        } catch (Exception e) {
+            Toast.makeText(mSingleton, "No application can handle this request."
                     + " Please install a webbrowser", Toast.LENGTH_LONG).show();
             e.printStackTrace();
+            return -1;
         }
+        return 0;
     }
 }

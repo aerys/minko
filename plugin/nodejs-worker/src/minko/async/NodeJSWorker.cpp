@@ -101,6 +101,7 @@ namespace minko
             std::vector<std::string> argsVec;
 
             argsVec.push_back(binary);
+            argsVec.push_back("--abort-on-uncaught-exception");
             if (nodeArgsSize > 0)
                 argsVec.push_back(nodeArgs);
             argsVec.push_back(scriptPath);
@@ -135,6 +136,10 @@ namespace minko
             char** argv = makeArgvCopy(argc, argsList);
 
             LOG_INFO("Start node on " << scriptPath);
+            std::string debugArgs = "";
+            for (const auto& a : argsVec)
+                debugArgs += a + " ";
+            std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " << debugArgs << std::endl;
             node::Start(argc, argv);
         }
 
