@@ -5,67 +5,36 @@ function (minko_enable_plugin_ssl target)
     get_target_property(TARGET_TYPE ${target} TYPE)
     get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
 
-    target_include_directories(${target} 
-        PRIVATE 
+    minko_set_bitness()
+    if (ANDROID)
+        set (PLATFORM_NAME "android/armeabi-v7a/r25b")
+    elseif (LINUX AND BITNESS EQUAL 64)
+        set (PLATFORM_NAME "linux/amd64/gcc-9.4")
+    elseif (WIN32 AND BITNESS EQUAL 64)
+        set (PLATFORM_NAME "windows/amd64/msvc")
+    else ()
+        message(ERROR "Platform not supported.")
+    endif ()
+
+    target_include_directories(${target}
+        PRIVATE
         "${SSL_PATH}/include"
-        "${SSL_PATH}/lib/openssl/include"
+        "${SSL_PATH}/lib/openssl/${PLATFORM_NAME}/include"
     )
-    
+
     if (NOT EMSCRIPTEN AND NOT WIN32)
         minko_plugin_link ("ssl" ${target})
     endif ()
-    
-    if (LINUX)
-        # find_package(OpenSSL REQUIRED)
-        target_link_libraries (${target} "ssl" "crypto")
-        
-        # if (OPENSSL_FOUND)
-        #     message ("Required package OpenSSL has been found. Version: ${OPENSSL_VERSION}")
-        #     include_directories(${OPENSSL_INCLUDE_DIRS})
-        #     link_directories(${OPENSSL_LIBRARIES})
-        # endif ()
-    endif ()
-    if (IOS)
-        target_link_libraries(${target}
-            "${SSL_PATH}/lib/openssl/lib/ios/libssl.a"
-            "${SSL_PATH}/lib/openssl/lib/ios/libcrypto.a"
-        )
-    endif ()
-    if (ANDROID)
-        target_link_libraries(${target}
-            "${SSL_PATH}/lib/openssl/lib/android/libssl.a"
-            "${SSL_PATH}/lib/openssl/lib/android/libcrypto.a"
-        )
 
-        if (TARGET_TYPE STREQUAL "EXECUTABLE")
-            file (COPY "${SSL_PATH}/lib/openssl/lib/android/libcrypto.so" DESTINATION "${OUTPUT_PATH}")
-            file (COPY "${SSL_PATH}/lib/openssl/lib/android/libssl.so" DESTINATION "${OUTPUT_PATH}")
-        endif ()
-    endif ()
-    if (APPLE AND NOT IOS)
-        target_link_libraries(${target}
-            "ssl"
-            "crypto"
-        )
-    endif ()
     if (WIN32)
-        target_compile_options(
-            ${target} PRIVATE
-            -DOPENSSL_SYSNAME_WIN32
-        )
         target_link_libraries(${target}
-            "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libcrypto.lib"
-            "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libssl.lib"
+            "${SSL_PATH}/lib/openssl/${PLATFORM_NAME}/lib/libssl_static.lib"
+            "${SSL_PATH}/lib/openssl/${PLATFORM_NAME}/lib/libcrypto_static.lib"
         )
-
-        if (TARGET_TYPE STREQUAL "EXECUTABLE")
-            if (BITNESS EQUAL 32)
-                file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libcrypto-1_1.dll" DESTINATION "${OUTPUT_PATH}")
-                file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libssl-1_1.dll" DESTINATION "${OUTPUT_PATH}")
-            else ()
-                file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libcrypto-1_1-x64.dll" DESTINATION "${OUTPUT_PATH}")
-                file (COPY "${SSL_PATH}/lib/openssl/lib/windows${BITNESS}/libssl-1_1-x64.dll" DESTINATION "${OUTPUT_PATH}")
-            endif ()
-        endif ()
-    endif()
+    else ()
+        target_link_libraries(${target}
+            "${SSL_PATH}/lib/openssl/${PLATFORM_NAME}/lib/libssl.a"
+            "${SSL_PATH}/lib/openssl/${PLATFORM_NAME}/lib/libcrypto.a"
+        )
+endif ()
 endfunction ()

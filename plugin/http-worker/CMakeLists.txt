@@ -11,6 +11,17 @@ if (EMSCRIPTEN)
     return ()
 endif ()
 
+minko_set_bitness()
+if (ANDROID)
+    set (PLATFORM_NAME "android")
+elseif (LINUX AND BITNESS EQUAL 64)
+    set (PLATFORM_NAME "linux64")
+elseif (WIN32 AND BITNESS EQUAL 64)
+    set (PLATFORM_NAME "windows64")
+else ()
+    message(ERROR "Platform not supported.")
+endif ()
+
 file (
     GLOB_RECURSE
     ${PROJECT_NAME}_SRC
@@ -22,7 +33,7 @@ file (
     GLOB
     ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/curl/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/curl/${PLATFORM_NAME}/include"
 )
 
 minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")

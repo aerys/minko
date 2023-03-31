@@ -1,6 +1,6 @@
 function (minko_enable_plugin_nodejs_worker target)
     set (NODEJS_WORKER_PATH "${MINKO_HOME}/plugin/nodejs-worker")
-    
+
     target_include_directories (
         ${target}
         PRIVATE
@@ -11,19 +11,21 @@ function (minko_enable_plugin_nodejs_worker target)
         PRIVATE
         "MINKO_PLUGIN_NODEJS_WORKER"
     )
+
     if (NOT EMSCRIPTEN)
         minko_enable_plugin_ssl (${target})
     endif ()
+
     if (ANDROID)
         minko_plugin_link ("nodejs-worker" ${target})
-        set (NODE_LIB "${NODEJS_WORKER_PATH}/lib/nodejs/lib/android/libnode.so")
+        set (NODE_LIB "${NODEJS_WORKER_PATH}/lib/node/android/armeabi-v7a/r25b/lib/libnode.so")
 
         get_target_property(TARGET_TYPE ${target} TYPE)
         if (TARGET_TYPE STREQUAL "SHARED_LIBRARY")
             get_target_property(OUTPUT_PATH ${target} LIBRARY_OUTPUT_DIRECTORY)
             file (COPY ${NODE_LIB} DESTINATION ${OUTPUT_PATH})
         endif ()
-        
+
         target_link_libraries(${target} ${NODE_LIB})
 
         if (NOT "${ANDROID_STL}" STREQUAL "c++_shared")

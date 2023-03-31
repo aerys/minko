@@ -10,7 +10,6 @@ Makefile
 *.log
 *.d
 *.o
-*.a
 *.vsp
 *.psess
 *.tlog

@@ -2,15 +2,18 @@ if (UNIX AND NOT APPLE AND NOT ANDROID AND NOT EMSCRIPTEN)
     set (LINUX 1)
 endif ()
 
-function (minko_set_variables)
-
+function (minko_set_bitness)
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         set (BITNESS 64 PARENT_SCOPE)
-        set (BITNESS 64)
     else ()
         set (BITNESS 32 PARENT_SCOPE)
-        set (BITNESS 32)
     endif ()
+endfunction ()
+
+function (minko_set_variables)
+
+    minko_set_bitness()
+    set (BITNESS ${BITNESS} PARENT_SCOPE)
 
     if (NOT CMAKE_BUILD_TYPE)
         set (CMAKE_BUILD_TYPE "Debug" PARENT_SCOPE)

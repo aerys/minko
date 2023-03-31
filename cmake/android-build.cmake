@@ -1,5 +1,7 @@
 function (build_android target target_name)
     # CMake toolchain to create and sign apks from shared libraries.
+    # Force ANDROID_STL to c++_shared because this is the only STL we support.
+    set (ANDROID_STL "c++_shared")
 
     # keystore warnings
     if ($ENV{ANDROID_KEYSTORE_PATH})
@@ -101,33 +103,13 @@ function (build_android target target_name)
         )
     endif ()
 
-    if (NOT ${ANDROID_STL} MATCHES "_shared")
-        return()
-    endif ()
+    if (NOT "${ANDROID_STL}" STREQUAL "c++_shared")
+        message(FATAL_ERROR "ANDROID_STL has to be set to c++_shared")
+    endif()
 
-    function(configure_shared_stl lib_path so_base)
-        configure_file(
-            "${ANDROID_NDK}/sources/cxx-stl/${lib_path}/libs/${ANDROID_ABI}/lib${so_base}.so" 
-            "${OUTPUT_PATH}/libs/${ANDROID_ABI}/lib${so_base}.so" 
-            COPYONLY
-        )
-    endfunction()
-
-    if ("${ANDROID_STL}" STREQUAL "libstdc++")
-        # The default minimal system C++ runtime library.
-    elseif ("${ANDROID_STL}" STREQUAL "gabi++_shared")
-        # The GAbi++ runtime (shared).
-        message(FATAL_ERROR "gabi++_shared was not configured by ndk-stl package")
-    elseif ("${ANDROID_STL}" STREQUAL "stlport_shared")
-        # The STLport runtime (shared).
-        configure_shared_stl("stlport" "stlport_shared")
-    elseif ("${ANDROID_STL}" STREQUAL "gnustl_shared")
-        # The GNU STL (shared).
-        configure_shared_stl("gnu-libstdc++/4.9" "gnustl_shared")
-    elseif ("${ANDROID_STL}" STREQUAL "c++_shared")
-        # The LLVM libc++ runtime (static).
-        configure_shared_stl("llvm-libc++" "c++_shared")
-    else ()
-        message(FATAL_ERROR "STL configuration ANDROID_STL=${ANDROID_STL} is not supported")
-    endif ()
+    configure_file(
+        "${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/arm-linux-androideabi/libc++_shared.so"
+        "${OUTPUT_PATH}/libs/${ANDROID_ABI}/libc++_shared.so"
+        COPYONLY
+    )
 endfunction()

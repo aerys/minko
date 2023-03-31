@@ -122,11 +122,7 @@ function (minko_add_executable target_name sources)
         target_compile_options (${target_name} PUBLIC "-DNDEBUG")
     endif ()
 
-    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set (BITNESS 64)
-    else ()
-        set (BITNESS 32)
-    endif ()
+    minko_set_bitness()
 
     list (
         APPEND

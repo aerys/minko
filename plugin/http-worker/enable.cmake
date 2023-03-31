@@ -8,45 +8,25 @@ function (minko_enable_plugin_http_worker target)
 
     if (NOT EMSCRIPTEN)
         minko_plugin_link ("http-worker" ${target})
-        minko_enable_plugin_ssl(${target})
-    endif ()
-
-    if (WIN32)
-        if (BITNESS EQUAL 32)
-            target_link_libraries(${target} "${HTTP-WORKER_PATH}/lib/curl/lib/windows${BITNESS}/libcurl.lib")
-            if (TARGET_TYPE STREQUAL "EXECUTABLE")
-                file (COPY "${HTTP-WORKER_PATH}/lib/curl/lib/windows${BITNESS}/libcurl.dll" DESTINATION ${OUTPUT_PATH})
-            endif ()
-        else ()
-            target_link_libraries(${target} "${HTTP-WORKER_PATH}/lib/curl/lib/windows${BITNESS}/libcurl-x64.lib")
-            if (TARGET_TYPE STREQUAL "EXECUTABLE")
-                file (COPY "${HTTP-WORKER_PATH}/lib/curl/lib/windows${BITNESS}/libcurl-x64.dll" DESTINATION ${OUTPUT_PATH})
-            endif ()            
+        # The libcurl for Windows uses the Schannel SSL implementation.
+        if (NOT WIN32)
+            minko_enable_plugin_ssl(${target})
         endif ()
-        
     endif ()
 
-    if (LINUX)
-        target_link_libraries (${target} "curl")
-    endif ()
-    
-    if (APPLE AND NOT IOS)
-        target_link_libraries (
-            ${target}
-            "${HTTP-WORKER_PATH}/lib/curl/lib/osx64/release/libcurl.a"
-            "-framework Security"
-            "-framework LDAP"
-        )
-        minko_plugin_link ("zlib" ${target})
-    endif ()
-
-    if (IOS)
-        target_link_libraries (${target} "${HTTP-WORKER_PATH}/lib/curl/lib/ios/libcurl.a" "-framework Security")
-        minko_plugin_link ("zlib" ${target})
-    endif ()
-
+    minko_set_bitness()
     if (ANDROID)
-        target_link_libraries (${target} "${HTTP-WORKER_PATH}/lib/curl/lib/android/libcurl.a")
+        target_link_libraries (${target} "${HTTP-WORKER_PATH}/lib/curl/android/lib/libcurl.a")
         minko_plugin_link ("zlib" ${target})
+    elseif (LINUX AND BITNESS EQUAL 64)
+        target_link_libraries(
+            ${target}
+            "${HTTP-WORKER_PATH}/lib/curl/linux64/lib/libcurl.a"
+        )
+    elseif (WIN32 AND BITNESS EQUAL 64)
+        target_link_libraries(${target} "${HTTP-WORKER_PATH}/lib/curl/windows64/lib/libcurl.lib")
+    else ()
+        message(ERROR "Platform not supported.")
     endif ()
+
 endfunction ()
