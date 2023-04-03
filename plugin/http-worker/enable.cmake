@@ -16,7 +16,10 @@ function (minko_enable_plugin_http_worker target)
 
     minko_set_bitness()
     if (ANDROID)
-        target_link_libraries (${target} "${HTTP-WORKER_PATH}/lib/curl/android/lib/libcurl.a")
+        target_link_libraries (
+            ${target}
+            "${HTTP-WORKER_PATH}/lib/curl/android/lib/libcurl.a"
+        )
         minko_plugin_link ("zlib" ${target})
     elseif (LINUX AND BITNESS EQUAL 64)
         target_link_libraries(
@@ -24,7 +27,11 @@ function (minko_enable_plugin_http_worker target)
             "${HTTP-WORKER_PATH}/lib/curl/linux64/lib/libcurl.a"
         )
     elseif (WIN32 AND BITNESS EQUAL 64)
-        target_link_libraries(${target} "${HTTP-WORKER_PATH}/lib/curl/windows64/lib/libcurl.lib")
+        target_link_libraries(
+            ${target}
+            "${HTTP-WORKER_PATH}/lib/curl/windows64/lib/libcurl.lib"
+            Ws2_32 Crypt32 Wldap32 Normaliz
+        )
     else ()
         message(ERROR "Platform not supported.")
     endif ()
