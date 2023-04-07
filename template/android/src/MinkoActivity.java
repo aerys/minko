@@ -85,4 +85,14 @@ public class MinkoActivity extends SDLActivity
         }
         return 0;
     }
+
+    @Override
+    public void setOrientationBis(int w, int h, boolean resizable, String hint) {
+        // This method override is necessary to prevent the SDL library from
+        // applying its own orientation settings, which might conflict with
+        // the orientation settings specified in the AndroidManifest.xml
+        // file of SmartShape App.
+        // By leaving the method empty, we ensure that the app respects the
+        // orientation settings defined in AndroidManifest.xml.
+    }
 }
