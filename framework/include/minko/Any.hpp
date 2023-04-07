@@ -93,9 +93,9 @@ namespace minko
         }
 
         Any&
-        operator=(Any& rhs)
+        operator=(const Any& rhs)
         {
-            rhs.swap(*this);
+            Any(rhs).swap(*this);
             return *this;
         }
 
