@@ -138,12 +138,7 @@ build:windows64:
   tags:
     - windows
   script:
-    - $env:MINKO_HOME="{0}" -f (Get-Location).ToString()
-    - bash plugin\serializer\script\download_dependencies.sh .
-    - New-Item -ItemType Directory -Force -Path build
-    - Set-Location -Path build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
-    - msbuild Project.sln /property:Configuration=Release /property:Platform=x64 /m:4
+    - BUILD_DIR=build bash script/build.sh windows64 release
 
 build:windows64_offscreen:
   <<: *build_with_artifacts_template
