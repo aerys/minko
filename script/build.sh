@@ -287,7 +287,7 @@ BUILD_TYPE=$2
 
 # Check mandatory parameters.
 case $TARGET in
-    android|html5|linux64|windows64)
+    android|html5|linux64|linux64_offscreen|windows64)
     ;;
     *)
     echo "Unknown target or no target specified. Aborting."
