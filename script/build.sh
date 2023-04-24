@@ -10,10 +10,9 @@ ERROR_INVALID_USAGE=1
 ERROR_MISSING_REQUIRED_BIN=2
 
 # Global variables.
-GITLAB_CI_YML_PATH=".gitlab-ci.yml"
-HTML5_DOCKER_IMAGE=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*\(registry.aerys.in/aerys/smartshape/smartshape-engine/html5:[0-9a-zA-Z\_-]*\).*$#\1#p' | head -1)
-ANDROID_DOCKER_IMAGE=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*\(registry.aerys.in/aerys/infrastructure/vendor/android-ndk:[0-9a-zA-Z\_-]*\).*$#\1#p' | head -1)
-GCC_DOCKER_IMAGE=$(cat $GITLAB_CI_YML_PATH | sed -n 's#.*\(registry.aerys.in/aerys/smartshape/vendor/gcc@sha256:[a-f0-9]\{64\}\).*$#\1#p' | head -1)
+HTML5_DOCKER_IMAGE=registry.aerys.in/aerys/smartshape/smartshape-engine/html5:33413
+ANDROID_DOCKER_IMAGE=registry.aerys.in/aerys/infrastructure/vendor/android-ndk:r25b-2-linux-x86_64
+GCC_DOCKER_IMAGE=registry.aerys.in/aerys/smartshape/vendor/gcc@sha256:d4a63069d9b69ca4233eecd17638356d7e01aeb66f447db5b3e606a75f527887
 MAKE_ARGS="${MAKE_ARGS:-'-j$(nproc)'}"
 
 usage_and_exit() {
@@ -23,6 +22,7 @@ usage_and_exit() {
     echo "                  * android" 1>&2
     echo "                  * html5" 1>&2
     echo "                  * linux64" 1>&2
+    echo "                  * linux64_offscreen" 1>&2
     echo "                  * windows64" 1>&2
     echo "" 1>&2
     echo "<build-type>  The type of build to perform. Available types are:" 1>&2
@@ -34,6 +34,9 @@ usage_and_exit() {
     echo "" 1>&2
     echo "              MAKE_ARGS" 1>&2
     echo "                  Arguments to pass to the make program. Default value: -j$(nproc)." 1>&2
+    echo "" 1>&2
+    echo "              BUILD_DIR" 1>&2
+    echo "                  Build directory. Default value: build-{target}-{type}." 1>&2
 
     exit ${ERROR_INVALID_USAGE};
 }
@@ -56,13 +59,16 @@ fi
 
 
 build_html5_release() {
+    BUILD_DIR="${BUILD_DIR:-'build-html5-release'}"
+
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $HTML5_DOCKER_IMAGE \
         bash -c "
-            mkdir -p build-html5-release && cd build-html5-release
+            mkdir -p $BUILD_DIR && cd $BUILD_DIR
             cmake .. \
+                -DWITH_WASM=ON \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DWITH_EXAMPLES=OFF \
                 -DWITH_PLUGINS=ON \
@@ -75,13 +81,16 @@ build_html5_release() {
 }
 
 build_html5_debug() {
+    BUILD_DIR="${BUILD_DIR:-'build-html5-debug'}"
+
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $HTML5_DOCKER_IMAGE \
         bash -c "
-            mkdir -p build-html5-debug && cd build-html5-debug
+            mkdir -p $BUILD_DIR && cd $BUILD_DIR
             cmake .. \
+                -DWITH_WASM=ON \
                 -DCMAKE_BUILD_TYPE=Debug \
                 -DWITH_EXAMPLES=OFF \
                 -DWITH_PLUGINS=ON \
@@ -94,12 +103,14 @@ build_html5_debug() {
 }
 
 build_linux64_release() {
+    BUILD_DIR="${BUILD_DIR:-'build-linux64-release'}"
+
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $GCC_DOCKER_IMAGE \
         bash -c "
-            mkdir -p build-linux64-release && cd build-linux64-release
+            mkdir -p $BUILD_DIR && cd $BUILD_DIR
             cmake .. \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DWITH_EXAMPLES=OFF \
@@ -112,12 +123,14 @@ build_linux64_release() {
 }
 
 build_linux64_debug() {
+    BUILD_DIR="${BUILD_DIR:-'build-linux64-debug'}"
+
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $GCC_DOCKER_IMAGE \
         bash -c "
-            mkdir -p build-linux64-debug && cd build-linux64-debug
+            mkdir -p $BUILD_DIR && cd $BUILD_DIR
             cmake .. \
                 -DCMAKE_BUILD_TYPE=Debug \
                 -DWITH_EXAMPLES=OFF \
@@ -129,13 +142,62 @@ build_linux64_debug() {
     show_notification "Build finished: smartshape-engine linux64 debug"
 }
 
+build_linux64_offscreen_release() {
+    BUILD_DIR="${BUILD_DIR:-'build-linux64_offscreen-release'}"
+
+    docker run -i --rm \
+        -v ${PWD}:${PWD} -w ${PWD} \
+        $ADDITIONAL_DOCKER_ARGS \
+        $GCC_DOCKER_IMAGE \
+        bash -c "
+            ../plugin/serializer/script/download_dependencies.sh .
+            mkdir -p $BUILD_DIR && cd $BUILD_DIR
+            cmake .. \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DWITH_EXAMPLES=OFF \
+                -DWITH_PLUGINS=ON \
+                -DWITH_OFFSCREEN=ON \
+                -DWITH_TEXTURE_COMPRESSOR=ON \
+                -DWITH_TESTS=ON \
+                $CMAKE_ARGS
+            make $MAKE_ARGS
+        "
+
+    show_notification "Build finished: smartshape-engine linux64_offscreen release"
+}
+
+build_linux64_offscreen_debug() {
+    BUILD_DIR="${BUILD_DIR:-'build-linux64_offscreen-debug'}"
+
+    docker run -i --rm \
+        -v ${PWD}:${PWD} -w ${PWD} \
+        $ADDITIONAL_DOCKER_ARGS \
+        $GCC_DOCKER_IMAGE \
+        bash -c "
+            mkdir -p $BUILD_DIR && cd $BUILD_DIR
+            cmake .. \
+                -DCMAKE_BUILD_TYPE=Debug \
+                -DWITH_EXAMPLES=OFF \
+                -DWITH_PLUGINS=ON \
+                -DWITH_OFFSCREEN=ON \
+                -DWITH_TEXTURE_COMPRESSOR=ON \
+                -DWITH_TESTS=ON \
+                $CMAKE_ARGS
+            make $MAKE_ARGS
+        "
+
+    show_notification "Build finished: smartshape-engine linux64_offscreen debug"
+}
+
 build_android_release() {
+    BUILD_DIR="${BUILD_DIR:-'build-android-release'}"
+
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $ANDROID_DOCKER_IMAGE \
         bash -c "
-            mkdir -p build-android-release && cd build-android-release
+            mkdir -p $BUILD_DIR && cd $BUILD_DIR
             cmake .. \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DWITH_EXAMPLES=OFF \
@@ -152,12 +214,14 @@ build_android_release() {
 }
 
 build_android_debug() {
+    BUILD_DIR="${BUILD_DIR:-'build-android-debug'}"
+
     docker run -i --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $ANDROID_DOCKER_IMAGE \
         bash -c "
-            mkdir -p build-android-debug && cd build-android-debug
+            mkdir -p $BUILD_DIR && cd $BUILD_DIR
             cmake .. \
                 -DCMAKE_BUILD_TYPE=Debug \
                 -DWITH_EXAMPLES=OFF \
@@ -174,9 +238,11 @@ build_android_debug() {
 }
 
 build_windows64_release() {
+    BUILD_DIR="${BUILD_DIR:-'build-windows64-release'}"
+
     bash plugin/serializer/script/download_dependencies.sh .
-    mkdir build-windows64-release
-    cd build-windows64-release
+    mkdir $BUILD_DIR
+    cd $BUILD_DIR
     cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
     msbuild.exe Project.sln //property:Configuration=Release //property:Platform=x64 //m:4
 
@@ -184,9 +250,11 @@ build_windows64_release() {
 }
 
 build_windows64_debug() {
+    BUILD_DIR="${BUILD_DIR:-'build-windows64-debug'}"
+
     bash plugin/serializer/script/download_dependencies.sh .
-    mkdir build-windows64-debug
-    cd build-windows64-debug
+    mkdir $BUILD_DIR
+    cd $BUILD_DIR
     cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
     msbuild.exe Project.sln //property:Configuration=Debug //property:Platform=x64 //m:4
 

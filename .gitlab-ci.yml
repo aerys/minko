@@ -1,3 +1,8 @@
+include:
+  - project: 'aerys/infrastructure/gitlab-ci-templates'
+    ref: '0.1.0'
+    file: '/jobs/docker-in-docker/Docker-In-Docker.gitlab-ci.yml'
+
 variables:
   DOCKER_BUILD_FORCE:
     value: "false"
@@ -78,6 +83,17 @@ stages:
       - LICENSE.md
       - README.md
 
+.build_template: &build_template
+  stage: build
+  extends:
+    - .docker-in-docker
+    - .build_with_artifacts_template
+  before_script:
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - apk add bash
+  script:
+    - BUILD_DIR=build bash script/build.sh $TARGET_PLATFORM release
+
 .archive_template: &archive_template
   stage: archive
   image: registry.aerys.in/aerys/smartshape-docker/archive:26975
@@ -102,32 +118,19 @@ docker_push:html5:
   <<: *docker_push_template
 
 build:html5:
-  <<: *build_with_artifacts_template
-  stage: build
-  image: registry.aerys.in/aerys/smartshape/smartshape-engine/html5:33413
-  script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_WASM=ON -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/emscripten/sdk/cmake/Modules/Platform/Emscripten.cmake ..
-    - make -j$(nproc)
+  <<: *build_template
+  variables:
+    TARGET_PLATFORM: html5
 
 build:android:
-  <<: *build_with_artifacts_template
-  stage: build
-  image: registry.aerys.in/aerys/infrastructure/vendor/android-ndk:r25b-2-linux-x86_64
-  script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_NODEJS_WORKER=ON -DCMAKE_TOOLCHAIN_FILE=/opt/android-ndk-linux/build/cmake/android.toolchain.cmake ..
-    - make
+  <<: *build_template
+  variables:
+    TARGET_PLATFORM: android
 
 build:linux64_offscreen:
-  <<: *build_with_artifacts_template
-  stage: build
-  image: registry.aerys.in/aerys/smartshape/vendor/gcc@sha256:d4a63069d9b69ca4233eecd17638356d7e01aeb66f447db5b3e606a75f527887
-  script:
-    - ./plugin/serializer/script/download_dependencies.sh .
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON -DWITH_TESTS=ON ..
-    - make -j$(nproc)
+  <<: *build_template
+  variables:
+    TARGET_PLATFORM: linux64_offscreen
 
 build:windows64:
   <<: *build_with_artifacts_template
@@ -200,13 +203,9 @@ test:linux64_offscreen:
     - wait
 
 build:linux64:
-  <<: *build_with_artifacts_template
-  stage: build
-  image: registry.aerys.in/aerys/smartshape/vendor/gcc@sha256:d4a63069d9b69ca4233eecd17638356d7e01aeb66f447db5b3e606a75f527887
-  script:
-    - mkdir -p build && cd build
-    - cmake -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
-    - make -j$(nproc)
+  <<: *build_template
+  variables:
+    TARGET_PLATFORM: linux64
 
 archive:linux64_offscreen:
   <<: *archive_template
