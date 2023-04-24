@@ -61,7 +61,7 @@ fi
 build_html5_release() {
     BUILD_DIR="${BUILD_DIR:-'build-html5-release'}"
 
-    docker run -i --rm \
+    docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $HTML5_DOCKER_IMAGE \
@@ -83,7 +83,7 @@ build_html5_release() {
 build_html5_debug() {
     BUILD_DIR="${BUILD_DIR:-'build-html5-debug'}"
 
-    docker run -i --rm \
+    docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $HTML5_DOCKER_IMAGE \
@@ -105,7 +105,7 @@ build_html5_debug() {
 build_linux64_release() {
     BUILD_DIR="${BUILD_DIR:-'build-linux64-release'}"
 
-    docker run -i --rm \
+    docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $GCC_DOCKER_IMAGE \
@@ -125,7 +125,7 @@ build_linux64_release() {
 build_linux64_debug() {
     BUILD_DIR="${BUILD_DIR:-'build-linux64-debug'}"
 
-    docker run -i --rm \
+    docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $GCC_DOCKER_IMAGE \
@@ -145,7 +145,7 @@ build_linux64_debug() {
 build_linux64_offscreen_release() {
     BUILD_DIR="${BUILD_DIR:-'build-linux64_offscreen-release'}"
 
-    docker run -i --rm \
+    docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $GCC_DOCKER_IMAGE \
@@ -169,7 +169,7 @@ build_linux64_offscreen_release() {
 build_linux64_offscreen_debug() {
     BUILD_DIR="${BUILD_DIR:-'build-linux64_offscreen-debug'}"
 
-    docker run -i --rm \
+    docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $GCC_DOCKER_IMAGE \
@@ -192,7 +192,7 @@ build_linux64_offscreen_debug() {
 build_android_release() {
     BUILD_DIR="${BUILD_DIR:-'build-android-release'}"
 
-    docker run -i --rm \
+    docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $ANDROID_DOCKER_IMAGE \
@@ -216,7 +216,7 @@ build_android_release() {
 build_android_debug() {
     BUILD_DIR="${BUILD_DIR:-'build-android-debug'}"
 
-    docker run -i --rm \
+    docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
         $ADDITIONAL_DOCKER_ARGS \
         $ANDROID_DOCKER_IMAGE \
