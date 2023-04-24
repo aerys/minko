@@ -151,7 +151,7 @@ build_linux64_offscreen_release() {
         $ADDITIONAL_DOCKER_ARGS \
         $GCC_DOCKER_IMAGE \
         bash -c "
-            ../plugin/serializer/script/download_dependencies.sh .
+            ./plugin/serializer/script/download_dependencies.sh .
             mkdir -p $BUILD_DIR && cd $BUILD_DIR
             cmake .. \
                 -DCMAKE_BUILD_TYPE=Release \
@@ -175,6 +175,7 @@ build_linux64_offscreen_debug() {
         $ADDITIONAL_DOCKER_ARGS \
         $GCC_DOCKER_IMAGE \
         bash -c "
+            ./plugin/serializer/script/download_dependencies.sh .
             mkdir -p $BUILD_DIR && cd $BUILD_DIR
             cmake .. \
                 -DCMAKE_BUILD_TYPE=Debug \
