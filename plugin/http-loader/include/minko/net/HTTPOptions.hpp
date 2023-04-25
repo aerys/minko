@@ -41,6 +41,10 @@ namespace minko
 
             bool                                            _verifyPeer;
 
+            // Determines if the `Range` header must be put in the `byte-range` query parameter too.
+            // Allows bypassing business proxies that remove the `Range` header.
+            bool                                            _injectByteRangeQueryParam;
+
         public:
             inline
             static
@@ -142,6 +146,22 @@ namespace minko
             postFields(const std::string& value)
             {
                 _postFields = value;
+
+                return std::static_pointer_cast<HTTPOptions>(shared_from_this());
+            }
+
+            inline
+            bool
+            injectByteRangeQueryParam() const
+            {
+                return _injectByteRangeQueryParam;
+            }
+
+            inline
+            Ptr
+            injectByteRangeQueryParam(bool value)
+            {
+                _injectByteRangeQueryParam = value;
 
                 return std::static_pointer_cast<HTTPOptions>(shared_from_this());
             }
