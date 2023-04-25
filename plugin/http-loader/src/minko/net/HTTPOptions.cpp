@@ -29,7 +29,8 @@ HTTPOptions::HTTPOptions() :
     _password(),
     _additionalHeaders(),
     _verifyPeer(true),
-    _postFields()
+    _postFields(),
+    _injectByteRangeQueryParam(true)
 {
 }
 
@@ -39,12 +40,14 @@ HTTPOptions::HTTPOptions(const HTTPOptions& copy) :
     _password(copy._password),
     _additionalHeaders(copy._additionalHeaders),
     _verifyPeer(copy._verifyPeer),
-    _postFields(copy._postFields)
+    _postFields(copy._postFields),
+    _injectByteRangeQueryParam(copy._injectByteRangeQueryParam)
 {
 }
 
 HTTPOptions::HTTPOptions(const Options& copy) :
-    Options(copy)
+    Options(copy),
+    _injectByteRangeQueryParam(true)
 {
 }
 

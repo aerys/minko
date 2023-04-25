@@ -134,9 +134,12 @@ HTTPProtocol::load()
     auto username = std::string();
     auto password = std::string();
     auto additionalHeaders = std::unordered_map<std::string, std::string>();
+    auto additionalQueryParams = std::unordered_map<std::string, std::string>();
     auto verifyPeer = true;
+    auto injectByteRangeQueryParam = true;
     auto buffered = _options->buffered();
     auto postFields = std::string();
+    auto resolvedFilename = this->resolvedFilename();
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
@@ -148,6 +151,7 @@ HTTPProtocol::load()
         additionalHeaders = httpOptions->additionalHeaders();
 
         verifyPeer = httpOptions->verifyPeer();
+        injectByteRangeQueryParam = httpOptions->injectByteRangeQueryParam();
         postFields = httpOptions->postFields();
     }
 
@@ -163,6 +167,32 @@ HTTPProtocol::load()
             "Range",
             "bytes=" + rangeMin + "-" + rangeMax
         ));
+
+        if (injectByteRangeQueryParam)
+        {
+            additionalQueryParams.insert(std::make_pair(
+                "byte-range",
+                rangeMin + "-" + rangeMax
+            ));
+        }
+    }
+
+    if (additionalQueryParams.size() > 0)
+    {
+        if (this->resolvedFilename().find('?') == std::string::npos)
+        {
+            resolvedFilename += "?";
+        }
+
+        for (auto it = additionalQueryParams.begin(); it != additionalQueryParams.end(); it++)
+        {
+            if (it != additionalQueryParams.begin())
+            {
+                resolvedFilename += "&";
+            }
+
+            resolvedFilename += it->first + "=" + it->second;
+        }
     }
 
 #if defined(EMSCRIPTEN)
@@ -195,7 +225,7 @@ HTTPProtocol::load()
             method = "POST";
 
         _handle = emscripten_async_wget3_data(
-            resolvedFilename().c_str(),
+            resolvedFilename.c_str(),
             method,
             postFields.c_str(),
             additionalHeadersJsonString.c_str(),
@@ -211,7 +241,7 @@ HTTPProtocol::load()
         std::string eval = "";
 
         eval += "var xhr = new XMLHttpRequest();\n";
-        eval += "xhr.open('GET', '" + resolvedFilename() + "', false);\n";
+        eval += "xhr.open('GET', '" + resolvedFilename + "', false);\n";
 
         eval += "xhr.overrideMimeType('text/plain; charset=x-user-defined');\n";
 
@@ -284,7 +314,6 @@ HTTPProtocol::load()
 
         std::stringstream inputStream;
 
-        const auto& resolvedFilename = this->resolvedFilename();
         const int resolvedFilenameSize = static_cast<int>(resolvedFilename.size());
 
         const int usernameSize = static_cast<int>(username.size());
@@ -337,7 +366,7 @@ HTTPProtocol::load()
     }
     else
     {
-        HTTPRequest request(resolvedFilename(), username, password, &additionalHeaders);
+        HTTPRequest request(resolvedFilename, username, password, &additionalHeaders);
 
         request.verifyPeer(verifyPeer);
         request.buffered(buffered);
