@@ -62,7 +62,10 @@ namespace minko
                 return "info";
             }
 
-        private:
+            virtual
+            ~ConsoleSink() = default;
+
+        protected:
             ConsoleSink() = default;
         };
     }
