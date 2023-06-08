@@ -31,7 +31,8 @@ file (GLOB_RECURSE
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/node/android/armeabi-v7a/r25b/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/node/android/armeabi-v7a/r22b/include"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/node/android/armeabi-v7a/r22b/include/node"
 )
 
 minko_add_worker (${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")

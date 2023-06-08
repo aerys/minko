@@ -192,7 +192,7 @@ function (minko_add_executable target_name sources)
     endif ()
 
     if (APPLE)
-        target_compile_options (${target_name} PUBLIC "-std=c++11")
+        target_compile_options (${target_name} PUBLIC "-std=c++14")
     endif ()
 
     if (EMSCRIPTEN)
