@@ -105,18 +105,6 @@ stages:
     - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
     - b2 upload_file --noProgress --info CI_PIPELINE_ID=${CI_PIPELINE_ID} --info CI_COMMIT_SHA=${CI_COMMIT_SHA} "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE_NAME}" "${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}/${ARCHIVE_NAME}"
 
-docker_build:html5:
-  variables:
-    DOCKER_IMAGE_NAME: html5
-  <<: *docker_build_template
-
-docker_push:html5:
-  variables:
-    DOCKER_IMAGE_NAME: html5
-  dependencies:
-    - docker_build:html5
-  <<: *docker_push_template
-
 build:html5:
   <<: *build_template
   variables:

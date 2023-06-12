@@ -42,7 +42,7 @@ function (minko_configure_target_flags target)
     endif ()
     
     if (EMSCRIPTEN)
-        set (COMPILATION_FLAGS ${COMPILATION_FLAGS} -MMD -DEMSCRIPTEN)
+        set (COMPILATION_FLAGS ${COMPILATION_FLAGS} -DEMSCRIPTEN)
     endif()
 
     target_compile_options (${target} PUBLIC ${COMPILATION_FLAGS} $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>)

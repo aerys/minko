@@ -5,7 +5,6 @@ set(MINKO_HOME ${CMAKE_CURRENT_BINARY_DIR})
 option (WITH_PLUGINS "list off plugins to build" ON)
 option (WITH_EXAMPLES "list off examples to build" ON)
 option (WITH_TESTS "used to enable the tests" OFF)
-option (WITH_WASM "enable WebAssembly" ON)
 option (WITH_OFFSCREEN "enable offscreen rendering" OFF)
 option (WITH_NODEJS_WORKER "enable the NodeJS worker plugin" OFF)
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 import os
@@ -32,9 +32,9 @@ def main():
     files = [os.path.join(embeddir, name) + '@' + name for name in os.listdir(os.path.join(targetdir, embeddir))]
 
     if os.getenv('verbose') != '0':
-        print(' '.join(['python', binary, data, '--js-output=' + preload, '--preload'] + files))
+        print(' '.join(['python3', binary, data, '--js-output=' + preload, '--preload'] + files))
 
-    subprocess.call(['python', binary, data, '--js-output=' + preload, '--preload'] + files, cwd=targetdir)
+    subprocess.call(['python3', binary, data, '--js-output=' + preload, '--preload'] + files, cwd=targetdir)
 
     shutil.rmtree(os.path.join(targetdir, embeddir))
 
