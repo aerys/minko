@@ -18,7 +18,7 @@ function (minko_enable_plugin_nodejs_worker target)
 
     if (ANDROID)
         minko_plugin_link ("nodejs-worker" ${target})
-        set (NODE_LIB "${NODEJS_WORKER_PATH}/lib/node/android/armeabi-v7a/r25b/lib/libnode.so")
+        set (NODE_LIB "${NODEJS_WORKER_PATH}/lib/node/android/armeabi-v7a/r22b/lib/libnode.so")
 
         get_target_property(TARGET_TYPE ${target} TYPE)
         if (TARGET_TYPE STREQUAL "SHARED_LIBRARY")

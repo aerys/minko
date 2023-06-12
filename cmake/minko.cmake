@@ -45,7 +45,7 @@ function (minko_configure_target_flags target)
         set (COMPILATION_FLAGS ${COMPILATION_FLAGS} -MMD -DEMSCRIPTEN)
     endif()
 
-    target_compile_options (${target} PUBLIC ${COMPILATION_FLAGS} $<$<COMPILE_LANGUAGE:CXX>:-std=c++11>)
+    target_compile_options (${target} PUBLIC ${COMPILATION_FLAGS} $<$<COMPILE_LANGUAGE:CXX>:-std=c++14>)
     set (COMPILATION_FLAGS ${COMPILATION_FLAGS} PARENT_SCOPE)
     set_target_properties (
         ${target}
