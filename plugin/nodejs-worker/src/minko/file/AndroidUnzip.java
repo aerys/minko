@@ -56,6 +56,18 @@ public class AndroidUnzip
 
         if (lastUpdateTime == 0 || lastUnzipTime < lastUpdateTime)
         {
+            // Delete previous files.
+            // Prevents issues with older dependencies that could interfer with newer versions. 
+            File[] files = targetDirectory.listFiles();
+            for (int i = 0; i < files.length; i++)
+            {
+                if (files[i].getName().equals("node_modules") || files[i].getName().equals("index.js"))
+                {
+                    Log.d("Minko/Java", "Deleting existing file/folder: " + files[i].getName());
+                    deleteRecursive(files[i]);
+                }
+            }
+
             ZipInputStream zip = new ZipInputStream(new BufferedInputStream(assetManager.open(archivePath)));
 
             try
@@ -103,4 +115,15 @@ public class AndroidUnzip
 
         return targetDirectory.getPath();
     }
+
+    // Recursively delete a file/folder.
+    private void deleteRecursive(File fileOrDirectory)
+    {
+        if (fileOrDirectory.isDirectory())
+            for (File child : fileOrDirectory.listFiles())
+                deleteRecursive(child);
+
+        fileOrDirectory.delete();
+    }
+
 }
