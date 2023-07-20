@@ -230,7 +230,7 @@ HTTPProtocol::load()
 
         _handle = emscripten_async_wget3_data(
             resolvedFilename.c_str(),
-            method,
+            method.c_str(),
             postFields.c_str(),
             additionalHeadersJsonString.c_str(),
             this,
