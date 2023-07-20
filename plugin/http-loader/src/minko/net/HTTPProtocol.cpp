@@ -140,6 +140,7 @@ HTTPProtocol::load()
     auto buffered = _options->buffered();
     auto postFields = std::string();
     auto resolvedFilename = this->resolvedFilename();
+    auto method = std::string("GET");
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
@@ -153,6 +154,9 @@ HTTPProtocol::load()
         verifyPeer = httpOptions->verifyPeer();
         injectByteRangeQueryParam = httpOptions->injectByteRangeQueryParam();
         postFields = httpOptions->postFields();
+
+        if (!postFields.empty())
+            method = "POST";
     }
 
     auto seekingOffset = _options->seekingOffset();
@@ -195,6 +199,11 @@ HTTPProtocol::load()
         }
     }
 
+    if (httpOptions != nullptr && httpOptions->requestMiddleware() != nullptr)
+    {
+        httpOptions->requestMiddleware()(method, resolvedFilename, additionalHeaders, postFields);
+    }
+
 #if defined(EMSCRIPTEN)
     if (options()->loadAsynchronously())
     {
@@ -218,11 +227,6 @@ HTTPProtocol::load()
 
             additionalHeadersJsonString += " }";
         }
-
-        auto method = "GET";
-
-        if (!postFields.empty())
-            method = "POST";
 
         _handle = emscripten_async_wget3_data(
             resolvedFilename.c_str(),

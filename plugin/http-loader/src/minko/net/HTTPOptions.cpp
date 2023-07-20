@@ -30,7 +30,8 @@ HTTPOptions::HTTPOptions() :
     _additionalHeaders(),
     _verifyPeer(true),
     _postFields(),
-    _injectByteRangeQueryParam(true)
+    _injectByteRangeQueryParam(true),
+    _requestMiddleware()
 {
 }
 
@@ -41,7 +42,8 @@ HTTPOptions::HTTPOptions(const HTTPOptions& copy) :
     _additionalHeaders(copy._additionalHeaders),
     _verifyPeer(copy._verifyPeer),
     _postFields(copy._postFields),
-    _injectByteRangeQueryParam(copy._injectByteRangeQueryParam)
+    _injectByteRangeQueryParam(copy._injectByteRangeQueryParam),
+    _requestMiddleware(copy._requestMiddleware)
 {
 }
 
