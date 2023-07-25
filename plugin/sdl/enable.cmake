@@ -11,9 +11,8 @@ function (minko_enable_plugin_sdl target)
     target_compile_options(${target} PRIVATE "-DMINKO_PLUGIN_SDL")
 
     if (EMSCRIPTEN)
-        list (APPEND SDL_INCLUDE "SDL")
         target_include_directories(${target} PRIVATE ${SDL_INCLUDE})
-        target_link_libraries(${target} "SDL")
+        target_compile_options (${target} PRIVATE "-sUSE_SDL")
         return ()
     endif ()
 

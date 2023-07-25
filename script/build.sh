@@ -11,7 +11,8 @@ ERROR_INVALID_USAGE=1
 ERROR_MISSING_REQUIRED_BIN=2
 
 # Global variables.
-HTML5_DOCKER_IMAGE=registry.aerys.in/aerys/smartshape/smartshape-engine/html5:33413
+HTML5_DOCKER_IMAGE=emscripten/emsdk:3.1.43
+EMSCRIPTEN_SDK=/emsdk/upstream/emscripten
 ANDROID_DOCKER_IMAGE=registry.aerys.in/aerys/infrastructure/vendor/android-ndk:r25b-2-linux-x86_64
 GCC_DOCKER_IMAGE=registry.aerys.in/aerys/smartshape/vendor/gcc@sha256:d4a63069d9b69ca4233eecd17638356d7e01aeb66f447db5b3e606a75f527887
 MAKE_ARGS="${MAKE_ARGS:-'-j$(nproc)'}"
@@ -64,16 +65,16 @@ build_html5_release() {
 
     docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
+        -e EMSCRIPTEN=${EMSCRIPTEN_SDK} \
         $ADDITIONAL_DOCKER_ARGS \
         $HTML5_DOCKER_IMAGE \
         bash -c "
             mkdir -p $BUILD_DIR && cd $BUILD_DIR
-            cmake .. \
-                -DWITH_WASM=ON \
+            emcmake cmake .. \
                 -DCMAKE_BUILD_TYPE=Release \
                 -DWITH_EXAMPLES=OFF \
                 -DWITH_PLUGINS=ON \
-                -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/emscripten/sdk/cmake/Modules/Platform/Emscripten.cmake \
+                -DCMAKE_TOOLCHAIN_FILE=${EMSCRIPTEN_SDK}/cmake/Modules/Platform/Emscripten.cmake \
                 $CMAKE_ARGS
             make $MAKE_ARGS
         "
@@ -86,16 +87,16 @@ build_html5_debug() {
 
     docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
+        -e EMSCRIPTEN=${EMSCRIPTEN_SDK} \
         $ADDITIONAL_DOCKER_ARGS \
         $HTML5_DOCKER_IMAGE \
         bash -c "
             mkdir -p $BUILD_DIR && cd $BUILD_DIR
-            cmake .. \
-                -DWITH_WASM=ON \
+            emcmake cmake .. \
                 -DCMAKE_BUILD_TYPE=Debug \
                 -DWITH_EXAMPLES=OFF \
                 -DWITH_PLUGINS=ON \
-                -DCMAKE_TOOLCHAIN_FILE=/emsdk_portable/emscripten/sdk/cmake/Modules/Platform/Emscripten.cmake \
+                -DCMAKE_TOOLCHAIN_FILE=${EMSCRIPTEN_SDK}/cmake/Modules/Platform/Emscripten.cmake \
                 $CMAKE_ARGS
             make $MAKE_ARGS
         "

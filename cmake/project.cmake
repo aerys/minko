@@ -81,10 +81,10 @@ function (minko_add_library target_name type sources)
 
     if (EMSCRIPTEN)
         if (CMAKE_BUILD_TYPE STREQUAL "Release")
-            target_compile_options(${target_name} PRIVATE -O3 --llvm-lto 1)
+            target_compile_options(${target_name} PRIVATE -O3 -flto)
         else ()
-            target_compile_options(${target_name} PRIVATE --llvm-opts 0 -g4)
-            set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -g4")
+            target_compile_options(${target_name} PRIVATE -gsource-map)
+            set(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -gsource-map")
         endif ()
     endif ()
 endfunction ()
@@ -196,108 +196,61 @@ function (minko_add_executable target_name sources)
     endif ()
 
     if (EMSCRIPTEN)
-        set (WASM_OPTS  -s WASM=1 -s ALLOW_MEMORY_GROWTH=1 -s "BINARYEN_TRAP_MODE='clamp'")
-        set (ASMJS_OPTS -s WASM=0 -s ALLOW_MEMORY_GROWTH=0)
-
         if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/template.html)
             set (SHELL_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/template.html)
         else ()
             set (SHELL_FILE_PATH ${MINKO_HOME}/template/template.html)
         endif ()
 
-        # Emscripten build is done in two steps:
-        # 1. build the bytecode (*.bc)
-        # 2. convert the bytecode to JavaScript (*.js)
-        set_target_properties (${target_name} PROPERTIES SUFFIX ".bc")
+        set (CUSTOM_LINK_FLAGS "")
 
         if (CMAKE_BUILD_TYPE STREQUAL "debug" OR CMAKE_BUILD_TYPE STREQUAL "Debug")
-            set_target_properties(${target_name} PROPERTIES LINK_FLAGS "--llvm-lto 0 -g4 -Wl --no-as-needed")
-            target_compile_options(${target_name} PRIVATE "-g4")
-            add_custom_command (
-                TARGET ${target_name}
-                POST_BUILD
-                # Compile the Emscripten (*.bc) bytecode to JavaScript (*.js)
-                COMMAND $ENV{EMSCRIPTEN}/em++
-                    ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.bc
-                    -o ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}-asmjs.js
-                    -g4
-                    --js-library ${MINKO_HOME}/cmake/library.js
-                    --memory-init-file 1
-                    -s DISABLE_EXCEPTION_CATCHING=0
-                    -s DEMANGLE_SUPPORT=1
-                    -s NO_EXIT_RUNTIME=1
-                    -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\"
-                    -s EXPORTED_RUNTIME_METHODS="[\'FS_createPath\',\'FS_createDataFile\',\'addRunDependency\',\'removeRunDependency\',\'getMemory\',\'cwrap\']"
-                    -s FORCE_FILESYSTEM=1
-                    -s ERROR_ON_UNDEFINED_SYMBOLS=0
-                    ${ASMJS_OPTS}
-                COMMAND $ENV{EMSCRIPTEN}/em++
-                    ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.bc
-                    -o ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}-wasm.js
-                    -g4
-                    --js-library ${MINKO_HOME}/cmake/library.js
-                    --memory-init-file 1
-                    -s DISABLE_EXCEPTION_CATCHING=0
-                    -s DEMANGLE_SUPPORT=1
-                    -s NO_EXIT_RUNTIME=1
-                    -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\"
-                    -s EXPORTED_RUNTIME_METHODS="[\'FS_createPath\',\'FS_createDataFile\',\'addRunDependency\',\'removeRunDependency\',\'getMemory\',\'cwrap\']"
-                    -s FORCE_FILESYSTEM=1
-                    -s ERROR_ON_UNDEFINED_SYMBOLS=0
-                    ${WASM_OPTS}
-                # Copy the HTML template.
-                COMMAND ${CMAKE_COMMAND}
-                    -E copy \"${SHELL_FILE_PATH}\" ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.html
-                # Generate the *.data + *-preload.js for the embedded assets
-                COMMAND python
-                    ${MINKO_HOME}/cmake/empkg.py
-                    ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.data
+            string(JOIN " " CUSTOM_LINK_FLAGS
+                "-gsource-map"
+                "-s DISABLE_EXCEPTION_CATCHING=0"
+                "-s DEMANGLE_SUPPORT=1"
             )
+            target_compile_options(${target_name} PRIVATE "-gsource-map")
         else ()
-            set_target_properties(${target_name} PROPERTIES LINK_FLAGS "--llvm-lto 1 -Wl --no-as-needed")
-            add_custom_command (
-                TARGET ${target_name}
-                POST_BUILD
-                # Compile the Emscripten (*.bc) bytecode to JavaScript (*.js)
-                COMMAND $ENV{EMSCRIPTEN}/em++
-                    ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.bc
-                    -o ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}-asmjs.js
-                    -O3
-                    --js-library ${MINKO_HOME}/cmake/library.js
-                    --memory-init-file 1
-                    -s DISABLE_EXCEPTION_CATCHING=0
-                    -s NO_EXIT_RUNTIME=1
-                    -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\"
-                    -s EXPORTED_RUNTIME_METHODS="[\'FS_createPath\',\'FS_createDataFile\',\'addRunDependency\',\'removeRunDependency\',\'getMemory\',\'cwrap\']"
-                    -s FORCE_FILESYSTEM=1
-                    -s ERROR_ON_UNDEFINED_SYMBOLS=0
-                    ${ASMJS_OPTS}
-                COMMAND $ENV{EMSCRIPTEN}/em++
-                    ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.bc
-                    -o ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}-wasm.js
-                    -O3
-                    --js-library ${MINKO_HOME}/cmake/library.js
-                    --memory-init-file 1
-                    -s DISABLE_EXCEPTION_CATCHING=0
-                    -s NO_EXIT_RUNTIME=1
-                    -s EXPORTED_FUNCTIONS=\"[\'_main\', \'_minkoRunPlayer\']\"
-                    -s EXPORTED_RUNTIME_METHODS="[\'FS_createPath\',\'FS_createDataFile\',\'addRunDependency\',\'removeRunDependency\',\'getMemory\',\'cwrap\']"
-                    -s FORCE_FILESYSTEM=1
-                    -s ERROR_ON_UNDEFINED_SYMBOLS=0
-                    ${WASM_OPTS}
-                # Copy the HTML template.
-                COMMAND ${CMAKE_COMMAND}
-                    -E copy \"${SHELL_FILE_PATH}\" ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.html
-                # Generate the *.data + *-preload.js for the embedded assets
-                COMMAND python
-                    ${MINKO_HOME}/cmake/empkg.py
-                    ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.data
-
-                # This file is an intermediate bytecode we don't need once the project is built.
-                # This is why, after the build is finished, we delete it.
-                COMMAND rm ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.bc
+            string(JOIN " " CUSTOM_LINK_FLAGS
+                "-flto"
+                "-O3"
+                "-s DISABLE_EXCEPTION_CATCHING=1"
             )
         endif ()
+
+        string(JOIN " " CUSTOM_LINK_FLAGS
+            "${CUSTOM_LINK_FLAGS}"
+            "-Wl --no-as-needed"
+            "--js-library ${MINKO_HOME}/cmake/library.js"
+            "-s NO_EXIT_RUNTIME=1"
+            "-s EXPORTED_FUNCTIONS=\"[\'_main\',\'_minkoRunPlayer\',\'_malloc\']\""
+            "-s EXPORTED_RUNTIME_METHODS=\"[\'callMain\',\'FS_createPath\',\'FS_createDataFile\',\'addRunDependency\',\'removeRunDependency\',\'cwrap\']\""
+            "-s FORCE_FILESYSTEM"
+            "-s ERROR_ON_UNDEFINED_SYMBOLS=0"
+            "-s LLD_REPORT_UNDEFINED"
+            "-s USE_PTHREADS=0"
+            "-s WASM=1"
+            "-s ALLOW_MEMORY_GROWTH=1"
+        )
+
+        set_target_properties(
+            ${target_name}
+            PROPERTIES SUFFIX "-wasm.js"
+            LINK_FLAGS "${CUSTOM_LINK_FLAGS}"
+        )
+
+        add_custom_command (
+            TARGET ${target_name}
+            POST_BUILD
+            # Copy the HTML template.
+            COMMAND ${CMAKE_COMMAND}
+                -E copy \"${SHELL_FILE_PATH}\" ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.html
+            # Generate the *.data + *-preload.js for the embedded assets
+            COMMAND python3
+                ${MINKO_HOME}/cmake/empkg.py
+                ${CMAKE_CURRENT_BINARY_DIR}/bin/${PROJECT_NAME}.data
+        )
     endif ()
 endfunction ()
 # minko_add_executable function end
@@ -326,7 +279,7 @@ function (minko_add_worker target_name sources)
                 -O3
                 --closure 1
                 -s DISABLE_EXCEPTION_CATCHING=0
-                -s TOTAL_MEMORY=268435456
+                -s INITIAL_MEMORY=268435456
                 -s EXPORTED_FUNCTIONS="[\'minkoWorkerEntryPoint\']"
         )
     endif ()

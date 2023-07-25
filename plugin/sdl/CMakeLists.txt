@@ -30,15 +30,12 @@ if (NOT ANDROID)
 endif ()
 
 if (EMSCRIPTEN)
-    list (APPEND
-        ${PROJECT_NAME}_INCLUDE
-        "${CMAKE_CURRENT_SOURCE_DIR}/SDL"
-    )
     minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")
     target_include_directories (${PROJECT_NAME}
         PRIVATE
         ${${PROJECT_NAME}_INCLUDE}
     )
+    target_compile_options (${PROJECT_NAME} PRIVATE "-sUSE_SDL")
     return ()
 endif ()
 

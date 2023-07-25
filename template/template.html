@@ -145,7 +145,7 @@
           this.totalDependencies = Math.max(this.totalDependencies, left);
           Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
         },
-		TOTAL_MEMORY: 128 * 1024 * 1024
+		IMPORTED_MEMORY: 128 * 1024 * 1024
       };
       Module.setStatus('Downloading...');
       if (typeof window === "object") {

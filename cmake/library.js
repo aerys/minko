@@ -8,7 +8,19 @@ mergeInto(LibraryManager.library, {
         http.open(_request, _url, true);
         http.responseType = 'arraybuffer';
 
-        var handle = Browser.getNextWgetRequestHandle();
+        var handle = wget.getNextWgetRequestHandle();
+
+        function onerrorjs() {
+            if (onerror) {
+                var statusText = 0;
+                if (http.statusText) {
+                    var len = lengthBytesUTF8(http.statusText) + 1;
+                    statusText = stackAlloc(len);
+                    stringToUTF8(http.statusText, statusText, len);
+                }
+                {{{ makeDynCall('viiii', 'onerror') }}}(handle, arg, http.status, statusText);
+            }
+        }
 
         // LOAD
         http.onload = function http_onload(e) {
@@ -16,30 +28,28 @@ mergeInto(LibraryManager.library, {
                 var byteArray = new Uint8Array(http.response);
                 var buffer = _malloc(byteArray.length);
                 HEAPU8.set(byteArray, buffer);
-                if (onload) dynCall_viiii(onload, handle, arg, buffer, byteArray.length);
+                if (onload) {{{ makeDynCall('viiii', 'onload') }}}(handle, arg, buffer, byteArray.length);
                 if (free) _free(buffer);
             } else {
-                if (onerror) dynCall_viiii(onerror, handle, arg, http.status, http.statusText);
+                onerrorjs();
             }
-            delete Browser.wgetRequests[handle];
+            delete wget.wgetRequests[handle];
         };
 
         // ERROR
         http.onerror = function http_onerror(e) {
-            if (onerror) {
-                dynCall_viiii(onerror, handle, arg, http.status, http.statusText);
-            }
-            delete Browser.wgetRequests[handle];
+            onerrorjs();
+            delete wget.wgetRequests[handle];
         };
 
         // PROGRESS
         http.onprogress = function http_onprogress(e) {
-            if (onprogress) dynCall_viiii(onprogress, handle, arg, e.loaded, e.lengthComputable || e.lengthComputable === undefined ? e.total : 0);
+            if (onprogress) {{{ makeDynCall('viiii', 'onprogress') }}}(handle, arg, e.loaded, e.lengthComputable || e.lengthComputable === undefined ? e.total : 0);
         };
 
         // ABORT
         http.onabort = function http_onabort(e) {
-            delete Browser.wgetRequests[handle];
+            delete wget.wgetRequests[handle];
         };
 
         try {
@@ -62,7 +72,7 @@ mergeInto(LibraryManager.library, {
             http.send(null);
         }
 
-        Browser.wgetRequests[handle] = http;
+        wget.wgetRequests[handle] = http;
 
         return handle;
     }
