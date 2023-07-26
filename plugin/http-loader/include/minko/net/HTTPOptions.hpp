@@ -30,6 +30,10 @@ namespace minko
         {
         public:
             typedef std::shared_ptr<HTTPOptions> Ptr;
+            typedef std::function<void(std::string&,
+                                       std::string&,
+                                       std::unordered_map<std::string, std::string>&,
+                                       std::string&)>       RequestMiddleware;
 
         private:
             std::string                                     _username;
@@ -44,6 +48,7 @@ namespace minko
             // Determines if the `Range` header must be put in the `byte-range` query parameter too.
             // Allows bypassing business proxies that remove the `Range` header.
             bool                                            _injectByteRangeQueryParam;
+            RequestMiddleware                               _requestMiddleware;
 
         public:
             inline
@@ -162,6 +167,22 @@ namespace minko
             injectByteRangeQueryParam(bool value)
             {
                 _injectByteRangeQueryParam = value;
+
+                return std::static_pointer_cast<HTTPOptions>(shared_from_this());
+            }
+
+            inline
+            const RequestMiddleware&
+            requestMiddleware() const
+            {
+                return _requestMiddleware;
+            }
+
+            inline
+            Ptr
+            requestMiddleware(const RequestMiddleware& func)
+            {
+                _requestMiddleware = func;
 
                 return std::static_pointer_cast<HTTPOptions>(shared_from_this());
             }
