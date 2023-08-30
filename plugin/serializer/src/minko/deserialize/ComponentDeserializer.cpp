@@ -267,7 +267,7 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
 
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.get<0>());
 	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.get<1>());
-    if (!dependencies->options()->preserveMaterials())
+    if (!dependencies->options()->preserveMaterials() && material)
     {
         // In case where strict material preservation
         // is not required, these are globally indexed by
