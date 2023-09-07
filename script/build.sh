@@ -38,7 +38,7 @@ usage_and_exit() {
     echo "                  Arguments to pass to the make program. Default value: -j$(nproc)." 1>&2
     echo "" 1>&2
     echo "              BUILD_DIR" 1>&2
-    echo "                  Build directory. Default value: build-{target}-{type}." 1>&2
+    echo "                  Build directory. Default value: build-{target}-{build-type}." 1>&2
 
     exit ${ERROR_INVALID_USAGE};
 }
