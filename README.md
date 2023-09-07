@@ -8,8 +8,9 @@
         - [1.2.1. Android](#121-android)
         - [1.2.2. HTML5](#122-html5)
         - [1.2.3. Linux64](#123-linux64)
-        - [1.2.4. Windows64](#124-windows64)
-        - [1.2.5. More options](#125-more-options)
+        - [1.2.4. Linux64 Offscreen](#124-linux64-offscreen)
+        - [1.2.5. Windows64](#125-windows64)
+        - [1.2.6. More options](#126-more-options)
     - [1.3. Build before **smartshape-engine@10.2.0**](#13-build-before-smartshape-engine1020)
         - [1.3.1. Android](#131-android)
         - [1.3.2. HTML5](#132-html5)
@@ -56,7 +57,17 @@
 ./script/build.sh linux64 release
 ```
 
-#### 1.2.4. Windows64
+#### 1.2.4. Linux64 Offscreen
+
+```bash
+./script/build.sh linux64_offscreen release
+```
+
+Notes:
+- This build type enables `WITH_OFFSCREEN` and `WITH_TEXTURE_COMPRESSOR`.
+- This build type should be used to build `smartshape-converter`.
+
+#### 1.2.5. Windows64
 
 ```bash
 ./script/build.sh windows64 release
@@ -68,7 +79,7 @@ To change the VCTargetsPath (for example):
 SET VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets
 ```
 
-#### 1.2.5. More options
+#### 1.2.6. More options
 
 There are more ways to build the engine. Here is the detailed usage of the building script
 
@@ -79,6 +90,8 @@ Usage: ./script/build.sh <target> <build-type> [--cmake '<cmake-args>']
                   * android
                   * html5
                   * linux64
+                  * linux64_offscreen
+                  * windows64
 
 <build-type>  The type of build to perform. Available types are:
                   * debug
@@ -89,6 +102,8 @@ ENVIRONMENT VARIABLES
 
               MAKE_ARGS
                   Arguments to pass to the make program. Default value: -j8.
+              BUILD_DIR
+                  Build directory. Default value: build-{target}-{build-type}.
 ```
 
 ### 1.3. Build before **smartshape-engine@10.2.0**
