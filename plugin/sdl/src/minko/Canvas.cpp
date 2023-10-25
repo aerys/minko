@@ -758,8 +758,8 @@ Canvas::step()
             }
             else
             {
-                _touch->lastTouchDownTime(-1.f);
-                _touch->lastTapTime(-1.f);
+                _touch->lastTouchDownTime(-1);
+                _touch->lastTapTime(-1);
             }
 
             break;
@@ -788,7 +788,7 @@ Canvas::step()
                 y
             );
 
-            if (_touch->numTouches() == 0 && _touch->lastTouchDownTime() != -1.0f )
+            if (_touch->numTouches() == 0 && _touch->lastTouchDownTime() != -1)
             {
                 auto dX = std::abs(x - _touch->lastTouchDownX());
                 auto dY = std::abs(y - _touch->lastTouchDownY());
@@ -804,13 +804,13 @@ Canvas::step()
                     dY = std::abs(y - _touch->lastTapY()) * 0.75f;
                     dT = _relativeTime - _touch->lastTapTime();
 
-                    if (_touch->lastTapTime() != -1.0f &&
+                    if (_touch->lastTapTime() != -1 &&
                         dT < input::SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD &&
                         dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
                         dY < input::SDLTouch::TAP_MOVE_THRESHOLD)
                     {
                         _touch->doubleTap()->execute(_touch, x, y);
-                        _touch->lastTapTime(-1.0f);
+                        _touch->lastTapTime(-1);
                     }
                     else
                     {
@@ -822,7 +822,7 @@ Canvas::step()
                 }
             }
 
-            _touch->lastTouchDownTime(-1.0f);
+            _touch->lastTouchDownTime(-1);
 
             break;
         }
@@ -849,7 +849,7 @@ Canvas::step()
             if (std::abs(_touch->lastTouchDownX() - x) > input::SDLTouch::TAP_MOVE_THRESHOLD ||
                 std::abs(_touch->lastTouchDownY() - y) > input::SDLTouch::TAP_MOVE_THRESHOLD)
             {
-                _touch->lastTouchDownTime(-1.0f);
+                _touch->lastTouchDownTime(-1);
             }
 
             _touch->updateTouch(id, x, y, dx, dy);
@@ -1074,10 +1074,10 @@ Canvas::step()
         if (executeMouseMove)
             _mouse->move()->execute(_mouse, _mouse->dX(), _mouse->dY());
 
-        if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
+        if (_touch->numTouches() && _touch->lastTouchDownTime() != -1 && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
         {
             _touch->longHold()->execute(_touch, _touch->averageX(), _touch->averageY());
-            _touch->lastTouchDownTime(-1.0f);
+            _touch->lastTouchDownTime(-1);
         }
     }
 
