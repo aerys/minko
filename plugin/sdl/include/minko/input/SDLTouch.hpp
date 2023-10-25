@@ -106,13 +106,13 @@ namespace minko
             }
 
             inline
-            void lastTapTime(float v)
+            void lastTapTime(std::int64_t v)
             {
                 _lastTapTime = v;
             }
 
             inline
-            void lastTouchDownTime(float v)
+            void lastTouchDownTime(std::int64_t v)
             {
                 _lastTouchDownTime = v;
             }
@@ -130,7 +130,7 @@ namespace minko
             }
 
             inline
-            float lastTouchDownTime()
+            std::int64_t lastTouchDownTime()
             {
                 return _lastTouchDownTime;
             }
@@ -148,7 +148,7 @@ namespace minko
             }
 
             inline
-            float lastTapTime()
+            std::int64_t lastTapTime()
             {
                 return _lastTapTime;
             }
@@ -156,19 +156,19 @@ namespace minko
         private:
             SDLTouch(std::shared_ptr<Canvas> canvas);
 
-            float _lastTouchDownX;
-            float _lastTouchDownY;
-            float _lastTouchDownTime;
+            float           _lastTouchDownX;
+            float           _lastTouchDownY;
+            std::int64_t    _lastTouchDownTime;
 
-            float _lastTapX;
-            float _lastTapY;
-            float _lastTapTime;
+            float           _lastTapX;
+            float           _lastTapY;
+            std::int64_t    _lastTapTime;
 
         public:
-            static const float TAP_MOVE_THRESHOLD;
-            static const float TAP_DELAY_THRESHOLD;
-            static const float DOUBLE_TAP_DELAY_THRESHOLD;
-            static const float LONG_HOLD_DELAY_THRESHOLD;
+            static const float        TAP_MOVE_THRESHOLD;
+            static const std::int64_t TAP_DELAY_THRESHOLD;
+            static const std::int64_t DOUBLE_TAP_DELAY_THRESHOLD;
+            static const std::int64_t LONG_HOLD_DELAY_THRESHOLD;
 
             static const float SWIPE_PRECISION;
         };
