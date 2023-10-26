@@ -38,9 +38,11 @@ Mouse::Mouse(std::shared_ptr<AbstractCanvas> canvas) :
     _mouseLeftButtonDown(Signal<Ptr>::create()),
     _mouseLeftButtonUp(Signal<Ptr>::create()),
     _mouseLeftClick(Signal<Ptr>::create()),
+    _mouseLeftDoubleClick(Signal<Ptr>::create()),
     _mouseRightButtonDown(Signal<Ptr>::create()),
     _mouseRightButtonUp(Signal<Ptr>::create()),
     _mouseRightClick(Signal<Ptr>::create()),
+    _mouseRightDoubleClick(Signal<Ptr>::create()),
     _mouseMiddleButtonDown(Signal<Ptr>::create()),
     _mouseMiddleButtonUp(Signal<Ptr>::create()),
     _mouseMiddleClick(Signal<Ptr>::create())
@@ -49,53 +51,89 @@ Mouse::Mouse(std::shared_ptr<AbstractCanvas> canvas) :
     {
         _leftButtonIsDown = true;
 
+        // Click logic is now handled in the app in `InputStateHandlerScript`.
+        // FIXME: This code should be removed once input events come from
+        //        the UI on native platforms, like on Android and HTML5.
+        //        See https://git.aerys.in/aerys/smartshape/smartshape-app/-/issues/1969.
+#if MINKO_PLATFORM == MINKO_PLATFORM_LINUX || MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
         _lastMouseLeftDownX = x();
         _lastMouseLeftDownY = y();
+#endif
     }));
     _slots.push_front(_mouseLeftButtonUp->connect([&](Ptr mouse)
     {
         _leftButtonIsDown = false;
-        
+
+        // Click logic is now handled in the app in `InputStateHandlerScript`.
+        // FIXME: This code should be removed once input events come from
+        //        the UI on native platforms, like on Android and HTML5.
+        //        See https://git.aerys.in/aerys/smartshape/smartshape-app/-/issues/1969.
+#if MINKO_PLATFORM == MINKO_PLATFORM_LINUX || MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
         auto dX = std::abs(x() - _lastMouseLeftDownX);
         auto dY = std::abs(y() - _lastMouseLeftDownY);
 
         if (dX < CLICK_MOVE_THRESHOLD && dY < CLICK_MOVE_THRESHOLD)
             leftButtonClick()->execute(mouse);
+#endif
     }));
 
     _slots.push_front(_mouseRightButtonDown->connect([&](Ptr mouse)
     {
         _rightButtonIsDown = true;
 
+        // Click logic is now handled in the app in `InputStateHandlerScript`.
+        // FIXME: This code should be removed once input events come from
+        //        the UI on native platforms, like on Android and HTML5.
+        //        See https://git.aerys.in/aerys/smartshape/smartshape-app/-/issues/1969.
+#if MINKO_PLATFORM == MINKO_PLATFORM_LINUX || MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
         _lastMouseRightDownX = x();
         _lastMouseRightDownY = y();
+#endif
     }));
     _slots.push_front(_mouseRightButtonUp->connect([&](Ptr mouse)
     {
         _rightButtonIsDown = false;
-        
+
+        // Click logic is now handled in the app in `InputStateHandlerScript`.
+        // FIXME: This code should be removed once input events come from
+        //        the UI on native platforms, like on Android and HTML5.
+        //        See https://git.aerys.in/aerys/smartshape/smartshape-app/-/issues/1969.
+#if MINKO_PLATFORM == MINKO_PLATFORM_LINUX || MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
         auto dX = std::abs(x() - _lastMouseRightDownX);
         auto dY = std::abs(y() - _lastMouseRightDownY);
 
         if (dX < CLICK_MOVE_THRESHOLD && dY < CLICK_MOVE_THRESHOLD)
             rightButtonClick()->execute(mouse);
+#endif
     }));
     
     _slots.push_front(_mouseMiddleButtonDown->connect([&](Ptr mouse)
     {
         _middleButtonIsDown = true;
 
+        // Click logic is now handled in the app in `InputStateHandlerScript`.
+        // FIXME: This code should be removed once input events come from
+        //        the UI on native platforms, like on Android and HTML5.
+        //        See https://git.aerys.in/aerys/smartshape/smartshape-app/-/issues/1969.
+#if MINKO_PLATFORM == MINKO_PLATFORM_LINUX || MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
         _lastMouseMiddleDownX = x();
         _lastMouseMiddleDownY = y();
+#endif
     }));
     _slots.push_front(_mouseMiddleButtonUp->connect([&](Ptr mouse)
     {
         _middleButtonIsDown = false;
-        
+
+        // Click logic is now handled in the app in `InputStateHandlerScript`.
+        // FIXME: This code should be removed once input events come from
+        //        the UI on native platforms, like on Android and HTML5.
+        //        See https://git.aerys.in/aerys/smartshape/smartshape-app/-/issues/1969.
+#if MINKO_PLATFORM == MINKO_PLATFORM_LINUX || MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
         auto dX = std::abs(x() - _lastMouseMiddleDownX);
         auto dY = std::abs(y() - _lastMouseMiddleDownY);
 
         if (dX < CLICK_MOVE_THRESHOLD && dY < CLICK_MOVE_THRESHOLD)
             middleButtonClick()->execute(mouse);
+#endif
     }));
 }

@@ -49,6 +49,8 @@ PickingManager::PickingManager() :
     _mouseMove(Signal<NodePtr>::create()),
     _mouseLeftClick(Signal<NodePtr>::create()),
     _mouseRightClick(Signal<NodePtr>::create()),
+    _mouseLeftDoubleClick(Signal<NodePtr>::create()),
+    _mouseRightDoubleClick(Signal<NodePtr>::create()),
     _mouseLeftDown(Signal<NodePtr>::create()),
     _mouseRightDown(Signal<NodePtr>::create()),
     _mouseLeftUp(Signal<NodePtr>::create()),
@@ -119,6 +121,17 @@ PickingManager::bindSignals()
             std::static_pointer_cast<PickingManager>(shared_from_this()),
             std::placeholders::_1));
 
+        _mouseLeftDoubleClickSlot = _mouse->leftButtonDoubleClick()->connect(std::bind(
+            &PickingManager::mouseLeftDoubleClickHandler,
+            std::static_pointer_cast<PickingManager>(shared_from_this()),
+            std::placeholders::_1
+        ));
+
+        _mouseRightDoubleClickSlot = _mouse->rightButtonDoubleClick()->connect(std::bind(
+            &PickingManager::mouseRightDoubleClickHandler,
+            std::static_pointer_cast<PickingManager>(shared_from_this()),
+            std::placeholders::_1));
+
         _mouseLeftUpSlot = _mouse->leftButtonUp()->connect(std::bind(
             &PickingManager::mouseLeftUpHandler,
             std::static_pointer_cast<PickingManager>(shared_from_this()),
@@ -185,6 +198,8 @@ PickingManager::bindSignals()
     _executeMoveHandler = false;
     _executeRightClickHandler = false;
     _executeLeftClickHandler = false;
+    _executeRightDoubleClickHandler = false;
+    _executeLeftDoubleClickHandler = false;
     _executeRightDownHandler = false;
     _executeLeftDownHandler = false;
     _executeRightUpHandler = false;
@@ -205,6 +220,8 @@ PickingManager::unbindSignals()
     _mouseRightDownSlot = nullptr;
     _mouseLeftClickSlot = nullptr;
     _mouseRightClickSlot = nullptr;
+    _mouseLeftDoubleClickSlot = nullptr;
+    _mouseRightDoubleClickSlot = nullptr;
     _mouseLeftUpSlot = nullptr;
     _mouseRightUpSlot = nullptr;
     _touchDownSlot = nullptr;
@@ -416,6 +433,16 @@ PickingManager::dispatchEvents()
         _mouseLeftClick->execute(pickedNode);
     }
 
+    if (_executeRightDoubleClickHandler)
+    {
+        _mouseRightDoubleClick->execute(pickedNode);
+    }
+
+    if (_executeLeftDoubleClickHandler)
+    {
+        _mouseLeftDoubleClick->execute(pickedNode);
+    }
+
     if (_executeRightUpHandler)
     {
         _mouseRightUp->execute(pickedNode);
@@ -468,6 +495,8 @@ PickingManager::dispatchEvents()
     _executeLeftDownHandler = false;
     _executeRightClickHandler = false;
     _executeLeftClickHandler = false;
+    _executeRightDoubleClickHandler = false;
+    _executeLeftDoubleClickHandler = false;
     _executeRightUpHandler = false;
     _executeLeftUpHandler = false;
     _executeTouchDownHandler = false;
@@ -524,6 +553,26 @@ PickingManager::mouseLeftClickHandler(MousePtr mouse)
     if (_mouseLeftClick->numCallbacks() > 0)
     {
         _executeLeftClickHandler = true;
+        performPicking();
+    }
+}
+
+void
+PickingManager::mouseRightDoubleClickHandler(MousePtr mouse)
+{
+    if (_mouseRightDoubleClick->numCallbacks() > 0)
+    {
+        _executeRightDoubleClickHandler = true;
+        performPicking();
+    }
+}
+
+void
+PickingManager::mouseLeftDoubleClickHandler(MousePtr mouse)
+{
+    if (_mouseLeftDoubleClick->numCallbacks() > 0)
+    {
+        _executeLeftDoubleClickHandler = true;
         performPicking();
     }
 }
