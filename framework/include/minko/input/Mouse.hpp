@@ -52,12 +52,15 @@ namespace minko
 			Signal<Ptr>::Ptr				_mouseLeftButtonDown;
 			Signal<Ptr>::Ptr				_mouseLeftButtonUp;
             Signal<Ptr>::Ptr                _mouseLeftClick;
+            Signal<Ptr>::Ptr                _mouseLeftDoubleClick;
 			Signal<Ptr>::Ptr				_mouseRightButtonDown;
 			Signal<Ptr>::Ptr				_mouseRightButtonUp;
             Signal<Ptr>::Ptr                _mouseRightClick;
+            Signal<Ptr>::Ptr                _mouseRightDoubleClick;
 			Signal<Ptr>::Ptr				_mouseMiddleButtonDown;
 			Signal<Ptr>::Ptr				_mouseMiddleButtonUp;
             Signal<Ptr>::Ptr                _mouseMiddleClick;
+            Signal<Ptr>::Ptr                _mouseMiddleDoubleClick;
 
 			std::list<Any>					_slots;
 
@@ -204,6 +207,13 @@ namespace minko
                 return _mouseLeftClick;
             }
 
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			leftButtonDoubleClick()
+			{
+				return _mouseLeftDoubleClick;
+			}
+
             inline
             std::shared_ptr<Signal<Ptr>>
 			rightButtonDown()
@@ -225,6 +235,13 @@ namespace minko
                 return _mouseRightClick;
             }
 
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			rightButtonDoubleClick()
+			{
+				return _mouseRightDoubleClick;
+			}
+
             inline
             std::shared_ptr<Signal<Ptr>>
 			middleButtonDown()
@@ -245,6 +262,13 @@ namespace minko
             {
                 return _mouseMiddleClick;
             }
+
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			middleButtonDoubleClick()
+			{
+				return _mouseMiddleDoubleClick;
+			}
 
 			virtual
 			~Mouse()
