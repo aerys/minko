@@ -71,6 +71,8 @@ namespace minko
 			Signal<NodePtr>::Ptr						_mouseLeftUp;
 			Signal<NodePtr>::Ptr						_mouseRightClick;
 			Signal<NodePtr>::Ptr						_mouseLeftClick;
+			Signal<NodePtr>::Ptr						_mouseRightDoubleClick;
+			Signal<NodePtr>::Ptr						_mouseLeftDoubleClick;
 			Signal<NodePtr>::Ptr						_mouseOut;
 			Signal<NodePtr>::Ptr						_mouseMove;
             Signal<NodePtr>::Ptr                        _mouseWheel;
@@ -97,6 +99,8 @@ namespace minko
             Signal<MousePtr>::Slot                      _mouseLeftUpSlot;
 			Signal<MousePtr>::Slot						_mouseRightClickSlot;
 			Signal<MousePtr>::Slot						_mouseLeftClickSlot;
+			Signal<MousePtr>::Slot						_mouseRightDoubleClickSlot;
+			Signal<MousePtr>::Slot						_mouseLeftDoubleClickSlot;
             Signal<MousePtr, int, int>::Slot            _mouseWheelSlot;
             Signal<TouchPtr, int, float, float>::Slot   _touchDownSlot;
             Signal<TouchPtr, int, float, float>::Slot   _touchUpSlot;
@@ -108,6 +112,8 @@ namespace minko
 			bool										_executeMoveHandler;
 			bool										_executeRightClickHandler;
 			bool										_executeLeftClickHandler;
+			bool										_executeRightDoubleClickHandler;
+			bool										_executeLeftDoubleClickHandler;
 			bool										_executeRightDownHandler;
 			bool										_executeLeftDownHandler;
             bool                                        _executeRightUpHandler;
@@ -189,9 +195,23 @@ namespace minko
 
 			inline
 			Signal<NodePtr>::Ptr
+			mouseRightDoubleClick()
+			{
+				return _mouseRightDoubleClick;
+			}
+
+			inline
+			Signal<NodePtr>::Ptr
 			mouseClick()
 			{
 				return _mouseLeftClick;
+			}
+
+			inline
+			Signal<NodePtr>::Ptr
+			mouseDoubleClick()
+			{
+				return _mouseLeftDoubleClick;
 			}
 
 			inline
@@ -336,6 +356,12 @@ namespace minko
 
 			void
 			mouseLeftClickHandler(MousePtr mouse);
+
+			void
+			mouseRightDoubleClickHandler(MousePtr mouse);
+
+			void
+			mouseLeftDoubleClickHandler(MousePtr mouse);
 
 			void
             mouseRightUpHandler(MousePtr mouse);
