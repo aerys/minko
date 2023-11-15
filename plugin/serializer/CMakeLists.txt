@@ -8,6 +8,9 @@ file (COPY ${CMAKE_CURRENT_SOURCE_DIR}/script DESTINATION ${MINKO_HOME}/${RELATI
 
 set (PROJECT_NAME "minko-plugin-serializer")
 
+add_subdirectory("lib/msgpack-c")
+TARGET_COMPILE_DEFINITIONS(msgpack-cxx INTERFACE MSGPACK_NO_BOOST)
+
 file (GLOB_RECURSE
     ${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
@@ -15,16 +18,15 @@ file (GLOB_RECURSE
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/src/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/include/*.hpp"
+    "${msgpack-cxx_HEADERS}"
 )
+
 
 file (GLOB
     ${PROJECT_NAME}_INCLUDE
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     "${CMAKE_CURRENT_SOURCE_DIR}/src"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/include"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/msgpack-c/src"
 )
 
 minko_add_library (${PROJECT_NAME} STATIC "${${PROJECT_NAME}_SRC}")

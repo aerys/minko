@@ -2,7 +2,7 @@
 
 The serialization library is production-ready.
 
-Currently, RPC implementation is testing phase. Requires newer kernel, not running on RHEL5/CentOS5.
+Currently, RPC implementation is in testing phase. Requires newer kernel, not running on RHEL5/CentOS5.
 
 # Install
 
@@ -31,23 +31,23 @@ int main(void) {
         msgpack::pack(sbuf, vec);
 
         // deserialize it.
-        msgpack::unpacked msg;
-        msgpack::unpack(&msg, sbuf.data(), sbuf.size());
+        msgpack::object_handle oh =
+            msgpack::unpack(sbuf.data(), sbuf.size());
 
         // print the deserialized object.
-        msgpack::object obj = msg.get();
+        msgpack::object obj = oh.get();
         std::cout << obj << std::endl;  //=> ["Hello", "MessagePack"]
 
         // convert it into statically typed object.
         std::vector<std::string> rvec;
-        obj.convert(&rvec);
+        obj.convert(rvec);
 }
 ```
 
 Compile it as follows:
 
 ```
-$ g++ hello.cc -lmsgpack -o hello
+$ g++ -Ipath_to_msgpack/include hello.cc -o hello
 $ ./hello
 ["Hello", "MessagePack"]
 ```
@@ -59,7 +59,7 @@ $ ./hello
 #include <iostream>
 #include <string>
 
-int main(void) {
+int main() {
         // serializes multiple objects using msgpack::packer.
         msgpack::sbuffer buffer;
 
@@ -77,13 +77,13 @@ int main(void) {
         pac.buffer_consumed(buffer.size());
 
         // now starts streaming deserialization.
-        msgpack::unpacked result;
-        while(pac.next(&result)) {
-            std::cout << result.get() << std::endl;
+        msgpack::object_handle oh;
+        while(pac.next(oh)) {
+            std::cout << oh.get() << std::endl;
         }
 
         // results:
-        // $ g++ stream.cc -lmsgpack -o stream
+        // $ g++ -Ipath_to_msgpack/include stream.cc -o stream
         // $ ./stream
         // "Log message ... 1"
         // "Log message ... 2"
@@ -98,7 +98,7 @@ int main(void) {
 #include <iostream>
 #include <string>
 
-int main(void) {
+int main() {
         // serializes multiple objects into one message containing an array using msgpack::packer.
         msgpack::sbuffer buffer;
 
@@ -139,7 +139,7 @@ public:
     MSGPACK_DEFINE(m_str, m_vec);
 };
 
-int main(void) {
+int main() {
         std::vector<myclass> vec;
         // add some elements into vec...
 
@@ -147,13 +147,13 @@ int main(void) {
         msgpack::sbuffer sbuf;
         msgpack::pack(sbuf, vec);
 
-        msgpack::unpacked msg;
-        msgpack::unpack(&msg, sbuf.data(), sbuf.size());
+        msgpack::object_handle oh =
+            msgpack::unpack(sbuf.data(), sbuf.size());
 
-        msgpack::object obj = msg.get();
+        msgpack::object obj = oh.get();
 
         // you can convert object to myclass directly
         std::vector<myclass> rvec;
-        obj.convert(&rvec);
+        obj.convert(rvec);
 }
 ```

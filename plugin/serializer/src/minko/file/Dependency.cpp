@@ -524,13 +524,13 @@ Dependency::serialize(const std::string&                        parentFilename,
         const auto& linkedAsset = *linkedAssetToIdPair.first;
         const auto id = linkedAssetToIdPair.second;
 
-        msgpack::type::tuple<int, int, std::string, std::vector<unsigned char>, int> linkedAssetData(
+        msgpack::type::tuple<int, int, std::string, std::vector<unsigned char>, int> linkedAssetData(std::tuple<int, int, std::string, std::vector<unsigned char>, int>(
             linkedAsset.offset(),
             linkedAsset.length(),
             linkedAsset.filename(),
             {},
             static_cast<int>(linkedAsset.linkType())
-        );
+        ));
 
         switch (linkedAsset.linkType())
         {

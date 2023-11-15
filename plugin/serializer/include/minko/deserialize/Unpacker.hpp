@@ -32,11 +32,9 @@ namespace minko
             bool referenced;
             auto neverCopy = [](msgpack::type::object_type, std::size_t, void*) -> bool { return true ; };
 
-            msgpack::unpacked unpacked;
             std::size_t _ = 0;
-            msgpack::unpack(unpacked, source + offset, length, _, referenced, neverCopy);
-            msgpack::object object(unpacked.get()); // Reference semantics. Shallow copy.
-            object.convert(&result);
+            msgpack::object_handle unpacked = msgpack::unpack(source + offset, length, _, referenced, neverCopy);
+            unpacked.get().convert(result);
         }
 
         template <typename T>
