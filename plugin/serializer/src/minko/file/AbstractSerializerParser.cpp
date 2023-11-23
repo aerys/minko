@@ -376,17 +376,16 @@ AbstractSerializerParser::deserializeAsset(Dependency::SerializedAsset&	asset,
 	}
     else if (asset.get<0>() == serialize::AssetType::LINKED_ASSET)
     {
-        msgpack::type::tuple<int, int, std::string, std::vector<unsigned char>, int> linkedAssetdata;
-
+        msgpack::type::tuple<int, int, std::string, msgpack::type::array_ref<std::vector<unsigned char> >, int> linkedAssetData;
+        std::vector<unsigned char> vec;
         {
-            msgpack::unpacked unpacked;
-            msgpack::unpack(&unpacked, asset.get<2>().c_str(), asset.get<2>().size());
-
-            unpacked.get().convert(&linkedAssetdata);
+            msgpack::object_handle unpacked = msgpack::unpack(asset.get<2>().c_str(), asset.get<2>().size());
+            linkedAssetData.get<3>() = msgpack::v1::type::make_array_ref(vec);
+            unpacked.get().convert(linkedAssetData);
         }
 
-        auto linkedAssetOffset = linkedAssetdata.get<0>();
-        auto linkedAssetFilename = linkedAssetdata.get<2>();
+        auto linkedAssetOffset = linkedAssetData.get<0>();
+        auto linkedAssetFilename = linkedAssetData.get<2>();
         auto linkedAssetAbsoluteFilename = linkedAssetFilename;
 
         if (linkedAssetFilename == "")
@@ -394,7 +393,7 @@ AbstractSerializerParser::deserializeAsset(Dependency::SerializedAsset&	asset,
         else
             linkedAssetAbsoluteFilename = assetCompletePath + "/" + linkedAssetAbsoluteFilename;
 
-        const auto linkedAssetLinkType = static_cast<LinkedAsset::LinkType>(linkedAssetdata.get<4>());
+        const auto linkedAssetLinkType = static_cast<LinkedAsset::LinkType>(linkedAssetData.get<4>());
 
         if (linkedAssetLinkType == LinkedAsset::LinkType::Internal)
         {
@@ -406,9 +405,9 @@ AbstractSerializerParser::deserializeAsset(Dependency::SerializedAsset&	asset,
 
         auto linkedAsset = LinkedAsset::create()
             ->offset(linkedAssetOffset)
-            ->length(linkedAssetdata.get<1>())
+            ->length(linkedAssetData.get<1>())
             ->filename(linkedAssetAbsoluteFilename)
-            ->data(linkedAssetdata.get<3>())
+            ->data(vec)
             ->linkType(linkedAssetLinkType);
 
         _dependency->registerReference(asset.get<1>(), linkedAsset);
