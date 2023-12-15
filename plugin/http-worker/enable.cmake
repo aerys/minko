@@ -18,18 +18,18 @@ function (minko_enable_plugin_http_worker target)
     if (ANDROID)
         target_link_libraries (
             ${target}
-            "${HTTP-WORKER_PATH}/lib/curl/android/lib/libcurl.a"
+            "${HTTP-WORKER_PATH}/lib/curl/android/armeabi-v7a/r25b/lib/libcurl.a"
         )
         minko_plugin_link ("zlib" ${target})
     elseif (LINUX AND BITNESS EQUAL 64)
         target_link_libraries(
             ${target}
-            "${HTTP-WORKER_PATH}/lib/curl/linux64/lib/libcurl.a"
+            "${HTTP-WORKER_PATH}/lib/curl/linux/amd64/gcc-9.4/lib/libcurl.a"
         )
     elseif (WIN32 AND BITNESS EQUAL 64)
         target_link_libraries(
             ${target}
-            "${HTTP-WORKER_PATH}/lib/curl/windows64/lib/libcurl.lib"
+            "${HTTP-WORKER_PATH}/lib/curl/windows/amd64/msvc/lib/libcurl.lib"
             Ws2_32 Crypt32 Wldap32 Normaliz
         )
     else ()
