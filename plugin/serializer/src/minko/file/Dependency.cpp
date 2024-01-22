@@ -524,7 +524,7 @@ Dependency::serialize(const std::string&                        parentFilename,
         const auto& linkedAsset = *linkedAssetToIdPair.first;
         const auto id = linkedAssetToIdPair.second;
 
-        msgpack::type::tuple<int, int, std::string, std::vector<unsigned char>, int> linkedAssetData(std::tuple<int, int, std::string, std::vector<unsigned char>, int>(
+        msgpack::type::tuple<int, int, std::string, msgpack::type::array_ref<const std::vector<unsigned char> >, int> linkedAssetData(std::tuple<int, int, std::string, std::vector<unsigned char>, int>(
             linkedAsset.offset(),
             linkedAsset.length(),
             linkedAsset.filename(),
@@ -532,10 +532,14 @@ Dependency::serialize(const std::string&                        parentFilename,
             static_cast<int>(linkedAsset.linkType())
         ));
 
+        // Used to set the array ref to a value
+        const std::vector<unsigned char> emptyVector;
+        linkedAssetData.get<3>() = msgpack::type::make_array_ref(emptyVector);
+
         switch (linkedAsset.linkType())
         {
         case LinkedAsset::LinkType::Copy:
-            linkedAssetData.get<3>() = linkedAsset.data();
+            linkedAssetData.get<3>() = msgpack::v1::type::make_array_ref(linkedAsset.data());
             break;
 
         case LinkedAsset::LinkType::Internal:
