@@ -1,7 +1,13 @@
 include:
   - project: 'aerys/infrastructure/gitlab-ci-templates'
-    ref: '0.1.0'
+    ref: 'v0.7.2'
     file: '/jobs/docker-in-docker/Docker-In-Docker.gitlab-ci.yml'
+  - project: 'aerys/infrastructure/gitlab-ci-templates'
+    ref: 'v0.7.2'
+    file: '/jobs/commitlint/commintlint.gitlab-ci.yml'
+  - project: 'aerys/infrastructure/gitlab-ci-templates'
+    ref: 'v0.7.2'
+    file: '/jobs/semantic-release/semantic-release.gitlab-ci.yml'
 
 variables:
   DOCKER_BUILD_FORCE:
@@ -14,7 +20,9 @@ variables:
 stages:
   - build
   - test
+  - check
   - archive
+  - publish
   - release
 
 .docker_build_template: &docker_build_template
@@ -104,6 +112,22 @@ stages:
     - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
     - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
     - b2 upload_file --noProgress --info CI_PIPELINE_ID=${CI_PIPELINE_ID} --info CI_COMMIT_SHA=${CI_COMMIT_SHA} "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE_NAME}" "${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}/${ARCHIVE_NAME}"
+
+.publish_template: &publish_template
+  image: registry.aerys.in/aerys/infrastructure/vendor/rust-docker:1.72.0-1
+  stage: publish
+  only:
+    - main
+    - tags
+  script:
+    - PACKAGE_VERSION="main" # Default
+    - PACKAGE_VERSION=$(([[ "$CI_COMMIT_TAG" ]] && echo "$CI_COMMIT_TAG") || echo "$PACKAGE_VERSION")
+    - ARCHIVE_NAME="${CI_PROJECT_NAME}-${PLATFORM}-${PACKAGE_VERSION}.tar.bz2"
+    - apt-get update && apt-get install -y jq
+    - cd "${CI_PROJECT_DIR}"
+    - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
+    # Publish the package.
+    - 'curl --fail --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file "/tmp/${ARCHIVE_NAME}" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${PACKAGE_VERSION}/${ARCHIVE_NAME}"'
 
 build:html5:
   <<: *build_template
@@ -243,11 +267,56 @@ archive:windows64_offscreen:
   dependencies:
     - build:windows64_offscreen
 
+lint:commitlint:
+  extends: .commitlint
+  stage: check
+
+check:semantic-release:
+  stage: check
+  extends: .semantic-release-dry-run
+
+publish:linux64_offscreen:
+  <<: *publish_template
+  dependencies:
+    - build:linux64_offscreen
+  variables:
+    PLATFORM: "linux64_offscreen"
+
+publish:android:
+  <<: *publish_template
+  dependencies:
+    - build:android
+  variables:
+    PLATFORM: "android"
+
+publish:html5:
+  <<: *publish_template
+  dependencies:
+    - build:html5
+  variables:
+    PLATFORM: "html5"
+
+publish:linux:
+  <<: *publish_template
+  dependencies:
+    - build:linux64
+  variables:
+    PLATFORM: "linux"
+
+publish:windows64:
+  <<: *publish_template
+  dependencies:
+    - build:windows64
+  variables:
+    PLATFORM: "windows64"
+
+publish:windows64_offscreen:
+  <<: *publish_template
+  dependencies:
+    - build:windows64_offscreen
+  variables:
+    PLATFORM: "windows64_offscreen"
+
 release:
   stage: release
-  image: registry.aerys.in/aerys/gitlab-flow-release:0.10.0
-  only:
-    - tags
-  variables:
-    GIT_STRATEGY: none
-  script: gitlab-flow-release --branch main --url "${CI_SERVER_URL}" --project-id ${CI_PROJECT_ID} --private-token "${RELEASE_PRIVATE_TOKEN}" release --to-tag "${CI_COMMIT_REF_NAME}"
+  extends: .semantic-release
