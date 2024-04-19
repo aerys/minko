@@ -93,6 +93,7 @@ public class InitWebViewTask implements Runnable
 
         CookieManager.getInstance().setAcceptFileSchemeCookies(true);
         CookieManager.getInstance().setAcceptCookie(true);
+        CookieManager.getInstance().setAcceptThirdPartyCookies(_webView, true);
 
         _webView.requestFocus(View.FOCUS_DOWN);
 
@@ -106,6 +107,17 @@ public class InitWebViewTask implements Runnable
         // Increase WebView performances
         _webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         _webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+
+        // Allow cross origin requests.
+        // The default value changed from true to false when targeting Android > 4.03.
+        // FIXME: This method is deprecated and we should instead use `WebViewAssetLoader`
+        //        https://developer.android.com/reference/androidx/webkit/WebViewAssetLoader).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            _webView.getSettings().setAllowUniversalAccessFromFileURLs(true);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            _webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        }
 
         // Don't require user interaction to play media content
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN_MR1)
