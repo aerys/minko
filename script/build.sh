@@ -152,7 +152,6 @@ build_linux64_offscreen_release() {
         $ADDITIONAL_DOCKER_ARGS \
         $GCC_DOCKER_IMAGE \
         bash -c "
-            ./plugin/serializer/script/download_dependencies.sh .
             mkdir -p $BUILD_DIR && cd $BUILD_DIR
             cmake .. \
                 -DCMAKE_BUILD_TYPE=Release \
@@ -176,7 +175,6 @@ build_linux64_offscreen_debug() {
         $ADDITIONAL_DOCKER_ARGS \
         $GCC_DOCKER_IMAGE \
         bash -c "
-            ./plugin/serializer/script/download_dependencies.sh .
             mkdir -p $BUILD_DIR && cd $BUILD_DIR
             cmake .. \
                 -DCMAKE_BUILD_TYPE=Debug \
@@ -243,7 +241,6 @@ build_android_debug() {
 build_windows64_release() {
     BUILD_DIR="${BUILD_DIR:-'build-windows64-release'}"
 
-    bash plugin/serializer/script/download_dependencies.sh .
     mkdir $BUILD_DIR
     cd $BUILD_DIR
     cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
@@ -255,7 +252,6 @@ build_windows64_release() {
 build_windows64_debug() {
     BUILD_DIR="${BUILD_DIR:-'build-windows64-debug'}"
 
-    bash plugin/serializer/script/download_dependencies.sh .
     mkdir $BUILD_DIR
     cd $BUILD_DIR
     cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..

@@ -151,7 +151,6 @@ build:windows64:
     - windows
   script:
     - $env:MINKO_HOME="{0}" -f (Get-Location).ToString()
-    - bash plugin\serializer\script\download_dependencies.sh .
     - New-Item -ItemType Directory -Force -Path build
     - Set-Location -Path build
     - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
@@ -164,7 +163,6 @@ build:windows64_offscreen:
     - windows
   script:
     - $env:MINKO_HOME="{0}" -f (Get-Location).ToString()
-    - bash plugin\serializer\script\download_dependencies.sh .
     - New-Item -ItemType Directory -Force -Path build
     - Set-Location -Path build
     - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON -DWITH_TESTS=ON ..
