@@ -1,3 +1,10 @@
+## [11.9.1](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.0...v11.9.1) (2024-05-28)
+
+
+### Bug Fixes
+
+* allow third party cookies and less strict CORS in the Android WebView ([a772329](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/a7723295cb2df85aee3b8fa1c16321d4b366e47a))
+
 ## [11.9.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.8.2...v11.9.0) (2024-03-28)
 
 
