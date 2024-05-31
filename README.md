@@ -5,12 +5,13 @@
 - [1. Build the engine](#1-build-the-engine)
     - [1.1. Prerequisites](#11-prerequisites)
     - [1.2. Build starting from **smartshape-engine@10.2.0**](#12-build-starting-from-smartshape-engine1020)
-        - [1.2.1. Android](#121-android)
-        - [1.2.2. HTML5](#122-html5)
-        - [1.2.3. Linux64](#123-linux64)
-        - [1.2.4. Linux64 Offscreen](#124-linux64-offscreen)
-        - [1.2.5. Windows64](#125-windows64)
-        - [1.2.6. More options](#126-more-options)
+        - [1.2.1. Android32](#121-android32)
+        - [1.2.2. Android64](#122-android64)
+        - [1.2.3. HTML5](#123-html5)
+        - [1.2.4. Linux64](#124-linux64)
+        - [1.2.5. Linux64 Offscreen](#125-linux64-offscreen)
+        - [1.2.6. Windows64](#126-windows64)
+        - [1.2.7. More options](#127-more-options)
     - [1.3. Build before **smartshape-engine@10.2.0**](#13-build-before-smartshape-engine1020)
         - [1.3.1. Android](#131-android)
         - [1.3.2. HTML5](#132-html5)
@@ -39,25 +40,31 @@
 
 ### 1.2. Build starting from **smartshape-engine@10.2.0**
 
-#### 1.2.1. Android
+#### 1.2.1. Android32
 
 ```bash
-./script/build.sh android release
+./script/build.sh android32 release
 ```
 
-#### 1.2.2. HTML5
+#### 1.2.2. Android64
+
+```bash
+./script/build.sh android64 release
+```
+
+#### 1.2.3. HTML5
 
 ```bash
 ./script/build.sh html5 release
 ```
 
-#### 1.2.3. Linux64
+#### 1.2.4. Linux64
 
 ```bash
 ./script/build.sh linux64 release
 ```
 
-#### 1.2.4. Linux64 Offscreen
+#### 1.2.5. Linux64 Offscreen
 
 ```bash
 ./script/build.sh linux64_offscreen release
@@ -67,7 +74,7 @@ Notes:
 - This build type enables `WITH_OFFSCREEN` and `WITH_TEXTURE_COMPRESSOR`.
 - This build type should be used to build `smartshape-converter`.
 
-#### 1.2.5. Windows64
+#### 1.2.6. Windows64
 
 ```bash
 ./script/build.sh windows64 release
@@ -79,7 +86,7 @@ To change the VCTargetsPath (for example):
 SET VCTargetsPath=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets
 ```
 
-#### 1.2.6. More options
+#### 1.2.7. More options
 
 There are more ways to build the engine. Here is the detailed usage of the building script
 
@@ -87,7 +94,8 @@ There are more ways to build the engine. Here is the detailed usage of the build
 Usage: ./script/build.sh <target> <build-type> [--cmake '<cmake-args>']
 
 <target>      The target platform of the build. Available targets are:
-                  * android
+                  * android32
+                  * android64
                   * html5
                   * linux64
                   * linux64_offscreen

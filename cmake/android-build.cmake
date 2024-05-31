@@ -34,7 +34,7 @@ function (build_android target target_name)
 
     string (REGEX REPLACE "\\." "/" FORMATED_PACKAGE ${PACKAGE})
     string (TOLOWER ${CMAKE_BUILD_TYPE} BUILD)
-    set (ARTIFACT_PATH "${OUTPUT_PATH}/bin/${ARTIFACT_NAME}-${BUILD}.apk")
+    set (ARTIFACT_PATH "${OUTPUT_PATH}/bin/${ARTIFACT_NAME}-${BUILD}-${ANDROID_ABI}.apk")
 
     add_custom_command (
         TARGET ${target}
@@ -50,7 +50,7 @@ function (build_android target target_name)
             WORKING_DIRECTORY ${OUTPUT_PATH}
         )
     endif ()
-    
+
     add_custom_command (
         TARGET ${target}
         POST_BUILD
@@ -58,8 +58,8 @@ function (build_android target target_name)
         COMMAND mv "${OUTPUT_PATH}/src/*.java" "${OUTPUT_PATH}/src/${FORMATED_PACKAGE}"
         COMMAND sed -i 's/{{APP_NAME}}/${APP_NAME}/' ${OUTPUT_PATH}/res/values/strings.xml ${OUTPUT_PATH}/build.xml
         COMMAND sed -i 's/{{PACKAGE}}/${PACKAGE}/' ${OUTPUT_PATH}/AndroidManifest.xml ${OUTPUT_PATH}/src/${FORMATED_PACKAGE}/*.java
-        COMMAND sed -i 's/{{VERSION_CODE}}/${VERSION_CODE}/' ${OUTPUT_PATH}/AndroidManifest.xml 
-        COMMAND mkdir -p ${OUTPUT_PATH}/libs/armeabi-v7a/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/armeabi-v7a/ && mv ${OUTPUT_PATH}/libs/armeabi-v7a/${target_name} ${OUTPUT_PATH}/libs/armeabi-v7a/libmain.so
+        COMMAND sed -i 's/{{VERSION_CODE}}/${VERSION_CODE}/' ${OUTPUT_PATH}/AndroidManifest.xml
+        COMMAND mkdir -p ${OUTPUT_PATH}/libs/${ANDROID_ABI}/ && cp ${OUTPUT_PATH}/*.so ${OUTPUT_PATH}/libs/${ANDROID_ABI}/ && mv ${OUTPUT_PATH}/libs/${ANDROID_ABI}/${target_name} ${OUTPUT_PATH}/libs/${ANDROID_ABI}/libmain.so
         COMMAND rm -rf ${OUTPUT_PATH}/assets
         WORKING_DIRECTORY ${OUTPUT_PATH}
     )
@@ -77,10 +77,10 @@ function (build_android target target_name)
         COMMAND ant "${BUILD}"
         WORKING_DIRECTORY ${OUTPUT_PATH}
     )
-    
+
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release" OR ${CMAKE_BUILD_TYPE} STREQUAL "release")
         set (UNSIGNED_APK_PATH "${OUTPUT_PATH}/bin/${APP_NAME}-${BUILD}-unsigned.apk")
-        
+
         # sign the apk (only on release mode)
         if (DEFINED ENV{ANDROID_KEYSTORE_PATH} AND DEFINED ENV{ANDROID_KEYSTORE_ALIAS} AND DEFINED ENV{ANDROID_KEYSTORE_PASSWORD})
             add_custom_command (
@@ -107,9 +107,17 @@ function (build_android target target_name)
         message(FATAL_ERROR "ANDROID_STL has to be set to c++_shared")
     endif()
 
-    configure_file(
-        "${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/arm-linux-androideabi/libc++_shared.so"
-        "${OUTPUT_PATH}/libs/${ANDROID_ABI}/libc++_shared.so"
-        COPYONLY
-    )
+    if ("${ANDROID_ABI}" STREQUAL "arm64-v8a")
+        configure_file(
+            "${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so"
+            "${OUTPUT_PATH}/libs/${ANDROID_ABI}/libc++_shared.so"
+            COPYONLY
+        )
+    else ()
+        configure_file(
+            "${ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/arm-linux-androideabi/libc++_shared.so"
+            "${OUTPUT_PATH}/libs/${ANDROID_ABI}/libc++_shared.so"
+            COPYONLY
+        )
+    endif()
 endfunction()

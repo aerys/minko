@@ -14,6 +14,7 @@ ERROR_MISSING_REQUIRED_BIN=2
 HTML5_DOCKER_IMAGE=emscripten/emsdk:3.1.43
 EMSCRIPTEN_SDK=/emsdk/upstream/emscripten
 ANDROID_DOCKER_IMAGE=registry.aerys.in/aerys/infrastructure/vendor/android-ndk:r25b-2-linux-x86_64
+# GCC 9.4.0
 GCC_DOCKER_IMAGE=registry.aerys.in/aerys/smartshape/vendor/gcc@sha256:d4a63069d9b69ca4233eecd17638356d7e01aeb66f447db5b3e606a75f527887
 MAKE_ARGS="${MAKE_ARGS:-'-j$(nproc)'}"
 
@@ -21,7 +22,8 @@ usage_and_exit() {
     echo "Usage: $0 <target> <build-type> [--cmake '<cmake-args>']" 1>&2
     echo "" 1>&2
     echo "<target>      The target platform of the build. Available targets are:" 1>&2
-    echo "                  * android" 1>&2
+    echo "                  * android32" 1>&2
+    echo "                  * android64" 1>&2
     echo "                  * html5" 1>&2
     echo "                  * linux64" 1>&2
     echo "                  * linux64_offscreen" 1>&2
@@ -190,8 +192,8 @@ build_linux64_offscreen_debug() {
     show_notification "Build finished: smartshape-engine linux64_offscreen debug"
 }
 
-build_android_release() {
-    BUILD_DIR="${BUILD_DIR:-'build-android-release'}"
+build_android32_release() {
+    BUILD_DIR="${BUILD_DIR:-'build-android32-release'}"
 
     docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
@@ -211,11 +213,11 @@ build_android_release() {
             make $MAKE_ARGS
         "
 
-    show_notification "Build finished: smartshape-engine android release"
+    show_notification "Build finished: smartshape-engine android32 release"
 }
 
-build_android_debug() {
-    BUILD_DIR="${BUILD_DIR:-'build-android-debug'}"
+build_android32_debug() {
+    BUILD_DIR="${BUILD_DIR:-'build-android32-debug'}"
 
     docker run --rm \
         -v ${PWD}:${PWD} -w ${PWD} \
@@ -235,7 +237,55 @@ build_android_debug() {
             make $MAKE_ARGS
         "
 
-    show_notification "Build finished: smartshape-engine android debug"
+    show_notification "Build finished: smartshape-engine android32 debug"
+}
+
+build_android64_release() {
+    BUILD_DIR="${BUILD_DIR:-'build-android64-release'}"
+
+    docker run --rm \
+        -v ${PWD}:${PWD} -w ${PWD} \
+        $ADDITIONAL_DOCKER_ARGS \
+        $ANDROID_DOCKER_IMAGE \
+        bash -c "
+            mkdir -p $BUILD_DIR && cd $BUILD_DIR
+            cmake .. \
+                -DCMAKE_BUILD_TYPE=Release \
+                -DWITH_EXAMPLES=OFF \
+                -DWITH_PLUGINS=ON \
+                -DWITH_NODEJS_WORKER=ON \
+                -DCMAKE_TOOLCHAIN_FILE=/opt/android-ndk-linux/build/cmake/android.toolchain.cmake \
+                -DANDROID_ABI=arm64-v8a \
+                -DANDROID_PLATFORM=android-26 \
+                $CMAKE_ARGS
+            make $MAKE_ARGS
+        "
+
+    show_notification "Build finished: smartshape-engine android64 release"
+}
+
+build_android64_debug() {
+    BUILD_DIR="${BUILD_DIR:-'build-android64-debug'}"
+
+    docker run --rm \
+        -v ${PWD}:${PWD} -w ${PWD} \
+        $ADDITIONAL_DOCKER_ARGS \
+        $ANDROID_DOCKER_IMAGE \
+        bash -c "
+            mkdir -p $BUILD_DIR && cd $BUILD_DIR
+            cmake .. \
+                -DCMAKE_BUILD_TYPE=Debug \
+                -DWITH_EXAMPLES=OFF \
+                -DWITH_PLUGINS=ON \
+                -DWITH_NODEJS_WORKER=ON \
+                -DCMAKE_TOOLCHAIN_FILE=/opt/android-ndk-linux/build/cmake/android.toolchain.cmake \
+                -DANDROID_ABI=arm64-v8a \
+                -DANDROID_PLATFORM=android-26 \
+                $CMAKE_ARGS
+            make $MAKE_ARGS
+        "
+
+    show_notification "Build finished: smartshape-engine android64 debug"
 }
 
 build_windows64_release() {
@@ -286,7 +336,7 @@ BUILD_TYPE=$2
 
 # Check mandatory parameters.
 case $TARGET in
-    android|html5|linux64|linux64_offscreen|windows64)
+    android32|android64|html5|linux64|linux64_offscreen|windows64)
     ;;
     *)
     echo "Unknown target or no target specified. Aborting."

@@ -13,7 +13,7 @@ endif ()
 
 minko_set_bitness()
 if (ANDROID)
-    set (PLATFORM_NAME "android/armeabi-v7a/r25b")
+    set (PLATFORM_NAME "android/${ANDROID_ABI}/r25b")
 elseif (LINUX AND BITNESS EQUAL 64)
     set (PLATFORM_NAME "linux/amd64/gcc-9.4")
 elseif (WIN32 AND BITNESS EQUAL 64)

@@ -2,6 +2,16 @@ if (UNIX AND NOT APPLE AND NOT ANDROID AND NOT EMSCRIPTEN)
     set (LINUX 1)
 endif ()
 
+if (ANDROID)
+    if (NOT ANDROID_ABI)
+        message (FATAL_ERROR "ANDROID_ABI must be defined (supported ABI: 'armeabi-v7a' or 'arm64-v8a').")
+    endif ()
+
+    if (NOT ("${ANDROID_ABI}" STREQUAL "armeabi-v7a" OR "${ANDROID_ABI}" STREQUAL "arm64-v8a"))
+        message (FATAL_ERROR "ANDROID_ABI value not supported (supported ABI: 'armeabi-v7a' or 'arm64-v8a').")
+    endif ()
+endif()
+
 function (minko_set_bitness)
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         set (BITNESS 64 PARENT_SCOPE)

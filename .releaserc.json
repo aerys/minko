@@ -13,6 +13,7 @@
           {"type": "fix", "release": "patch"},
           {"type": "refactor", "release": "patch"},
           {"type": "chore", "scope": "deps", "release": "patch"},
+          {"type": "ci", "release": "patch"},
           {"type": "feat", "release": "minor"}
         ],
         "parserOpts": {

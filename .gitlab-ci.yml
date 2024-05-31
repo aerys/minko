@@ -134,10 +134,15 @@ build:html5:
   variables:
     TARGET_PLATFORM: html5
 
-build:android:
+build:android32:
   <<: *build_template
   variables:
-    TARGET_PLATFORM: android
+    TARGET_PLATFORM: android32
+
+build:android64:
+  <<: *build_template
+  variables:
+    TARGET_PLATFORM: android64
 
 build:linux64_offscreen:
   <<: *build_template
@@ -217,43 +222,51 @@ build:linux64:
   variables:
     TARGET_PLATFORM: linux64
 
+archive:linux64:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux-amd64-gcc-9.4-${CI_COMMIT_REF_SLUG}.tar.bz2
+  dependencies:
+    - build:linux64
+
 archive:linux64_offscreen:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux64_offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux-amd64-gcc-9.4-offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
     - build:linux64_offscreen
 
-archive:android:
+archive:android32:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-android-${CI_COMMIT_REF_SLUG}.tar.bz2
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-android-armeabi-v7a-r25b-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
-    - build:android
+    - build:android32
+
+archive:android64:
+  <<: *archive_template
+  variables:
+    GIT_STRATEGY: none
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-android-arm64-v8a-r25b-${CI_COMMIT_REF_SLUG}.tar.bz2
+  dependencies:
+    - build:android64
 
 archive:html5:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-html5-${CI_COMMIT_REF_SLUG}.tar.bz2
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-emscripten-wasm-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
     - build:html5
-
-archive:linux:
-  <<: *archive_template
-  variables:
-    GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux-${CI_COMMIT_REF_SLUG}.tar.bz2
-  dependencies:
-    - build:linux64
 
 archive:windows64:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-windows64-${CI_COMMIT_REF_SLUG}.tar.bz2
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-windows-amd64-msvc-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
     - build:windows64
 
@@ -261,7 +274,7 @@ archive:windows64_offscreen:
   <<: *archive_template
   variables:
     GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-windows64_offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
+    ARCHIVE_NAME: ${CI_PROJECT_NAME}-windows-amd64-msvc-offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
   dependencies:
     - build:windows64_offscreen
 
@@ -273,47 +286,54 @@ check:semantic-release:
   stage: check
   extends: .semantic-release-dry-run
 
+publish:linux64:
+  <<: *publish_template
+  dependencies:
+    - build:linux64
+  variables:
+    PLATFORM: "linux-amd64-gcc-9.4"
+
 publish:linux64_offscreen:
   <<: *publish_template
   dependencies:
     - build:linux64_offscreen
   variables:
-    PLATFORM: "linux64_offscreen"
+    PLATFORM: "linux-amd64-gcc-9.4-offscreen"
 
-publish:android:
+publish:android32:
   <<: *publish_template
   dependencies:
-    - build:android
+    - build:android32
   variables:
-    PLATFORM: "android"
+    PLATFORM: "android-armeabi-v7a-r25b"
+
+publish:android64:
+  <<: *publish_template
+  dependencies:
+    - build:android64
+  variables:
+    PLATFORM: "android-arm64-v8a-r25b"
 
 publish:html5:
   <<: *publish_template
   dependencies:
     - build:html5
   variables:
-    PLATFORM: "html5"
-
-publish:linux:
-  <<: *publish_template
-  dependencies:
-    - build:linux64
-  variables:
-    PLATFORM: "linux"
+    PLATFORM: "emscripten-wasm"
 
 publish:windows64:
   <<: *publish_template
   dependencies:
     - build:windows64
   variables:
-    PLATFORM: "windows64"
+    PLATFORM: "windows-amd64-msvc"
 
 publish:windows64_offscreen:
   <<: *publish_template
   dependencies:
     - build:windows64_offscreen
   variables:
-    PLATFORM: "windows64_offscreen"
+    PLATFORM: "windows-amd64-msvc-offscreen"
 
 release:
   stage: release

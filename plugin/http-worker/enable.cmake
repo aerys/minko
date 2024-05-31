@@ -18,7 +18,7 @@ function (minko_enable_plugin_http_worker target)
     if (ANDROID)
         target_link_libraries (
             ${target}
-            "${HTTP-WORKER_PATH}/lib/curl/android/armeabi-v7a/r25b/lib/libcurl.a"
+            "${HTTP-WORKER_PATH}/lib/curl/android/${ANDROID_ABI}/r25b/lib/libcurl.a"
         )
         minko_plugin_link ("zlib" ${target})
     elseif (LINUX AND BITNESS EQUAL 64)
