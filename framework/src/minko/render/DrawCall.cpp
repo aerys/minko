@@ -741,6 +741,9 @@ DrawCall::render(AbstractContext::Ptr   context,
         return;
 
     context->setProgram(_program->id());
+    // `glColorMask` impacts `glClear`, so we need to call it before `context->clear`.
+    // https://www.khronos.org/opengl/wiki/Framebuffer#Buffer_clearing
+    context->setColorMask(*_colorMask);
 
     auto hasOwnTarget = _target && _target->id;
     auto renderTargetId = hasOwnTarget
@@ -834,7 +837,6 @@ DrawCall::render(AbstractContext::Ptr   context,
         for (const auto& a : _attributes)
             context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
 
-    context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);
     context->setDepthTest(*_depthMask, *_depthFunc);
     context->setStencilTest(*_stencilFunction, *_stencilReference, *_stencilMask, *_stencilFailOp, *_stencilZFailOp, *_stencilZPassOp);
