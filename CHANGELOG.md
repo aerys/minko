@@ -1,3 +1,10 @@
+## [11.9.3](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.2...v11.9.3) (2024-06-07)
+
+
+### Bug Fixes
+
+* the color mask state leaks to the next draw call ([48db5d4](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/48db5d4f98915b5743f8b848abb914b6eb46ce8b))
+
 ## [11.9.2](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.1...v11.9.2) (2024-06-04)
 
 ## [11.9.1](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.0...v11.9.1) (2024-05-28)
