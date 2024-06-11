@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "node/node.h"
 
 #include <unistd.h>
+#include <sstream>
 
 using namespace minko;
 using namespace minko::async;
@@ -31,6 +32,22 @@ namespace minko
 {
     namespace async
     {
+        std::vector<std::string>
+        extractArgs(const std::string& str)
+        {
+            std::vector<std::string> vec;
+            // std::istringstream automatically reads until the next white space.
+            // So we can use it to extract each argument of a command line.
+            std::istringstream iss(str);
+            std::string word;
+
+            while (iss >> word) {
+                vec.push_back(word);
+            }
+            
+            return vec;
+        }
+
         static
         char **
         makeArgvCopy(int argc, char** argv)
@@ -76,7 +93,7 @@ namespace minko
             if (nodeArgsSize > 0)
                 inputStream.read(nodeArgsData.data(), nodeArgsSize);
 
-            const auto nodeArgs = std::string(nodeArgsData.begin(), nodeArgsData.end());
+            const auto nodeArgs = extractArgs(std::string(nodeArgsData.begin(), nodeArgsData.end()));
 
             inputStream.read(reinterpret_cast<char*>(&pathSize), 4);
             auto pathData = std::vector<char>(pathSize);
@@ -93,7 +110,7 @@ namespace minko
             if (argsSize > 0)
                 inputStream.read(argsData.data(), argsSize);
 
-            auto args = std::string(argsData.begin(), argsData.end());
+            auto args = extractArgs(std::string(argsData.begin(), argsData.end()));
 
             std::string binary = "node";
             std::string scriptPath = path + "/" + "index.js";
@@ -102,23 +119,9 @@ namespace minko
 
             argsVec.push_back(binary);
             argsVec.push_back("--abort-on-uncaught-exception");
-            if (nodeArgsSize > 0)
-                argsVec.push_back(nodeArgs);
+            argsVec.insert(argsVec.end(), nodeArgs.begin(), nodeArgs.end());
             argsVec.push_back(scriptPath);
-
-            std::string token = " ";
-            auto i = args.find(token);
-
-            while (i != -1)
-            {
-                argsVec.push_back(args.substr(0, i));
-
-                args = args.substr(i + token.size());
-
-                i = args.find(token);
-            }
-
-            argsVec.push_back(args);
+            argsVec.insert(argsVec.end(), args.begin(), args.end());
 
             chdir(path.c_str());
 
