@@ -1,3 +1,10 @@
+## [11.9.4](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.3...v11.9.4) (2024-06-12)
+
+
+### Bug Fixes
+
+* crash when passing more than one argument to node in `NodeJSWorker` ([7008b79](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/7008b7906ab4dae4d9c8b4d8212457476a38901a))
+
 ## [11.9.3](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.2...v11.9.3) (2024-06-07)
 
 
