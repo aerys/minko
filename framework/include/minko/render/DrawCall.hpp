@@ -369,6 +369,13 @@ namespace minko
 				return _numIndices ? *_numIndices / 3 : 0;
 			}
 
+            inline
+            bool
+            hasIndexBuffer()
+            {
+                return _indexBuffer != nullptr;
+            }
+
             void
             bind(std::shared_ptr<Program> program);
 
