@@ -1,3 +1,10 @@
+## [11.9.5](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.4...v11.9.5) (2024-07-10)
+
+
+### Bug Fixes
+
+* drawcalls are performed even when they don't draw any geometry ([42607e4](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/42607e4281d971ee87ec7e739a001abd4626b505))
+
 ## [11.9.4](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.3...v11.9.4) (2024-06-12)
 
 
