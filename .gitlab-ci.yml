@@ -102,17 +102,6 @@ stages:
   script:
     - BUILD_DIR=build bash script/build.sh $TARGET_PLATFORM release
 
-.archive_template: &archive_template
-  stage: archive
-  image: registry.aerys.in/aerys/smartshape-docker/archive:26975
-  except:
-    - main
-  script:
-    - cd "${CI_PROJECT_DIR}"
-    - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
-    - b2 authorize_account "${B2_ACCOUNT_ID}" "${B2_APPLICATION_KEY}"
-    - b2 upload_file --noProgress --info CI_PIPELINE_ID=${CI_PIPELINE_ID} --info CI_COMMIT_SHA=${CI_COMMIT_SHA} "${B2_ARTIFACTS_BUCKET}" "/tmp/${ARCHIVE_NAME}" "${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}/${ARCHIVE_NAME}"
-
 .publish_template: &publish_template
   image: registry.aerys.in/aerys/infrastructure/vendor/rust-docker:1.72.0-1
   stage: publish
@@ -221,62 +210,6 @@ build:linux64:
   <<: *build_template
   variables:
     TARGET_PLATFORM: linux64
-
-archive:linux64:
-  <<: *archive_template
-  variables:
-    GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux-amd64-gcc-9.4-${CI_COMMIT_REF_SLUG}.tar.bz2
-  dependencies:
-    - build:linux64
-
-archive:linux64_offscreen:
-  <<: *archive_template
-  variables:
-    GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-linux-amd64-gcc-9.4-offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
-  dependencies:
-    - build:linux64_offscreen
-
-archive:android32:
-  <<: *archive_template
-  variables:
-    GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-android-armeabi-v7a-r25b-${CI_COMMIT_REF_SLUG}.tar.bz2
-  dependencies:
-    - build:android32
-
-archive:android64:
-  <<: *archive_template
-  variables:
-    GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-android-arm64-v8a-r25b-${CI_COMMIT_REF_SLUG}.tar.bz2
-  dependencies:
-    - build:android64
-
-archive:html5:
-  <<: *archive_template
-  variables:
-    GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-emscripten-wasm-${CI_COMMIT_REF_SLUG}.tar.bz2
-  dependencies:
-    - build:html5
-
-archive:windows64:
-  <<: *archive_template
-  variables:
-    GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-windows-amd64-msvc-${CI_COMMIT_REF_SLUG}.tar.bz2
-  dependencies:
-    - build:windows64
-
-archive:windows64_offscreen:
-  <<: *archive_template
-  variables:
-    GIT_STRATEGY: none
-    ARCHIVE_NAME: ${CI_PROJECT_NAME}-windows-amd64-msvc-offscreen-${CI_COMMIT_REF_SLUG}.tar.bz2
-  dependencies:
-    - build:windows64_offscreen
 
 lint:commitlint:
   extends: .commitlint
