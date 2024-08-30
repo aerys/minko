@@ -21,7 +21,6 @@ stages:
   - build
   - test
   - check
-  - archive
   - publish
   - release
 
@@ -44,25 +43,6 @@ stages:
     - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
     - docker build -t ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} docker/${DOCKER_IMAGE_NAME}
     - docker save ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} -o docker-image.tar
-
-.docker_push_template: &docker_push_template
-  stage: archive
-  rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-      changes:
-        - docker/$DOCKER_IMAGE_NAME/Dockerfile
-    - if: $DOCKER_PUSH_FORCE == "true"
-  tags:
-    - virtualbox
-  before_script:
-    - docker info
-  script:
-    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
-    - docker load -i docker-image.tar
-    - docker tag ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:main
-    - "( [ -z $DOCKER_PUSH_FORCE ] || [ ${DOCKER_PUSH_FORCE} != true ] ) && docker manifest inspect ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} &> /dev/null && echo \"Image already exists\" && exit 1"
-    - docker push ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID}
-    - docker push ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:main
 
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
