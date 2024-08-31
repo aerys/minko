@@ -1,3 +1,5 @@
+## [11.9.6](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.5...v11.9.6) (2024-08-31)
+
 ## [11.9.5](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.4...v11.9.5) (2024-07-10)
 
 
