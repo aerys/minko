@@ -60,7 +60,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 //# define GLM_FORCE_INLINE
 #endif
 #define GLM_FORCE_RADIANS
-#define GLM_SWIZZLE
+#define GLM_FORCE_SWIZZLE
+#define GLM_FORCE_CTOR_INIT // https://github.com/g-truc/glm/issues/809
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/epsilon.hpp"
@@ -73,6 +74,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "glm/gtx/color_space.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/vector_angle.hpp"
+#include "glm/ext/matrix_common.hpp"
 
 #ifndef MINKO_USE_SPARSE_HASH_MAP
 # ifndef DEBUG

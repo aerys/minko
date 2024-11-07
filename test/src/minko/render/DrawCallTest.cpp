@@ -103,7 +103,7 @@ TEST_F(DrawCallTest, MultipleFloat3UniformBindingsFromRootData)
     testMultipleUniformsFromRootData<math::vec3, float>(
         ProgramInputs::Type::float3,
         3,
-        []() { return math::sphericalRand(-100.f); },
+        []() { return math::sphericalRand(100.f); },
         [](DrawCall& d) { return d.boundFloatUniforms(); }
     );
 }
