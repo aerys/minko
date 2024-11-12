@@ -1,3 +1,15 @@
+## [11.9.7](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.6...v11.9.7) (2024-11-12)
+
+
+### Bug Fixes
+
+* function Matrix4x4Timeline::interpolate does not compile following GML upgrade ([84b35f8](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/84b35f8219c88e9daec06109665a857cc4e90de7))
+
+
+### Miscellaneous Chores
+
+* **deps:** upgrade GLM to 0.9.9.8 ([0809be7](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/0809be720d8970d8ca9652b354d0b27fbcf74afe))
+
 ## [11.9.6](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.5...v11.9.6) (2024-08-31)
 
 ## [11.9.5](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.4...v11.9.5) (2024-07-10)
