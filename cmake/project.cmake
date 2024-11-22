@@ -209,6 +209,8 @@ function (minko_add_executable target_name sources)
                 "-gsource-map"
                 "-s DISABLE_EXCEPTION_CATCHING=0"
                 "-s DEMANGLE_SUPPORT=1"
+                "-s SOCKET_DEBUG=1"
+                "-s RETAIN_COMPILER_SETTINGS"
             )
             target_compile_options(${target_name} PRIVATE "-gsource-map")
         else ()
@@ -216,6 +218,7 @@ function (minko_add_executable target_name sources)
                 "-flto"
                 "-O3"
                 "-s DISABLE_EXCEPTION_CATCHING=1"
+                "-s RETAIN_COMPILER_SETTINGS"
             )
         endif ()
 

@@ -76,6 +76,30 @@ EmscriptenWebSocketImpl::hostnameToIp(const char* hostname , char* ip)
     return 1;
 }
 
+std::array<int, 3>
+parseVersion(const std::string v)
+{
+    std::array<int, 3> ret{{0, 0, 0}};
+    std::istringstream stream(v);
+    std::string part;
+    for (int i = 0; i < 3 && std::getline(stream, part, '.'); ++i)
+        ret[i] = std::stoi(part);
+    return ret;
+}
+
+int
+compareVersions(const std::string& v1s, const std::string& v2s)
+{
+    const auto v1 = parseVersion(v1s);
+    const auto v2 = parseVersion(v2s);
+    for (int i = 0; i < 3; ++i)
+    {
+        if (v1[i] < v2[i]) return -1;
+        else if (v1[i] > v2[i]) return 1;
+    }
+    return 0;
+}
+
 void
 EmscriptenWebSocketImpl::connect(const std::string& uri, const std::string& cookie)
 {
@@ -87,7 +111,22 @@ EmscriptenWebSocketImpl::connect(const std::string& uri, const std::string& cook
     // Module['websocket'] = {subprotocol: 'base64, binary, text'};
     // Module['websocket'] = {url: 'wss://', subprotocol: 'base64'};
     // Run time configuration may be useful as it lets an application select multiple different services.
-    emscripten_run_script(std::string("Module['websocket']['url'] = '" + uri + "'").c_str());
+    //
+    // UPDATE: since version 3.1.71 setting the Module['websocket'] does not work anymore,
+    // instead SOCKFS.websocketArgs must be set.
+    // See https://github.com/emscripten-core/emscripten/issues/22969
+    //
+    // FIXME Remove condition once all SmartShape components use Emscripten > 3.1.70.
+    const std::string emscriptenVersionStr = (char*)emscripten_get_compiler_setting("EMSCRIPTEN_VERSION");
+    if (compareVersions(emscriptenVersionStr, "3.1.70") <= 0)
+    {
+        emscripten_run_script(std::string("Module['websocket']['url'] = '" + uri + "'").c_str());
+    }
+    else
+    {
+        // FIXME Update this workaround once the URL can be set via a proper feature.
+        emscripten_run_script(std::string("SOCKFS.websocketArgs = {url: '" + uri + "', subprotocol: 'binary'}").c_str());
+    }
 
     _fd = ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
