@@ -1,3 +1,10 @@
+## [11.9.8](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.7...v11.9.8) (2024-11-28)
+
+
+### Bug Fixes
+
+* **websocket:** fix websocket compatibility with emscripten > 3.1.70 ([2196376](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/21963763be6eff9d35a1450589824dd2cb32f80c))
+
 ## [11.9.7](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.6...v11.9.7) (2024-11-12)
 
 
