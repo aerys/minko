@@ -773,6 +773,14 @@ DrawCall::render(AbstractContext::Ptr   context,
     else
         context->setRenderToBackBuffer();
 
+    if (hasIndexBuffer() && numTriangles() == 0)
+    {
+        // Optimization: if the index buffer is empty, skip the rest of the draw call which will draw nothing.
+        // FIXME: We could remove this check and disable the DrawCalls instead.
+        // See https://git.aerys.in/aerys/smartshape/smartshape-engine/-/issues/379.
+        return;
+    }
+
     if (targetChanged && !hasOwnTarget && viewport.z >= 0 && viewport.w >= 0)
         context->configureViewport(viewport.x, viewport.y, viewport.z, viewport.w);
 

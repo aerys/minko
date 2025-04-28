@@ -535,7 +535,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
         for (const auto& drawCalls : priorityToDrawCalls.second)
             for (auto drawCall : drawCalls)
 			{
-				if (drawCall->enabled() && !(drawCall->hasIndexBuffer() && drawCall->numTriangles() == 0))
+				if (drawCall->enabled())
 				{
 	                drawCall->render(context, rt, _viewportBox, _backgroundColor);
 					++_numDrawCalls;
