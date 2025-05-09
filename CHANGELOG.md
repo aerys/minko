@@ -1,3 +1,10 @@
+## [11.10.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.8...v11.10.0) (2025-05-09)
+
+
+### Features
+
+* skip DrawCalls with empty IndexBuffer after clearing the render target ([b38ed1b](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/b38ed1b67e604937b3da461f8de11e010c7c3a10))
+
 ## [11.9.8](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.7...v11.9.8) (2024-11-28)
 
 
