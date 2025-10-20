@@ -70,8 +70,8 @@ AndroidWebViewDOM::escapeJsonString(const std::string& input)
 void
 AndroidWebViewDOM::sendMessage(const std::string& message, bool async)
 {
-    // Escape the message twice to give it to the JS eval function
-    auto m = this->escapeJsonString(this->escapeJsonString(message));
+    // Escape the message once for embedding in JavaScript string literal
+    auto m = this->escapeJsonString(message);
 
 	std::string eval = "if (" + _jsAccessor + ".window.Minko.dispatchMessage) " + _jsAccessor + ".window.Minko.dispatchMessage('" + m + "');";
 

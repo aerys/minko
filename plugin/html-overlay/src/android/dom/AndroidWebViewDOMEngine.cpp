@@ -153,7 +153,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
             {
                 // Touch event
                 auto touchEvent = AndroidWebViewDOMTouchEvent::create(type, target);
-    
+
                 touchEvent->clientX(JSON::as_int(JSON::get(touch, "clientX")));
                 touchEvent->clientY(JSON::as_int(JSON::get(touch, "clientY")));
                 touchEvent->identifier(JSON::as_int(JSON::get(touch, "identifier")));
@@ -292,7 +292,7 @@ AndroidWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Pt
     // Get hide method
     _hideMethod = env->GetMethodID(initWebViewTaskClass, "hide", "(Z)V");
 
-    // To set the rendering surface 
+    // To set the rendering surface
     _setWebViewRendererSurfaceMethod = env->GetMethodID(initWebViewTaskClass, "setWebViewRendererSurface", "(Landroid/view/Surface;)V");
 
     // SurfaceTexture
@@ -397,7 +397,7 @@ AndroidWebViewDOMEngine::enterFrame(float time)
         _lastUpdateTime = time;
     }
 
-    // If we are rendering the WebView into a texture, 
+    // If we are rendering the WebView into a texture,
     // don't forget to update the surface texture
     if (_jniSurfaceTexture != nullptr && AndroidWebViewDOMEngine::shouldUpdateWebViewTexture)
     {
@@ -539,15 +539,23 @@ AndroidWebViewDOMEngine::eval(const std::string& data)
     // Call the WebView's function to evaluate javascript
     jstring evalJSResult = (jstring)env->CallObjectMethod(_initWebViewTask, _evalJSMethod, js);
 
-    // Convert back jstring result into char*
-    const char* evalJSResultString = env->GetStringUTFChars(evalJSResult, JNI_FALSE);
+    std::string result;
 
-    auto result = std::string(evalJSResultString);
+    // Check if evalJSResult is NULL before calling GetStringUTFChars
+    if (evalJSResult != nullptr)
+    {
+        // Convert back jstring result into char*
+        const char* evalJSResultString = env->GetStringUTFChars(evalJSResult, JNI_FALSE);
+        result = std::string(evalJSResultString);
+
+        // Clean up the string
+        env->ReleaseStringUTFChars(evalJSResult, evalJSResultString);
+    }
 
     // Clean up the local references
-    env->ReleaseStringUTFChars(evalJSResult, evalJSResultString);
     env->DeleteLocalRef(js);
-    env->DeleteLocalRef(evalJSResult);
+    if (evalJSResult != nullptr)
+        env->DeleteLocalRef(evalJSResult);
 
     return result;
 }
