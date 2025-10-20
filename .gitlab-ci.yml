@@ -27,26 +27,6 @@ stages:
   - publish
   - release
 
-.docker_build_template: &docker_build_template
-  stage: build
-  tags:
-    - virtualbox
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - docker/$DOCKER_IMAGE_NAME/Dockerfile
-    - if: $DOCKER_BUILD_FORCE == "true"
-  artifacts:
-    expire_in: 1 hr
-    paths:
-      - ./docker-image.tar
-  before_script:
-    - docker info
-  script:
-    - docker login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
-    - docker build -t ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} docker/${DOCKER_IMAGE_NAME}
-    - docker save ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} -o docker-image.tar
-
 .build_with_artifacts_template: &build_with_artifacts_template
   artifacts:
     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
