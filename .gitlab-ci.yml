@@ -80,7 +80,7 @@ stages:
     - .docker-in-docker
     - .build_with_artifacts_template
   before_script:
-    - docker login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - mkdir -p $HOME/.docker && echo $DOCKER_AUTH_CONFIG > $HOME/.docker/config.json
     - apk add bash
   script:
     - BUILD_DIR=build bash script/build.sh $TARGET_PLATFORM release
