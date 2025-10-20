@@ -13,7 +13,7 @@ ERROR_MISSING_REQUIRED_BIN=2
 # Global variables.
 HTML5_DOCKER_IMAGE=emscripten/emsdk:3.1.43
 EMSCRIPTEN_SDK=/emsdk/upstream/emscripten
-ANDROID_DOCKER_IMAGE=registry.aerys.in/aerys/infrastructure/vendor/android-ndk:r25b-2-linux-x86_64
+ANDROID_DOCKER_IMAGE=registry.aerys.in/aerys/infrastructure/vendor/android-ndk:r25b-2-linux-x86_64@sha256:270e29f73f61d4285c0572ac66591d3090f13dae546b7c7bf83047ee0b41bd56
 # GCC 9.4.0
 GCC_DOCKER_IMAGE=registry.aerys.in/aerys/smartshape/vendor/gcc@sha256:d4a63069d9b69ca4233eecd17638356d7e01aeb66f447db5b3e606a75f527887
 MAKE_ARGS="${MAKE_ARGS:-'-j$(nproc)'}"
