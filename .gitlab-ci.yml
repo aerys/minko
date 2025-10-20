@@ -40,7 +40,7 @@ stages:
   before_script:
     - docker info
   script:
-    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
     - docker build -t ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} docker/${DOCKER_IMAGE_NAME}
     - docker save ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE_NAME}:${CI_PIPELINE_ID} -o docker-image.tar
 
@@ -77,7 +77,7 @@ stages:
     - .docker-in-docker
     - .build_with_artifacts_template
   before_script:
-    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - docker login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
     - apk add bash
   script:
     - BUILD_DIR=build bash script/build.sh $TARGET_PLATFORM release
