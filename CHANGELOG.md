@@ -1,3 +1,16 @@
+## [11.11.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.10.0...v11.11.0) (2025-10-21)
+
+### Features
+
+* **android:** pin the Android NDK container image signature ([4237cc9](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/4237cc9344e93ea6a512034b2dc700d2476dfb3e))
+* **ci:** update the GitLab CI template project path ([26f0874](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/26f0874bb6246b5f623fa75c71657f97164a32f8))
+
+### Bug Fixes
+
+* **ci:** docker login with the CI_REGISTRY_USER pre-defined CI var ([1bf4ffb](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/1bf4ffb8c24c53fc40e68f2413dad25a06bd596e))
+* **ci:** use DOCKER_AUTH_CONFIG to fix docker-in-docker "pull access denied" error ([e1c6293](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/e1c62936be0f7a12f3a27bded3b490fb832fe831))
+* use `webView.evaluateJavascript` instead of `loadUrl` to send messages ([faddacc](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/faddacc1b426e0e2d890499cf7b958daf26c87eb))
+
 ## [11.10.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.9.8...v11.10.0) (2025-05-09)
 
 
