@@ -234,3 +234,35 @@ publish:windows64_offscreen:
 release:
   stage: release
   extends: .semantic-release
+
+# -- Dev container validation -------------------------------------------------
+# Only run when the dev container definition (or this file) changes.
+
+.devcontainer_changes: &devcontainer_changes
+  # Skip tag/release pipelines: with no push diff, `changes` always matches, so
+  # a semantic-release tag would otherwise rebuild the image and re-fetch the
+  # schema for no reason and risk dirtying the release pipeline.
+  - if: $CI_COMMIT_TAG
+    when: never
+  - changes:
+      - .devcontainer/**/*
+      - .gitlab-ci.yml
+
+devcontainer:validate:
+  stage: check
+  # Use the python variant — the bare uv image has uv as its entrypoint.
+  image: ghcr.io/astral-sh/uv:python3.12-bookworm-slim@sha256:e5b65587bce7de595f299855d7385fe7fca39b8a74baa261ba1b7147afa78e58
+  script:
+    - uvx check-jsonschema --schemafile "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json" .devcontainer/devcontainer.json
+  rules: *devcontainer_changes
+
+devcontainer:build:
+  stage: check
+  extends: .docker-in-docker
+  before_script:
+    # Authenticate against registry.aerys.in so the FROM base image can be pulled.
+    - mkdir -p $HOME/.docker && echo "$DOCKER_AUTH_CONFIG" > $HOME/.docker/config.json
+    - docker info
+  script:
+    - docker build .devcontainer/
+  rules: *devcontainer_changes
