@@ -101,47 +101,6 @@ build:linux64_offscreen:
   variables:
     TARGET_PLATFORM: linux64_offscreen
 
-build:windows64:
-  <<: *build_with_artifacts_template
-  stage: build
-  tags:
-    - windows
-  script:
-    - $env:MINKO_HOME="{0}" -f (Get-Location).ToString()
-    - New-Item -ItemType Directory -Force -Path build
-    - Set-Location -Path build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON ..
-    - msbuild Project.sln /property:Configuration=Release /property:Platform=x64 /m:4
-
-build:windows64_offscreen:
-  <<: *build_with_artifacts_template
-  stage: build
-  tags:
-    - windows
-  script:
-    - $env:MINKO_HOME="{0}" -f (Get-Location).ToString()
-    - New-Item -ItemType Directory -Force -Path build
-    - Set-Location -Path build
-    - cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Release -DWITH_EXAMPLES=OFF -DWITH_PLUGINS=ON -DWITH_OFFSCREEN=ON -DWITH_TEXTURE_COMPRESSOR=ON -DWITH_TESTS=ON ..
-    - msbuild Project.sln /property:Configuration=Release /property:Platform=x64 /m:4
-
-# Disabled until https://git.aerys.in/aerys/smartshape-engine/issues/166 is fixed.
-# test:windows64_offscreen:
-#   stage: test
-#   tags:
-#     - windows
-#   dependencies:
-#     - build:windows64_offscreen
-#   artifacts:
-#     name: "${CI_PROJECT_NAME}-${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}"
-#     when: on_failure
-#     expire_in: 1 hr
-#     paths:
-#       - build/test
-#   script:
-#     - cd .\build\test\bin
-#     - minko-test.exe
-
 test:linux64_offscreen:
   stage: test
   image: registry.aerys.in/aerys/smartshape/vendor/gcc@sha256:d4a63069d9b69ca4233eecd17638356d7e01aeb66f447db5b3e606a75f527887
@@ -216,20 +175,6 @@ publish:html5:
     - build:html5
   variables:
     PLATFORM: "emscripten-wasm"
-
-publish:windows64:
-  <<: *publish_template
-  dependencies:
-    - build:windows64
-  variables:
-    PLATFORM: "windows-amd64-msvc"
-
-publish:windows64_offscreen:
-  <<: *publish_template
-  dependencies:
-    - build:windows64_offscreen
-  variables:
-    PLATFORM: "windows-amd64-msvc-offscreen"
 
 release:
   stage: release
