@@ -1,0 +1,34 @@
+{
+  "name": "smartshape-engine",
+  "build": { "dockerfile": "Dockerfile" },
+  "init": true,
+  "containerUser": "dev",
+  "remoteUser": "dev",
+  "updateRemoteUserUID": true,
+  "userEnvProbe": "loginInteractiveShell",
+  "workspaceFolder": "${localWorkspaceFolder}",
+  "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
+  "initializeCommand": ["sh", "-c", "mkdir -p \"$HOME/.config/glab-cli\" \"$HOME/.config/gh\" \"$HOME/.claude\" \"$HOME/.config/opencode\" \"$HOME/.local/share/opencode\" \"$HOME/.cache/opencode\"; touch \"$HOME/.gitconfig\" \"$HOME/.claude.json\""],
+  "mounts": [
+    "source=${localEnv:HOME}/.config/glab-cli,target=/tmp/glab-config,type=bind",
+    "source=${localEnv:HOME}/.config/gh,target=/tmp/gh-config,type=bind",
+    "source=${localEnv:HOME}/.gitconfig,target=/tmp/home/.gitconfig,type=bind,readonly",
+    "source=${localEnv:HOME}/.claude,target=/tmp/home/.claude,type=bind",
+    "source=${localEnv:HOME}/.claude,target=${localEnv:HOME}/.claude,type=bind",
+    "source=${localEnv:HOME}/.claude.json,target=/tmp/home/.claude.json,type=bind",
+    "source=${localEnv:HOME}/.config/opencode,target=/tmp/home/.config/opencode,type=bind",
+    "source=${localEnv:HOME}/.local/share/opencode,target=/tmp/home/.local/share/opencode,type=bind",
+    "source=${localEnv:HOME}/.cache/opencode,target=/tmp/home/.cache/opencode,type=bind",
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    "source=${localEnv:SSH_AUTH_SOCK},target=/tmp/ssh-agent.sock,type=bind"
+  ],
+  "remoteEnv": {
+    "SSH_AUTH_SOCK": "/tmp/ssh-agent.sock",
+    "GIT_SSH_COMMAND": "ssh -o UserKnownHostsFile=/etc/ssh/ssh_known_hosts",
+    "COLORTERM": "${localEnv:COLORTERM}",
+    "GH_TOKEN": "${localEnv:GH_TOKEN}"
+  },
+  "containerEnv": {
+    "DEVCONTAINER_WORKSPACE": "${localWorkspaceFolder}"
+  }
+}

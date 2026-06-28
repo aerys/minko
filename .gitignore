@@ -1,5 +1,8 @@
 .vagrant
 Makefile
+# …except the hand-written root task runner (the build system's generated
+# Makefiles live under /build*, still ignored above).
+!/Makefile
 *.xcodeproj
 *.xcworkspace
 *.opensdf
