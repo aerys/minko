@@ -3,7 +3,7 @@
 set -e
 set -x
 
-[[ -f plugin.lua ]] || {
+[[ -f CMakeLists.txt ]] || {
     echo "Script must be executed from the plugin root." > /dev/stderr
     exit 1
 }
