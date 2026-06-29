@@ -9,7 +9,7 @@ To understand what could be the different issues in this process, we will start 
 Use case
 --------
 
-To understand how our CPU side code collaborates with the GPU side program, let's take a simple example. The following code belongs to the [Create your first custom effect](../tutorial/17-Creating_a_custom_effect.md) tutorial:
+To understand how our CPU side code collaborates with the GPU side program, let's take a simple example. The following code belongs to the Create your first custom effect tutorial:
 
 asset/effect/MyCustomEffect.effect 
 ```javascript
@@ -347,7 +347,7 @@ On the diagram, you can see that:
 Where to go from there
 ----------------------
 
-To learn more about how to work with uniform bindings, please read the [Binding the model to world transform](../tutorial/19-Binding_the_model_to_world_transform.md) or the [Binding the camera](../tutorial/20-Binding_the_camera.md) tutorial.
+To learn more about how to work with uniform bindings, please read the Binding the model to world transform or the Binding the camera tutorial.
 
-To learn more about how to work with macro bindings, please read the [Authoring über-shaders](../tutorial/21-Authoring_uber-shaders.md) tutorial.
+To learn more about how to work with macro bindings, please read the Authoring über-shaders tutorial.
 

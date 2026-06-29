@@ -4,8 +4,6 @@
 
 Welcome to the official **Minko 3** documentation. Here you will find all the resources you might need to start working with Minko and learn everything about it. Tutorials, examples, technical articles... we've gathered everything in one place to make your work easier. Enjoy :)
 
-[Let's get started!](tutorial/Getting_started_with_Minko_3.md)
-
 Minko is a **free** and **open source** real-time **3D** framework created by [Aerys](http://aerys.in). Minko is designed to create fast and robust 3D applications for **the web, desktop and mobile devices**. It is currently compatible with the following platforms:
 
 -   OSX, Linux and Windows computers
@@ -18,7 +16,6 @@ You can find the complete list and the status for each platform on our [Platform
 Make sure you check the following pages to get started:
 
 -   [Developer reference](http://doc.v3.minko.io/reference/)
--   [Tutorials](tutorial/README.md)
 -   Examples
 -   [Articles](article/README.md)
 

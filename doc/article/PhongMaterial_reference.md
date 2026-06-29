@@ -8,7 +8,7 @@ auto phongMaterial = material::PhongMaterial::create();
 ```
 
 
-You'll find more information about the `phongMaterial` in this tutorial [Working with the PhongMaterial](../tutorial/11-Working_with_the_PhongMaterial.md)
+You'll find more information about the `phongMaterial` in this tutorial Working with the PhongMaterial
 
 Properties of the phong material
 --------------------------------
@@ -17,12 +17,12 @@ We'll show the different properties of the `phongMaterial` on three different sc
 
 Each set of properties has a dedicated tutorial in the **tutorials** section:
 
--   [Working with the PhongMaterial](../tutorial/11-Working_with_the_PhongMaterial.md), to create a PhongMaterial then change the `diffuseColor`, `diffuseMap`, `specularColor` and the `shininess`
--   [Working with normal maps](../tutorial/12-Working_with_normal_maps.md)
--   [Working with specular maps](../tutorial/14-Working_with_specular_maps.md)
--   [Working with environment maps](../tutorial/13-Working_with_environment_maps.md)
+-   Working with the PhongMaterial, to create a PhongMaterial then change the `diffuseColor`, `diffuseMap`, `specularColor` and the `shininess`
+-   Working with normal maps
+-   Working with specular maps
+-   Working with environment maps
 
-The `phongMaterial` has access to a `diffuseColor` and a `diffuseMap`. Those properties can be set in the same way than the `basicMaterial` ([Working with the BasicMaterial](../tutorial/10-Working_with_the_BasicMaterial.md)).
+The `phongMaterial` has access to a `diffuseColor` and a `diffuseMap`. Those properties can be set in the same way than the `basicMaterial` (Working with the BasicMaterial).
 
 | Right                                                                                    | Left                                                                       | Front                                                                        |
 |------------------------------------------------------------------------------------------|----------------------------------------------------------------------------|------------------------------------------------------------------------------|
@@ -42,7 +42,7 @@ phongMaterial->specularColor(0xFF0000FF);
 | 0xFF0000FF     | ![](../../doc/image/RedSpecular1.jpg "../../doc/image/RedSpecular1.jpg")     | ![](../../doc/image/RedSpecular2.jpg "../../doc/image/RedSpecular2.jpg")     | ![](../../doc/image/RedSpecular3.jpg "../../doc/image/RedSpecular3.jpg")     |
 | 0xC0FFC0FF     | ![](../../doc/image/GreenSpecular1.jpg "../../doc/image/GreenSpecular1.jpg") | ![](../../doc/image/GreenSpecular2.jpg "../../doc/image/GreenSpecular2.jpg") | ![](../../doc/image/GreenSpecular3.jpg "../../doc/image/GreenSpecular3.jpg") |
 
-To have more information about specular color : [Working with the PhongMaterial](../tutorial/11-Working_with_the_PhongMaterial.md)
+To have more information about specular color : Working with the PhongMaterial
 
 ### Shininess
 
@@ -59,7 +59,7 @@ phongMaterial->shininess(32.f);
 | 16        | ![](../../doc/image/Shiniess16_1.jpg "../../doc/image/Shiniess16_1.jpg")   | ![](../../doc/image/Shiniess16_2.jpg "../../doc/image/Shiniess16_2.jpg")   | ![](../../doc/image/Shiniess16_3.jpg "../../doc/image/Shiniess16_3.jpg")   |
 | 64        | ![](../../doc/image/Shiniess64_1.jpg "../../doc/image/Shiniess64_1.jpg")   | ![](../../doc/image/Shiniess64_2.jpg "../../doc/image/Shiniess64_2.jpg")   | ![](../../doc/image/Shiniess64_3.jpg "../../doc/image/Shiniess64_3.jpg")   |
 
-To have more information about shininess : [Working with the PhongMaterial](../tutorial/11-Working_with_the_PhongMaterial.md)
+To have more information about shininess : Working with the PhongMaterial
 
 ### Environment Map & Environment Alpha
 
@@ -80,7 +80,7 @@ phongMaterial->environmentMap(assets->texture("texture/envmap.jpg"), render::Env
 |----------------------------------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------------|
 | ![](../../doc/image/Ditchriverii9.jpg "../../doc/image/Ditchriverii9.jpg") | ![](../../doc/image/Envmap1.jpg "../../doc/image/Envmap1.jpg") | ![](../../doc/image/Envmap2.jpg "../../doc/image/Envmap2.jpg") | ![](../../doc/image/Envmap3.jpg "../../doc/image/Envmap3.jpg") |
 
-If you need more information about environment map : [Working with environment maps](../tutorial/13-Working_with_environment_maps.md)
+If you need more information about environment map : Working with environment maps
 
 ### Normal Map
 
@@ -100,7 +100,7 @@ phongMaterial->normalMap(assets->texture("texture/normalmap.jpg"));
 ![ link=](../../doc/image/TextureNormal2.jpg " link=")  | ![](../../doc/image/Normal2_1.jpg "../../doc/image/Normal2_1.jpg") | ![](../../doc/image/Normal2_2.jpg "../../doc/image/Normal2_2.jpg") | ![](../../doc/image/Normal2_3.jpg "../../doc/image/Normal2_3.jpg") | ![](../../doc/image/Normal3_3.jpg "../../doc/image/Normal3_3.jpg") |
 ![ link=](../../doc/image/TextureNormal3.jpg " link=")  | ![](../../doc/image/Normal3_1.jpg "../../doc/image/Normal3_1.jpg") | ![](../../doc/image/Normal3_2.jpg "../../doc/image/Normal3_2.jpg") | ![](../../doc/image/Normal3_3.jpg "../../doc/image/Normal3_3.jpg") | ![](../../doc/image/Normal3_3.jpg "../../doc/image/Normal3_3.jpg") |
 
-If you need more information about normal mapping : [Working with normal maps](../tutorial/12-Working_with_normal_maps.md)
+If you need more information about normal mapping : Working with normal maps
 
 ### Specular Map
 
@@ -114,4 +114,4 @@ phongMaterial->shininess(2); phongMaterial->specularMap(assets->texture("texture
 | ![](../../doc/image/Texturespecular3.jpg "../../doc/image/Texturespecular3.jpg") | ![](../../doc/image/SpecularMap3_1.jpg "../../doc/image/SpecularMap3_1.jpg") | ![](../../doc/image/SpecularMap3_2.jpg "../../doc/image/SpecularMap3_2.jpg") | ![](../../doc/image/SpecularMap3_3.jpg "../../doc/image/SpecularMap3_3.jpg") |
 ||
 
-If you need more information about specular maps : [Working with specular maps](../tutorial/14-Working_with_specular_maps.md)
+If you need more information about specular maps : Working with specular maps

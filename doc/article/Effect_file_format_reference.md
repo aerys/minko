@@ -4,7 +4,7 @@ Effect files (.effect) are JSON formated text files used to describe rendering e
 
 More about creating custom effects:
 * [Creating a custom effect](../tutorials/17-Creating_a_custom_effect.md)
-* [Creating a simple post-processing effect](../tutorial/22-Creating_a_simple_post-processing_effect.md)
+* Creating a simple post-processing effect
 
 ## Techniques
 
@@ -128,7 +128,7 @@ The `#pragma include` directive can also be used to implement the GLSL shader co
 Such GLSL shader can then easily be shared among multiple effects.
 
 More about vertex and fragment shaders:
-* [Using external GLSL code in effect files](../tutorial/23-Using_external_GLSL_code_in_effect_files.md)
+* Using external GLSL code in effect files
 
 ### Pass inheritance
 
@@ -316,7 +316,7 @@ provided by the application.
 Attributes that are not bound will have to be manually set by calling the `Effect::setAttribute()` method.
 
 More about vertex attributes:
-* [Working with custom vertex attributes](../tutorial/24-Working_with_custom_vertex_attributes.md)
+* Working with custom vertex attributes
 
 ### Binding uniforms
 
@@ -457,7 +457,7 @@ The following example can be used to have a shader that behaves differently when
 Macros that are not bound can be set using the `Effect::define()` method.
 
 More about macro bindings:
-* [Authoring über-shaders](../tutorial/21-Authoring_uber-shaders.md)
+* Authoring über-shaders
 
 ### Scope inheritance
 
