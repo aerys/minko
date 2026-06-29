@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2015, assimp team
+Copyright (c) 2006-2026, assimp team
 
 All rights reserved.
 
@@ -44,8 +44,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  custom file handling logic to the Import library.
 */
 
+#pragma once
 #ifndef AI_IOSYSTEM_H_INC
 #define AI_IOSYSTEM_H_INC
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #ifndef __cplusplus
 #   error This header requires C++ to be used. aiFileIO.h is the \
@@ -54,9 +59,20 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "types.h"
 
+#ifdef _WIN32
+#   include <direct.h>
+#   include <cstdlib>
+#   include <cstdio>
+#else
+#   include <sys/stat.h>
+#   include <sys/types.h>
+#   include <unistd.h>
+#endif // _WIN32
+
 #include <vector>
 
-namespace Assimp    {
+namespace Assimp {
+
 class IOStream;
 
 // ---------------------------------------------------------------------------
@@ -66,7 +82,8 @@ class IOStream;
  *  to the importer library. If you implement this interface, you also want to
  *  supply a custom implementation for IOStream.
  *
- *  @see Importer::SetIOHandler() */
+ *  @see Importer::SetIOHandler()
+ */
 class ASSIMP_API IOSystem
 #ifndef SWIG
     : public Intern::AllocateFromAssimpHeap
@@ -80,7 +97,7 @@ public:
      *  Create an instance of your derived class and assign it to an
      *  #Assimp::Importer instance by calling Importer::SetIOHandler().
      */
-    IOSystem();
+    IOSystem() AI_NO_EXCEPT = default;
 
     // -------------------------------------------------------------------
     /** @brief Virtual destructor.
@@ -88,10 +105,7 @@ public:
      *  It is safe to be called from within DLL Assimp, we're constructed
      *  on Assimp's heap.
      */
-    virtual ~IOSystem();
-
-
-public:
+    virtual ~IOSystem() = default;
 
     // -------------------------------------------------------------------
     /** @brief For backward compatibility
@@ -195,22 +209,32 @@ public:
      */
     virtual bool PopDirectory();
 
+    // -------------------------------------------------------------------
+    /** @brief CReates an new directory at the given path.
+     *  @param  path    [in] The path to create.
+     *  @return True, when a directory was created. False if the directory
+     *           cannot be created.
+     */
+    virtual bool CreateDirectory( const std::string &path );
+
+    // -------------------------------------------------------------------
+    /** @brief Will change the current directory to the given path.
+     *  @param path     [in] The path to change to.
+     *  @return True, when the directory has changed successfully.
+     */
+    virtual bool ChangeDirectory( const std::string &path );
+
+    // -------------------------------------------------------------------
+    /**
+     *  @brief  Will delete the given file.
+     *  @param file     [in] The filename
+     *  @return true, if the file wase deleted, false if not.
+     */
+    virtual bool DeleteFile(const std::string &file);
+
 private:
     std::vector<std::string> m_pathStack;
 };
-
-// ----------------------------------------------------------------------------
-AI_FORCE_INLINE IOSystem::IOSystem() :
-    m_pathStack()
-{
-    // empty
-}
-
-// ----------------------------------------------------------------------------
-AI_FORCE_INLINE IOSystem::~IOSystem()
-{
-    // empty
-}
 
 // ----------------------------------------------------------------------------
 // For compatibility, the interface of some functions taking a std::string was
@@ -219,9 +243,7 @@ AI_FORCE_INLINE IOSystem::~IOSystem()
 // ----------------------------------------------------------------------------
 
 // ----------------------------------------------------------------------------
-AI_FORCE_INLINE IOStream* IOSystem::Open(const std::string& pFile,
-    const std::string& pMode)
-{
+AI_FORCE_INLINE IOStream* IOSystem::Open(const std::string& pFile, const std::string& pMode) {
     // NOTE:
     // For compatibility, interface was changed to const char* to
     // avoid crashes between binary incompatible STL versions
@@ -229,8 +251,7 @@ AI_FORCE_INLINE IOStream* IOSystem::Open(const std::string& pFile,
 }
 
 // ----------------------------------------------------------------------------
-AI_FORCE_INLINE bool IOSystem::Exists( const std::string& pFile) const
-{
+AI_FORCE_INLINE bool IOSystem::Exists( const std::string& pFile) const {
     // NOTE:
     // For compatibility, interface was changed to const char* to
     // avoid crashes between binary incompatible STL versions
@@ -238,9 +259,7 @@ AI_FORCE_INLINE bool IOSystem::Exists( const std::string& pFile) const
 }
 
 // ----------------------------------------------------------------------------
-inline bool IOSystem::ComparePaths (const std::string& one,
-    const std::string& second) const
-{
+AI_FORCE_INLINE bool IOSystem::ComparePaths(const std::string& one, const std::string& second) const {
     // NOTE:
     // For compatibility, interface was changed to const char* to
     // avoid crashes between binary incompatible STL versions
@@ -248,7 +267,7 @@ inline bool IOSystem::ComparePaths (const std::string& one,
 }
 
 // ----------------------------------------------------------------------------
-inline bool IOSystem::PushDirectory( const std::string &path ) {
+AI_FORCE_INLINE bool IOSystem::PushDirectory( const std::string &path ) {
     if ( path.empty() ) {
         return false;
     }
@@ -259,21 +278,12 @@ inline bool IOSystem::PushDirectory( const std::string &path ) {
 }
 
 // ----------------------------------------------------------------------------
-inline const std::string &IOSystem::CurrentDirectory() const {
-    if ( m_pathStack.empty() ) {
-        static const std::string Dummy("");
-        return Dummy;
-    }
-    return m_pathStack[ m_pathStack.size()-1 ];
-}
-
-// ----------------------------------------------------------------------------
-inline size_t IOSystem::StackSize() const {
+AI_FORCE_INLINE size_t IOSystem::StackSize() const {
     return m_pathStack.size();
 }
 
 // ----------------------------------------------------------------------------
-inline bool IOSystem::PopDirectory() {
+AI_FORCE_INLINE bool IOSystem::PopDirectory() {
     if ( m_pathStack.empty() ) {
         return false;
     }
@@ -284,7 +294,40 @@ inline bool IOSystem::PopDirectory() {
 }
 
 // ----------------------------------------------------------------------------
+AI_FORCE_INLINE bool IOSystem::CreateDirectory( const std::string &path ) {
+    if ( path.empty() ) {
+        return false;
+    }
 
+#ifdef _WIN32
+    return 0 != ::_mkdir( path.c_str() );
+#else
+    return 0 != ::mkdir( path.c_str(), 0777 );
+#endif // _WIN32
+}
+
+// ----------------------------------------------------------------------------
+AI_FORCE_INLINE bool IOSystem::ChangeDirectory( const std::string &path ) {
+    if ( path.empty() ) {
+        return false;
+    }
+
+#ifdef _WIN32
+    return 0 != ::_chdir( path.c_str() );
+#else
+    return 0 != ::chdir( path.c_str() );
+#endif // _WIN32
+}
+
+
+// ----------------------------------------------------------------------------
+AI_FORCE_INLINE bool IOSystem::DeleteFile( const std::string &file ) {
+    if ( file.empty() ) {
+        return false;
+    }
+    const int retCode( ::remove( file.c_str() ) );
+    return ( 0 == retCode );
+}
 } //!ns Assimp
 
 #endif //AI_IOSYSTEM_H_INC

@@ -19,43 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#if (!defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
-# include "minko/file/ASSIMPParser.hpp"
-#endif
-
-#include "minko/file/MTLParser.hpp"
-#include "minko/file/COBParser.hpp"
-#include "minko/file/NDOParser.hpp"
-#include "minko/file/MDLParser.hpp"
-#include "minko/file/ASEParser.hpp"
-#include "minko/file/LWOParser.hpp"
-#include "minko/file/OFFParser.hpp"
-#include "minko/file/OBJParser.hpp"
-#include "minko/file/FBXParser.hpp"
-#include "minko/file/MS3DParser.hpp"
-#include "minko/file/MDCParser.hpp"
-#include "minko/file/STLParser.hpp"
-#include "minko/file/B3DParser.hpp"
-#include "minko/file/Q3BSPParser.hpp"
-#include "minko/file/XGLParser.hpp"
-#include "minko/file/CSMParser.hpp"
-#include "minko/file/Q3DParser.hpp"
-#include "minko/file/IFCParser.hpp"
-#include "minko/file/XParser.hpp"
-#include "minko/file/BVHParser.hpp"
-#include "minko/file/LWSParser.hpp"
-#include "minko/file/HMPParser.hpp"
-#include "minko/file/RAWParser.hpp"
-#include "minko/file/NFFParser.hpp"
-#include "minko/file/TerragenParser.hpp"
-#include "minko/file/ThreeDSParser.hpp"
-#include "minko/file/SMDParser.hpp"
-#include "minko/file/BlenderParser.hpp"
-#include "minko/file/IRRParser.hpp"
-#include "minko/file/UnrealParser.hpp"
-#include "minko/file/ColladaParser.hpp"
-#include "minko/file/MD3Parser.hpp"
-#include "minko/file/DXFParser.hpp"
-#include "minko/file/MD2Parser.hpp"
-#include "minko/file/MD5Parser.hpp"
-#include "minko/file/AC3DParser.hpp"
+// Single entry point: ASSIMPParser relies on Assimp's built-in (public)
+// importer registry, so one parser handles every compiled-in format
+// (OBJ, Collada, FBX, glTF2, ...).
+#include "minko/file/ASSIMPParser.hpp"

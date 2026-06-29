@@ -321,9 +321,9 @@ AbstractASSIMPParser::initImporter()
 
     _importer = new Assimp::Importer();
 
-#if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
+    // The public importer registry already installs every compiled-in importer
+    // on the Importer above; provideLoaders() is a no-op extension point.
     provideLoaders(*_importer);
-#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 
     _importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, _options->includeAnimation());
 }
@@ -498,12 +498,15 @@ AbstractASSIMPParser::parseMetadata(const aiScene*                              
         case aiMetadataType::AI_FLOAT:
             dataString = std::to_string(*reinterpret_cast<float*>(data.mData));
             break;
-        case aiMetadataType::AI_INT:
-            dataString = std::to_string(*reinterpret_cast<int*>(data.mData));
+        case aiMetadataType::AI_INT32:
+            dataString = std::to_string(*reinterpret_cast<std::int32_t*>(data.mData));
             break;
         case aiMetadataType::AI_UINT64:
             dataString = std::to_string(*reinterpret_cast<std::uint64_t*>(data.mData));
             break;
+        // We intentionally do not reinterpret_cast unhandled types here: an
+        // unknown aiMetadataType yields an empty value rather than risking
+        // a mis-typed cast.
         default:
             break;
         }
@@ -728,7 +731,12 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 
     const auto meshName	= getMeshName(std::string(mesh->mName.data));
 
-    auto primitiveType = mesh->mPrimitiveTypes;
+    // aiProcess_Triangulate tags polygon meshes with
+    // aiPrimitiveType_NGONEncodingFlag (to preserve original n-gon info).
+    // The mesh is still pure triangles, so strip that annotation bit before
+    // comparing - otherwise every polygon-based format (OBJ, IFC, DXF, LWO...)
+    // would be rejected as "not TRIANGLE".
+    auto primitiveType = mesh->mPrimitiveTypes & ~aiPrimitiveType_NGONEncodingFlag;
 
     if (primitiveType != aiPrimitiveType::aiPrimitiveType_TRIANGLE)
     {
@@ -1831,6 +1839,26 @@ AbstractASSIMPParser::textureSet(material::Material::Ptr material, const std::st
 	}
 }
 
+namespace
+{
+    // Typed wrapper around aiMaterial::Get()'s array overload. `max` is an
+    // in/out element count: it MUST be initialized to the number of elements
+    // `out` can hold (a single value here). An uninitialized max lets Assimp
+    // memcpy past `out` and smash the stack.
+    template <typename T>
+    bool
+    getMaterialValue(const aiMaterial* aiMat,
+                     const char*       key,
+                     unsigned int      type,
+                     unsigned int      index,
+                     T&                out)
+    {
+        unsigned int max = 1;
+
+        return aiMat->Get(key, type, index, &out, &max) == AI_SUCCESS;
+    }
+}
+
 material::Material::Ptr
 AbstractASSIMPParser::chooseMaterialByShadingMode(const aiMaterial* aiMat) const
 {
@@ -1838,8 +1866,7 @@ AbstractASSIMPParser::chooseMaterialByShadingMode(const aiMaterial* aiMat) const
 		return material::Material::create(_options->material());
 
 	int shadingMode;
-	unsigned int max;
-	if (aiMat->Get(AI_MATKEY_SHADING_MODEL, &shadingMode, &max) == AI_SUCCESS)
+	if (getMaterialValue(aiMat, AI_MATKEY_SHADING_MODEL, shadingMode))
 	{
 		switch(static_cast<aiShadingMode>(shadingMode))
 		{
@@ -1877,8 +1904,7 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 	if (effect == nullptr && aiMat)
 	{
 		int shadingMode;
-        unsigned int max = 1;
-		if (aiMat->Get(AI_MATKEY_SHADING_MODEL, &shadingMode, &max) == AI_SUCCESS)
+		if (getMaterialValue(aiMat, AI_MATKEY_SHADING_MODEL, shadingMode))
 		{
 			switch(static_cast<aiShadingMode>(shadingMode))
 			{
@@ -1922,8 +1948,7 @@ render::Blending::Mode
 AbstractASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const
 {
 	int blendMode;
-	unsigned int max;
-	if (aiMat && aiMat->Get(AI_MATKEY_BLEND_FUNC, &blendMode, &max) == AI_SUCCESS)
+	if (aiMat && getMaterialValue(aiMat, AI_MATKEY_BLEND_FUNC, blendMode))
 	{
 		switch (static_cast<aiBlendMode>(blendMode))
 		{
@@ -1943,8 +1968,7 @@ render::TriangleCulling
 AbstractASSIMPParser::getTriangleCulling(const aiMaterial* aiMat) const
 {
 	int twoSided;
-	unsigned int max;
-	if (aiMat && aiMat->Get(AI_MATKEY_TWOSIDED, &twoSided, &max) == AI_SUCCESS)
+	if (aiMat && getMaterialValue(aiMat, AI_MATKEY_TWOSIDED, twoSided))
 	{
 		return twoSided == 0
 			? render::TriangleCulling::NONE
@@ -1958,9 +1982,8 @@ bool
 AbstractASSIMPParser::getWireframe(const aiMaterial* aiMat) const
 {
 	int wireframe;
-	unsigned int max;
 
-	return (aiMat && aiMat->Get(AI_MATKEY_TWOSIDED, &wireframe, &max) == AI_SUCCESS)
+	return (aiMat && getMaterialValue(aiMat, AI_MATKEY_TWOSIDED, wireframe))
 		? wireframe != 0
 		: false;
 }

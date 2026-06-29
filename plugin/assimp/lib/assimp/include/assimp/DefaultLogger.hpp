@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2015, assimp team
+Copyright (c) 2006-2026, assimp team
+
 All rights reserved.
 
 Redistribution and use of this software in source and binary forms,
@@ -37,23 +38,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ----------------------------------------------------------------------
 */
-/** @file DefaultLogger.hpp
-*/
 
+/**
+ *  @file DefaultLogger.hpp
+ */
+
+#pragma once
 #ifndef INCLUDED_AI_DEFAULTLOGGER
 #define INCLUDED_AI_DEFAULTLOGGER
 
-#include "Logger.hpp"
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
+
 #include "LogStream.hpp"
+#include "Logger.hpp"
 #include "NullLogger.hpp"
 #include <vector>
 
-namespace Assimp    {
+#ifndef ASSIMP_BUILD_SINGLETHREADED
+#include <mutex>
+#include <thread>
+#endif
+
+namespace Assimp {
 // ------------------------------------------------------------------------------------
 class IOStream;
 struct LogStreamInfo;
 
-/** default name of logfile */
+/** default name of log-file */
 #define ASSIMP_DEFAULT_LOG_NAME "AssimpLog.txt"
 
 // ------------------------------------------------------------------------------------
@@ -69,27 +82,24 @@ struct LogStreamInfo;
  *  If you wish to customize the logging at an even deeper level supply your own
  *  implementation of #Logger to #set().
  *  @note The whole logging stuff causes a small extra overhead for all imports. */
-class ASSIMP_API DefaultLogger :
-    public Logger   {
-
+class ASSIMP_API DefaultLogger final : public Logger {
 public:
-
     // ----------------------------------------------------------------------
     /** @brief Creates a logging instance.
      *  @param name Name for log file. Only valid in combination
      *    with the aiDefaultLogStream_FILE flag.
-     *  @param severity Log severity, VERBOSE turns on debug messages
+     *  @param severity Log severity, DEBUG turns on debug messages and VERBOSE turns on all messages.
      *  @param defStreams  Default log streams to be attached. Any bitwise
      *    combination of the aiDefaultLogStream enumerated values.
      *    If #aiDefaultLogStream_FILE is specified but an empty string is
      *    passed for 'name', no log file is created at all.
      *  @param  io IOSystem to be used to open external files (such as the
-     *   log file). Pass NULL to rely on the default implementation.
+     *   log file). Pass nullptr to rely on the default implementation.
      *  This replaces the default #NullLogger with a #DefaultLogger instance. */
-    static Logger *create(const char* name = ASSIMP_DEFAULT_LOG_NAME,
-        LogSeverity severity    = NORMAL,
-        unsigned int defStreams = aiDefaultLogStream_DEBUGGER | aiDefaultLogStream_FILE,
-        IOSystem* io            = NULL);
+    static Logger *create(const char *name = ASSIMP_DEFAULT_LOG_NAME,
+            LogSeverity severity = NORMAL,
+            unsigned int defStreams = aiDefaultLogStream_DEBUGGER | aiDefaultLogStream_FILE,
+            IOSystem *io = nullptr);
 
     // ----------------------------------------------------------------------
     /** @brief Setup a custom #Logger implementation.
@@ -98,8 +108,11 @@ public:
      *  your needs. If the provided message formatting is OK for you,
      *  it's much easier to use #create() and to attach your own custom
      *  output streams to it.
+     *  Since set is intended to be used for custom loggers, the user is
+     *  responsible for instantiation and destruction (new / delete).
+     *  Before deletion of the custom logger, set(nullptr); must be called.
      *  @param logger Pass NULL to setup a default NullLogger*/
-    static void set (Logger *logger);
+    static void set(Logger *logger);
 
     // ----------------------------------------------------------------------
     /** @brief  Getter for singleton instance
@@ -115,49 +128,46 @@ public:
     static bool isNullLogger();
 
     // ----------------------------------------------------------------------
-    /** @brief  Kills the current singleton logger and replaces it with a
-     *  #NullLogger instance. */
+    /** @brief  Kills and deletes the current singleton logger and replaces
+     *  it with a #NullLogger instance. */
     static void kill();
 
     // ----------------------------------------------------------------------
     /** @copydoc Logger::attachStream   */
-    bool attachStream(LogStream *pStream,
-        unsigned int severity);
+    bool attachStream(LogStream *pStream, unsigned int severity) override;
 
     // ----------------------------------------------------------------------
-    /** @copydoc Logger::detatchStream */
-    bool detatchStream(LogStream *pStream,
-        unsigned int severity);
-
+    /** @copydoc Logger::detachStream */
+    bool detachStream(LogStream *pStream, unsigned int severity) override;
 
 private:
-
     // ----------------------------------------------------------------------
     /** @briefPrivate construction for internal use by create().
      *  @param severity Logging granularity  */
-    DefaultLogger(LogSeverity severity);
+    explicit DefaultLogger(LogSeverity severity);
 
     // ----------------------------------------------------------------------
-    /** @briefDestructor    */
-    ~DefaultLogger();
+    /** @brief  Destructor    */
+    ~DefaultLogger() override;
 
-private:
+    /** @brief  Logs debug infos, only been written when severity level DEBUG or higher is set */
+    void OnDebug(const char *message) override;
 
     /** @brief  Logs debug infos, only been written when severity level VERBOSE is set */
-    void OnDebug(const char* message);
+    void OnVerboseDebug(const char *message) override;
 
     /** @brief  Logs an info message */
-    void OnInfo(const char*  message);
+    void OnInfo(const char *message) override;
 
     /** @brief  Logs a warning message */
-    void OnWarn(const char*  message);
+    void OnWarn(const char *message) override;
 
     /** @brief  Logs an error message */
-    void OnError(const char* message);
+    void OnError(const char *message) override;
 
     // ----------------------------------------------------------------------
     /** @brief Writes a message to all streams */
-    void WriteToStreams(const char* message, ErrorSeverity ErrorSev );
+    void WriteToStreams(const char *message, ErrorSeverity ErrorSev);
 
     // ----------------------------------------------------------------------
     /** @brief Returns the thread id.
@@ -168,9 +178,9 @@ private:
 
 private:
     //  Aliases for stream container
-    typedef std::vector<LogStreamInfo*> StreamArray;
-    typedef std::vector<LogStreamInfo*>::iterator StreamIt;
-    typedef std::vector<LogStreamInfo*>::const_iterator ConstStreamIt;
+    using StreamArray = std::vector<LogStreamInfo *>;
+    using StreamIt = std::vector<LogStreamInfo *>::iterator;
+    using ConstStreamIt = std::vector<LogStreamInfo *>::const_iterator;
 
     //! only logging instance
     static Logger *m_pLogger;
@@ -179,10 +189,15 @@ private:
     //! Attached streams
     StreamArray m_StreamArray;
 
+#ifndef ASSIMP_BUILD_SINGLETHREADED
+    std::mutex m_arrayMutex;
+#endif
+
     bool noRepeatMsg;
-    char lastMsg[MAX_LOG_MESSAGE_LENGTH*2];
+    char lastMsg[MAX_LOG_MESSAGE_LENGTH * 2];
     size_t lastLen;
 };
+
 // ------------------------------------------------------------------------------------
 
 } // Namespace Assimp

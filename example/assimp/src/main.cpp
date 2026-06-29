@@ -86,8 +86,8 @@ main(int argc, char** argv)
         ->skinningFramerate(60)
         ->skinningMethod(SkinningMethod::HARDWARE)
         ->startAnimation(true)
-        ->registerParser<file::OBJParser>("obj")
-        ->registerParser<file::ColladaParser>("dae")
+        ->registerParser<file::ASSIMPParser>("obj")
+        ->registerParser<file::ASSIMPParser>("dae")
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg");
 

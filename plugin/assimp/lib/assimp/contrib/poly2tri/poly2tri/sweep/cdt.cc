@@ -1,6 +1,6 @@
-/* 
- * Poly2Tri Copyright (c) 2009-2010, Poly2Tri Contributors
- * http://code.google.com/p/poly2tri/
+/*
+ * Poly2Tri Copyright (c) 2009-2021, Poly2Tri Contributors
+ * https://github.com/jhasse/poly2tri
  *
  * All rights reserved.
  *
@@ -32,13 +32,13 @@
 
 namespace p2t {
 
-CDT::CDT(std::vector<Point*> polyline)
+CDT::CDT(const std::vector<Point*>& polyline)
 {
   sweep_context_ = new SweepContext(polyline);
   sweep_ = new Sweep;
 }
 
-void CDT::AddHole(std::vector<Point*> polyline)
+void CDT::AddHole(const std::vector<Point*>& polyline)
 {
   sweep_context_->AddHole(polyline);
 }
@@ -68,5 +68,4 @@ CDT::~CDT()
   delete sweep_;
 }
 
-}
-
+} // namespace p2t

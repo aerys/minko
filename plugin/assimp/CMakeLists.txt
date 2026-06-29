@@ -28,60 +28,74 @@ target_include_directories (${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_INCLUDE})
 
 minko_enable_plugin_zlib (${PROJECT_NAME})
 
+# --- Vendored Assimp v6.0.5 sources ------------------------------------------
+# All importer/common/post-processing sources (exporters are filtered out below
+# and additionally compiled out by ASSIMP_BUILD_NO_EXPORT).
 file (
     GLOB_RECURSE
     ASSIMP_LIB_SRC
-    "lib/assimp/code/*.c"
-    "lib/assimp/code/*.h"
     "lib/assimp/code/*.cpp"
-    "lib/assimp/code/*.hpp"
-    "lib/assimp/contrib/*.c"
-    "lib/assimp/contrib/*.cc"
-    "lib/assimp/contrib/*.h"
-    "lib/assimp/contrib/*.cpp"
-    "lib/assimp/contrib/*.hpp"
 )
 
+# Kept contrib sources (explicit list - do NOT glob contrib/** as that would pull
+# in unrelated zlib/contrib/** sources). zlib is handled separately below.
 list (
-    REMOVE_ITEM
+    APPEND
     ASSIMP_LIB_SRC
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/Assimp.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/STLExporter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/PlyExporter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/ColladaExporter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/ObjExporter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/XFileExporter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/AssbinExporter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/3DSExporter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/Exporter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/AssimpCExport.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/openddlparser/code/OpenDDLParser.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/clipper/clipper.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/pugixml/src/pugixml.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/unzip/unzip.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/unzip/ioapi.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/openddlparser/code/OpenDDLCommon.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/openddlparser/code/DDLNode.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/openddlparser/code/OpenDDLParser.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/openddlparser/code/Value.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/C4DImporter.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/code/OpenGEXImporter.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/openddlparser/code/OpenDDLStream.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/openddlparser/code/OpenDDLExport.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/poly2tri/poly2tri/sweep/cdt.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/poly2tri/poly2tri/sweep/sweep_context.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/poly2tri/poly2tri/sweep/advancing_front.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/poly2tri/poly2tri/sweep/sweep.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp/contrib/poly2tri/poly2tri/common/shapes.cc"
 )
+
+# zlib is handled separately below (we reuse the engine zlib plugin instead of
+# Assimp's bundled copy - see the include-redirect comment near the bottom).
+
+# Drop exporter sources (also guarded by ASSIMP_BUILD_NO_EXPORT) and a stale
+# IFC generator that #includes a non-existent AssimpPCH.h and is not part of
+# upstream's build list.
+list (FILTER ASSIMP_LIB_SRC EXCLUDE REGEX ".*Exporter\\.cpp$")
+list (FILTER ASSIMP_LIB_SRC EXCLUDE REGEX ".*IFCReaderGen_4\\.cpp$")
 
 file (
     GLOB
     ASSIMP_LIB_INCLUDE
     "lib/assimp"
-    "lib/assimp/code"
-    "lib/assimp/code/BoostWorkaround"
     "lib/assimp/include"
-    "lib/assimp/contrib/clipper"
-    "lib/assimp/contrib/ConvertUTF"
-    "lib/assimp/contrib/irrXML"
+    "lib/assimp/code"
+    "lib/assimp/contrib"
+    "lib/assimp/contrib/rapidjson/include"
+    "lib/assimp/contrib/pugixml/src"
+    "lib/assimp/contrib/utf8cpp/source"
+    "lib/assimp/contrib/unzip"
     "lib/assimp/contrib/poly2tri"
-    "lib/assimp/contrib/unzip"    
+    "lib/assimp/contrib/clipper"
+    "lib/assimp/contrib/openddlparser/include"
+    "lib/assimp/contrib/stb"
+    "lib/assimp/contrib/earcut-hpp/include"
 )
 
-# minko_add_library ("assimp" STATIC "${ASSIMP_LIB_SRC}")
 add_library("assimp" STATIC "${ASSIMP_LIB_SRC}")
 target_include_directories ("assimp" PUBLIC ${ASSIMP_LIB_INCLUDE})
-target_link_libraries ("assimp" "minko-plugin-zlib")
-target_include_directories ("assimp" PUBLIC "${MINKO_HOME}/plugin/zlib/lib/zlib")
-target_compile_options ("assimp" PUBLIC -DMINKO_PLUGIN_ZLIB)
+
+# Resolve Assimp's <zlib.h>/"zlib.h" to the engine zlib plugin headers
+# (paired with ASSIMP_BUILD_NO_OWN_ZLIB) so only one zlib is ever linked.
+target_include_directories ("assimp" PRIVATE "${MINKO_HOME}/plugin/zlib/lib/zlib")
+target_compile_options ("assimp" PRIVATE -DMINKO_PLUGIN_ZLIB)
+# Assimp 6.x requires C++17 (the engine itself builds at C++14; this is a
+# per-target override and does NOT force an engine-wide bump).
+set_target_properties ("assimp" PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
 target_link_libraries (${PROJECT_NAME} "assimp")
 
 get_target_property(OUTPUT_PATH ${PROJECT_NAME} ARCHIVE_OUTPUT_DIRECTORY)
@@ -101,62 +115,49 @@ set_target_properties (
     LIBRARY_OUTPUT_DIRECTORY
     ${OUTPUT_PATH}
 )
-target_compile_options (
-    "assimp"
-    PRIVATE 
+# Assimp build configuration (v6.0.5):
+#  - NO_EXPORT          : exporters off (import-only engine).
+#  - NO_GLTF1_IMPORTER  : keep glTF2, drop legacy glTF1.
+#  - NO_USD_IMPORTER    : tinyusdz contrib was pruned.
+#  - NO_C4D_IMPORTER    : requires the proprietary Cinema4D (Melange) SDK.
+#  - NO_M3D_IMPORTER    : M3DWrapper.cpp misses a logger include in this config
+#                         (off the keep-list anyway).
+#  - NO_X3D_IMPORTER    : VrmlConverter pulls a pruned meshlab/io_x3d header
+#                         (X3D/VRML are off the keep-list).
+# draco is opt-in (ASSIMP_BUILD_USE_DRACO) and stays off by not defining it.
+# Importers come from the public importer registry. NO_OWN_ZLIB makes Assimp
+# use the engine zlib.
+set (ASSIMP_BUILD_DEFINES
     -DASSIMP_BUILD_NO_OWN_ZLIB
     -DASSIMP_BUILD_NO_EXPORT
-    -DASSIMP_BUILD_BOOST_WORKAROUND
-    -DASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
+    -DASSIMP_BUILD_NO_GLTF1_IMPORTER
+    -DASSIMP_BUILD_NO_USD_IMPORTER
+    -DASSIMP_BUILD_NO_C4D_IMPORTER
+    -DASSIMP_BUILD_NO_M3D_IMPORTER
+    -DASSIMP_BUILD_NO_X3D_IMPORTER
 )
-target_compile_options (
-    ${PROJECT_NAME}
-    PRIVATE 
-    -DASSIMP_BUILD_NO_OWN_ZLIB
-    -DASSIMP_BUILD_NO_EXPORT
-    -DASSIMP_BUILD_BOOST_WORKAROUND
-    -DASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
+target_compile_options ("assimp" PRIVATE ${ASSIMP_BUILD_DEFINES})
+target_compile_options (${PROJECT_NAME} PRIVATE ${ASSIMP_BUILD_DEFINES})
+
+# OpenGL ES 2 tuning, applied to both Assimp targets: cap the bone weights per
+# vertex and the SplitLargeMeshes vertex/triangle budgets to what ES2 can index.
+set (ASSIMP_ES2_TUNING_DEFINES
+    -DAI_LMW_MAX_WEIGHTS=4
+    -DAI_SLM_DEFAULT_MAX_VERTICES=128000
+    -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
 )
 
-if (MSVC)
-    target_compile_options (
-        ${PROJECT_NAME} PRIVATE 
-        -D_CRT_SECURE_NO_WARNINGS
-        -D_SCL_SECURE_NO_WARNINGS
-        -DAI_LMW_MAX_WEIGHTS=4
-        # OpenGL ES 2 max vertex count
-        -DAI_SLM_DEFAULT_MAX_VERTICES=128000
-        # OpenGL ES 2 max indices/triangles count
-        -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
-    )
-    target_compile_options (
-        assimp PRIVATE
-        -D_CRT_SECURE_NO_WARNINGS
-        -D_SCL_SECURE_NO_WARNINGS
-        -DAI_LMW_MAX_WEIGHTS=4
-        # OpenGL ES 2 max vertex count
-        -DAI_SLM_DEFAULT_MAX_VERTICES=128000
-        # OpenGL ES 2 max indices/triangles count
-        -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
-    )
-else ()
-    target_compile_options (
-        ${PROJECT_NAME} PRIVATE 
-        -DAI_LMW_MAX_WEIGHTS=4
-        # OpenGL ES 2 max vertex count
-        -DAI_SLM_DEFAULT_MAX_VERTICES=128000
-        # OpenGL ES 2 max indices/triangles count
-        -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
-    )
-    target_compile_options (
-        assimp PRIVATE 
-        -DAI_LMW_MAX_WEIGHTS=4
-        # OpenGL ES 2 max vertex count
-        -DAI_SLM_DEFAULT_MAX_VERTICES=128000
-        # OpenGL ES 2 max indices/triangles count
-        -DAI_SLM_DEFAULT_MAX_TRIANGLES=21845
-    )
-endif ()
+foreach (assimpTarget ${PROJECT_NAME} assimp)
+    target_compile_options (${assimpTarget} PRIVATE ${ASSIMP_ES2_TUNING_DEFINES})
+
+    if (MSVC)
+        target_compile_options (
+            ${assimpTarget} PRIVATE
+            -D_CRT_SECURE_NO_WARNINGS
+            -D_SCL_SECURE_NO_WARNINGS
+        )
+    endif ()
+endforeach ()
 
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" OR APPLE)
     target_compile_options (
@@ -190,15 +191,14 @@ if (ANDROID)
     )
 endif ()
 
-### Silents some warnings when building assimp library.
+### Silence deprecation warnings when building the Assimp targets.
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
     CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
     CMAKE_CXX_COMPILER_ID MATCHES "AppleClang" OR
     EMSCRIPTEN)
-    target_compile_options(${PROJECT_NAME} PRIVATE
-        -Wno-deprecated-declarations)
-    target_compile_options("assimp" PRIVATE
-        -Wno-deprecated-declarations)
+    foreach (assimpTarget ${PROJECT_NAME} assimp)
+        target_compile_options (${assimpTarget} PRIVATE -Wno-deprecated-declarations)
+    endforeach ()
 endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR "AppleClang")

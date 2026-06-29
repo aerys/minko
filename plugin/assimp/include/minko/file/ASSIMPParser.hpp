@@ -26,8 +26,11 @@ namespace minko
     namespace file
     {
         /**
-         * Used when all parsers are needed.
-         * ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION flag must not be set.
+         * Single entry point for all Assimp-supported formats.
+         *
+         * Loaders are provided by Assimp's built-in (public) importer
+         * registry, so this parser does not register any importer itself
+         * (see the empty provideLoaders() override).
          */
     class ASSIMPParser : public AbstractASSIMPParser
         {
@@ -47,11 +50,9 @@ namespace minko
             void
             provideLoaders(Assimp::Importer& importer);
 
-#if !defined (ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
             static
             std::set<std::string>
             getSupportedFileExtensions();
-#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 
         private:
 

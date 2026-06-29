@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2015, assimp team
+Copyright (c) 2006-2026, assimp team
 
 All rights reserved.
 
@@ -41,8 +41,13 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @file vector2.h
  *  @brief 2D vector structure, including operators when compiling in C++
  */
+#pragma once
 #ifndef AI_VECTOR2D_H_INC
 #define AI_VECTOR2D_H_INC
+
+#ifdef __GNUC__
+#   pragma GCC system_header
+#endif
 
 #ifdef __cplusplus
 #   include <cmath>
@@ -50,7 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #   include <math.h>
 #endif
 
-#include "./Compiler/pushpack1.h"
+#include "defs.h"
 
 // ----------------------------------------------------------------------------------
 /** Represents a two-dimensional vector.
@@ -58,23 +63,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef __cplusplus
 template <typename TReal>
-class aiVector2t
-{
+class aiVector2t {
 public:
-
     aiVector2t () : x(), y() {}
     aiVector2t (TReal _x, TReal _y) : x(_x), y(_y) {}
     explicit aiVector2t (TReal _xyz) : x(_xyz), y(_xyz) {}
-    aiVector2t (const aiVector2t& o) : x(o.x), y(o.y) {}
-
-public:
+    aiVector2t (const aiVector2t& o) = default;
 
     void Set( TReal pX, TReal pY);
     TReal SquareLength() const ;
     TReal Length() const ;
     aiVector2t& Normalize();
-
-public:
 
     const aiVector2t& operator += (const aiVector2t& o);
     const aiVector2t& operator -= (const aiVector2t& o);
@@ -82,12 +81,11 @@ public:
     const aiVector2t& operator /= (TReal f);
 
     TReal operator[](unsigned int i) const;
-    TReal& operator[](unsigned int i);
 
     bool operator== (const aiVector2t& other) const;
     bool operator!= (const aiVector2t& other) const;
 
-    bool Equal(const aiVector2t& other, TReal epsilon = 1e-6) const;
+    bool Equal(const aiVector2t &other, TReal epsilon = ai_epsilon) const;
 
     aiVector2t& operator= (TReal f);
     const aiVector2t SymMul(const aiVector2t& o);
@@ -96,18 +94,16 @@ public:
     operator aiVector2t<TOther> () const;
 
     TReal x, y;
-} PACK_STRUCT;
+};
 
-typedef aiVector2t<float> aiVector2D;
+typedef aiVector2t<ai_real> aiVector2D;
 
 #else
 
 struct aiVector2D {
-    float x,y;
+    ai_real x, y;
 };
 
 #endif // __cplusplus
-
-#include "./Compiler/poppack1.h"
 
 #endif // AI_VECTOR2D_H_INC

@@ -50,9 +50,9 @@ main(int argc, char** argv)
         ->generateMipmaps(true)
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg")
-        ->registerParser<file::OBJParser>("obj")
-        ->registerParser<file::ColladaParser>("dae")
-        ->registerParser<file::FBXParser>("FBX")
+        ->registerParser<file::ASSIMPParser>("obj")
+        ->registerParser<file::ASSIMPParser>("dae")
+        ->registerParser<file::ASSIMPParser>("FBX")
         ->registerParser<file::SceneParser>("scene");
 
     auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)

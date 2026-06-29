@@ -1,6 +1,6 @@
 /*
- * Poly2Tri Copyright (c) 2009-2010, Poly2Tri Contributors
- * http://code.google.com/p/poly2tri/
+ * Poly2Tri Copyright (c) 2009-2022, Poly2Tri Contributors
+ * https://github.com/jhasse/poly2tri
  *
  * All rights reserved.
  *
@@ -29,8 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SWEEP_CONTEXT_H
-#define SWEEP_CONTEXT_H
+#pragma once
 
 #include <list>
 #include <vector>
@@ -52,47 +51,47 @@ class SweepContext {
 public:
 
 /// Constructor
-SweepContext(std::vector<Point*> polyline);
+explicit SweepContext(std::vector<Point*> polyline);
 /// Destructor
 ~SweepContext();
 
 void set_head(Point* p1);
 
-Point* head();
+Point* head() const;
 
 void set_tail(Point* p1);
 
-Point* tail();
+Point* tail() const;
 
-int point_count();
+size_t point_count() const;
 
-Node& LocateNode(Point& point);
+Node* LocateNode(const Point& point);
 
 void RemoveNode(Node* node);
 
-void CreateAdvancingFront(std::vector<Node*> nodes);
+void CreateAdvancingFront();
 
 /// Try to map a node to all sides of this triangle that don't have a neighbor
 void MapTriangleToNodes(Triangle& t);
 
 void AddToMap(Triangle* triangle);
 
-Point* GetPoint(const int& index);
+Point* GetPoint(size_t index);
 
 Point* GetPoints();
 
 void RemoveFromMap(Triangle* triangle);
 
-void AddHole(std::vector<Point*> polyline);
+void AddHole(const std::vector<Point*>& polyline);
 
 void AddPoint(Point* point);
 
-AdvancingFront* front();
+AdvancingFront* front() const;
 
 void MeshClean(Triangle& triangle);
 
-std::vector<Triangle*> GetTriangles();
-std::list<Triangle*> GetMap();
+std::vector<Triangle*> &GetTriangles();
+std::list<Triangle*> &GetMap();
 
 std::vector<Edge*> edge_list;
 
@@ -103,15 +102,16 @@ struct Basin {
   double width;
   bool left_highest;
 
-  Basin() : left_node(NULL), bottom_node(NULL), right_node(NULL), width(0.0), left_highest(false)
+  Basin()
+  : left_node(nullptr), bottom_node(nullptr), right_node(nullptr), width(0.0), left_highest(false)
   {
   }
 
   void Clear()
   {
-    left_node = NULL;
-    bottom_node = NULL;
-    right_node = NULL;
+    left_node = nullptr;
+    bottom_node = nullptr;
+    right_node = nullptr;
     width = 0.0;
     left_highest = false;
   }
@@ -147,16 +147,16 @@ Point* tail_;
 Node *af_head_, *af_middle_, *af_tail_;
 
 void InitTriangulation();
-void InitEdges(std::vector<Point*> polyline);
+void InitEdges(const std::vector<Point*>& polyline);
 
 };
 
-inline AdvancingFront* SweepContext::front()
+inline AdvancingFront* SweepContext::front() const
 {
   return front_;
 }
 
-inline int SweepContext::point_count()
+inline size_t SweepContext::point_count() const
 {
   return points_.size();
 }
@@ -166,7 +166,7 @@ inline void SweepContext::set_head(Point* p1)
   head_ = p1;
 }
 
-inline Point* SweepContext::head()
+inline Point* SweepContext::head() const
 {
   return head_;
 }
@@ -176,11 +176,9 @@ inline void SweepContext::set_tail(Point* p1)
   tail_ = p1;
 }
 
-inline Point* SweepContext::tail()
+inline Point* SweepContext::tail() const
 {
   return tail_;
 }
 
 }
-
-#endif

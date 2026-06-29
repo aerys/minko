@@ -29,11 +29,12 @@ ASSIMPParser::Ptr ASSIMPParser::create()
     return ASSIMPParser::Ptr(new ASSIMPParser());
 }
 
-void ASSIMPParser::provideLoaders(Assimp::Importer& importer)
+void ASSIMPParser::provideLoaders(Assimp::Importer& /*importer*/)
 {
+    // No-op: Assimp's built-in (public) importer registry already
+    // installs every compiled-in importer on the Importer instance.
 }
 
-#if !defined (ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
 std::set<std::string>
 ASSIMPParser::getSupportedFileExtensions()
 {
@@ -56,4 +57,3 @@ ASSIMPParser::getSupportedFileExtensions()
 
   return result;
 }
-#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
