@@ -1,3 +1,10 @@
+## [11.12.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.11.0...v11.12.0) (2026-06-29)
+
+### Features
+
+* **assimp:** upgrade vendored Assimp to v6.0.5 for glTF2 import ([98c5eb6](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/98c5eb69e40a3108cf978e87ecddf61fe93f5e9b))
+* **devcontainer:** add hardened dev container for CLI and IDE development ([4a81320](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/4a813208aa67a8abba980dca6b6da5520d1c87f2))
+
 ## [11.11.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.10.0...v11.11.0) (2025-10-21)
 
 ### Features
