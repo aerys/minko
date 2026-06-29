@@ -1,15 +1,15 @@
 include:
   - project: 'lx-industries/gitlab-ci-templates'
-    ref: 'v0.11.17'
+    ref: 'v0.11.35'
     file: '/workflows/default.yml'
   - project: 'lx-industries/gitlab-ci-templates'
-    ref: 'v0.11.17'
+    ref: 'v0.11.35'
     file: '/jobs/docker-in-docker/Docker-In-Docker.gitlab-ci.yml'
   - project: 'lx-industries/gitlab-ci-templates'
-    ref: 'v0.11.17'
+    ref: 'v0.11.35'
     file: '/jobs/commitlint/commintlint.gitlab-ci.yml'
   - project: 'lx-industries/gitlab-ci-templates'
-    ref: 'v0.11.17'
+    ref: 'v0.11.35'
     file: '/jobs/semantic-release/semantic-release.gitlab-ci.yml'
 
 variables:
