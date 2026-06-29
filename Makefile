@@ -1,7 +1,7 @@
 # SmartShape Engine — developer task runner.
 #
 # This Makefile is a thin entry point for developer workflows; the engine itself
-# is built with CMake/premake via script/build.sh.
+# is built with CMake via script/build.sh.
 
 .DEFAULT_GOAL := help
 

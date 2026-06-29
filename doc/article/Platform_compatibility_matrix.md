@@ -6,7 +6,7 @@ The platforms compatibility matrix provides the current state of support for eac
 Platforms officially targeted
 -----------------------------
 
-|    Premake configuration name    |      Available     | 
+|    Platform    |      Available     | 
 |---------------------------------------------------------------------------------------------------------|------------------------------------------------------|
 | ![](../../doc/image/Html5_min.png "fig:../../doc/image/Html5_min.png") HTML5                 | ![](../../doc/image/Checked.png "../../doc/image/Checked.png") | html5                            |
 | ![](../../doc/image/Winmini.png "fig:../../doc/image/Winmini.png") Windows                   | ![](../../doc/image/Checked.png "../../doc/image/Checked.png") | windows32<br/>windows64        |
