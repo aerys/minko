@@ -1,3 +1,9 @@
+## [11.13.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.12.0...v11.13.0) (2026-06-30)
+
+### Features
+
+* **assimp:** resolve KHR_xmp_json_ld packet index into per-node attributes ([e9acebc](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/e9acebc703f85e88e8402b639ba68f3419a1fa45))
+
 ## [11.12.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.11.0...v11.12.0) (2026-06-29)
 
 ### Features
