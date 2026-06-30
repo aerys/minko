@@ -170,6 +170,11 @@ namespace minko
                           std::shared_ptr<Options>                      options,
                           std::unordered_map<std::string, std::string>& metadata);
 
+            void
+            resolveXmpPacket(const aiScene*                                scene,
+                             aiNode*                                       ainode,
+                             std::unordered_map<std::string, std::string>& metadata);
+
             GeometryPtr
             createMeshGeometry(NodePtr, aiMesh*, const std::string&);
 

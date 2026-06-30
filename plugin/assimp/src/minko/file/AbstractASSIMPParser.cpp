@@ -465,6 +465,117 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
     }
 }
 
+namespace
+{
+    // Assimp wraps glTF extensions as recursively nested aiMetadata. These
+    // helpers walk that tree by key without using aiMetadata::Get(), which only
+    // ever returns the first entry for a given key.
+
+    const aiMetadata*
+    findNested(const aiMetadata* meta, const std::string& key)
+    {
+        if (meta == nullptr)
+            return nullptr;
+
+        for (auto i = 0u; i < meta->mNumProperties; ++i)
+            if (meta->mValues[i].mType == aiMetadataType::AI_AIMETADATA &&
+                key == meta->mKeys[i].C_Str())
+                return static_cast<const aiMetadata*>(meta->mValues[i].mData);
+
+        return nullptr;
+    }
+
+    // A glTF packet index is a non-negative JSON integer, which Assimp stores as
+    // AI_UINT64 (rapidjson reports such literals as unsigned first); a signed
+    // encoder would yield AI_INT32. Accept both and reject anything that does not
+    // fit a non-negative 32-bit index.
+    bool
+    findPacketIndex(const aiMetadata* meta, const std::string& key, std::int32_t& out)
+    {
+        if (meta == nullptr)
+            return false;
+
+        for (auto i = 0u; i < meta->mNumProperties; ++i)
+        {
+            if (key != meta->mKeys[i].C_Str())
+                continue;
+
+            const auto& value = meta->mValues[i];
+
+            if (value.mType == aiMetadataType::AI_INT32)
+            {
+                out = *static_cast<const std::int32_t*>(value.mData);
+                return true;
+            }
+
+            if (value.mType == aiMetadataType::AI_UINT64)
+            {
+                const auto raw = *static_cast<const std::uint64_t*>(value.mData);
+
+                if (raw > static_cast<std::uint64_t>(INT32_MAX))
+                    return false;
+
+                out = static_cast<std::int32_t>(raw);
+                return true;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    // Returns the n-th entry whose key equals `key`, in insertion order (the
+    // glTF array order Assimp preserves), or nullptr when there are fewer than
+    // n + 1 such entries.
+    const aiMetadataEntry*
+    nthValueByKey(const aiMetadata* meta, const std::string& key, std::size_t n)
+    {
+        if (meta == nullptr)
+            return nullptr;
+
+        std::size_t found = 0;
+
+        for (auto i = 0u; i < meta->mNumProperties; ++i)
+            if (key == meta->mKeys[i].C_Str())
+            {
+                if (found == n)
+                    return &meta->mValues[i];
+
+                ++found;
+            }
+
+        return nullptr;
+    }
+
+    // Stringifies a scalar metadata entry exactly as the parseMetadata scalar
+    // switch does; nested/unknown types yield an empty string.
+    std::string
+    scalarToString(const aiMetadataEntry& entry)
+    {
+        switch (entry.mType)
+        {
+        case aiMetadataType::AI_AISTRING:
+            return std::string(static_cast<const aiString*>(entry.mData)->C_Str());
+        case aiMetadataType::AI_AIVECTOR3D:
+        {
+            const auto* vec3 = static_cast<const aiVector3D*>(entry.mData);
+            return std::to_string(math::vec3(vec3->x, vec3->y, vec3->z));
+        }
+        case aiMetadataType::AI_BOOL:
+            return std::to_string(*static_cast<const bool*>(entry.mData));
+        case aiMetadataType::AI_FLOAT:
+            return std::to_string(*static_cast<const float*>(entry.mData));
+        case aiMetadataType::AI_INT32:
+            return std::to_string(*static_cast<const std::int32_t*>(entry.mData));
+        case aiMetadataType::AI_UINT64:
+            return std::to_string(*static_cast<const std::uint64_t*>(entry.mData));
+        default:
+            return std::string();
+        }
+    }
+}
+
 bool
 AbstractASSIMPParser::parseMetadata(const aiScene*                                scene,
                                     aiNode*                                       ainode,
@@ -478,43 +589,82 @@ AbstractASSIMPParser::parseMetadata(const aiScene*                              
     {
         const auto& key = std::string(ainode->mMetaData->mKeys[i].data);
         const auto& data = ainode->mMetaData->mValues[i];
-        auto dataString = std::string();
 
         switch (data.mType)
         {
         case aiMetadataType::AI_AISTRING:
-            dataString = std::string(reinterpret_cast<aiString*>(data.mData)->data);
-            break;
         case aiMetadataType::AI_AIVECTOR3D:
-        {
-            aiVector3D* vec3 = reinterpret_cast<aiVector3D*>(data.mData);
-            dataString = std::to_string(math::vec3(vec3->x, vec3->y, vec3->z));
-
-            break;
-        }
         case aiMetadataType::AI_BOOL:
-            dataString = std::to_string(*reinterpret_cast<bool*>(data.mData));
-            break;
         case aiMetadataType::AI_FLOAT:
-            dataString = std::to_string(*reinterpret_cast<float*>(data.mData));
-            break;
         case aiMetadataType::AI_INT32:
-            dataString = std::to_string(*reinterpret_cast<std::int32_t*>(data.mData));
-            break;
         case aiMetadataType::AI_UINT64:
-            dataString = std::to_string(*reinterpret_cast<std::uint64_t*>(data.mData));
+            metadata[key] = scalarToString(data);
             break;
-        // We intentionally do not reinterpret_cast unhandled types here: an
-        // unknown aiMetadataType yields an empty value rather than risking
-        // a mis-typed cast.
+        // Nested aiMetadata (e.g. the KHR_xmp_json_ld "extensions" wrapper) and
+        // unknown types carry no scalar value: skip them so no spurious empty
+        // attribute is emitted.
         default:
-            break;
+            continue;
         }
-
-        metadata[key] = dataString;
     }
 
+    resolveXmpPacket(scene, ainode, metadata);
+
     return true;
+}
+
+void
+AbstractASSIMPParser::resolveXmpPacket(const aiScene*                                scene,
+                                       aiNode*                                       ainode,
+                                       std::unordered_map<std::string, std::string>& metadata)
+{
+    static const std::string EXTENSIONS_KEY = "extensions";
+    static const std::string KHR_XMP_KEY    = "KHR_xmp_json_ld";
+    static const std::string PACKET_KEY     = "packet";
+    static const std::string PACKETS_KEY    = "packets";
+    static const std::string CONTEXT_KEY    = "@context";
+
+    if (scene == nullptr || ainode == nullptr)
+        return;
+
+    const auto* nodeXmp = findNested(findNested(ainode->mMetaData, EXTENSIONS_KEY), KHR_XMP_KEY);
+
+    auto packetIndex = std::int32_t(0);
+
+    if (!findPacketIndex(nodeXmp, PACKET_KEY, packetIndex) || packetIndex < 0)
+        return;
+
+    const auto* sceneXmp = findNested(findNested(scene->mMetaData, EXTENSIONS_KEY), KHR_XMP_KEY);
+    const auto* packets  = findNested(sceneXmp, PACKETS_KEY);
+
+    if (packets == nullptr)
+        return;
+
+    const auto* packetEntry = nthValueByKey(packets, PACKETS_KEY, static_cast<std::size_t>(packetIndex));
+
+    if (packetEntry == nullptr || packetEntry->mType != aiMetadataType::AI_AIMETADATA)
+        return;
+
+    const auto* packet = static_cast<const aiMetadata*>(packetEntry->mData);
+
+    if (packet == nullptr)
+        return;
+
+    for (auto i = 0u; i < packet->mNumProperties; ++i)
+    {
+        const auto key = std::string(packet->mKeys[i].C_Str());
+
+        if (key == CONTEXT_KEY)
+            continue;
+
+        const auto colon = key.find(':');
+        const auto local = colon == std::string::npos ? key : key.substr(colon + 1);
+
+        if (local.empty())
+            continue;
+
+        metadata[local] = scalarToString(packet->mValues[i]);
+    }
 }
 
 void
