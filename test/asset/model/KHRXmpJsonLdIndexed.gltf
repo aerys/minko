@@ -1,0 +1,85 @@
+{
+    "asset": {
+        "version": "2.0",
+        "generator": "hand-authored fixture for KHR_xmp_json_ld packet resolution"
+    },
+    "extensionsUsed": [
+        "KHR_xmp_json_ld"
+    ],
+    "extensions": {
+        "KHR_xmp_json_ld": {
+            "packets": [
+                {
+                    "@context": {
+                        "smartshape": "https://smartshape.com/rdf"
+                    },
+                    "smartshape:part_name": "SSI-0101",
+                    "smartshape:thickness": "12"
+                }
+            ]
+        }
+    },
+    "scene": 0,
+    "scenes": [
+        {
+            "nodes": [0, 1, 2]
+        }
+    ],
+    "nodes": [
+        {
+            "name": "SSI-0101",
+            "mesh": 0,
+            "extensions": {
+                "KHR_xmp_json_ld": {
+                    "packet": 0
+                }
+            }
+        },
+        {
+            "name": "PlainNode"
+        },
+        {
+            "name": "OutOfRange",
+            "extensions": {
+                "KHR_xmp_json_ld": {
+                    "packet": 99
+                }
+            }
+        }
+    ],
+    "meshes": [
+        {
+            "primitives": [
+                {
+                    "attributes": {
+                        "POSITION": 0
+                    },
+                    "mode": 4
+                }
+            ]
+        }
+    ],
+    "accessors": [
+        {
+            "bufferView": 0,
+            "componentType": 5126,
+            "count": 3,
+            "type": "VEC3",
+            "min": [0.0, 0.0, 0.0],
+            "max": [1.0, 1.0, 0.0]
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteOffset": 0,
+            "byteLength": 36
+        }
+    ],
+    "buffers": [
+        {
+            "byteLength": 36,
+            "uri": "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA"
+        }
+    ]
+}

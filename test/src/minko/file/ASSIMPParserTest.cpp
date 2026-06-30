@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
+#include "minko/component/Metadata.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/data/Provider.hpp"
@@ -167,4 +168,82 @@ TEST_F(ASSIMPParserTest, LoadGltf2BinaryHasGeometryAndMaterial)
     // the material is dropped and replaced by the default fallback.
     ASSERT_GE(stats.fileDiffuseColorCount, 1u)
         << "glTF2 material was not imported (no file-sourced diffuse color)";
+}
+
+// ---------------------------------------------------------------------------
+// #387 — glTF2 KHR_xmp_json_ld indexed packet resolution.
+// ---------------------------------------------------------------------------
+
+namespace
+{
+    scene::Node::Ptr
+    findByName(scene::Node::Ptr root, const std::string& name)
+    {
+        if (!root)
+            return nullptr;
+
+        auto matches = scene::NodeSet::create(root)
+            ->descendants(true)
+            ->where([&](scene::Node::Ptr n) { return n->name() == name; });
+
+        return matches->nodes().empty() ? nullptr : matches->nodes().front();
+    }
+}
+
+TEST_F(ASSIMPParserTest, LoadGltf2ResolvesKHRXmpPacketIndex)
+{
+    auto root = loadModel("model/KHRXmpJsonLdIndexed.gltf");
+
+    ASSERT_NE(root, nullptr);
+
+    auto node = findByName(root, "SSI-0101");
+
+    ASSERT_NE(node, nullptr) << "packet-bearing node SSI-0101 not found in graph";
+    ASSERT_TRUE(node->hasComponent<Metadata>()) << "node SSI-0101 has no Metadata component";
+
+    auto metadata = node->component<Metadata>();
+
+    // The node's KHR_xmp_json_ld.packet = 0 index must resolve to packets[0]'s
+    // smartshape:* properties, with the prefix stripped.
+    ASSERT_TRUE(metadata->has("part_name")) << "resolved part_name missing";
+    ASSERT_TRUE(metadata->has("thickness")) << "resolved thickness missing";
+    ASSERT_EQ(metadata->get("part_name"), "SSI-0101");
+    ASSERT_EQ(metadata->get("thickness"), "12");
+
+    // The bare integer index and the nested-extensions wrapper must not leak in.
+    ASSERT_FALSE(metadata->has("packet")) << "bare packet index leaked into metadata";
+    ASSERT_FALSE(metadata->has("extensions")) << "spurious extensions key leaked into metadata";
+    ASSERT_FALSE(metadata->has("@context")) << "@context leaked into metadata";
+}
+
+TEST_F(ASSIMPParserTest, Gltf2XmpMissingOrOutOfRangePacketIsInert)
+{
+    auto root = loadModel("model/KHRXmpJsonLdIndexed.gltf");
+
+    ASSERT_NE(root, nullptr);
+
+    // A node with no KHR_xmp_json_ld extension at all: Assimp gives it no
+    // metadata, so the importer attaches no Metadata component (the assertion is
+    // unconditional so the inert case can never pass vacuously).
+    auto plain = findByName(root, "PlainNode");
+
+    ASSERT_NE(plain, nullptr) << "PlainNode not found in graph";
+    ASSERT_FALSE(plain->hasComponent<Metadata>())
+        << "a node without metadata must not gain a Metadata component";
+
+    // A node whose packet index is out of range still carries an extensions
+    // block, so it keeps a Metadata component — but resolves to no attributes.
+    // Assert the component exists, then that it holds no resolved keys, so the
+    // check can never pass vacuously.
+    auto outOfRange = findByName(root, "OutOfRange");
+
+    ASSERT_NE(outOfRange, nullptr) << "OutOfRange not found in graph";
+    ASSERT_TRUE(outOfRange->hasComponent<Metadata>())
+        << "a node with an extensions block keeps a Metadata component";
+
+    auto outOfRangeMetadata = outOfRange->component<Metadata>();
+
+    ASSERT_FALSE(outOfRangeMetadata->has("part_name"));
+    ASSERT_FALSE(outOfRangeMetadata->has("thickness"));
+    ASSERT_FALSE(outOfRangeMetadata->has("extensions"));
 }
