@@ -23,7 +23,11 @@ the same arguments if you prefer).
 
 The recipe builds the image, maps your host UID, and mounts host config that exists
 (`~/.gitconfig` read-only, `~/.config/glab-cli`, `~/.config/gh`, `~/.claude`,
-`~/.claude.json`, opencode XDG dirs, the SSH agent socket, and the Docker socket).
+`~/.claude.json`, opencode XDG dirs, the SSH agent socket, the Docker socket, and
+`~/.docker/config.json` read-only so in-container `script/build.sh` can pull the
+private `registry.aerys.in` images). The container always gets a recognisable
+`--name` (`<workspace-dir>-devcontainer`, with a numeric suffix when that name is
+already taken) so concurrent containers are identifiable in `docker ps`.
 
 ### IDE
 

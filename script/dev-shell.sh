@@ -66,6 +66,13 @@ if [[ -S /var/run/docker.sock ]]; then
     run_args+=(--group-add "$(stat -c '%g' /var/run/docker.sock)")
 fi
 
+# Host Docker registry credentials (read-only). script/build.sh pulls private
+# images from registry.aerys.in; the in-container docker client reads
+# ~/.docker/config.json to authenticate the pull. Mount ONLY config.json — a
+# read-only mount of the whole ~/.docker dir breaks buildx, which writes to
+# ~/.docker/buildx.
+[[ -f "$HOME/.docker/config.json" ]] && run_args+=(-v "$HOME/.docker/config.json:/tmp/home/.docker/config.json:ro")
+
 # GPU passthrough (conditional — /dev/dri is absent on GPU-less hosts, which then
 # fall back to lavapipe/llvmpipe software rendering)
 if [[ -d /dev/dri ]]; then
@@ -75,6 +82,17 @@ if [[ -d /dev/dri ]]; then
         run_args+=(--group-add "$(stat -c '%g' "$node")")
     done
 fi
+
+# Recognisable container name — without --name, docker assigns a random two-word
+# name (e.g. "brave_almeida"), leaving concurrent devcontainers unidentifiable in
+# `docker ps`. Derive from the workspace dir; append a numeric suffix when taken
+# (concurrent worktrees / repeat launches), since --name must be unique.
+base_name="$(basename "${ROOT_DIR}")-devcontainer"
+container_name="${base_name}"; n=2
+while docker ps -a --format '{{.Names}}' 2>/dev/null | grep -qx "${container_name}"; do
+    container_name="${base_name}-${n}"; n=$((n + 1))
+done
+run_args+=(--name "${container_name}")
 
 # No args → interactive bash; otherwise run the passed command in-container.
 exec docker run "${run_args[@]}" "${IMAGE}" "${@:-bash}"

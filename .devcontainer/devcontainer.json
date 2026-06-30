@@ -8,7 +8,7 @@
   "userEnvProbe": "loginInteractiveShell",
   "workspaceFolder": "${localWorkspaceFolder}",
   "workspaceMount": "source=${localWorkspaceFolder},target=${localWorkspaceFolder},type=bind",
-  "initializeCommand": ["sh", "-c", "mkdir -p \"$HOME/.config/glab-cli\" \"$HOME/.config/gh\" \"$HOME/.claude\" \"$HOME/.config/opencode\" \"$HOME/.local/share/opencode\" \"$HOME/.cache/opencode\"; touch \"$HOME/.gitconfig\" \"$HOME/.claude.json\""],
+  "initializeCommand": ["sh", "-c", "mkdir -p \"$HOME/.config/glab-cli\" \"$HOME/.config/gh\" \"$HOME/.claude\" \"$HOME/.config/opencode\" \"$HOME/.local/share/opencode\" \"$HOME/.cache/opencode\" \"$HOME/.docker\"; touch \"$HOME/.gitconfig\" \"$HOME/.claude.json\" \"$HOME/.docker/config.json\""],
   "mounts": [
     "source=${localEnv:HOME}/.config/glab-cli,target=/tmp/glab-config,type=bind",
     "source=${localEnv:HOME}/.config/gh,target=/tmp/gh-config,type=bind",
@@ -20,6 +20,7 @@
     "source=${localEnv:HOME}/.local/share/opencode,target=/tmp/home/.local/share/opencode,type=bind",
     "source=${localEnv:HOME}/.cache/opencode,target=/tmp/home/.cache/opencode,type=bind",
     "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    "source=${localEnv:HOME}/.docker/config.json,target=/tmp/home/.docker/config.json,type=bind,readonly",
     "source=${localEnv:SSH_AUTH_SOCK},target=/tmp/ssh-agent.sock,type=bind"
   ],
   "remoteEnv": {
