@@ -19,8 +19,6 @@ Makefile
 *.idb
 *.pdb
 *.obj
-# …except Wavefront OBJ model fixtures for the Assimp load tests.
-!/test/asset/model/*.obj
 *.ilk
 *.lastbuildstate
 *.vsglog

@@ -8,7 +8,6 @@ list (
     APPEND
     PLUGINS
     zlib
-    assimp
     debug
     devil
     bullet

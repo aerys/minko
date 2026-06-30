@@ -53,7 +53,6 @@ list (
     ttf
     serializer
     fx
-    assimp
     devil
     ssl
     debug
@@ -86,7 +85,6 @@ list (
     APPEND
     EXAMPLES
     cube
-    assimp
     benchmark-cube
     blending
     devil

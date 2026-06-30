@@ -18,7 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoPNG.hpp"
 #include "minko/MinkoJPEG.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoSerializer.hpp"
 
 std::string MODEL_FILENAME = "lights.scene";
@@ -50,9 +49,6 @@ main(int argc, char** argv)
         ->generateMipmaps(true)
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg")
-        ->registerParser<file::ASSIMPParser>("obj")
-        ->registerParser<file::ASSIMPParser>("dae")
-        ->registerParser<file::ASSIMPParser>("FBX")
         ->registerParser<file::SceneParser>("scene");
 
     auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)

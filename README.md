@@ -201,7 +201,6 @@ Sources for Minko's plugins.
 
 Available plugins are:
 * angle
-* assimp
 * bullet
 * debug
 * devil

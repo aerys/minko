@@ -27,11 +27,7 @@ See framework/lib/jsoncpp/LICENSE.
 
 Angle
 =====
-See plugin/assimp/lib/win/ANGLE/LICENSE.
-
-Assimp
-======
-See plugin/assimp/lib/assimp/LICENSE.
+See plugin/angle/lib/win/ANGLE/LICENSE.
 
 Bullet
 ======

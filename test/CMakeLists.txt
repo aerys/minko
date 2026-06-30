@@ -8,11 +8,6 @@ file (GLOB_RECURSE ${PROJECT_NAME}_SRC
     "${CMAKE_CURRENT_SOURCE_DIR}/asset/*"
 )
 
-# Binary model fixtures (Assimp load tests) live under asset/model. They are
-# packaged via minko_package_assets below; they must NOT end up in the source
-# list, otherwise the linker tries to consume e.g. box.obj as an object file.
-list (FILTER ${PROJECT_NAME}_SRC EXCLUDE REGEX "/asset/model/")
-
 minko_add_executable (${PROJECT_NAME} "${${PROJECT_NAME}_SRC}")
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 target_compile_options (${PROJECT_NAME} PRIVATE "-DMINKO_TEST")
@@ -23,7 +18,6 @@ minko_enable_plugin_websocket (${PROJECT_NAME})
 minko_enable_plugin_http_loader (${PROJECT_NAME})
 minko_enable_plugin_ssl (${PROJECT_NAME})
 minko_enable_plugin_zlib (${PROJECT_NAME})
-minko_enable_plugin_assimp (${PROJECT_NAME})
 if (WITH_OFFSCREEN STREQUAL "ON" OR WITH_OFFSCREEN STREQUAL "ON")
     minko_enable_plugin_offscreen (${PROJECT_NAME})
 endif ()
@@ -56,7 +50,6 @@ minko_package_assets (
     "${CMAKE_CURRENT_SOURCE_DIR}/asset/effect/*.glsl"
     "${CMAKE_CURRENT_SOURCE_DIR}/asset/scene/*.scene"
     "${CMAKE_CURRENT_SOURCE_DIR}/asset/scene/*.texture"
-    "${CMAKE_CURRENT_SOURCE_DIR}/asset/model/*"
 )
 
 target_include_directories (${PROJECT_NAME} PRIVATE "${EMSCRIPTEN}/system/lib/libcxxabi/include")
