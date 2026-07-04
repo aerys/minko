@@ -1,3 +1,9 @@
+## [11.14.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.13.0...v11.14.0) (2026-07-04)
+
+### Features
+
+* **assimp:** remove the ASSIMP plugin ([9dbcee4](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/9dbcee4ea07cdefdf3df4295abbe421cfec7e447)), closes [converter#495](https://git.aerys.in/aerys/converter/issues/495) [app#2155](https://git.aerys.in/aerys/app/issues/2155)
+
 ## [11.13.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.12.0...v11.13.0) (2026-06-30)
 
 ### Features
