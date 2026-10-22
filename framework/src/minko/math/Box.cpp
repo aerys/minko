@@ -204,6 +204,21 @@ Box::testBoundingBox(std::shared_ptr<math::Box> box)
 void
 Box::updateFromMatrix(const math::mat4& matrix)
 {
-    _bottomLeft = math::vec3(matrix * math::vec4(_bottomLeft, 1.f));
-    _topRight = math::vec3(matrix * math::vec4(_topRight, 1.f));
+    const auto vertices = getVertices();
+    auto bottomLeft = math::vec3(matrix * math::vec4(vertices[0], 1.f));
+    auto topRight = bottomLeft;
+
+    for (auto i = 1u; i < vertices.size(); ++i)
+    {
+        const auto vertex = math::vec3(matrix * math::vec4(vertices[i], 1.f));
+
+        for (auto axis = 0u; axis < 3u; ++axis)
+        {
+            bottomLeft[axis] = std::min(bottomLeft[axis], vertex[axis]);
+            topRight[axis] = std::max(topRight[axis], vertex[axis]);
+        }
+    }
+
+    _bottomLeft = bottomLeft;
+    _topRight = topRight;
 }
