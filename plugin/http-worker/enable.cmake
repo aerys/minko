@@ -6,6 +6,16 @@ function (minko_enable_plugin_http_worker target)
     get_target_property(TARGET_TYPE ${target} TYPE)
     get_target_property(OUTPUT_PATH ${target} RUNTIME_OUTPUT_DIRECTORY)
 
+    if (ANDROID)
+        # libnode.so exports its own OpenSSL: an archive linked after it would send its OpenSSL
+        # calls there instead of to the static OpenSSL of the ssl plugin.
+        get_target_property (DEFINITIONS ${target} COMPILE_DEFINITIONS)
+        list (FIND DEFINITIONS "MINKO_PLUGIN_NODEJS_WORKER" INDEX)
+        if (NOT INDEX EQUAL -1)
+            message (FATAL_ERROR "Enable the http-worker plugin before the nodejs-worker plugin: libnode.so exports its own OpenSSL.")
+        endif ()
+    endif ()
+
     if (NOT EMSCRIPTEN)
         minko_plugin_link ("http-worker" ${target})
         # The libcurl for Windows uses the Schannel SSL implementation.

@@ -1,0 +1,44 @@
+{
+  "repository": "https://github.com/nodejs/node.git",
+  "version": "26.12.1",
+  "tag": "v26.12.1",
+  "commit": "bc2e01dcf6acd5cf7d169b5f26cf89abaaeb41f1",
+  "tree": "2dab1d4af5e3ddb3a50933435375c8e3a2788086",
+  "target": "armeabi-v7a",
+  "versions": {
+    "acorn": "8.19.0",
+    "ada": "4.0.0",
+    "amaro": "1.1.11",
+    "ares": "1.34.9",
+    "brotli": "1.2.0",
+    "libffi": "3.8.0",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "mobile": "26.12.1-0",
+    "modules": "147",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.70.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "node": "26.12.1",
+    "openssl": "3.5.9",
+    "simdjson": "5.0.3",
+    "simdutf": "7.7.0",
+    "sqlite": "3.54.0",
+    "undici": "8.12.2",
+    "uv": "1.52.1",
+    "uvwasi": "0.0.23",
+    "v8": "14.6.202.34-node.40-mobile.0",
+    "zlib": "1.3.2.1-motley-456ae73",
+    "zstd": "1.5.7"
+  },
+  "config_sha256": "29e0a277da6842d3fcd1d8e2ce1e82f6bc7cb22e4b20bd4e566be0398a72e11e",
+  "binary_sha256": {
+    "bin/armeabi-v7a/libnode.so": "e3f334731fe73ded5b828ab40867b2a236cf5a4044eef607daef783579dc3813"
+  },
+  "symbols_sha256": {
+    "symbols/armeabi-v7a/libnode.so.debug": "26f1c41d2f6f4e5d312b5be8d1499ecc0c88825216f18af4e7eddc729079faaf"
+  }
+}

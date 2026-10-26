@@ -1,5 +1,16 @@
 function (minko_enable_plugin_websocket target)
     set (WEBSOCKET_PATH "${MINKO_HOME}/plugin/websocket")
+
+    if (ANDROID)
+        # libnode.so exports its own OpenSSL: an archive linked after it would send its OpenSSL
+        # calls there instead of to the static OpenSSL of the ssl plugin.
+        get_target_property (DEFINITIONS ${target} COMPILE_DEFINITIONS)
+        list (FIND DEFINITIONS "MINKO_PLUGIN_NODEJS_WORKER" INDEX)
+        if (NOT INDEX EQUAL -1)
+            message (FATAL_ERROR "Enable the websocket plugin before the nodejs-worker plugin: libnode.so exports its own OpenSSL.")
+        endif ()
+    endif ()
+
     minko_plugin_link ("websocket" ${target})
 
     if (NOT EMSCRIPTEN)

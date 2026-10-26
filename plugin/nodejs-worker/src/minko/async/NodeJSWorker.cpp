@@ -20,9 +20,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/async/NodeJSWorker.hpp"
 #include "minko/log/Logger.hpp"
 
-#include "node/node.h"
+// Declared in node/node.h, which needs C++20; the engine builds in C++14.
+namespace node
+{
+    int Start(int argc, char* argv[]);
+}
 
 #include <unistd.h>
+#include <cstdlib>
+#include <cstring>
 #include <sstream>
 
 using namespace minko;
@@ -143,7 +149,10 @@ namespace minko
             for (const auto& a : argsVec)
                 debugArgs += a + " ";
             std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! " << debugArgs << std::endl;
-            node::Start(argc, argv);
+            const auto exitCode = node::Start(argc, argv);
+
+            if (exitCode != 0)
+                LOG_ERROR("Node exited with code " << exitCode << " on " << scriptPath);
         }
 
         MINKO_DEFINE_WORKER(NodeJSWorker,
