@@ -1,4 +1,5 @@
 include:
+  - local: '.gitlab/ci/images.gitlab-ci.yml'
   - project: 'lx-industries/gitlab-ci-templates'
     ref: 'v0.11.35'
     file: '/workflows/default.yml'
@@ -11,14 +12,6 @@ include:
   - project: 'lx-industries/gitlab-ci-templates'
     ref: 'v0.11.35'
     file: '/jobs/semantic-release/semantic-release.gitlab-ci.yml'
-
-variables:
-  DOCKER_BUILD_FORCE:
-    value: "false"
-    description: "Force a build of the container images."
-  DOCKER_PUSH_FORCE:
-    value: "false"
-    description: "Force the container images to be pushed to the registry even if an image with the same label exists."
 
 stages:
   - build

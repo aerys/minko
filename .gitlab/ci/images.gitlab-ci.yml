@@ -1,0 +1,121 @@
+---
+"check:images-ci":
+  image: "alpine:3.22@sha256:2e0b81d60597f449baa56dc25d355367869d2dca4cd57e866f1e2b52af3eb55f"
+  needs: []
+  script: |
+    apk add --no-cache jsonnet
+    jsonnet -S .gitlab/ci/images.gitlab-ci.yml.jsonnet | diff -u .gitlab/ci/images.gitlab-ci.yml -
+    IMAGE_BASE_TAG=$(sed -n -E 's/^ARG NDK_VERSION=(r[0-9]+[a-z]?)[[:space:]]*$/\1/p' images/android-build/Dockerfile)
+    if [ -z "$IMAGE_BASE_TAG" ] || [ "$(echo "$IMAGE_BASE_TAG" | wc -l)" -ne 1 ]; then
+      echo "error: expected one 'ARG NDK_VERSION=<r[0-9]+[a-z]?>' in images/android-build/Dockerfile" >&2
+      exit 1
+    fi
+    # The paths and contents of the files of the build context.
+    IMAGE_HASH=$(cd images/android-build && find . -type f | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -c1-12)
+    IMAGE_TAG="$IMAGE_BASE_TAG-$IMAGE_HASH"
+    IMAGE="$CI_REGISTRY_IMAGE/images/android-build:$IMAGE_TAG"
+    echo "Image: $IMAGE"
+    PINNED=$(tr -d '\r' < .gitlab/ci/image-refs.gitlab-ci.yml | sed -n '/^\.image-android-build:/,/^$/s/^ *image: *//p')
+    case "$PINNED" in
+      "$IMAGE"@sha256:*) echo "Pinned: $PINNED" ;;
+      *)
+        echo "error: .image-android-build in image-refs.gitlab-ci.yml pins '$PINNED', not $IMAGE. Push the image (IMAGE_PUSH_FORCE=android-build), then pin its tag and digest." >&2
+        exit 1
+        ;;
+    esac
+  stage: "check"
+"image:android-build":
+  extends: ".docker-in-docker"
+  needs: []
+  rules:
+    - if: "$IMAGE_PUSH_FORCE == \"all\" || $IMAGE_PUSH_FORCE == \"android-build\""
+      variables:
+        IMAGE_PUSH: "true"
+    - changes:
+        paths:
+          - "images/android-build/**/*"
+          - ".gitlab/ci/images.gitlab-ci.yml.jsonnet"
+          - ".gitlab/ci/images.gitlab-ci.yml"
+      if: "$CI_PIPELINE_SOURCE == \"push\" && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH"
+      variables:
+        IMAGE_PUSH: "true"
+    - if: "$IMAGE_BUILD_FORCE == \"all\" || $IMAGE_BUILD_FORCE == \"android-build\""
+    - changes:
+        compare_to: "refs/heads/main"
+        paths:
+          - "images/android-build/**/*"
+          - ".gitlab/ci/images.gitlab-ci.yml.jsonnet"
+          - ".gitlab/ci/images.gitlab-ci.yml"
+      if: "$CI_PIPELINE_SOURCE == \"merge_request_event\""
+  script: |
+    # Credentials to pull the base image from registry.aerys.in.
+    mkdir -p "$HOME/.docker" && echo "$DOCKER_AUTH_CONFIG" > "$HOME/.docker/config.json"
+    # The runner pulls job images with DOCKER_AUTH_CONFIG, outside the script.
+    # Docker CLI >= 28.3 would give it precedence over `docker login`; unset it
+    # so the push keeps using the job token when the CLI of .docker-in-docker
+    # is upgraded.
+    unset DOCKER_AUTH_CONFIG
+    IMAGE_BASE_TAG=$(sed -n -E 's/^ARG NDK_VERSION=(r[0-9]+[a-z]?)[[:space:]]*$/\1/p' images/android-build/Dockerfile)
+    if [ -z "$IMAGE_BASE_TAG" ] || [ "$(echo "$IMAGE_BASE_TAG" | wc -l)" -ne 1 ]; then
+      echo "error: expected one 'ARG NDK_VERSION=<r[0-9]+[a-z]?>' in images/android-build/Dockerfile" >&2
+      exit 1
+    fi
+    # The paths and contents of the files of the build context.
+    IMAGE_HASH=$(cd images/android-build && find . -type f | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -c1-12)
+    IMAGE_TAG="$IMAGE_BASE_TAG-$IMAGE_HASH"
+    IMAGE="$CI_REGISTRY_IMAGE/images/android-build:$IMAGE_TAG"
+    echo "Image: $IMAGE"
+    if [ "$IMAGE_PUSH" = true ]; then
+      # The job token can read and write this project's registry. Its own
+      # config keeps the credentials that pull the base image.
+      PUSH_CONFIG="$PWD/.docker-push"
+      echo "$CI_JOB_TOKEN" | docker --config "$PUSH_CONFIG" login -u gitlab-ci-token --password-stdin "$CI_REGISTRY"
+    
+      # Never overwrite a published tag (jobs pin it by digest) unless both
+      # IMAGE_PUSH_FORCE and IMAGE_OVERWRITE name this image. The tag is a
+      # hash of the build context, so an existing tag needs no rebuild.
+      if { [ "$IMAGE_PUSH_FORCE" = all ] || [ "$IMAGE_PUSH_FORCE" = android-build ]; } \
+          && { [ "$IMAGE_OVERWRITE" = all ] || [ "$IMAGE_OVERWRITE" = android-build ]; }; then
+        echo "IMAGE_OVERWRITE=$IMAGE_OVERWRITE: pushing $IMAGE even if it exists"
+      elif INSPECT=$(docker --config "$PUSH_CONFIG" manifest inspect "$IMAGE" 2>&1); then
+        echo "$IMAGE already exists (this build context is published), not building it. Set IMAGE_OVERWRITE=android-build too to overwrite it."
+        exit 0
+      elif ! echo "$INSPECT" | grep -qiE 'no such manifest|manifest unknown'; then
+        echo "error: cannot tell whether $IMAGE exists: $INSPECT" >&2
+        exit 1
+      fi
+    fi
+    
+    docker build -t "$IMAGE" images/android-build
+    docker run --rm -e IMAGE_BASE_TAG="$IMAGE_BASE_TAG" "$IMAGE" sh -c 'test "$(basename "$ANDROID_NDK_HOME")" = "android-ndk-$IMAGE_BASE_TAG" && NDK_MAJOR=${IMAGE_BASE_TAG#r} && grep -E "^Pkg\.Revision *= *${NDK_MAJOR%[a-z]}\." "$ANDROID_NDK_HOME/source.properties" && cmake --version'
+    
+    if [ "$IMAGE_PUSH" != true ]; then
+      echo "Not pushing $IMAGE (only on main, or with IMAGE_PUSH_FORCE)."
+      exit 0
+    fi
+    
+    docker --config "$PUSH_CONFIG" push "$IMAGE"
+  stage: "build"
+variables:
+  IMAGE_BUILD_FORCE:
+    description: "Build images even when there are no changes."
+    options:
+      - "false"
+      - "all"
+      - "android-build"
+    value: "false"
+  IMAGE_OVERWRITE:
+    description: "Only with IMAGE_PUSH_FORCE naming the same image: overwrite an existing tag (changes the digest it points to)."
+    options:
+      - "false"
+      - "all"
+      - "android-build"
+    value: "false"
+  IMAGE_PUSH_FORCE:
+    description: "Push images even when there are no changes (never overwrites an existing tag)."
+    options:
+      - "false"
+      - "all"
+      - "android-build"
+    value: "false"
+
