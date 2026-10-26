@@ -10,6 +10,14 @@ if (ANDROID)
     if (NOT ("${ANDROID_ABI}" STREQUAL "armeabi-v7a" OR "${ANDROID_ABI}" STREQUAL "arm64-v8a"))
         message (FATAL_ERROR "ANDROID_ABI value not supported (supported ABI: 'armeabi-v7a' or 'arm64-v8a').")
     endif ()
+
+    # The NDK the Android packages (and the libnode.so of the nodejs-worker
+    # plugin) are built with. Apps ship the libc++_shared.so of their own NDK
+    # (see android-build.cmake), so they must build with this NDK or a later one.
+    set (MINKO_ANDROID_NDK_MAJOR 29)
+    if (NOT ANDROID_NDK_MAJOR OR ANDROID_NDK_MAJOR LESS MINKO_ANDROID_NDK_MAJOR)
+        message (FATAL_ERROR "The Android build requires NDK r${MINKO_ANDROID_NDK_MAJOR} or later, found NDK major version '${ANDROID_NDK_MAJOR}'.")
+    endif ()
 endif()
 
 function (minko_set_bitness)

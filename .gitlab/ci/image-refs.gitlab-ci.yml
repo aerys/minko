@@ -1,0 +1,7 @@
+# Container image references, pinned to a digest. Jobs `extends:` one of these
+# templates to inherit its `image:` directive; `script/build.sh` also reads
+# `.image-android-build` to run the Android builds.
+
+.image-android-build:
+  # Built by image:android-build from images/android-build/Dockerfile.
+  image: registry.aerys.in/aerys/smartshape/smartshape-engine/images/android-build:r29-94e244e8ded4@sha256:4f89e7dc1db24379238fd3c9e1b956a68fc1432ab14d264c2fb3b6b6c016b123
