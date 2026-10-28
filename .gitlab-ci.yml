@@ -68,7 +68,6 @@ stages:
     - PACKAGE_VERSION="main" # Default
     - PACKAGE_VERSION=$(([[ "$CI_COMMIT_TAG" ]] && echo "$CI_COMMIT_TAG") || echo "$PACKAGE_VERSION")
     - ARCHIVE_NAME="${CI_PROJECT_NAME}-${PLATFORM}-${PACKAGE_VERSION}.tar.bz2"
-    - apt-get update && apt-get install -y jq
     - cd "${CI_PROJECT_DIR}"
     - tar -cjSf "/tmp/${ARCHIVE_NAME}" *
     # Publish the package.
