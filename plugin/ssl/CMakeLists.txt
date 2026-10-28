@@ -13,13 +13,17 @@ endif ()
 
 minko_set_bitness()
 if (ANDROID)
-    set (PLATFORM_NAME "android/${ANDROID_ABI}/r25b")
+    # Built with the NDK of the engine (see cmake/minko.cmake).
+    if (NOT MINKO_ANDROID_NDK_MAJOR)
+        message (FATAL_ERROR "MINKO_ANDROID_NDK_MAJOR is not set: include cmake/minko.cmake (or cmake/sdk.cmake) once the Android toolchain is loaded.")
+    endif ()
+    set (PLATFORM_NAME "android/${ANDROID_ABI}/r${MINKO_ANDROID_NDK_MAJOR}")
 elseif (LINUX AND BITNESS EQUAL 64)
     set (PLATFORM_NAME "linux/amd64/gcc-9.4")
 elseif (WIN32 AND BITNESS EQUAL 64)
     set (PLATFORM_NAME "windows/amd64/msvc")
 else ()
-    message(ERROR "Platform not supported.")
+    message(FATAL_ERROR "Platform not supported.")
 endif ()
 
 file (GLOB_RECURSE

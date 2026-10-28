@@ -9,5 +9,5 @@
 # Dependencies
 
 * [OpenSSL](https://www.openssl.org/)
-  * Version being used is 3.0.12
+  * Version being used is 3.5.9 (3.0.12 on Windows)
   * Provided by https://git.aerys.in/aerys/smartshape/vendor/openssl
