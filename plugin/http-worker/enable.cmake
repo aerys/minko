@@ -26,9 +26,13 @@ function (minko_enable_plugin_http_worker target)
 
     minko_set_bitness()
     if (ANDROID)
+        # Built with the NDK of the engine (see cmake/minko.cmake).
+        if (NOT MINKO_ANDROID_NDK_MAJOR)
+            message (FATAL_ERROR "MINKO_ANDROID_NDK_MAJOR is not set: include cmake/minko.cmake (or cmake/sdk.cmake) once the Android toolchain is loaded.")
+        endif ()
         target_link_libraries (
             ${target}
-            "${HTTP-WORKER_PATH}/lib/curl/android/${ANDROID_ABI}/r25b/lib/libcurl.a"
+            "${HTTP-WORKER_PATH}/lib/curl/android/${ANDROID_ABI}/r${MINKO_ANDROID_NDK_MAJOR}/lib/libcurl.a"
         )
         minko_plugin_link ("zlib" ${target})
     elseif (LINUX AND BITNESS EQUAL 64)
@@ -42,8 +46,8 @@ function (minko_enable_plugin_http_worker target)
             "${HTTP-WORKER_PATH}/lib/curl/windows/amd64/msvc/lib/libcurl.lib"
             Ws2_32 Crypt32 Wldap32 Normaliz
         )
-    else ()
-        message(ERROR "Platform not supported.")
+    elseif (NOT EMSCRIPTEN)
+        message(FATAL_ERROR "Platform not supported.")
     endif ()
 
 endfunction ()

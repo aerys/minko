@@ -4,4 +4,4 @@
 
 # Dependencies
 
-* libcurl 7.86.0 from https://git.aerys.in/aerys/smartshape/vendor/curl
+* libcurl 8.23.0 (7.86.0 on Windows) from https://git.aerys.in/aerys/smartshape/vendor/curl
