@@ -1,3 +1,14 @@
+## [11.15.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.14.0...v11.15.0) (2026-10-29)
+
+### Features
+
+* **nodejs-worker:** embed Node.js 26.12.1 ([62d617d](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/62d617d7e6edde813fff16e3ae546e33724c636e))
+
+### Miscellaneous Chores
+
+* **deps:** upgrade curl to 8.23.0 ([a646c08](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/a646c08950c8b1a0efe74bc5fc795d870452e517))
+* **deps:** upgrade OpenSSL to 3.5.9 ([dd3c624](https://git.aerys.in/aerys/smartshape/smartshape-engine/commit/dd3c624a27e2ddf617c336d5d69effd489e9817d))
+
 ## [11.14.0](https://git.aerys.in/aerys/smartshape/smartshape-engine/compare/v11.13.0...v11.14.0) (2026-07-04)
 
 ### Features
